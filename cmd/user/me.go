@@ -17,7 +17,7 @@ func NewMeCommand(client client.API) *cobra.Command {
 		Short: "Provide details about your account",
 		Run: func(cmd *cobra.Command, args []string) {
 
-			err := renderMe(client, os.Stdout)
+			err := RenderMe(client, os.Stdout)
 			if err != nil {
 				fmt.Print(err)
 				os.Exit(1)
@@ -28,7 +28,8 @@ func NewMeCommand(client client.API) *cobra.Command {
 	return cmd
 }
 
-func renderMe(client client.API, w io.Writer) error {
+// RenderMe will provide information about the user account.
+func RenderMe(client client.API, w io.Writer) error {
 	me, err := client.GetMe()
 	if err != nil {
 		return err
@@ -38,8 +39,8 @@ func renderMe(client client.API, w io.Writer) error {
 	fmt.Fprintf(w, "Last name:            %s\n", me.LastName)
 	fmt.Fprintf(w, "Email:                %s\n", me.Email)
 	fmt.Fprintf(w, "Currency:             %s\n", me.CurrencyCode)
-	fmt.Fprintf(w, "Available balance:    %d\n", me.AvailableBalance)
-	fmt.Fprintf(w, "Balance:              %d\n", me.Balance)
+	fmt.Fprintf(w, "Available balance:    %.2f\n", float64(me.AvailableBalance)/100)
+	fmt.Fprintf(w, "Balance:              %.2f\n", float64(me.Balance)/100)
 
 	return nil
 }

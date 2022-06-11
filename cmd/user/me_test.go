@@ -1,8 +1,11 @@
 package user_test
 
 import (
+	"bufio"
+	"bytes"
 	"testing"
 
+	"github.com/benmatselby/prolificli/client"
 	"github.com/benmatselby/prolificli/cmd/user"
 	"github.com/benmatselby/prolificli/mock_client"
 	"github.com/golang/mock/gomock"
@@ -24,5 +27,55 @@ func TestNewMeCommand(t *testing.T) {
 
 	if cmd.Short != short {
 		t.Fatalf("expected use: %s; got %s", short, cmd.Short)
+	}
+}
+
+func TestRenderMe(t *testing.T) {
+	tt := []struct {
+		name   string
+		output string
+		err    error
+	}{
+		{name: "can return a list of sprints", output: `First name:           Bald
+Last name:            Rick
+Email:                baldrick@turnip.co
+Currency:             BLK
+Available balance:    10.00
+Balance:              8.50
+`, err: nil},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			c := mock_client.NewMockAPI(ctrl)
+
+			me := client.Me{
+				FirstName:        "Bald",
+				LastName:         "Rick",
+				Email:            "baldrick@turnip.co",
+				CurrencyCode:     "BLK",
+				AvailableBalance: 1000,
+				Balance:          850,
+			}
+
+			c.
+				EXPECT().
+				GetMe().
+				Return(&me, nil).
+				AnyTimes()
+
+			var b bytes.Buffer
+			writer := bufio.NewWriter(&b)
+
+			user.RenderMe(c, writer)
+			writer.Flush()
+
+			if b.String() != tc.output {
+				t.Fatalf("expected '%s'; got '%s'", tc.output, b.String())
+			}
+		})
 	}
 }
