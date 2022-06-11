@@ -1,0 +1,38 @@
+name: Go
+on: [push]
+jobs:
+  build:
+    strategy:
+      matrix:
+        go-version: [1.18.x]
+    runs-on: ubuntu-latest
+    name: Build
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v2.1.3
+        with:
+          go-version: ${{ matrix.go-version }}
+        id: go
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2.3.4
+
+      - name: Get dependencies
+        run: |
+          make install
+
+      - name: Lint
+        run: |
+          make lint
+
+      - name: Vet
+        run: |
+          make vet
+
+      - name: Build
+        run: |
+          make build
+
+      - name: Test
+        run: |
+          make test
