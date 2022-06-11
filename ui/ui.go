@@ -12,8 +12,8 @@ const (
 	Green = "#008033"
 )
 
-// RenderStatus will render a nice coloured UI for the status
-func RenderStatus(status string) lipgloss.Style {
+// RenderTitle will render a nice coloured UI for a title based on status
+func RenderTitle(title, status string) lipgloss.Style {
 
 	var color = ""
 	if status == model.StatusActive {
@@ -29,10 +29,13 @@ func RenderStatus(status string) lipgloss.Style {
 	}
 
 	var style = lipgloss.NewStyle().
+		Bold(true).
+		Underline(true).
 		Background(lipgloss.Color(color)).
-		PaddingLeft(4).
-		Width(22).
-		SetString(status)
+		MarginBottom(1).
+		Padding(1).
+		Align(lipgloss.Center).
+		SetString(title)
 
 	return style
 }

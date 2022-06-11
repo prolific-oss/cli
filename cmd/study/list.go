@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/benmatselby/prolificli/client"
+	"github.com/benmatselby/prolificli/model"
 	"github.com/benmatselby/prolificli/ui"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -38,17 +39,20 @@ func renderList(client client.API, w io.Writer) error {
 	}
 
 	var items []list.Item
+	var studyMap = make(map[string]model.Study)
 
 	for _, study := range studies.Results {
 		items = append(items, study)
+		studyMap[study.ID] = study
 	}
 
-	lv := ui.ListView{List: list.New(items, list.NewDefaultDelegate(), 0, 0)}
+	lv := ui.ListView{
+		List:    list.New(items, list.NewDefaultDelegate(), 0, 0),
+		Studies: studyMap,
+	}
 	lv.List.Title = "My studies"
 
-	p := tea.NewProgram(lv, tea.WithAltScreen())
-
-	if err := p.Start(); err != nil {
+	if err := tea.NewProgram(lv).Start(); err != nil {
 		return fmt.Errorf("cannot render studies: %s", err)
 	}
 
