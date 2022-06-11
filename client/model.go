@@ -1,6 +1,17 @@
 package client
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
+
+const (
+	StatusUnpublished    = "UNPUBLISHED"
+	StatusActive         = "ACTIVE"
+	StatusScheduled      = "SCHEDULED"
+	StatusAwaitingReview = "AWAITING REVIEW"
+	StatusCompleted      = "COMPLETED"
+)
 
 // Study represents a Prolific Study
 type Study struct {
@@ -18,7 +29,7 @@ type Study struct {
 			Title string `json:"title"`
 		} `json:"question"`
 	} `json:"eligibility_requirements"`
-	Description             string      `json:"description"`
+	Desc                    string      `json:"description"`
 	EstimatedCompletionTime int         `json:"estimated_completion_time"`
 	MaximumAllowedTime      int         `json:"maximum_allowed_time"`
 	CompletionURL           string      `json:"completion_url"`
@@ -50,4 +61,12 @@ type Study struct {
 	PublishAt              interface{}   `json:"publish_at"`
 	IsPilot                bool          `json:"is_pilot"`
 	IsUnderpaying          interface{}   `json:"is_underpaying"`
+}
+
+func (s Study) FilterValue() string { return s.Name }
+func (s Study) Title() string       { return s.Name }
+func (s Study) Description() string {
+
+	return fmt.Sprintf("%s - %d places available - %s", s.Status, s.TotalAvailablePlaces, s.Desc)
+
 }
