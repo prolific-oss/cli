@@ -6,6 +6,8 @@ import (
 	"os"
 
 	"github.com/benmatselby/prolificli/client"
+	"github.com/benmatselby/prolificli/ui"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 )
 
@@ -35,12 +37,24 @@ func RenderMe(client client.API, w io.Writer) error {
 		return err
 	}
 
-	fmt.Fprintf(w, "First name:           %s\n", me.FirstName)
-	fmt.Fprintf(w, "Last name:            %s\n", me.LastName)
-	fmt.Fprintf(w, "Email:                %s\n", me.Email)
-	fmt.Fprintf(w, "Currency:             %s\n", me.CurrencyCode)
-	fmt.Fprintf(w, "Available balance:    %.2f\n", float64(me.AvailableBalance)/100)
-	fmt.Fprintf(w, "Balance:              %.2f\n", float64(me.Balance)/100)
+	var docStyle = lipgloss.NewStyle().Margin(1, 2)
+
+	content := lipgloss.NewStyle().
+		// Bold(true).
+		// Underline(true).
+		Background(lipgloss.Color(ui.Green)).
+		MarginBottom(1).
+		Padding(1).
+		Align(lipgloss.Center).
+		Render(fmt.Sprintf("%s %s", me.FirstName, me.LastName))
+
+	content += fmt.Sprintln()
+	content += fmt.Sprintf("Email:             %s\n", me.Email)
+	content += fmt.Sprintf("Currency:          %s\n", me.CurrencyCode)
+	content += fmt.Sprintf("Available balance: %.2f\n", float64(me.AvailableBalance)/100)
+	content += fmt.Sprintf("Balance:           %.2f\n", float64(me.Balance)/100)
+
+	fmt.Fprintln(w, docStyle.Render(content))
 
 	return nil
 }
