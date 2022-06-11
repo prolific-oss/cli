@@ -8,15 +8,15 @@ import (
 	"github.com/golang/mock/gomock"
 )
 
-func TestNewListCommand(t *testing.T) {
+func TestNewViewCommand(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	client := mock_client.NewMockAPI(ctrl)
 
-	cmd := study.NewStudyCommand(client)
+	cmd := study.NewListCommand("list", client)
 
-	use := "study"
-	short := "Study related commands"
+	use := "list"
+	short := "Provide details about your studies"
 
 	if cmd.Use != use {
 		t.Fatalf("expected use: %s; got %s", use, cmd.Use)
