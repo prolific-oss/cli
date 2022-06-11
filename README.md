@@ -48,7 +48,6 @@ export PROLIFIC_TOKEN=""
 Other than requiring [docker](http://docker.com) to be installed, there are no other requirements to run the application this way.
 
 ```shell
-$ docker build -t benmatselby/prolificli .
 $ docker run \
   --rm \
   -t \
@@ -65,6 +64,17 @@ benmatselby/prolificli:version-2.2.0
 ```
 
 This would use the `verson-2.2.0` release in the docker command.
+
+| Tag      | What it means                                    |
+| -------- | ------------------------------------------------ |
+| `latest` | The latest released version                      |
+| `main`   | The latest git commit, not released as a tag yet |
+
+You can also build the image locally:
+
+```shell
+make docker-build
+```
 
 ## Installation via Git
 
