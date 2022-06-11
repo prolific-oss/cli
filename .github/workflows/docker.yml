@@ -25,7 +25,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: benmatselby/prolificli
+          images: ${{ secrets.DOCKER_ORG }}/${{ secrets.DOCKER_IMAGE }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
