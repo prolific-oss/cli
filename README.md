@@ -41,7 +41,7 @@ export PROLIFIC_URL=""
 export PROLIFIC_TOKEN=""
 ```
 
-[Creating a Prolific](https://www.prolific.co/developers).
+[Creating a Prolific token](https://www.prolific.co/developers).
 
 ## Installation via Docker
 
