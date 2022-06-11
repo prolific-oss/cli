@@ -1,4 +1,4 @@
-package client
+package model
 
 import (
 	"fmt"
@@ -76,7 +76,5 @@ func (s Study) Title() string { return s.Name }
 
 // Description will set the secondary string for the bubbletea view.
 func (s Study) Description() string {
-
 	return fmt.Sprintf("%s - %d places available - %s", s.Status, s.TotalAvailablePlaces, s.Desc)
-
 }

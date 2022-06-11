@@ -1,6 +1,10 @@
 package client
 
-import "time"
+import (
+	"time"
+
+	"github.com/benmatselby/prolificli/model"
+)
 
 // Me is a struct that represents your account.
 type Me struct {
@@ -80,7 +84,7 @@ type Me struct {
 
 // ListStudiesResponse is the response for the /studies API response.
 type ListStudiesResponse struct {
-	Results []Study `json:"results"`
+	Results []model.Study `json:"results"`
 	Links   struct {
 		Self struct {
 			Href  string `json:"href"`
