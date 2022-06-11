@@ -3,6 +3,7 @@ package user_test
 import (
 	"bufio"
 	"bytes"
+	"strings"
 	"testing"
 
 	"github.com/benmatselby/prolificli/client"
@@ -36,12 +37,17 @@ func TestRenderMe(t *testing.T) {
 		output string
 		err    error
 	}{
-		{name: "can return a list of sprints", output: `First name:           Bald
-Last name:            Rick
-Email:                baldrick@turnip.co
-Currency:             BLK
-Available balance:    10.00
-Balance:              8.50
+		{name: "can return a list of sprints", output: `
+
+   Bald Rick
+
+
+  Email:             baldrick@turnip.co
+  Currency:          BLK
+  Available balance: 10.00
+  Balance:           8.50
+
+
 `, err: nil},
 	}
 
@@ -73,8 +79,8 @@ Balance:              8.50
 			user.RenderMe(c, writer)
 			writer.Flush()
 
-			if b.String() != tc.output {
-				t.Fatalf("expected '%s'; got '%s'", tc.output, b.String())
+			if strings.ReplaceAll(b.String(), " ", "") != strings.ReplaceAll(tc.output, " ", "") {
+				t.Fatalf("expected \n'%s'\ngot\n'%s'", tc.output, b.String())
 			}
 		})
 	}
