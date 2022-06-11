@@ -6,11 +6,16 @@ import (
 )
 
 const (
-	StatusUnpublished    = "UNPUBLISHED"
-	StatusActive         = "ACTIVE"
-	StatusScheduled      = "SCHEDULED"
+	// StatusUnpublished is a valid study status
+	StatusUnpublished = "UNPUBLISHED"
+	// StatusActive is a valid study status
+	StatusActive = "ACTIVE"
+	// StatusScheduled is a valid study status
+	StatusScheduled = "SCHEDULED"
+	// StatusAwaitingReview is a valid study status
 	StatusAwaitingReview = "AWAITING REVIEW"
-	StatusCompleted      = "COMPLETED"
+	// StatusCompleted is a valid study status
+	StatusCompleted = "COMPLETED"
 )
 
 // Study represents a Prolific Study
@@ -63,8 +68,13 @@ type Study struct {
 	IsUnderpaying          interface{}   `json:"is_underpaying"`
 }
 
+// FilterValue will help the bubbletea views run
 func (s Study) FilterValue() string { return s.Name }
-func (s Study) Title() string       { return s.Name }
+
+// Title will set the main string for the bubbletea view.
+func (s Study) Title() string { return s.Name }
+
+// Description will set the secondary string for the bubbletea view.
 func (s Study) Description() string {
 
 	return fmt.Sprintf("%s - %d places available - %s", s.Status, s.TotalAvailablePlaces, s.Desc)
