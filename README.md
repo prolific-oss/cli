@@ -3,7 +3,7 @@
 ![GitHub Badge](https://github.com/benmatselby/prolificli/workflows/Go/badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/benmatselby/prolificli)](https://goreportcard.com/report/github.com/benmatselby/prolificli)
 
-CLI application for getting information out of [Prolific](https://www.prolific.co)
+CLI application for getting information out of [Prolific](https://www.prolific.co) about your research studies.
 
 ```text
 CLI application for retrieving data from Prolific
@@ -14,6 +14,7 @@ Usage:
 Available Commands:
   completion  Generate the autocompletion script for the specified shell
   help        Help about any command
+  studies     Provide details about your studies
   study       Study related commands
   user        User related commands
 
@@ -23,6 +24,10 @@ Flags:
 
 Use "prolificli [command] --help" for more information about a command.
 ```
+
+![List view of studies](docs/img/list-view.png)
+
+![Detail view of a study](docs/img/detail-view.png)
 
 ## Requirements
 

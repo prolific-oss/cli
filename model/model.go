@@ -71,10 +71,10 @@ type Study struct {
 // FilterValue will help the bubbletea views run
 func (s Study) FilterValue() string { return s.Name }
 
-// Title will set the main string for the bubbletea view.
+// Title will set the main string for the view.
 func (s Study) Title() string { return s.Name }
 
-// Description will set the secondary string for the bubbletea view.
+// Description will set the secondary string the view.
 func (s Study) Description() string {
-	return fmt.Sprintf("%s - %d places available - %s", s.Status, s.TotalAvailablePlaces, s.Desc)
+	return fmt.Sprintf("%s - %s - %d places available - %s", s.Status, s.StudyType, s.TotalAvailablePlaces, s.Desc)
 }
