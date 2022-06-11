@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"github.com/benmatselby/prolificli/client"
+	"github.com/benmatselby/prolificli/model"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -16,15 +16,15 @@ const (
 func RenderStatus(status string) lipgloss.Style {
 
 	var color = ""
-	if status == client.StatusActive {
+	if status == model.StatusActive {
 		color = Green
-	} else if status == client.StatusAwaitingReview {
+	} else if status == model.StatusAwaitingReview {
 		color = DarkBlue
-	} else if status == client.StatusCompleted {
+	} else if status == model.StatusCompleted {
 		color = Green
-	} else if status == client.StatusScheduled {
+	} else if status == model.StatusScheduled {
 		color = DarkBlue
-	} else if status == client.StatusUnpublished {
+	} else if status == model.StatusUnpublished {
 		color = DarkBlue
 	}
 
