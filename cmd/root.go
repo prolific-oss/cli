@@ -50,6 +50,7 @@ func NewRootCommand() *cobra.Command {
 	cmd.AddCommand(
 		user.NewUserCommand(&client),
 		study.NewStudyCommand(&client),
+		study.NewListCommand("studies", &client),
 	)
 
 	return cmd

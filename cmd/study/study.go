@@ -13,7 +13,7 @@ func NewStudyCommand(client client.API) *cobra.Command {
 	}
 
 	cmd.AddCommand(
-		NewListCommand(client),
+		NewListCommand("list", client),
 	)
 	return cmd
 }

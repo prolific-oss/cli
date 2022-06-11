@@ -14,9 +14,9 @@ import (
 
 // NewListCommand creates a new `study list` command to give you details about
 // your studies.
-func NewListCommand(client client.API) *cobra.Command {
+func NewListCommand(commandName string, client client.API) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "list",
+		Use:   commandName,
 		Short: "Provide details about your studies",
 		Run: func(cmd *cobra.Command, args []string) {
 
