@@ -3,6 +3,7 @@ package client
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -57,6 +58,11 @@ func (c *Client) Get(url string, response interface{}) (*http.Response, error) {
 
 	if httpResponse.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("request to %s responded with status %d", request.RequestURI, httpResponse.StatusCode)
+	}
+
+	if c.Debug {
+		body, _ := ioutil.ReadAll(httpResponse.Body)
+		fmt.Println(string(body))
 	}
 
 	if err := json.NewDecoder(httpResponse.Body).Decode(&response); err != nil {
