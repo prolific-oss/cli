@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/benmatselby/prolificli/client"
 	"github.com/benmatselby/prolificli/ui"
@@ -21,7 +22,7 @@ func NewMeCommand(client client.API) *cobra.Command {
 
 			err := RenderMe(client, os.Stdout)
 			if err != nil {
-				fmt.Print(err)
+				fmt.Printf("Error: %s", strings.ReplaceAll(err.Error(), "\n", ""))
 				os.Exit(1)
 			}
 		},
