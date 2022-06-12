@@ -14,6 +14,7 @@ func NewStudyCommand(client client.API) *cobra.Command {
 
 	cmd.AddCommand(
 		NewListCommand("list", client),
+		NewViewCommand(client),
 	)
 	return cmd
 }
