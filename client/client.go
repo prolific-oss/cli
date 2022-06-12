@@ -102,10 +102,6 @@ func (c *Client) GetStudies(status string) (*ListStudiesResponse, error) {
 
 	url := fmt.Sprintf("/api/v1/studies/?%s", statusFragment)
 
-	if c.Debug {
-		fmt.Printf("Executing URL: %s\n", url)
-	}
-
 	_, err := c.Get(url, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)

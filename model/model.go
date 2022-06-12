@@ -100,5 +100,21 @@ func (s Study) Description() string {
 
 // Submission represents a submission to a study from a participant.
 type Submission struct {
-	ID string `json:"id"`
+	ID            string    `json:"id"`
+	ParticipantID string    `json:"participant_id"`
+	StartedAt     time.Time `json:"started_at"`
+	CompletedAt   time.Time `json:"completed_at"`
+	IsComplete    bool      `json:"is_complete"`
+	TimeTaken     int       `json:"time_taken"`
+	Reward        int       `json:"reward"`
+	Status        string    `json:"status"`
+	Strata        struct {
+		DateOfBirth         string `json:"date of birth"`
+		EthnicitySimplified string `json:"ethnicity (simplified)"`
+		Sex                 string `json:"sex"`
+	} `json:"strata"`
+	StudyCode     string        `json:"study_code"`
+	StarAwarded   bool          `json:"star_awarded"`
+	BonusPayments []interface{} `json:"bonus_payments"`
+	IP            string        `json:"ip"`
 }

@@ -95,10 +95,13 @@ func (lv ListView) RenderStudy() string {
 
 	if len(submissions.Results) == 0 {
 		content += "No submissions have been submitted for this study yet."
-	}
+	} else {
 
-	for _, submission := range submissions.Results {
-		content += fmt.Sprintln(submission.ID)
+		content += "Participant Prolific ID\tStarted\t\t\tCompletion code\tStatus\n"
+		content += "-----------------------\t-------\t\t\t---------------\t------\n"
+		for _, submission := range submissions.Results {
+			content += fmt.Sprintf("%s\t%s\t%s\t%s\n", submission.ParticipantID, submission.StartedAt.Format(ui.AppDateTimeFormat), submission.StudyCode, submission.Status)
+		}
 	}
 
 	return content
