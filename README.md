@@ -62,18 +62,13 @@ $ docker run \
   benmatselby/prolificli:latest "$@"
 ```
 
-The `latest` tag mentioned above can be changed to a released version. For all releases, see [here](https://hub.docker.com/repository/docker/benmatselby/prolificli/tags). An example would then be:
+The `latest` tag mentioned above can be changed to a released version. For all releases, see [here](https://hub.docker.com/repository/docker/benmatselby/prolificli/tags).
 
-```shell
-benmatselby/prolificli:version-2.2.0
-```
-
-This would use the `verson-2.2.0` release in the docker command.
-
-| Tag      | What it means                                    |
-| -------- | ------------------------------------------------ |
-| `latest` | The latest released version                      |
-| `main`   | The latest git commit, not released as a tag yet |
+| Tag      | What it means                                                                           |
+| -------- | --------------------------------------------------------------------------------------- |
+| `latest` | The latest released version                                                             |
+| `main`   | The latest git commit, not released as a tag yet                                        |
+| `v*`     | [Docker releases](https://hub.docker.com/repository/docker/benmatselby/prolificli/tags) |
 
 You can also build the image locally:
 
