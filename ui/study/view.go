@@ -1,9 +1,11 @@
-package ui
+package study
 
 import (
 	"fmt"
 
+	"github.com/benmatselby/prolificli/client"
 	"github.com/benmatselby/prolificli/model"
+	"github.com/benmatselby/prolificli/ui"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -16,6 +18,7 @@ type ListView struct {
 	List    list.Model
 	Studies map[string]model.Study
 	Study   *model.Study
+	Client  client.API
 }
 
 // Init will initialise the view.
@@ -59,9 +62,10 @@ func (lv ListView) View() string {
 
 // RenderStudy will produce a detailed view of the selected study.
 func (lv ListView) RenderStudy() string {
-	content := fmt.Sprintln(RenderTitle(lv.Study.Name, lv.Study.Status))
+	content := fmt.Sprintln(ui.RenderTitle(lv.Study.Name, lv.Study.Status))
 	content += fmt.Sprintf("%s\n\n", lv.Study.Desc)
 	content += fmt.Sprintf("Status:                    %s\n", lv.Study.Status)
+	content += fmt.Sprintf("Type:                      %s\n", lv.Study.StudyType)
 	content += fmt.Sprintf("Total cost:                %.2f\n", float64(lv.Study.TotalCost)/100)
 	content += fmt.Sprintf("Reward:                    %.2f\n", float64(lv.Study.Reward)/100)
 	content += fmt.Sprintf("Hourly rate:               %.2f\n", float64(lv.Study.AverageRewardPerHour)/100)
@@ -70,12 +74,37 @@ func (lv ListView) RenderStudy() string {
 	content += fmt.Sprintf("Study URL:                 %s\n", lv.Study.ExternalStudyURL)
 	content += fmt.Sprintf("Places taken:              %d\n", lv.Study.PlacesTaken)
 	content += fmt.Sprintf("Available places:          %d\n", lv.Study.TotalAvailablePlaces)
+
+	content += "\n---\n\n"
+	content += fmt.Sprintln(ui.RenderHeading("Eligibility requirements"))
+	if len(lv.Study.EligibilityRequirements) == 0 {
+		content += fmt.Sprintln("No eligibility requirements are defined for this study.")
+	}
+
+	for _, er := range lv.Study.EligibilityRequirements {
+		content += fmt.Sprintf("- %s\n", er.Question.Title)
+	}
+
 	content += "\n---\n\n"
 
-	if len(lv.Study.EligibilityRequirements) > 0 {
-		content += fmt.Sprintln("Eligibility requirements:")
-		for _, er := range lv.Study.EligibilityRequirements {
-			content += fmt.Sprintf("  - %s\n", er.Question.Title)
+	content += fmt.Sprintln(ui.RenderHeading("Submissions"))
+	submissions, err := lv.Client.GetSubmissions(lv.Study.ID)
+	if err != nil {
+		content += "Unable to retrieve submission data."
+	}
+
+	if len(submissions.Results) == 0 {
+		content += "No submissions have been submitted for this study yet."
+	} else {
+
+		content += fmt.Sprintf("%s\n", lipgloss.NewStyle().
+			Underline(true).
+			Render("This shows the first 200 responses\n\n"))
+
+		content += "Participant Prolific ID\tStarted\t\t\tCompletion code\tStatus\n"
+		content += "-----------------------\t-------\t\t\t---------------\t------\n"
+		for _, submission := range submissions.Results {
+			content += fmt.Sprintf("%s\t%s\t%s\t%s\n", submission.ParticipantID, submission.StartedAt.Format(ui.AppDateTimeFormat), submission.StudyCode, submission.Status)
 		}
 	}
 

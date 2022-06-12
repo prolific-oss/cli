@@ -7,16 +7,35 @@ import (
 
 const (
 	// StatusUnpublished is a valid study status
-	StatusUnpublished = "UNPUBLISHED"
+	StatusUnpublished = "unpublished"
 	// StatusActive is a valid study status
-	StatusActive = "ACTIVE"
+	StatusActive = "active"
 	// StatusScheduled is a valid study status
-	StatusScheduled = "SCHEDULED"
+	StatusScheduled = "scheduled"
 	// StatusAwaitingReview is a valid study status
-	StatusAwaitingReview = "AWAITING REVIEW"
+	StatusAwaitingReview = "awaiting review"
 	// StatusCompleted is a valid study status
-	StatusCompleted = "COMPLETED"
+	StatusCompleted = "completed"
+	// StatusAll is a mock status that allows us to list all studies.
+	StatusAll = "all"
 )
+
+// StudyStatuses represents the allows statuses for the system
+var StudyStatuses = []string{
+	StatusUnpublished,
+	StatusActive,
+	StatusScheduled,
+	StatusAwaitingReview,
+	StatusCompleted,
+}
+
+// StudyListStatus represents what status we can filter on for the list
+var StudyListStatus = []string{
+	StatusUnpublished,
+	StatusActive,
+	StatusCompleted,
+	StatusAll,
+}
 
 // Study represents a Prolific Study
 type Study struct {
@@ -77,4 +96,25 @@ func (s Study) Title() string { return s.Name }
 // Description will set the secondary string the view.
 func (s Study) Description() string {
 	return fmt.Sprintf("%s - %s - %d places available - %s", s.Status, s.StudyType, s.TotalAvailablePlaces, s.Desc)
+}
+
+// Submission represents a submission to a study from a participant.
+type Submission struct {
+	ID            string    `json:"id"`
+	ParticipantID string    `json:"participant_id"`
+	StartedAt     time.Time `json:"started_at"`
+	CompletedAt   time.Time `json:"completed_at"`
+	IsComplete    bool      `json:"is_complete"`
+	TimeTaken     int       `json:"time_taken"`
+	Reward        int       `json:"reward"`
+	Status        string    `json:"status"`
+	Strata        struct {
+		DateOfBirth         string `json:"date of birth"`
+		EthnicitySimplified string `json:"ethnicity (simplified)"`
+		Sex                 string `json:"sex"`
+	} `json:"strata"`
+	StudyCode     string        `json:"study_code"`
+	StarAwarded   bool          `json:"star_awarded"`
+	BonusPayments []interface{} `json:"bonus_payments"`
+	IP            string        `json:"ip"`
 }
