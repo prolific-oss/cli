@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/benmatselby/prolificli/client"
 	"github.com/benmatselby/prolificli/model"
@@ -32,7 +33,7 @@ func NewListCommand(commandName string, client client.API) *cobra.Command {
 
 			err := renderList(client, opts, os.Stdout)
 			if err != nil {
-				fmt.Println(err)
+				fmt.Printf("Error: %s", strings.ReplaceAll(err.Error(), "\n", ""))
 				os.Exit(1)
 			}
 		},
