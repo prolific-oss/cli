@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"strings"
+
 	"github.com/benmatselby/prolificli/model"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -18,15 +20,13 @@ const (
 func RenderTitle(title, status string) lipgloss.Style {
 
 	var color = ""
-	if status == model.StatusActive {
+	switch strings.ToLower(status) {
+	case model.StatusActive:
+	case model.StatusCompleted:
 		color = Green
-	} else if status == model.StatusAwaitingReview {
-		color = DarkBlue
-	} else if status == model.StatusCompleted {
-		color = Green
-	} else if status == model.StatusScheduled {
-		color = DarkBlue
-	} else if status == model.StatusUnpublished {
+	case model.StatusAwaitingReview:
+	case model.StatusScheduled:
+	case model.StatusUnpublished:
 		color = DarkBlue
 	}
 
@@ -42,6 +42,7 @@ func RenderTitle(title, status string) lipgloss.Style {
 	return style
 }
 
+// RenderHeading will render a heading in the output.
 func RenderHeading(heading string) string {
 	var style = lipgloss.NewStyle().
 		Bold(true).

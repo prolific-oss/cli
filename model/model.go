@@ -7,16 +7,35 @@ import (
 
 const (
 	// StatusUnpublished is a valid study status
-	StatusUnpublished = "UNPUBLISHED"
+	StatusUnpublished = "unpublished"
 	// StatusActive is a valid study status
-	StatusActive = "ACTIVE"
+	StatusActive = "active"
 	// StatusScheduled is a valid study status
-	StatusScheduled = "SCHEDULED"
+	StatusScheduled = "scheduled"
 	// StatusAwaitingReview is a valid study status
-	StatusAwaitingReview = "AWAITING REVIEW"
+	StatusAwaitingReview = "awaiting review"
 	// StatusCompleted is a valid study status
-	StatusCompleted = "COMPLETED"
+	StatusCompleted = "completed"
+	// StatusAll is a mock status that allows us to list all studies.
+	StatusAll = "all"
 )
+
+// StudyStatuses represents the allows statuses for the system
+var StudyStatuses = []string{
+	StatusUnpublished,
+	StatusActive,
+	StatusScheduled,
+	StatusAwaitingReview,
+	StatusCompleted,
+}
+
+// StudyListStatus represents what status we can filter on for the list
+var StudyListStatus = []string{
+	StatusUnpublished,
+	StatusActive,
+	StatusCompleted,
+	StatusAll,
+}
 
 // Study represents a Prolific Study
 type Study struct {

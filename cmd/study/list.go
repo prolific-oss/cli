@@ -13,27 +13,39 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// ListOptions is the options for the listing studies command.
+type ListOptions struct {
+	Args   []string
+	Status string
+}
+
 // NewListCommand creates a new `study list` command to give you details about
 // your studies.
 func NewListCommand(commandName string, client client.API) *cobra.Command {
+	var opts ListOptions
+
 	cmd := &cobra.Command{
 		Use:   commandName,
 		Short: "Provide details about your studies",
 		Run: func(cmd *cobra.Command, args []string) {
+			opts.Args = args
 
-			err := renderList(client, os.Stdout)
+			err := renderList(client, opts, os.Stdout)
 			if err != nil {
-				fmt.Print(err)
+				fmt.Println(err)
 				os.Exit(1)
 			}
 		},
 	}
 
+	flags := cmd.Flags()
+	flags.StringVarP(&opts.Status, "status", "s", model.StatusAll, "The status you want to filter on.")
+
 	return cmd
 }
 
-func renderList(client client.API, w io.Writer) error {
-	studies, err := client.GetStudies()
+func renderList(client client.API, opts ListOptions, w io.Writer) error {
+	studies, err := client.GetStudies(opts.Status)
 	if err != nil {
 		return err
 	}
@@ -46,7 +58,7 @@ func renderList(client client.API, w io.Writer) error {
 		studyMap[study.ID] = study
 	}
 
-	lv := study.StudyListView{
+	lv := study.ListView{
 		List:    list.New(items, list.NewDefaultDelegate(), 0, 0),
 		Studies: studyMap,
 		Client:  client,

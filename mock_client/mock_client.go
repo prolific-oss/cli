@@ -50,18 +50,18 @@ func (mr *MockAPIMockRecorder) GetMe() *gomock.Call {
 }
 
 // GetStudies mocks base method.
-func (m *MockAPI) GetStudies() (*client.ListStudiesResponse, error) {
+func (m *MockAPI) GetStudies(status string) (*client.ListStudiesResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetStudies")
+	ret := m.ctrl.Call(m, "GetStudies", status)
 	ret0, _ := ret[0].(*client.ListStudiesResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetStudies indicates an expected call of GetStudies.
-func (mr *MockAPIMockRecorder) GetStudies() *gomock.Call {
+func (mr *MockAPIMockRecorder) GetStudies(status interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStudies", reflect.TypeOf((*MockAPI)(nil).GetStudies))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStudies", reflect.TypeOf((*MockAPI)(nil).GetStudies), status)
 }
 
 // GetSubmissions mocks base method.

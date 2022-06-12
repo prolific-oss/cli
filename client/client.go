@@ -3,17 +3,18 @@ package client
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
+	"github.com/benmatselby/prolificli/model"
 	"github.com/spf13/viper"
+	"golang.org/x/exp/slices"
 )
 
 // API represents what is allowed to be called on the Prolific client.
 type API interface {
 	GetMe() (*Me, error)
-	GetStudies() (*ListStudiesResponse, error)
+	GetStudies(status string) (*ListStudiesResponse, error)
 	GetSubmissions(id string) (*ListSubmissionsResponse, error)
 }
 
@@ -58,11 +59,6 @@ func (c *Client) Get(url string, response interface{}) (*http.Response, error) {
 		return nil, fmt.Errorf("request to %s responded with status %d", request.RequestURI, httpResponse.StatusCode)
 	}
 
-	if c.Debug {
-		body, _ := ioutil.ReadAll(httpResponse.Body)
-		fmt.Println(string(body))
-	}
-
 	if err := json.NewDecoder(httpResponse.Body).Decode(&response); err != nil {
 		return nil, fmt.Errorf("decoding JSON response from %s failed: %v", request.URL, err)
 	}
@@ -84,10 +80,26 @@ func (c *Client) GetMe() (*Me, error) {
 }
 
 // GetStudies will return you a list of Study objects.
-func (c *Client) GetStudies() (*ListStudiesResponse, error) {
+func (c *Client) GetStudies(status string) (*ListStudiesResponse, error) {
 	var response ListStudiesResponse
 
-	url := "/api/v1/studies"
+	if !slices.Contains(model.StudyListStatus, status) {
+		return nil, fmt.Errorf("%s is not a valid status: %s", status, strings.Join(model.StudyListStatus, ", "))
+	}
+
+	statusFragment := ""
+	if status == model.StatusUnpublished {
+		statusFragment = "published=0"
+	} else {
+		statusFragment = fmt.Sprintf("%s=1", status)
+	}
+
+	url := fmt.Sprintf("/api/v1/studies/?%s", statusFragment)
+
+	if c.Debug {
+		fmt.Printf("Executing URL: %s\n", url)
+	}
+
 	_, err := c.Get(url, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)

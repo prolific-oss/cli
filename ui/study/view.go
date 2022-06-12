@@ -13,8 +13,8 @@ import (
 
 var docStyle = lipgloss.NewStyle().Margin(1, 2)
 
-// StudyListView is responsible for presenting a list view to the user.
-type StudyListView struct {
+// ListView is responsible for presenting a list view to the user.
+type ListView struct {
 	List    list.Model
 	Studies map[string]model.Study
 	Study   *model.Study
@@ -22,12 +22,12 @@ type StudyListView struct {
 }
 
 // Init will initialise the view.
-func (lv StudyListView) Init() tea.Cmd {
+func (lv ListView) Init() tea.Cmd {
 	return nil
 }
 
 // Update will update the view.
-func (lv StudyListView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (lv ListView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		if msg.String() == "ctrl+c" {
@@ -53,7 +53,7 @@ func (lv StudyListView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 // View will render the view.
-func (lv StudyListView) View() string {
+func (lv ListView) View() string {
 	if lv.Study != nil {
 		return docStyle.Render(lv.RenderStudy())
 	}
@@ -61,7 +61,7 @@ func (lv StudyListView) View() string {
 }
 
 // RenderStudy will produce a detailed view of the selected study.
-func (lv StudyListView) RenderStudy() string {
+func (lv ListView) RenderStudy() string {
 	content := fmt.Sprintln(ui.RenderTitle(lv.Study.Name, lv.Study.Status))
 	content += fmt.Sprintf("%s\n\n", lv.Study.Desc)
 	content += fmt.Sprintf("Status:                    %s\n", lv.Study.Status)
@@ -82,7 +82,7 @@ func (lv StudyListView) RenderStudy() string {
 	}
 
 	for _, er := range lv.Study.EligibilityRequirements {
-		content += fmt.Sprintf("  - %s\n", er.Question.Title)
+		content += fmt.Sprintf("- %s\n", er.Question.Title)
 	}
 
 	content += "\n---\n\n"
