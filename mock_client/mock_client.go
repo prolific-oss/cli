@@ -8,6 +8,7 @@ import (
 	reflect "reflect"
 
 	client "github.com/benmatselby/prolificli/client"
+	model "github.com/benmatselby/prolificli/model"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -64,17 +65,32 @@ func (mr *MockAPIMockRecorder) GetStudies(status interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStudies", reflect.TypeOf((*MockAPI)(nil).GetStudies), status)
 }
 
-// GetSubmissions mocks base method.
-func (m *MockAPI) GetSubmissions(id string) (*client.ListSubmissionsResponse, error) {
+// GetStudy mocks base method.
+func (m *MockAPI) GetStudy(ID string) (*model.Study, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSubmissions", id)
+	ret := m.ctrl.Call(m, "GetStudy", ID)
+	ret0, _ := ret[0].(*model.Study)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetStudy indicates an expected call of GetStudy.
+func (mr *MockAPIMockRecorder) GetStudy(ID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStudy", reflect.TypeOf((*MockAPI)(nil).GetStudy), ID)
+}
+
+// GetSubmissions mocks base method.
+func (m *MockAPI) GetSubmissions(ID string) (*client.ListSubmissionsResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSubmissions", ID)
 	ret0, _ := ret[0].(*client.ListSubmissionsResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSubmissions indicates an expected call of GetSubmissions.
-func (mr *MockAPIMockRecorder) GetSubmissions(id interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) GetSubmissions(ID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubmissions", reflect.TypeOf((*MockAPI)(nil).GetSubmissions), id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubmissions", reflect.TypeOf((*MockAPI)(nil).GetSubmissions), ID)
 }

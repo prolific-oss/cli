@@ -51,6 +51,7 @@ func RenderHeading(heading string) string {
 		Bold(true).
 		Underline(true).
 		Background(lipgloss.Color(LightBlue)).
+		Foreground(lipgloss.Color(DarkBlue)).
 		MarginBottom(1).
 		Align(lipgloss.Center)
 

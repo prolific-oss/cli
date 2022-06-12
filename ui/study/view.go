@@ -55,40 +55,48 @@ func (lv ListView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // View will render the view.
 func (lv ListView) View() string {
 	if lv.Study != nil {
-		return docStyle.Render(lv.RenderStudy())
+		return docStyle.Render(RenderStudy(lv.Client, *lv.Study))
 	}
 	return docStyle.Render(lv.List.View())
 }
 
 // RenderStudy will produce a detailed view of the selected study.
-func (lv ListView) RenderStudy() string {
-	content := fmt.Sprintln(ui.RenderTitle(lv.Study.Name, lv.Study.Status))
-	content += fmt.Sprintf("%s\n\n", lv.Study.Desc)
-	content += fmt.Sprintf("Status:                    %s\n", lv.Study.Status)
-	content += fmt.Sprintf("Type:                      %s\n", lv.Study.StudyType)
-	content += fmt.Sprintf("Total cost:                %.2f\n", float64(lv.Study.TotalCost)/100)
-	content += fmt.Sprintf("Reward:                    %.2f\n", float64(lv.Study.Reward)/100)
-	content += fmt.Sprintf("Hourly rate:               %.2f\n", float64(lv.Study.AverageRewardPerHour)/100)
-	content += fmt.Sprintf("Estimated completion time: %d\n", lv.Study.EstimatedCompletionTime)
-	content += fmt.Sprintf("Maximum allowed time:      %d\n", lv.Study.MaximumAllowedTime)
-	content += fmt.Sprintf("Study URL:                 %s\n", lv.Study.ExternalStudyURL)
-	content += fmt.Sprintf("Places taken:              %d\n", lv.Study.PlacesTaken)
-	content += fmt.Sprintf("Available places:          %d\n", lv.Study.TotalAvailablePlaces)
-
+func RenderStudy(client client.API, study model.Study) string {
+	content := fmt.Sprintln(ui.RenderTitle(study.Name, study.Status))
+	content += fmt.Sprintf("%s\n\n", study.Desc)
+	content += fmt.Sprintf("ID:                        %s\n", study.ID)
+	content += fmt.Sprintf("Status:                    %s\n", study.Status)
+	content += fmt.Sprintf("Type:                      %s\n", study.StudyType)
+	content += fmt.Sprintf("Total cost:                %.2f\n", float64(study.TotalCost)/100)
+	content += fmt.Sprintf("Reward:                    %.2f\n", float64(study.Reward)/100)
+	content += fmt.Sprintf("Hourly rate:               %.2f\n", float64(study.AverageRewardPerHour)/100)
+	content += fmt.Sprintf("Estimated completion time: %d\n", study.EstimatedCompletionTime)
+	content += fmt.Sprintf("Maximum allowed time:      %d\n", study.MaximumAllowedTime)
+	content += fmt.Sprintf("Study URL:                 %s\n", study.ExternalStudyURL)
+	content += fmt.Sprintf("Places taken:              %d\n", study.PlacesTaken)
+	content += fmt.Sprintf("Available places:          %d\n", study.TotalAvailablePlaces)
 	content += "\n---\n\n"
+
 	content += fmt.Sprintln(ui.RenderHeading("Eligibility requirements"))
-	if len(lv.Study.EligibilityRequirements) == 0 {
+
+	erCount := 0
+	erContent := ""
+	for _, er := range study.EligibilityRequirements {
+		if er.Question.Title != "" {
+			erContent += fmt.Sprintf("- %s\n", er.Question.Title)
+			erCount++
+		}
+	}
+
+	if erCount == 0 {
 		content += fmt.Sprintln("No eligibility requirements are defined for this study.")
+	} else {
+		content += erContent
 	}
-
-	for _, er := range lv.Study.EligibilityRequirements {
-		content += fmt.Sprintf("- %s\n", er.Question.Title)
-	}
-
 	content += "\n---\n\n"
 
 	content += fmt.Sprintln(ui.RenderHeading("Submissions"))
-	submissions, err := lv.Client.GetSubmissions(lv.Study.ID)
+	submissions, err := client.GetSubmissions(study.ID)
 	if err != nil {
 		content += "Unable to retrieve submission data."
 	}
@@ -106,6 +114,8 @@ func (lv ListView) RenderStudy() string {
 		for _, submission := range submissions.Results {
 			content += fmt.Sprintf("%s\t%s\t%s\t%s\n", submission.ParticipantID, submission.StartedAt.Format(ui.AppDateTimeFormat), submission.StudyCode, submission.Status)
 		}
+
+		content += fmt.Sprintf("\nFurther data can be found in the application: https://app.prolific.co/researcher/workspaces/studies/%s/submissions", study.ID)
 	}
 
 	return content
