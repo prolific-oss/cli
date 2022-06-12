@@ -114,7 +114,7 @@ func (c *Client) GetStudies(status string) (*ListStudiesResponse, error) {
 func (c *Client) GetSubmissions(id string) (*ListSubmissionsResponse, error) {
 	var response ListSubmissionsResponse
 
-	url := fmt.Sprintf("/api/v1/studies/%s/submissions/", id)
+	url := fmt.Sprintf("/api/v1/studies/%s/submissions/?offset=0&limit=200", id)
 	_, err := c.Get(url, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)

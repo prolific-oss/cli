@@ -97,6 +97,10 @@ func (lv ListView) RenderStudy() string {
 		content += "No submissions have been submitted for this study yet."
 	} else {
 
+		content += fmt.Sprintf("%s\n", lipgloss.NewStyle().
+			Underline(true).
+			Render("This shows the first 200 responses\n\n"))
+
 		content += "Participant Prolific ID\tStarted\t\t\tCompletion code\tStatus\n"
 		content += "-----------------------\t-------\t\t\t---------------\t------\n"
 		for _, submission := range submissions.Results {
