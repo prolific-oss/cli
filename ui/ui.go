@@ -8,6 +8,8 @@ import (
 const (
 	// DarkBlue is a colour used in the UI.
 	DarkBlue = "#083759"
+	// LightBlue is a colour used in the UI.
+	LightBlue = "#e3f3ff"
 	// Green is a colour used in the UI.
 	Green = "#008033"
 )
@@ -38,4 +40,15 @@ func RenderTitle(title, status string) lipgloss.Style {
 		SetString(title)
 
 	return style
+}
+
+func RenderHeading(heading string) string {
+	var style = lipgloss.NewStyle().
+		Bold(true).
+		Underline(true).
+		Background(lipgloss.Color(LightBlue)).
+		MarginBottom(1).
+		Align(lipgloss.Center)
+
+	return style.Render(heading)
 }

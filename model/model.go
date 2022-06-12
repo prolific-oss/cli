@@ -78,3 +78,8 @@ func (s Study) Title() string { return s.Name }
 func (s Study) Description() string {
 	return fmt.Sprintf("%s - %s - %d places available - %s", s.Status, s.StudyType, s.TotalAvailablePlaces, s.Desc)
 }
+
+// Submission represents a submission to a study from a participant.
+type Submission struct {
+	ID string `json:"id"`
+}

@@ -7,7 +7,7 @@ import (
 
 	"github.com/benmatselby/prolificli/client"
 	"github.com/benmatselby/prolificli/model"
-	"github.com/benmatselby/prolificli/ui"
+	"github.com/benmatselby/prolificli/ui/study"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
@@ -46,9 +46,10 @@ func renderList(client client.API, w io.Writer) error {
 		studyMap[study.ID] = study
 	}
 
-	lv := ui.ListView{
+	lv := study.StudyListView{
 		List:    list.New(items, list.NewDefaultDelegate(), 0, 0),
 		Studies: studyMap,
+		Client:  client,
 	}
 	lv.List.Title = "My studies"
 

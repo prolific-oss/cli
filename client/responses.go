@@ -107,3 +107,29 @@ type ListStudiesResponse struct {
 		Count int `json:"count"`
 	} `json:"meta"`
 }
+
+// ListSubmissionsResponse is the response for the submissions request.
+type ListSubmissionsResponse struct {
+	Results []model.Submission `json:"results"`
+	Links   struct {
+		Self struct {
+			Href  string `json:"href"`
+			Title string `json:"title"`
+		} `json:"self"`
+		Next struct {
+			Href  interface{} `json:"href"`
+			Title string      `json:"title"`
+		} `json:"next"`
+		Previous struct {
+			Href  interface{} `json:"href"`
+			Title string      `json:"title"`
+		} `json:"previous"`
+		Last struct {
+			Href  string `json:"href"`
+			Title string `json:"title"`
+		} `json:"last"`
+	} `json:"_links"`
+	Meta struct {
+		Count int `json:"count"`
+	} `json:"meta"`
+}
