@@ -43,9 +43,8 @@ func TestRenderMe(t *testing.T) {
 
 
   Email:             baldrick@turnip.co
-  Currency:          BLK
-  Available balance: 10.00
-  Balance:           8.50
+  Available balance: £10.00
+  Balance:           £8.50
 
 
 `, err: nil},
@@ -62,7 +61,7 @@ func TestRenderMe(t *testing.T) {
 				FirstName:        "Bald",
 				LastName:         "Rick",
 				Email:            "baldrick@turnip.co",
-				CurrencyCode:     "BLK",
+				CurrencyCode:     "GBP",
 				AvailableBalance: 1000,
 				Balance:          850,
 			}

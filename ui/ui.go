@@ -1,10 +1,14 @@
 package ui
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/benmatselby/prolificli/model"
 	"github.com/charmbracelet/lipgloss"
+	"golang.org/x/text/currency"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 )
 
 const (
@@ -18,6 +22,9 @@ const (
 
 // AppDateTimeFormat The format for date/times in the application.
 const AppDateTimeFormat string = "02-01-2006 15:04"
+
+// DefaultCurrency is the default currency.
+const DefaultCurrency string = "GBP"
 
 // RenderTitle will render a nice coloured UI for a title based on status
 func RenderTitle(title, status string) lipgloss.Style {
@@ -56,4 +63,15 @@ func RenderHeading(heading string) string {
 		Align(lipgloss.Center)
 
 	return style.Render(heading)
+}
+
+// RenderMoney will return a symbolised string of money.
+func RenderMoney(amount float64, currencyCode string) string {
+	if currencyCode == "" {
+		currencyCode = DefaultCurrency
+	}
+
+	p := message.NewPrinter(language.English)
+	cur := currency.MustParseISO(currencyCode)
+	return fmt.Sprintf("%s%.2f", p.Sprint(currency.Symbol(cur)), amount)
 }
