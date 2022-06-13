@@ -42,11 +42,11 @@ If you are wanting to build and develop this, you will need the following items 
 You will need the following environment variables defining:
 
 ```shell
-export PROLIFIC_URL=""
+export PROLIFIC_URL="https://api.prolific.co"
 export PROLIFIC_TOKEN=""
 ```
 
-[Creating a Prolific token](https://www.prolific.co/developers).
+You can create a Researcher token in your account. Log in, and go to settings.
 
 ## Installation via Docker
 
