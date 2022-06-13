@@ -14,6 +14,7 @@ Usage:
 Available Commands:
   completion  Generate the autocompletion script for the specified shell
   help        Help about any command
+  requirement Requirement related commands
   studies     Provide details about your studies
   study       Study related commands
   user        User related commands

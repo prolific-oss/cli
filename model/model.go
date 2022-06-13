@@ -118,3 +118,32 @@ type Submission struct {
 	BonusPayments []interface{} `json:"bonus_payments"`
 	IP            string        `json:"ip"`
 }
+
+// Requirement represents an eligibility requirement in the system.
+type Requirement struct {
+	ID   string `json:"id"`
+	Type string `json:"type"`
+	// Attributes []struct {
+	// 	Label string `json:"label"`
+	// 	Name  string `json:"name"`
+	// 	Value string `json:"value"`
+	// 	Index int    `json:"index"`
+	// } `json:"attributes"`
+	Query struct {
+		ID                  string `json:"id"`
+		Question            string `json:"question"`
+		Description         string `json:"description"`
+		Title               string `json:"title"`
+		HelpText            string `json:"help_text"`
+		ParticipantHelpText string `json:"participant_help_text"`
+		ResearcherHelpText  string `json:"researcher_help_text"`
+		IsNew               bool   `json:"is_new"`
+	} `json:"query,omitempty"`
+	Cls             string      `json:"_cls"`
+	Category        string      `json:"category"`
+	Subcategory     interface{} `json:"subcategory"`
+	Order           int         `json:"order"`
+	Recommended     bool        `json:"recommended"`
+	DetailsDisplay  string      `json:"details_display"`
+	RequirementType string      `json:"requirement_type"`
+}
