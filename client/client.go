@@ -18,6 +18,7 @@ type API interface {
 	GetStudies(status string) (*ListStudiesResponse, error)
 	GetStudy(ID string) (*model.Study, error)
 	GetSubmissions(ID string) (*ListSubmissionsResponse, error)
+	GetEligibilityRequirements() (*ListRequirementsResponse, error)
 }
 
 // Client is responsible for interacting with the Prolicif API.
@@ -129,6 +130,19 @@ func (c *Client) GetSubmissions(ID string) (*ListSubmissionsResponse, error) {
 	var response ListSubmissionsResponse
 
 	url := fmt.Sprintf("/api/v1/studies/%s/submissions/?offset=0&limit=200", ID)
+	_, err := c.Get(url, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// GetEligibilityRequirements will return requirement data.
+func (c *Client) GetEligibilityRequirements() (*ListRequirementsResponse, error) {
+	var response ListRequirementsResponse
+
+	url := "/api/v1/eligibility-requirements/"
 	_, err := c.Get(url, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)

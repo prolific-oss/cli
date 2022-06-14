@@ -133,3 +133,29 @@ type ListSubmissionsResponse struct {
 		Count int `json:"count"`
 	} `json:"meta"`
 }
+
+// ListRequirementsResponse is the response for the requirements request.
+type ListRequirementsResponse struct {
+	Results []model.Requirement `json:"results"`
+	Links   struct {
+		Self struct {
+			Href  string `json:"href"`
+			Title string `json:"title"`
+		} `json:"self"`
+		Next struct {
+			Href  interface{} `json:"href"`
+			Title string      `json:"title"`
+		} `json:"next"`
+		Previous struct {
+			Href  interface{} `json:"href"`
+			Title string      `json:"title"`
+		} `json:"previous"`
+		Last struct {
+			Href  string `json:"href"`
+			Title string `json:"title"`
+		} `json:"last"`
+	} `json:"_links"`
+	Meta struct {
+		Count int `json:"count"`
+	} `json:"meta"`
+}
