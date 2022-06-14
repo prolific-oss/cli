@@ -7,6 +7,10 @@ import (
 	"strings"
 
 	"github.com/benmatselby/prolificli/client"
+	"github.com/benmatselby/prolificli/model"
+	"github.com/benmatselby/prolificli/ui/requirement"
+	"github.com/charmbracelet/bubbles/list"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 )
 
@@ -36,13 +40,23 @@ func renderList(client client.API, w io.Writer) error {
 		return err
 	}
 
-	for _, req := range reqs.Results {
-		title := req.Query.Question
-		if title == "" {
-			title = req.Query.Title
-		}
+	var items []list.Item
+	var reqMap = make(map[string]model.Requirement)
 
-		fmt.Fprintf(w, "- %s\n", title)
+	for _, req := range reqs.Results {
+		items = append(items, req)
+		reqMap[req.ID] = req
+	}
+
+	lv := requirement.ListView{
+		List:         list.New(items, list.NewDefaultDelegate(), 0, 0),
+		Requirements: reqMap,
+		Client:       client,
+	}
+	lv.List.Title = "Eligibility requirements"
+
+	if err := tea.NewProgram(lv).Start(); err != nil {
+		return fmt.Errorf("cannot render requirements: %s", err)
 	}
 
 	return nil
