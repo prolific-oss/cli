@@ -147,3 +147,31 @@ type Requirement struct {
 	DetailsDisplay  string      `json:"details_display"`
 	RequirementType string      `json:"requirement_type"`
 }
+
+// FilterValue will help the bubbletea views run
+func (r Requirement) FilterValue() string {
+	title := r.Query.Question
+	if title == "" {
+		title = r.Query.Title
+	}
+	return title
+}
+
+// Title will set the main string for the view.
+func (r Requirement) Title() string {
+	title := r.Query.Question
+	if title == "" {
+		title = r.Query.Title
+	}
+	return title
+}
+
+// Description will set the secondary string the view.
+func (r Requirement) Description() string {
+	desc := fmt.Sprintf("Category: %s", r.Category)
+
+	if r.Query.Description != "" {
+		desc += fmt.Sprintf(". %s", r.Query.Description)
+	}
+	return desc
+}
