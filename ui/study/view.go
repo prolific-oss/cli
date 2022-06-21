@@ -118,5 +118,9 @@ func RenderStudy(client client.API, study model.Study) string {
 		content += fmt.Sprintf("\nFurther data can be found in the application: https://app.prolific.co/researcher/workspaces/studies/%s/submissions", study.ID)
 	}
 
+	content += "\n---\n\n"
+
+	content += fmt.Sprintf("View study in the application: https://app.prolific.co/researcher/studies/%s", study.ID)
+
 	return content
 }

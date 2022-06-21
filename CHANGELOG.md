@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.0.2
+
+- Ability to create a Study via a YAML/JSON configuration file.
+
 ## 0.0.1
 
 Initial release of the `prolificli` application.
