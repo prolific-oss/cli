@@ -1,0 +1,31 @@
+name: My first standard sample
+internal_name: Standard sample
+description: This is my first standard sample study on the Prolific system.
+external_study_url: https://eggs-experriment.com?participant={{%PROLIFIC_PID%}}
+# Enum: "question", "url_parameters" (Recommended), "not_required"
+prolific_id_option: question
+completion_code: COMPLE01
+# Enum: "url", "code"
+completion_option: code
+total_available_places: 10
+# In minutes
+estimated_completion_time: 10
+
+###
+# Optional fields
+###
+# In minutes
+maximum_allowed_time: 10
+# In cents
+reward: 400
+# Enum: "desktop", "tablet", "mobile"
+device_compatibility:
+  - desktop
+  - tablet
+  - mobile
+# Enum: "audio", "camera", "download", "microphone"
+peripheral_requirements:
+  - audio
+  - camera
+  - download
+  - microphone

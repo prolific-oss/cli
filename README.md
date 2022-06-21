@@ -38,6 +38,14 @@ If you are wanting to build and develop this, you will need the following items 
 
 ## Configuration
 
+You can create studies via a configuration file. See some examples in `/docs/examples`. It's one study per file.
+
+You can then create a study by calling:
+
+```shell
+prolificli study create -t docs/examples/standard-sample.yaml
+```
+
 ### Environment variables
 
 You will need the following environment variables defining:
