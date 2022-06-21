@@ -24,7 +24,7 @@ type API interface {
 	GetSubmissions(ID string) (*ListSubmissionsResponse, error)
 }
 
-// Client is responsible for interacting with the Prolicif API.
+// Client is responsible for interacting with the Prolific API.
 type Client struct {
 	Client  *http.Client
 	BaseURL string
@@ -88,17 +88,12 @@ func (c *Client) Execute(method, url string, body interface{}, response interfac
 	return httpResponse, nil
 }
 
-// Get is the main router for GET requests to the Prolific API.
-func (c *Client) Get(url string, response interface{}) (*http.Response, error) {
-	return c.Execute("GET", url, nil, response)
-}
-
 // CreateStudy is responsible for hitting the Prolific API to create a study.
 func (c *Client) CreateStudy(study model.CreateStudy) (*model.Study, error) {
 	var response model.Study
 
 	url := "/api/v1/studies/"
-	_, err := c.Execute("POST", url, study, &response)
+	_, err := c.Execute(http.MethodPost, url, study, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
@@ -111,7 +106,7 @@ func (c *Client) GetMe() (*Me, error) {
 	var response Me
 
 	url := "/api/v1/users/me"
-	_, err := c.Get(url, &response)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
@@ -136,7 +131,7 @@ func (c *Client) GetStudies(status string) (*ListStudiesResponse, error) {
 
 	url := fmt.Sprintf("/api/v1/studies/?%s", statusFragment)
 
-	_, err := c.Get(url, &response)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
@@ -149,7 +144,7 @@ func (c *Client) GetStudy(ID string) (*model.Study, error) {
 	var response model.Study
 
 	url := fmt.Sprintf("/api/v1/studies/%s", ID)
-	_, err := c.Get(url, &response)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
@@ -162,7 +157,7 @@ func (c *Client) GetSubmissions(ID string) (*ListSubmissionsResponse, error) {
 	var response ListSubmissionsResponse
 
 	url := fmt.Sprintf("/api/v1/studies/%s/submissions/?offset=0&limit=200", ID)
-	_, err := c.Get(url, &response)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
@@ -175,7 +170,7 @@ func (c *Client) GetEligibilityRequirements() (*ListRequirementsResponse, error)
 	var response ListRequirementsResponse
 
 	url := "/api/v1/eligibility-requirements/"
-	_, err := c.Get(url, &response)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
