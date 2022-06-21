@@ -67,21 +67,20 @@ func (c *Client) Execute(method, url string, body interface{}, response interfac
 	request.Header.Set("User-Agent", "benmatselby/prolificli")
 	request.Header.Set("Authorization", fmt.Sprintf("Token %s", c.Token))
 
-	if c.Debug {
-		fmt.Println(request)
-	}
-
 	httpResponse, err := c.Client.Do(request)
 	if err != nil {
 		return nil, err
 	}
 	defer httpResponse.Body.Close()
+
+	responseBody, _ := ioutil.ReadAll(httpResponse.Body)
+	httpResponse.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+
 	if c.Debug {
-		body, _ := ioutil.ReadAll(httpResponse.Body)
-		fmt.Println(string(body))
+		fmt.Println(string(responseBody))
 	}
 
-	if err := json.NewDecoder(httpResponse.Body).Decode(&response); err != nil {
+	if err := json.NewDecoder(ioutil.NopCloser(bytes.NewBuffer(responseBody))).Decode(&response); err != nil {
 		return nil, fmt.Errorf("decoding JSON response from %s failed: %v", request.URL, err)
 	}
 
@@ -93,9 +92,14 @@ func (c *Client) CreateStudy(study model.CreateStudy) (*model.Study, error) {
 	var response model.Study
 
 	url := "/api/v1/studies/"
-	_, err := c.Execute(http.MethodPost, url, study, &response)
+	httpResponse, err := c.Execute(http.MethodPost, url, study, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusCreated {
+		body, _ := ioutil.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unable to create study: %v", string(body))
 	}
 
 	return &response, nil
