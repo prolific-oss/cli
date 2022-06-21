@@ -8,6 +8,7 @@ import (
 
 	"github.com/benmatselby/prolificli/client"
 	"github.com/benmatselby/prolificli/model"
+	studyui "github.com/benmatselby/prolificli/ui/study"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -36,7 +37,7 @@ func NewCreateCommand(client client.API) *cobra.Command {
 
 			err := createStudy(client, opts, os.Stdout)
 			if err != nil {
-				fmt.Printf("Error: %s", strings.ReplaceAll(err.Error(), "\n", ""))
+				fmt.Printf("Error: %s\n", strings.ReplaceAll(err.Error(), "\n", ""))
 				os.Exit(1)
 			}
 		},
@@ -74,7 +75,7 @@ func createStudy(client client.API, opts CreateOptions, w io.Writer) error {
 		return err
 	}
 
-	fmt.Fprintf(w, "Study created: %s\n", study.Name)
+	fmt.Fprintln(w, studyui.RenderStudy(client, *study))
 
 	return nil
 }
