@@ -1,8 +1,10 @@
 package client
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -14,11 +16,12 @@ import (
 
 // API represents what is allowed to be called on the Prolific client.
 type API interface {
+	CreateStudy(model.CreateStudy) (*model.Study, error)
+	GetEligibilityRequirements() (*ListRequirementsResponse, error)
 	GetMe() (*Me, error)
 	GetStudies(status string) (*ListStudiesResponse, error)
 	GetStudy(ID string) (*model.Study, error)
 	GetSubmissions(ID string) (*ListSubmissionsResponse, error)
-	GetEligibilityRequirements() (*ListRequirementsResponse, error)
 }
 
 // Client is responsible for interacting with the Prolicif API.
@@ -41,9 +44,21 @@ func New() Client {
 	return client
 }
 
-// Get is the main router for GET requests to the Prolific API.
-func (c *Client) Get(url string, response interface{}) (*http.Response, error) {
-	request, err := http.NewRequest("GET", c.BaseURL+url, nil)
+// Execute runs an HTTP request.
+func (c *Client) Execute(method, url string, body interface{}, response interface{}) (*http.Response, error) {
+
+	var buf io.ReadWriter
+	if body != nil {
+		buf = new(bytes.Buffer)
+		enc := json.NewEncoder(buf)
+		enc.SetEscapeHTML(false)
+		err := enc.Encode(body)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	request, err := http.NewRequest(method, c.BaseURL+url, buf)
 	if err != nil {
 		return nil, err
 	}
@@ -52,16 +67,15 @@ func (c *Client) Get(url string, response interface{}) (*http.Response, error) {
 	request.Header.Set("User-Agent", "benmatselby/prolificli")
 	request.Header.Set("Authorization", fmt.Sprintf("Token %s", c.Token))
 
+	if c.Debug {
+		fmt.Println(request)
+	}
+
 	httpResponse, err := c.Client.Do(request)
 	if err != nil {
 		return nil, err
 	}
 	defer httpResponse.Body.Close()
-
-	if httpResponse.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("request to %s responded with status %d", request.RequestURI, httpResponse.StatusCode)
-	}
-
 	if c.Debug {
 		body, _ := ioutil.ReadAll(httpResponse.Body)
 		fmt.Println(string(body))
@@ -72,6 +86,24 @@ func (c *Client) Get(url string, response interface{}) (*http.Response, error) {
 	}
 
 	return httpResponse, nil
+}
+
+// Get is the main router for GET requests to the Prolific API.
+func (c *Client) Get(url string, response interface{}) (*http.Response, error) {
+	return c.Execute("GET", url, nil, response)
+}
+
+// CreateStudy is responsible for hitting the Prolific API to create a study.
+func (c *Client) CreateStudy(study model.CreateStudy) (*model.Study, error) {
+	var response model.Study
+
+	url := "/api/v1/studies/"
+	_, err := c.Execute("POST", url, study, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
 }
 
 // GetMe will return your user account details.

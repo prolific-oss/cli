@@ -87,6 +87,29 @@ type Study struct {
 	IsUnderpaying          interface{}   `json:"is_underpaying"`
 }
 
+// CreateStudy is responsible for capturing what fields we need to send
+// to Prolific to create a study.
+type CreateStudy struct {
+	Name             string `json:"name"`
+	InternalName     string `json:"internal_name"`
+	Description      string `json:"description"`
+	ExternalStudyURL string `json:"external_study_url"`
+	// Enum "question", "url_parameters" (Recommended), "not_required"
+	ProlificIDOption string `json:"prolific_id_option"`
+	CompletionCode   string `json:"completion_code"`
+	// Enum: "url", "code"
+	CompletionOption     string `json:"completion_option"`
+	TotalAvailablePlaces int    `json:"total_available_places"`
+	// Minutes
+	EstimatedCompletionTime int     `json:"estimated_completion_time"`
+	MaximumAllowedTime      int     `json:"maximum_allowed_time"`
+	Reward                  float64 `json:"reward"`
+	// Enum: "desktop", "tablet", "mobile"
+	DeviceCompatibility []string `json:"device_compatibility"`
+	// Enum: "audio", "camera", "download", "microphone"
+	PeripheralRequirements []string `json:"peripheral_requirements"`
+}
+
 // FilterValue will help the bubbletea views run
 func (s Study) FilterValue() string { return s.Name }
 
