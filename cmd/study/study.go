@@ -1,6 +1,8 @@
 package study
 
 import (
+	"os"
+
 	"github.com/benmatselby/prolificli/client"
 	"github.com/spf13/cobra"
 )
@@ -15,7 +17,7 @@ func NewStudyCommand(client client.API) *cobra.Command {
 	cmd.AddCommand(
 		NewListCommand("list", client),
 		NewViewCommand(client),
-		NewCreateCommand(client),
+		NewCreateCommand(client, os.Stdout),
 	)
 	return cmd
 }
