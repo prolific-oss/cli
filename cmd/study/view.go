@@ -2,6 +2,7 @@ package study
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -12,7 +13,7 @@ import (
 
 // NewViewCommand creates a new `study view` command to give you details about
 // your studies.
-func NewViewCommand(client client.API) *cobra.Command {
+func NewViewCommand(client client.API, w io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "view",
 		Short: "Provide details about your study, requires a Study ID",
@@ -30,7 +31,7 @@ func NewViewCommand(client client.API) *cobra.Command {
 				os.Exit(1)
 			}
 
-			fmt.Fprintln(os.Stdout, studyui.RenderStudy(client, *study))
+			fmt.Fprintln(w, studyui.RenderStudy(client, *study))
 		},
 	}
 

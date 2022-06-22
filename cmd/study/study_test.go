@@ -1,6 +1,7 @@
 package study_test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/benmatselby/prolificli/cmd/study"
@@ -13,7 +14,7 @@ func TestNewStudyCommand(t *testing.T) {
 	defer ctrl.Finish()
 	client := mock_client.NewMockAPI(ctrl)
 
-	cmd := study.NewStudyCommand(client)
+	cmd := study.NewStudyCommand(client, os.Stdout)
 
 	use := "study"
 	short := "Study related commands"

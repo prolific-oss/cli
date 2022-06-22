@@ -1,23 +1,23 @@
 package study
 
 import (
-	"os"
+	"io"
 
 	"github.com/benmatselby/prolificli/client"
 	"github.com/spf13/cobra"
 )
 
 // NewStudyCommand creates a new `study` command
-func NewStudyCommand(client client.API) *cobra.Command {
+func NewStudyCommand(client client.API, w io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "study",
 		Short: "Study related commands",
 	}
 
 	cmd.AddCommand(
-		NewListCommand("list", client),
-		NewViewCommand(client),
-		NewCreateCommand(client, os.Stdout),
+		NewListCommand("list", client, w),
+		NewViewCommand(client, w),
+		NewCreateCommand(client, w),
 	)
 	return cmd
 }

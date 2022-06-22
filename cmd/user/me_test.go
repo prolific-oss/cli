@@ -3,6 +3,7 @@ package user_test
 import (
 	"bufio"
 	"bytes"
+	"os"
 	"strings"
 	"testing"
 
@@ -17,7 +18,7 @@ func TestNewMeCommand(t *testing.T) {
 	defer ctrl.Finish()
 	client := mock_client.NewMockAPI(ctrl)
 
-	cmd := user.NewMeCommand(client)
+	cmd := user.NewMeCommand(client, os.Stdout)
 
 	use := "me"
 	short := "Provide details about your account"
