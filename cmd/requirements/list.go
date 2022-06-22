@@ -16,14 +16,14 @@ import (
 
 // NewListCommand creates a new `requirement list` command to give you details about
 // eligibility requirements.
-func NewListCommand(client client.API) *cobra.Command {
+func NewListCommand(client client.API, w io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "List all eligibility requirements",
 		Run: func(cmd *cobra.Command, args []string) {
 
-			err := renderList(client, os.Stdout)
+			err := renderList(client, w)
 			if err != nil {
 				fmt.Printf("Error: %s", strings.ReplaceAll(err.Error(), "\n", ""))
 				os.Exit(1)

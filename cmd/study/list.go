@@ -22,7 +22,7 @@ type ListOptions struct {
 
 // NewListCommand creates a new `study list` command to give you details about
 // your studies.
-func NewListCommand(commandName string, client client.API) *cobra.Command {
+func NewListCommand(commandName string, client client.API, w io.Writer) *cobra.Command {
 	var opts ListOptions
 
 	cmd := &cobra.Command{
@@ -31,7 +31,7 @@ func NewListCommand(commandName string, client client.API) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			opts.Args = args
 
-			err := renderList(client, opts, os.Stdout)
+			err := renderList(client, opts, w)
 			if err != nil {
 				fmt.Printf("Error: %s", strings.ReplaceAll(err.Error(), "\n", ""))
 				os.Exit(1)
@@ -40,7 +40,7 @@ func NewListCommand(commandName string, client client.API) *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	flags.StringVarP(&opts.Status, "status", "s", model.StatusAll, "The status you want to filter on.")
+	flags.StringVarP(&opts.Status, "status", "s", model.StatusAll, fmt.Sprintf("The status you want to filter on: %s.", strings.Join(model.StudyListStatus, ", ")))
 
 	return cmd
 }

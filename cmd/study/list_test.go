@@ -1,6 +1,7 @@
 package study_test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/benmatselby/prolificli/cmd/study"
@@ -13,7 +14,7 @@ func TestNewViewCommand(t *testing.T) {
 	defer ctrl.Finish()
 	client := mock_client.NewMockAPI(ctrl)
 
-	cmd := study.NewListCommand("list", client)
+	cmd := study.NewListCommand("list", client, os.Stdout)
 
 	use := "list"
 	short := "Provide details about your studies"

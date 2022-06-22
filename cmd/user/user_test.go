@@ -1,6 +1,7 @@
 package user_test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/benmatselby/prolificli/cmd/user"
@@ -13,7 +14,7 @@ func TestNewUserCommand(t *testing.T) {
 	defer ctrl.Finish()
 	client := mock_client.NewMockAPI(ctrl)
 
-	cmd := user.NewUserCommand(client)
+	cmd := user.NewUserCommand(client, os.Stdout)
 
 	use := "user"
 	short := "User related commands"

@@ -48,11 +48,13 @@ func NewRootCommand() *cobra.Command {
 
 	client := client.New()
 
+	w := os.Stdout
+
 	cmd.AddCommand(
-		user.NewUserCommand(&client),
-		study.NewStudyCommand(&client),
-		study.NewListCommand("studies", &client),
-		requirement.NewRequirementCommand(&client),
+		user.NewUserCommand(&client, w),
+		study.NewStudyCommand(&client, w),
+		study.NewListCommand("studies", &client, w),
+		requirement.NewRequirementCommand(&client, w),
 	)
 
 	return cmd

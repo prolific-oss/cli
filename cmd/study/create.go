@@ -21,7 +21,7 @@ type CreateOptions struct {
 
 // NewCreateCommand creates a new `study create` command to allow you to create
 // a study
-func NewCreateCommand(client client.API) *cobra.Command {
+func NewCreateCommand(client client.API, w io.Writer) *cobra.Command {
 	var opts CreateOptions
 
 	cmd := &cobra.Command{
@@ -29,13 +29,14 @@ func NewCreateCommand(client client.API) *cobra.Command {
 		Short: "Creation of studies",
 		Run: func(cmd *cobra.Command, args []string) {
 			opts.Args = args
+			fmt.Println(args)
 
 			if opts.TemplatePath == "" {
 				fmt.Println("Error: Can only create via a template YAML file at the moment.")
 				os.Exit(1)
 			}
 
-			err := createStudy(client, opts, os.Stdout)
+			err := createStudy(client, opts, w)
 			if err != nil {
 				fmt.Printf("Error: %s\n", strings.ReplaceAll(err.Error(), "\n", ""))
 				os.Exit(1)
@@ -52,7 +53,10 @@ func NewCreateCommand(client client.API) *cobra.Command {
 func createStudy(client client.API, opts CreateOptions, w io.Writer) error {
 	v := viper.New()
 	v.SetConfigFile(opts.TemplatePath)
-	v.ReadInConfig()
+	err := v.ReadInConfig()
+	if err != nil {
+		return err
+	}
 
 	s := model.CreateStudy{
 		Name:                    v.GetString("name"),

@@ -14,13 +14,13 @@ import (
 
 // NewMeCommand creates a new `user me` command to give you details about
 // your account.
-func NewMeCommand(client client.API) *cobra.Command {
+func NewMeCommand(client client.API, w io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "me",
 		Short: "Provide details about your account",
 		Run: func(cmd *cobra.Command, args []string) {
 
-			err := RenderMe(client, os.Stdout)
+			err := RenderMe(client, w)
 			if err != nil {
 				fmt.Printf("Error: %s", strings.ReplaceAll(err.Error(), "\n", ""))
 				os.Exit(1)
