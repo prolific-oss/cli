@@ -87,3 +87,73 @@ func TestCreateCommandCallsAPI(t *testing.T) {
 	cmd.Run(cmd, nil)
 	writer.Flush()
 }
+
+func TestCreateCommandCanPublish(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	studyTemplate := model.CreateStudy{
+		Name:                    "My first standard sample",
+		InternalName:            "Standard sample",
+		Description:             "This is my first standard sample study on the Prolific system.",
+		ExternalStudyURL:        "https://eggs-experriment.com?participant={{%PROLIFIC_PID%}}",
+		ProlificIDOption:        "question",
+		CompletionCode:          "COMPLE01",
+		CompletionOption:        "code",
+		TotalAvailablePlaces:    10,
+		EstimatedCompletionTime: 10,
+		MaximumAllowedTime:      10,
+		Reward:                  400,
+		DeviceCompatibility:     []string{"desktop", "tablet", "mobile"},
+		PeripheralRequirements:  []string{"audio", "camera", "download", "microphone"},
+	}
+
+	actualStudy := model.Study{
+		Name:                    "My first standard sample",
+		InternalName:            "Standard sample",
+		Desc:                    "This is my first standard sample study on the Prolific system.",
+		ExternalStudyURL:        "https://eggs-experriment.com?participant={{%PROLIFIC_PID%}}",
+		TotalAvailablePlaces:    10,
+		EstimatedCompletionTime: 10,
+		MaximumAllowedTime:      10,
+		Reward:                  400,
+		DeviceCompatibility:     []string{"desktop", "tablet", "mobile"},
+	}
+
+	ls := client.ListSubmissionsResponse{}
+	tsr := client.TransitionStudyResponse{}
+
+	c.
+		EXPECT().
+		CreateStudy(gomock.Eq(studyTemplate)).
+		Return(&actualStudy, nil).
+		MaxTimes(1)
+
+	c.
+		EXPECT().
+		GetSubmissions(gomock.Eq(actualStudy.ID)).
+		Return(&ls, nil).
+		MaxTimes(1)
+
+	c.
+		EXPECT().
+		TransitionStudy(gomock.Eq(actualStudy.ID), gomock.Eq(model.TransitionStudyPublish)).
+		Return(&tsr, nil).
+		MaxTimes(1)
+
+	c.
+		EXPECT().
+		GetStudy(gomock.Eq(actualStudy.ID)).
+		Return(&actualStudy, nil).
+		MaxTimes(1)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := study.NewCreateCommand(c, writer)
+	cmd.Flags().Set("template-path", "../../docs/examples/standard-sample.json")
+	cmd.Flags().Set("publish", "true")
+	cmd.Run(cmd, nil)
+	writer.Flush()
+}

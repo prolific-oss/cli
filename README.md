@@ -30,6 +30,14 @@ Use "prolificli [command] --help" for more information about a command.
 
 ![Detail view of a study](docs/img/detail-view.png)
 
+Main features include:
+
+- Ability to list and filter studies.
+- Ability to render details about a study, and the submissions.
+- Ability to create a Study via a YAML/JSON configuration file.
+- Ability to publish a study whilst creating it (if you have sufficient funds).
+- Ability to get your user account details.
+
 ## Requirements
 
 If you are wanting to build and develop this, you will need the following items installed. If, however, you just want to run the application I recommend using the docker container (See below).
