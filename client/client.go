@@ -22,6 +22,7 @@ type API interface {
 	GetStudies(status string) (*ListStudiesResponse, error)
 	GetStudy(ID string) (*model.Study, error)
 	GetSubmissions(ID string) (*ListSubmissionsResponse, error)
+	TransitionStudy(ID, action string) (*TransitionStudyResponse, error)
 }
 
 // Client is responsible for interacting with the Prolific API.
@@ -177,6 +178,25 @@ func (c *Client) GetEligibilityRequirements() (*ListRequirementsResponse, error)
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// TransitionStudy will move the study status to a desired state.
+func (c *Client) TransitionStudy(ID, action string) (*TransitionStudyResponse, error) {
+	var response TransitionStudyResponse
+
+	transtion := struct {
+		Action string `json:"action"`
+	}{
+		Action: action,
+	}
+
+	url := fmt.Sprintf("/api/v1/studies/%s/transition/", ID)
+	_, err := c.Execute(http.MethodPost, url, transtion, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to transition study to %s: %v", action, err)
 	}
 
 	return &response, nil

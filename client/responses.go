@@ -159,3 +159,23 @@ type ListRequirementsResponse struct {
 		Count int `json:"count"`
 	} `json:"meta"`
 }
+
+// TransitionStudyResponse is the response for transitioning a study to another status.
+type TransitionStudyResponse struct {
+	ID                      string        `json:"id"`
+	Name                    string        `json:"name"`
+	InternalName            string        `json:"internal_name"`
+	Description             string        `json:"description"`
+	ExternalStudyURL        string        `json:"external_study_url"`
+	ProlificIDOption        string        `json:"prolific_id_option"`
+	CompletionCode          string        `json:"completion_code"`
+	CompletionOption        string        `json:"completion_option"`
+	TotalAvailablePlaces    int           `json:"total_available_places"`
+	EstimatedCompletionTime int           `json:"estimated_completion_time"`
+	MaximumAllowedTime      int           `json:"maximum_allowed_time"`
+	Reward                  int           `json:"reward"`
+	DeviceCompatibility     []string      `json:"device_compatibility"`
+	PeripheralRequirements  []interface{} `json:"peripheral_requirements"`
+	EligibilityRequirements []interface{} `json:"eligibility_requirements"`
+	Status                  string        `json:"status"`
+}

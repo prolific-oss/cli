@@ -124,3 +124,18 @@ func (mr *MockAPIMockRecorder) GetSubmissions(ID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubmissions", reflect.TypeOf((*MockAPI)(nil).GetSubmissions), ID)
 }
+
+// TransitionStudy mocks base method.
+func (m *MockAPI) TransitionStudy(ID, action string) (*client.TransitionStudyResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TransitionStudy", ID, action)
+	ret0, _ := ret[0].(*client.TransitionStudyResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TransitionStudy indicates an expected call of TransitionStudy.
+func (mr *MockAPIMockRecorder) TransitionStudy(ID, action interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransitionStudy", reflect.TypeOf((*MockAPI)(nil).TransitionStudy), ID, action)
+}

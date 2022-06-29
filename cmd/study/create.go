@@ -17,6 +17,7 @@ import (
 type CreateOptions struct {
 	Args         []string
 	TemplatePath string
+	Publish      bool
 }
 
 // NewCreateCommand creates a new `study create` command to allow you to create
@@ -45,6 +46,7 @@ func NewCreateCommand(client client.API, w io.Writer) *cobra.Command {
 
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.TemplatePath, "template-path", "t", "", "Path to a YAML file containing your studies you want to create")
+	flags.BoolVarP(&opts.Publish, "publish", "p", false, "Publish the study once created.")
 
 	return cmd
 }
@@ -76,6 +78,18 @@ func createStudy(client client.API, opts CreateOptions, w io.Writer) error {
 	study, err := client.CreateStudy(s)
 	if err != nil {
 		return err
+	}
+
+	if opts.Publish {
+		_, err = client.TransitionStudy(study.ID, model.TransitionStudyPublish)
+		if err != nil {
+			return err
+		}
+
+		study, err = client.GetStudy(study.ID)
+		if err != nil {
+			return err
+		}
 	}
 
 	fmt.Fprintln(w, studyui.RenderStudy(client, *study))

@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.0.3
+
+- Ability to publish a study whilst creating it (if you have sufficient funds).
+
 ## 0.0.2
 
 - Ability to create a Study via a YAML/JSON configuration file.

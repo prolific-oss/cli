@@ -37,6 +37,25 @@ var StudyListStatus = []string{
 	StatusAll,
 }
 
+const (
+	// TransitionStudyPublish will allow us to publish a study
+	TransitionStudyPublish = "PUBLISH"
+	// TransitionStudyPause will allow us to pause a study
+	TransitionStudyPause = "PAUSE"
+	// TransitionStudyStart will allow us to start a study
+	TransitionStudyStart = "START"
+	// TransitionStudyStop will allow us to stop a study
+	TransitionStudyStop = "STOP"
+)
+
+// TransitionList is the list of transitions we can use on a Study.
+var TransitionList = []string{
+	TransitionStudyPublish,
+	TransitionStudyStart,
+	TransitionStudyPause,
+	TransitionStudyStop,
+}
+
 // Study represents a Prolific Study
 type Study struct {
 	ID                      string    `json:"id"`
