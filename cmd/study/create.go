@@ -29,7 +29,6 @@ func NewCreateCommand(client client.API, w io.Writer) *cobra.Command {
 		Short: "Creation of studies",
 		Run: func(cmd *cobra.Command, args []string) {
 			opts.Args = args
-			fmt.Println(args)
 
 			if opts.TemplatePath == "" {
 				fmt.Println("Error: Can only create via a template YAML file at the moment.")
