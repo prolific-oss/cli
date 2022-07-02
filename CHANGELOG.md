@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## next
+
+- Ability to render a list of studies with `--non-interactive` which displays the the records in a table.
+
 ## 0.0.4
 
 - Ability to silently create a study. This is helpful if you want to script creating many studies.
