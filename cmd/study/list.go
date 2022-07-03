@@ -17,6 +17,7 @@ type ListOptions struct {
 	Args           []string
 	Status         string
 	NonInteractive bool
+	Fields         string
 }
 
 // NewListCommand creates a new `study list` command to give you details about
@@ -39,7 +40,7 @@ func NewListCommand(commandName string, client client.API, w io.Writer) *cobra.C
 			}
 
 			err := renderer.Render(client, study.ListUsedOptions{
-				Status: opts.Status, NonInteractive: opts.NonInteractive,
+				Status: opts.Status, NonInteractive: opts.NonInteractive, Fields: opts.Fields,
 			}, w)
 
 			if err != nil {
@@ -52,6 +53,7 @@ func NewListCommand(commandName string, client client.API, w io.Writer) *cobra.C
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.Status, "status", "s", model.StatusAll, fmt.Sprintf("The status you want to filter on: %s.", strings.Join(model.StudyListStatus, ", ")))
 	flags.BoolVarP(&opts.NonInteractive, "non-interactive", "n", false, "Render the list details straight to the terminal.")
+	flags.StringVarP(&opts.Fields, "fields", "f", "", "Comma separated list of fields you want to display in non-interactive mode.")
 
 	return cmd
 }

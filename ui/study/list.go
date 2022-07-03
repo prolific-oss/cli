@@ -3,6 +3,8 @@ package study
 import (
 	"fmt"
 	"io"
+	"reflect"
+	"strings"
 	"text/tabwriter"
 
 	"github.com/benmatselby/prolificli/client"
@@ -15,6 +17,7 @@ import (
 type ListUsedOptions struct {
 	Status         string
 	NonInteractive bool
+	Fields         string
 }
 
 // ListStrategy defines an interface to allow different strategies to render the list view.
@@ -80,11 +83,24 @@ func (r *NonInteractiveRenderer) Render(client client.API, opts ListUsedOptions,
 		return err
 	}
 
+	if len(opts.Fields) == 0 {
+		opts.Fields = "ID,Name,Status"
+	}
+
 	tw := tabwriter.NewWriter(w, 0, 1, 1, ' ', 0)
-	fmt.Fprintf(tw, "%s\t%s\t%s\n", "ID", "Title", "Status")
+
+	fieldList := strings.Split(opts.Fields, ",")
+
+	for _, field := range fieldList {
+		fmt.Fprintf(tw, "%s\t", strings.Trim(field, " "))
+	}
+	fmt.Fprint(tw, "\n")
 
 	for _, study := range studies.Results {
-		fmt.Fprintf(tw, "%s\t%s\t%s\n", study.ID, study.Title(), study.Status)
+		for _, field := range fieldList {
+			fmt.Fprintf(tw, "%v\t", reflect.ValueOf(study).FieldByName(strings.Trim(field, " ")))
+		}
+		fmt.Fprint(tw, "\n")
 	}
 
 	tw.Flush()
