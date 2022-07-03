@@ -33,9 +33,11 @@ Use "prolificli [command] --help" for more information about a command.
 Main features include:
 
 - Ability to list and filter studies.
+- Ability to list studies and define which fields to do display in a table format.
 - Ability to render details about a study, and the submissions.
 - Ability to create a Study via a YAML/JSON configuration file.
 - Ability to publish a study whilst creating it (if you have sufficient funds).
+- Ability to silently create a study, meaning you [can script creating many studies in one go](https://github.com/benmatselby/prolificli/wiki/Create-multiple-studies-via-a-bash-script).
 - Ability to get your user account details.
 
 ## Requirements
