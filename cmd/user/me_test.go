@@ -76,7 +76,11 @@ func TestRenderMe(t *testing.T) {
 			var b bytes.Buffer
 			writer := bufio.NewWriter(&b)
 
-			user.RenderMe(c, writer)
+			err := user.RenderMe(c, writer)
+			if err != nil {
+				t.Fatalf("did not expect error, got %v", err)
+			}
+
 			writer.Flush()
 
 			if strings.ReplaceAll(b.String(), " ", "") != strings.ReplaceAll(tc.output, " ", "") {

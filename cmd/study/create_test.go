@@ -83,7 +83,10 @@ func TestCreateCommandCallsAPI(t *testing.T) {
 	writer := bufio.NewWriter(&b)
 
 	cmd := study.NewCreateCommand(c, writer)
-	cmd.Flags().Set("template-path", "../../docs/examples/standard-sample.json")
+	err := cmd.Flags().Set("template-path", "../../docs/examples/standard-sample.json")
+	if err != nil {
+		t.Fatalf("did not expect error, got %v", err)
+	}
 	cmd.Run(cmd, nil)
 	writer.Flush()
 }
@@ -152,8 +155,8 @@ func TestCreateCommandCanPublish(t *testing.T) {
 	writer := bufio.NewWriter(&b)
 
 	cmd := study.NewCreateCommand(c, writer)
-	cmd.Flags().Set("template-path", "../../docs/examples/standard-sample.json")
-	cmd.Flags().Set("publish", "true")
+	_ = cmd.Flags().Set("template-path", "../../docs/examples/standard-sample.json")
+	_ = cmd.Flags().Set("publish", "true")
 	cmd.Run(cmd, nil)
 	writer.Flush()
 }

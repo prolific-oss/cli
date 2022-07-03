@@ -62,20 +62,22 @@ func (lv ListView) View() string {
 
 // RenderStudy will produce a detailed view of the selected study.
 func RenderStudy(client client.API, study model.Study) string {
+	marker := "\n---\n\n"
+
 	content := fmt.Sprintln(ui.RenderTitle(study.Name, study.Status))
 	content += fmt.Sprintf("%s\n\n", study.Desc)
 	content += fmt.Sprintf("ID:                        %s\n", study.ID)
 	content += fmt.Sprintf("Status:                    %s\n", study.Status)
 	content += fmt.Sprintf("Type:                      %s\n", study.StudyType)
-	content += fmt.Sprintf("Total cost:                %s\n", ui.RenderMoney((float64(study.TotalCost)/100), study.PresentmentCurrencyCode))
-	content += fmt.Sprintf("Reward:                    %s\n", ui.RenderMoney((float64(study.Reward)/100), study.PresentmentCurrencyCode))
-	content += fmt.Sprintf("Hourly rate:               %s\n", ui.RenderMoney((float64(study.AverageRewardPerHour)/100), study.PresentmentCurrencyCode))
+	content += fmt.Sprintf("Total cost:                %s\n", ui.RenderMoney((study.TotalCost/100), study.PresentmentCurrencyCode))
+	content += fmt.Sprintf("Reward:                    %s\n", ui.RenderMoney((study.Reward/100), study.PresentmentCurrencyCode))
+	content += fmt.Sprintf("Hourly rate:               %s\n", ui.RenderMoney((study.AverageRewardPerHour/100), study.PresentmentCurrencyCode))
 	content += fmt.Sprintf("Estimated completion time: %d\n", study.EstimatedCompletionTime)
 	content += fmt.Sprintf("Maximum allowed time:      %d\n", study.MaximumAllowedTime)
 	content += fmt.Sprintf("Study URL:                 %s\n", study.ExternalStudyURL)
 	content += fmt.Sprintf("Places taken:              %d\n", study.PlacesTaken)
 	content += fmt.Sprintf("Available places:          %d\n", study.TotalAvailablePlaces)
-	content += "\n---\n\n"
+	content += marker
 
 	content += fmt.Sprintln(ui.RenderHeading("Eligibility requirements"))
 
@@ -93,7 +95,7 @@ func RenderStudy(client client.API, study model.Study) string {
 	} else {
 		content += erContent
 	}
-	content += "\n---\n\n"
+	content += marker
 
 	content += fmt.Sprintln(ui.RenderHeading("Submissions"))
 	submissions, err := client.GetSubmissions(study.ID)
@@ -118,7 +120,7 @@ func RenderStudy(client client.API, study model.Study) string {
 		content += fmt.Sprintf("\nFurther data can be found in the application: https://app.prolific.co/researcher/workspaces/studies/%s/submissions", study.ID)
 	}
 
-	content += "\n---\n\n"
+	content += marker
 
 	content += fmt.Sprintf("View study in the application: https://app.prolific.co/researcher/studies/%s", study.ID)
 
