@@ -42,7 +42,7 @@ Main features include:
 
 ## Requirements
 
-If you are wanting to build and develop this, you will need the following items installed. If, however, you just want to run the application I recommend using the docker container (See below).
+If you are wanting to build and develop this, you will need the following items installed. If, however, you just want to run the application I recommend using a binary (See below).
 
 - [Go version 1.18+](https://go.dev/doc/install)
 
