@@ -67,7 +67,12 @@ export PROLIFIC_TOKEN=""
 
 You can create a Researcher token in your account. Log in, and go to settings.
 
-## Installation via Docker
+## Installation
+
+You can install this application a few ways:
+
+<details>
+<summary>Installation via Docker</summary>
 
 Other than requiring [docker](http://docker.com) to be installed, there are no other requirements to run the application this way.
 
@@ -95,7 +100,10 @@ You can also build the image locally:
 make docker-build
 ```
 
-## Installation via Git
+</details>
+
+<details>
+<summary>Installation via Git</summary>
 
 ```shell
 git clone git@github.com:benmatselby/prolificli.git
@@ -105,3 +113,14 @@ make all
 ```
 
 You can also install into your `$GOPATH/bin` by running `make build && go install`.
+
+</details>
+
+<details>
+<summary>Installation via Binaries</summary>
+
+You can download the binaries from the [release pages](https://github.com/benmatselby/prolificli/releases). Find the release you want, and check the "Assets" section.
+
+Once downloaded, be sure to put the binary in a folder that is referenced in your `$PATH`.
+
+</details>
