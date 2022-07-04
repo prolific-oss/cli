@@ -47,7 +47,7 @@ jobs:
 
             echo "\n\nBuilding binary for ${GOOS}/${ARCH}\n"
 
-            GOOS=${GOOS} GOARCH=${ARCH} make static-named
+            GIT_RELEASE=${{ github.event.release.tag_name }} GOOS=${GOOS} GOARCH=${ARCH} make static-named
           done
 
           gh release upload ${{ github.event.release.tag_name }} build/*

@@ -5,6 +5,7 @@ BUILD_DIR ?= build
 GOOS ?=
 ARCH ?=
 OUT_PATH=$(BUILD_DIR)/$(NAME)-$(GOOS)-$(GOARCH)
+GIT_RELEASE ?= $(shell git rev-parse --short HEAD)
 
 .PHONY: explain
 explain:
@@ -24,8 +25,6 @@ explain:
 	#
 	### Targets
 	@cat Makefile* | grep -E '^[a-zA-Z_-]+:.*?## .*$$' | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
-
-GITCOMMIT := $(shell git rev-parse --short HEAD)
 
 .PHONY: clean
 clean: ## Clean the local dependencies
@@ -54,14 +53,14 @@ build: ## Build the application
 .PHONY: static
 static: ## Build the application
 	CGO_ENABLED=0 go build \
-		-ldflags "-extldflags -static -X github.com/benmatselby/$(NAME)/version.GITCOMMIT=$(GITCOMMIT)" \
+		-ldflags "-extldflags -static -X github.com/benmatselby/$(NAME)/version.GITCOMMIT=$(GIT_RELEASE)" \
 		-o $(NAME) .
 
 .PHONY: static-named
 static-named: ## Build the application with named outputs
 	GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 \
 		go build \
-		-ldflags "-extldflags -static -X github.com/benmatselby/$(NAME)/version.GITCOMMIT=$(GITCOMMIT)" \
+		-ldflags "-extldflags -static -X github.com/benmatselby/$(NAME)/version.GITCOMMIT=$(GIT_RELEASE)" \
 		-o $(OUT_PATH) .
 
 	md5sum $(OUT_PATH) > $(OUT_PATH).md5 || md5 $(OUT_PATH) > $(OUT_PATH).md5
