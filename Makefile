@@ -81,10 +81,10 @@ test-gen-mock: ## Generate the mocks
 	@mockgen -source client/client.go > mock_client/mock_client.go
 
 .PHONY: all ## Run everything
-all: clean install lint build test
+all: clean install build test
 
 .PHONY: static-all ## Run everything
-static-all: clean install lint static test
+static-all: clean install static test
 
 .PHONY: docker-build
 docker-build:
