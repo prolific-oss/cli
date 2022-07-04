@@ -9,6 +9,7 @@ import (
 	requirement "github.com/benmatselby/prolificli/cmd/requirements"
 	"github.com/benmatselby/prolificli/cmd/study"
 	"github.com/benmatselby/prolificli/cmd/user"
+	"github.com/benmatselby/prolificli/version"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -40,8 +41,9 @@ func Execute() {
 // adds all the child commands
 func NewRootCommand() *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   ApplicationName,
-		Short: "CLI application for retrieving data from Prolific",
+		Use:     ApplicationName,
+		Short:   "CLI application for retrieving data from Prolific",
+		Version: version.GITCOMMIT,
 	}
 
 	cmd.PersistentFlags().StringVar(&cfgFile, "config", "", fmt.Sprintf("config file (default is $HOME/.benmatselby/%s.yaml)", ApplicationName))
