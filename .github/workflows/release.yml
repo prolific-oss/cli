@@ -45,7 +45,7 @@ jobs:
             GOOS=${GOOSARCH%/*}
             ARCH=${GOOSARCH#*/}
 
-            echo "Building binary for ${GOOS}/${ARCH}"
+            echo "\n\nBuilding binary for ${GOOS}/${ARCH}\n"
 
             GOOS=${GOOS} GOARCH=${ARCH} make static-named
           done
