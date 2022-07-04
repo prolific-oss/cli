@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.0.7
+
+- Addition of the version number in the binaries.
+
 ## 0.0.6
 
 - The releases will now include the built binaries for different platforms/architectures.
