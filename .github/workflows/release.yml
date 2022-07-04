@@ -1,4 +1,4 @@
-name: Go
+name: Release
 
 on:
   release:
@@ -21,7 +21,9 @@ jobs:
         run: |
           make install
 
-      - name: Release
+      - name: Releaseenv:
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           make clean
 
