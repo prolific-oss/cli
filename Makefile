@@ -1,6 +1,10 @@
 NAME := prolificli
 DOCKER_PREFIX = benmatselby
 DOCKER_RELEASE ?= latest
+BUILD_DIR ?= build
+GOOS ?=
+ARCH ?=
+OUT_PATH=$(BUILD_DIR)/$(NAME)-$(GOOS)-$(GOARCH)
 
 .PHONY: explain
 explain:
@@ -26,6 +30,7 @@ GITCOMMIT := $(shell git rev-parse --short HEAD)
 .PHONY: clean
 clean: ## Clean the local dependencies
 	rm -fr vendor
+	rm -fr $(BUILD_DIR) && mkdir -p $(BUILD_DIR)
 
 .PHONY: install
 install: ## Install the local dependencies
@@ -48,7 +53,19 @@ build: ## Build the application
 
 .PHONY: static
 static: ## Build the application
-	CGO_ENABLED=0 go build -ldflags "-extldflags -static -X github.com/benmatselby/$(NAME)/version.GITCOMMIT=$(GITCOMMIT)" -o $(NAME) .
+	CGO_ENABLED=0 go build \
+		-ldflags "-extldflags -static -X github.com/benmatselby/$(NAME)/version.GITCOMMIT=$(GITCOMMIT)" \
+		-o $(NAME) .
+
+.PHONY: static-named
+static-named: ## Build the application with named outputs
+	GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 \
+		go build \
+		-ldflags "-extldflags -static -X github.com/benmatselby/$(NAME)/version.GITCOMMIT=$(GITCOMMIT)" \
+		-o $(OUT_PATH) .
+
+	md5sum $(OUT_PATH) > $(OUT_PATH).md5 || md5 $(OUT_PATH) > $(OUT_PATH).md5
+	sha256sum $(OUT_PATH) > $(OUT_PATH).sha256 || shasum $(OUT_PATH) > $(OUT_PATH).sha256
 
 .PHONY: test
 test: ## Run the unit tests
