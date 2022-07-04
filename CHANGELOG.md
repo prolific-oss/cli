@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.0.6
+
+- The releases will now include the built binaries for different platforms/architectures.
+
 ## 0.0.5
 
 - Ability to render a list of studies with `--non-interactive` which displays the the records in a table.
