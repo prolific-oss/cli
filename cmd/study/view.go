@@ -21,7 +21,7 @@ func NewViewCommand(client client.API, w io.Writer) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 
 			if len(args) < 1 {
-				fmt.Println("Requests a Study ID")
+				fmt.Println("Requires a Study ID")
 				os.Exit(1)
 			}
 

@@ -8,6 +8,7 @@ import (
 	"github.com/benmatselby/prolificli/client"
 	requirement "github.com/benmatselby/prolificli/cmd/requirements"
 	"github.com/benmatselby/prolificli/cmd/study"
+	"github.com/benmatselby/prolificli/cmd/submission"
 	"github.com/benmatselby/prolificli/cmd/user"
 	"github.com/benmatselby/prolificli/version"
 	homedir "github.com/mitchellh/go-homedir"
@@ -56,6 +57,7 @@ func NewRootCommand() *cobra.Command {
 		user.NewUserCommand(&client, w),
 		study.NewStudyCommand(&client, w),
 		study.NewListCommand("studies", &client, w),
+		submission.NewSubmissionCommand(&client, w),
 		requirement.NewRequirementCommand(&client, w),
 	)
 
