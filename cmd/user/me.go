@@ -21,7 +21,7 @@ func NewMeCommand(client client.API, w io.Writer) *cobra.Command {
 
 			err := RenderMe(client, w)
 			if err != nil {
-				return fmt.Errorf("Error: %s", strings.ReplaceAll(err.Error(), "\n", ""))
+				return fmt.Errorf("Error: %s\n", strings.ReplaceAll(err.Error(), "\n", ""))
 			}
 
 			return nil

@@ -3,6 +3,7 @@ package user_test
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -76,7 +77,9 @@ func TestRenderMe(t *testing.T) {
 			var b bytes.Buffer
 			writer := bufio.NewWriter(&b)
 
-			err := user.RenderMe(c, writer)
+			cmd := user.NewMeCommand(c, writer)
+			err := cmd.RunE(cmd, nil)
+
 			if err != nil {
 				t.Fatalf("did not expect error, got %v", err)
 			}
@@ -88,4 +91,28 @@ func TestRenderMe(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestRenderMeHandlesFailure(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	c.
+		EXPECT().
+		GetMe().
+		Return(nil, fmt.Errorf("Failure to look within")).
+		AnyTimes()
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := user.NewMeCommand(c, writer)
+	err := cmd.RunE(cmd, nil)
+
+	if err.Error() != "Error: Failure to look within\n" {
+		t.Fatalf("expected a specific error, got %v", err)
+	}
+
+	writer.Flush()
 }
