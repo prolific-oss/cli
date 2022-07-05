@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## next
+## 0.0.8
 
 - Ability to render a list of studies with `--csv` - essentially an export.
 - Ability to render a list of submissions.
