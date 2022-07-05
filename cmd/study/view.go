@@ -3,7 +3,6 @@ package study
 import (
 	"fmt"
 	"io"
-	"os"
 	"strings"
 
 	"github.com/benmatselby/prolificli/client"
@@ -18,14 +17,15 @@ func NewViewCommand(client client.API, w io.Writer) *cobra.Command {
 		Use:   "view",
 		Short: "Provide details about your study, requires a Study ID",
 		Args:  cobra.MinimumNArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			study, err := client.GetStudy(args[0])
 			if err != nil {
-				fmt.Printf("Error: %s", strings.ReplaceAll(err.Error(), "\n", ""))
-				os.Exit(1)
+				return fmt.Errorf("Error: %s", strings.ReplaceAll(err.Error(), "\n", ""))
 			}
 
 			fmt.Fprintln(w, studyui.RenderStudy(client, *study))
+
+			return nil
 		},
 	}
 

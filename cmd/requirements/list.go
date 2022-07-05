@@ -3,7 +3,6 @@ package requirement
 import (
 	"fmt"
 	"io"
-	"os"
 	"strings"
 
 	"github.com/benmatselby/prolificli/client"
@@ -21,13 +20,14 @@ func NewListCommand(client client.API, w io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "List all eligibility requirements",
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 
 			err := renderList(client, w)
 			if err != nil {
-				fmt.Printf("Error: %s", strings.ReplaceAll(err.Error(), "\n", ""))
-				os.Exit(1)
+				return fmt.Errorf("Error: %s", strings.ReplaceAll(err.Error(), "\n", ""))
 			}
+
+			return nil
 		},
 	}
 

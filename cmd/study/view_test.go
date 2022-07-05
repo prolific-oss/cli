@@ -72,7 +72,7 @@ func TestViewStudyRendersStudy(t *testing.T) {
 	writer := bufio.NewWriter(&b)
 
 	cmd := study.NewViewCommand(c, writer)
-	cmd.Run(cmd, []string{studyID})
+	_ = cmd.RunE(cmd, []string{studyID})
 	writer.Flush()
 
 	expected := `

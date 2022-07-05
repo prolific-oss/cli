@@ -3,7 +3,6 @@ package study
 import (
 	"fmt"
 	"io"
-	"os"
 	"strings"
 
 	"github.com/benmatselby/prolificli/client"
@@ -29,7 +28,7 @@ func NewListCommand(commandName string, client client.API, w io.Writer) *cobra.C
 	cmd := &cobra.Command{
 		Use:   commandName,
 		Short: "Provide details about your studies",
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
 
 			renderer := study.ListRenderer{}
@@ -47,9 +46,10 @@ func NewListCommand(commandName string, client client.API, w io.Writer) *cobra.C
 			}, w)
 
 			if err != nil {
-				fmt.Printf("Error: %s", strings.ReplaceAll(err.Error(), "\n", ""))
-				os.Exit(1)
+				return fmt.Errorf("Error: %s", strings.ReplaceAll(err.Error(), "\n", ""))
 			}
+
+			return nil
 		},
 	}
 
