@@ -17,6 +17,7 @@ Available Commands:
   requirement Requirement related commands
   studies     Provide details about your studies
   study       Study related commands
+  submission  Submission related commands
   user        User related commands
 
 Flags:
@@ -33,6 +34,7 @@ Use "prolificli [command] --help" for more information about a command.
 Main features include:
 
 - Ability to list and filter studies.
+- Ability to list submissions for a given study.
 - Ability to list studies and define which fields to do display in a table format.
 - Ability to render details about a study, and the submissions.
 - Ability to create a Study via a YAML/JSON configuration file.

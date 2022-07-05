@@ -3,6 +3,8 @@
 ## next
 
 - Ability to render a list of studies with `--csv` - essentially an export.
+- Ability to render a list of submissions.
+  - Includes the ability to use `--csv` for a CSV format.
 
 ## 0.0.7
 
