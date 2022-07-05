@@ -3,6 +3,7 @@ package study_test
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"os"
 	"testing"
 
@@ -87,7 +88,7 @@ func TestCreateCommandCallsAPI(t *testing.T) {
 	if err != nil {
 		t.Fatalf("did not expect error, got %v", err)
 	}
-	cmd.Run(cmd, nil)
+	_ = cmd.RunE(cmd, nil)
 	writer.Flush()
 }
 
@@ -157,6 +158,67 @@ func TestCreateCommandCanPublish(t *testing.T) {
 	cmd := study.NewCreateCommand(c, writer)
 	_ = cmd.Flags().Set("template-path", "../../docs/examples/standard-sample.json")
 	_ = cmd.Flags().Set("publish", "true")
-	cmd.Run(cmd, nil)
+	_ = cmd.RunE(cmd, nil)
+	writer.Flush()
+}
+
+func TestCommandFailsIfNoPathSpecified(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := study.NewCreateCommand(c, writer)
+	// _ = cmd.Flags().Set("template-path", "../../docs/examples/standard-sample.json")
+	_ = cmd.Flags().Set("publish", "true")
+	err := cmd.RunE(cmd, nil)
+
+	if err.Error() != "Error: Can only create via a template YAML file at the moment." {
+		t.Fatalf("Expected a specific error.")
+	}
+
+	writer.Flush()
+}
+
+func TestCreateCommandHandlesAnErrorFromTheAPI(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	studyTemplate := model.CreateStudy{
+		Name:                    "My first standard sample",
+		InternalName:            "Standard sample",
+		Description:             "This is my first standard sample study on the Prolific system.",
+		ExternalStudyURL:        "https://eggs-experriment.com?participant={{%PROLIFIC_PID%}}",
+		ProlificIDOption:        "question",
+		CompletionCode:          "COMPLE01",
+		CompletionOption:        "code",
+		TotalAvailablePlaces:    10,
+		EstimatedCompletionTime: 10,
+		MaximumAllowedTime:      10,
+		Reward:                  400,
+		DeviceCompatibility:     []string{"desktop", "tablet", "mobile"},
+		PeripheralRequirements:  []string{"audio", "camera", "download", "microphone"},
+	}
+
+	c.
+		EXPECT().
+		CreateStudy(gomock.Eq(studyTemplate)).
+		Return(nil, fmt.Errorf("Whoopsie daisy")).
+		MaxTimes(1)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := study.NewCreateCommand(c, writer)
+	_ = cmd.Flags().Set("template-path", "../../docs/examples/standard-sample.json")
+	_ = cmd.Flags().Set("publish", "true")
+	err := cmd.RunE(cmd, nil)
+
+	if err.Error() != "Error: Whoopsie daisy\n" {
+		t.Fatalf("Expected a specific error, got %v", err)
+	}
 	writer.Flush()
 }
