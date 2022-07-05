@@ -19,12 +19,6 @@ func NewViewCommand(client client.API, w io.Writer) *cobra.Command {
 		Short: "Provide details about your study, requires a Study ID",
 		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-
-			if len(args) < 1 {
-				fmt.Println("Requires a Study ID")
-				os.Exit(1)
-			}
-
 			study, err := client.GetStudy(args[0])
 			if err != nil {
 				fmt.Printf("Error: %s", strings.ReplaceAll(err.Error(), "\n", ""))
