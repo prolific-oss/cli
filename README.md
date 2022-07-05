@@ -40,6 +40,8 @@ Main features include:
 - Ability to silently create a study, meaning you [can script creating many studies in one go](https://github.com/benmatselby/prolificli/wiki/Create-multiple-studies-via-a-bash-script).
 - Ability to get your user account details.
 
+Checkout the [wiki](https://github.com/benmatselby/prolificli/wiki) for more tips and tricks.
+
 ## Requirements
 
 If you are wanting to build and develop this, you will need the following items installed. If, however, you just want to run the application I recommend using a binary (See below).
