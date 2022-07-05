@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## next
+
+- Ability to render a list of studies with `--csv` - essentially an export.
+
 ## 0.0.7
 
 - Addition of the version number in the binaries.

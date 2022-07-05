@@ -13,6 +13,9 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+// DefaultListFields is the default fields we should show if the user has not specified.
+const DefaultListFields = "ID,Name,Status"
+
 // ListUsedOptions are the options selected by the user.
 type ListUsedOptions struct {
 	Status         string
@@ -84,7 +87,7 @@ func (r *NonInteractiveRenderer) Render(client client.API, opts ListUsedOptions,
 	}
 
 	if len(opts.Fields) == 0 {
-		opts.Fields = "ID,Name,Status"
+		opts.Fields = DefaultListFields
 	}
 
 	tw := tabwriter.NewWriter(w, 0, 1, 1, ' ', 0)
@@ -104,5 +107,40 @@ func (r *NonInteractiveRenderer) Render(client client.API, opts ListUsedOptions,
 	}
 
 	tw.Flush()
+	return nil
+}
+
+// CsvRenderer will render the output in a CSV format.
+type CsvRenderer struct{}
+
+// Render will render the studies in the CSV format.
+func (r *CsvRenderer) Render(client client.API, opts ListUsedOptions, w io.Writer) error {
+	studies, err := client.GetStudies(opts.Status)
+	if err != nil {
+		return err
+	}
+
+	if len(opts.Fields) == 0 {
+		opts.Fields = DefaultListFields
+	}
+
+	fieldList := strings.Split(opts.Fields, ",")
+
+	for _, field := range fieldList {
+		fmt.Fprintf(w, "%s,", strings.Trim(field, " "))
+	}
+	fmt.Fprint(w, "\n")
+
+	for _, study := range studies.Results {
+		for _, field := range fieldList {
+			value := reflect.ValueOf(study).FieldByName(strings.Trim(field, " ")).String()
+			if strings.Contains(value, ",") {
+				value = fmt.Sprintf("\"%v\"", value)
+			}
+			fmt.Fprintf(w, "%v,", value)
+		}
+		fmt.Fprint(w, "\n")
+	}
+
 	return nil
 }

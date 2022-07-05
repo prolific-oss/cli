@@ -18,6 +18,7 @@ type ListOptions struct {
 	Status         string
 	NonInteractive bool
 	Fields         string
+	Csv            bool
 }
 
 // NewListCommand creates a new `study list` command to give you details about
@@ -33,7 +34,9 @@ func NewListCommand(commandName string, client client.API, w io.Writer) *cobra.C
 
 			renderer := study.ListRenderer{}
 
-			if opts.NonInteractive {
+			if opts.Csv {
+				renderer.SetStrategy(&study.CsvRenderer{})
+			} else if opts.NonInteractive {
 				renderer.SetStrategy(&study.NonInteractiveRenderer{})
 			} else {
 				renderer.SetStrategy(&study.InteractiveRenderer{})
@@ -53,7 +56,8 @@ func NewListCommand(commandName string, client client.API, w io.Writer) *cobra.C
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.Status, "status", "s", model.StatusAll, fmt.Sprintf("The status you want to filter on: %s.", strings.Join(model.StudyListStatus, ", ")))
 	flags.BoolVarP(&opts.NonInteractive, "non-interactive", "n", false, "Render the list details straight to the terminal.")
-	flags.StringVarP(&opts.Fields, "fields", "f", "", "Comma separated list of fields you want to display in non-interactive mode.")
+	flags.BoolVarP(&opts.Csv, "csv", "c", false, "Render the list details in a CSV format.")
+	flags.StringVarP(&opts.Fields, "fields", "f", "", "Comma separated list of fields you want to display in non-interactive/csv mode.")
 
 	return cmd
 }
