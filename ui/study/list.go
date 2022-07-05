@@ -133,11 +133,12 @@ func (r *CsvRenderer) Render(client client.API, opts ListUsedOptions, w io.Write
 
 	for _, study := range studies.Results {
 		for _, field := range fieldList {
-			value := reflect.ValueOf(study).FieldByName(strings.Trim(field, " ")).String()
-			if strings.Contains(value, ",") {
-				value = fmt.Sprintf("\"%v\"", value)
+			value := reflect.ValueOf(study).FieldByName(strings.Trim(field, " "))
+			valueString := fmt.Sprintf("%v", value)
+			if strings.Contains(valueString, ",") {
+				valueString = fmt.Sprintf("\"%v\"", valueString)
 			}
-			fmt.Fprintf(w, "%v,", value)
+			fmt.Fprintf(w, "%v,", valueString)
 		}
 		fmt.Fprint(w, "\n")
 	}
