@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -74,14 +73,14 @@ func (c *Client) Execute(method, url string, body interface{}, response interfac
 	}
 	defer httpResponse.Body.Close()
 
-	responseBody, _ := ioutil.ReadAll(httpResponse.Body)
-	httpResponse.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	responseBody, _ := io.ReadAll(httpResponse.Body)
+	httpResponse.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 
 	if c.Debug {
 		fmt.Println(string(responseBody))
 	}
 
-	if err := json.NewDecoder(ioutil.NopCloser(bytes.NewBuffer(responseBody))).Decode(&response); err != nil {
+	if err := json.NewDecoder(io.NopCloser(bytes.NewBuffer(responseBody))).Decode(&response); err != nil {
 		return nil, fmt.Errorf("decoding JSON response from %s failed: %v", request.URL, err)
 	}
 
@@ -99,7 +98,7 @@ func (c *Client) CreateStudy(study model.CreateStudy) (*model.Study, error) {
 	}
 
 	if httpResponse.StatusCode != http.StatusCreated {
-		body, _ := ioutil.ReadAll(httpResponse.Body)
+		body, _ := io.ReadAll(httpResponse.Body)
 		return nil, fmt.Errorf("unable to create study: %v", string(body))
 	}
 

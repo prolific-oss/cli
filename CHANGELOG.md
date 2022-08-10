@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.0.9
+
+- Bumped docker image to Go 1.19 runtime.
+
 ## 0.0.8
 
 - Ability to render a list of studies with `--csv` - essentially an export.
