@@ -65,11 +65,16 @@ prolificli study create -t docs/examples/standard-sample.yaml
 You will need the following environment variables defining:
 
 ```shell
-export PROLIFIC_URL="https://api.prolific.co"
 export PROLIFIC_TOKEN=""
 ```
 
 You can create a Researcher token in your account. Log in, and go to settings.
+
+You can optionally override the URL for the API too. This will be set as default to the Prolific API URL. You have want to override this if Prolific have granted you access to a different environment.
+
+```shell
+export PROLIFIC_URL="https://api.prolific.co"
+```
 
 ## Installation
 

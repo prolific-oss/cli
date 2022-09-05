@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## next
+
+- Set a default value for `PROLIFIC_URL`. It will default to `https://api.prolific.co`.
+
 ## 0.0.9
 
 - Bumped docker image to Go 1.19 runtime.
