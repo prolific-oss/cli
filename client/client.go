@@ -22,6 +22,7 @@ type API interface {
 	GetStudy(ID string) (*model.Study, error)
 	GetSubmissions(ID string) (*ListSubmissionsResponse, error)
 	TransitionStudy(ID, action string) (*TransitionStudyResponse, error)
+	GetHooks(enabled bool) (*ListHooksResponse, error)
 }
 
 // Client is responsible for interacting with the Prolific API.
@@ -198,6 +199,19 @@ func (c *Client) TransitionStudy(ID, action string) (*TransitionStudyResponse, e
 	_, err := c.Execute(http.MethodPost, url, transtion, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to transition study to %s: %v", action, err)
+	}
+
+	return &response, nil
+}
+
+// GetHooks will return the subscriptions to event types for current user.
+func (c *Client) GetHooks(enabled bool) (*ListHooksResponse, error) {
+	var response ListHooksResponse
+
+	url := fmt.Sprintf("/api/v1/hooks/subscriptions?is_enabled=%v", enabled)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
 
 	return &response, nil

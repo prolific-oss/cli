@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/benmatselby/prolificli/client"
+	"github.com/benmatselby/prolificli/cmd/hook"
 	requirement "github.com/benmatselby/prolificli/cmd/requirements"
 	"github.com/benmatselby/prolificli/cmd/study"
 	"github.com/benmatselby/prolificli/cmd/submission"
@@ -59,6 +60,7 @@ func NewRootCommand() *cobra.Command {
 		study.NewListCommand("studies", &client, w),
 		submission.NewSubmissionCommand(&client, w),
 		requirement.NewRequirementCommand(&client, w),
+		hook.NewHookCommand(&client, w),
 	)
 
 	return cmd

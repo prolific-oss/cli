@@ -179,3 +179,8 @@ type TransitionStudyResponse struct {
 	EligibilityRequirements []interface{} `json:"eligibility_requirements"`
 	Status                  string        `json:"status"`
 }
+
+// ListHooksResponse is the response for the hook subscriptions.
+type ListHooksResponse struct {
+	Results []model.Hook `json:"results"`
+}

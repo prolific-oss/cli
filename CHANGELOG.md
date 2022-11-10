@@ -3,6 +3,7 @@
 ## next
 
 - Set a default value for `PROLIFIC_URL`. It will default to `https://api.prolific.co`.
+- Ability to get your hook subscriptions via `hook list`.
 
 ## 0.0.9
 

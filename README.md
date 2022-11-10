@@ -14,6 +14,7 @@ Usage:
 Available Commands:
   completion  Generate the autocompletion script for the specified shell
   help        Help about any command
+  hook        Hook related commands
   requirement Requirement related commands
   studies     Provide details about your studies
   study       Study related commands
@@ -23,6 +24,7 @@ Available Commands:
 Flags:
       --config string   config file (default is $HOME/.benmatselby/prolificli.yaml)
   -h, --help            help for prolificli
+  -v, --version         version for prolificli
 
 Use "prolificli [command] --help" for more information about a command.
 ```
@@ -41,6 +43,7 @@ Main features include:
 - Ability to publish a study whilst creating it (if you have sufficient funds).
 - Ability to silently create a study, meaning you [can script creating many studies in one go](https://github.com/benmatselby/prolificli/wiki/Create-multiple-studies-via-a-bash-script).
 - Ability to get your user account details.
+- Ability to list your hook subscriptions.
 
 Checkout the [wiki](https://github.com/benmatselby/prolificli/wiki) for more tips and tricks.
 
