@@ -3,7 +3,6 @@ package study
 import (
 	"fmt"
 	"io"
-	"strings"
 
 	"github.com/benmatselby/prolificli/client"
 	studyui "github.com/benmatselby/prolificli/ui/study"
@@ -20,7 +19,7 @@ func NewViewCommand(client client.API, w io.Writer) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			study, err := client.GetStudy(args[0])
 			if err != nil {
-				return fmt.Errorf("Error: %s", strings.ReplaceAll(err.Error(), "\n", ""))
+				return fmt.Errorf("error: %s", err.Error())
 			}
 
 			fmt.Fprintln(w, studyui.RenderStudy(client, *study))

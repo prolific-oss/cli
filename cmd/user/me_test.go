@@ -54,7 +54,6 @@ func TestRenderMe(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			c := mock_client.NewMockAPI(ctrl)
@@ -110,7 +109,7 @@ func TestRenderMeHandlesFailure(t *testing.T) {
 	cmd := user.NewMeCommand(c, writer)
 	err := cmd.RunE(cmd, nil)
 
-	if err.Error() != "Error: Failure to look within\n" {
+	if err.Error() != "error: Failure to look within" {
 		t.Fatalf("expected a specific error, got %v", err)
 	}
 

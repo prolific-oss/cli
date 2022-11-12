@@ -46,7 +46,7 @@ func NewListCommand(commandName string, client client.API, w io.Writer) *cobra.C
 			}, w)
 
 			if err != nil {
-				return fmt.Errorf("Error: %s", strings.ReplaceAll(err.Error(), "\n", ""))
+				return fmt.Errorf("error: %s", err.Error())
 			}
 
 			return nil

@@ -106,7 +106,6 @@ func RenderStudy(client client.API, study model.Study) string {
 	if len(submissions.Results) == 0 {
 		content += "No submissions have been submitted for this study yet."
 	} else {
-
 		content += fmt.Sprintf("%s\n", lipgloss.NewStyle().
 			Underline(true).
 			Render("This shows the first 200 responses\n\n"))

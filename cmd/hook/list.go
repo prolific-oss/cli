@@ -3,7 +3,6 @@ package hook
 import (
 	"fmt"
 	"io"
-	"strings"
 	"text/tabwriter"
 
 	"github.com/benmatselby/prolificli/client"
@@ -30,7 +29,7 @@ func NewListCommand(commandName string, client client.API, w io.Writer) *cobra.C
 
 			err := RenderHooks(client, opts, w)
 			if err != nil {
-				return fmt.Errorf("Error: %s\n", strings.ReplaceAll(err.Error(), "\n", ""))
+				return fmt.Errorf("error: %s", err.Error())
 			}
 
 			return nil

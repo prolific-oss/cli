@@ -28,7 +28,6 @@ const DefaultCurrency string = "GBP"
 
 // RenderTitle will render a nice coloured UI for a title based on status
 func RenderTitle(title, status string) lipgloss.Style {
-
 	var color = ""
 	switch strings.ToLower(status) {
 	case model.StatusActive:

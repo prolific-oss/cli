@@ -3,7 +3,6 @@ package study
 import (
 	"fmt"
 	"io"
-	"strings"
 
 	"github.com/benmatselby/prolificli/client"
 	"github.com/benmatselby/prolificli/model"
@@ -32,12 +31,12 @@ func NewCreateCommand(client client.API, w io.Writer) *cobra.Command {
 			opts.Args = args
 
 			if opts.TemplatePath == "" {
-				return fmt.Errorf("Error: Can only create via a template YAML file at the moment.")
+				return fmt.Errorf("error: Can only create via a template YAML file at the moment")
 			}
 
 			err := createStudy(client, opts, w)
 			if err != nil {
-				return fmt.Errorf("Error: %s\n", strings.ReplaceAll(err.Error(), "\n", ""))
+				return fmt.Errorf("error: %s", err.Error())
 			}
 
 			return nil

@@ -30,7 +30,6 @@ func TestRenderMoney(t *testing.T) {
 	}}
 
 	for _, tc := range tt {
-
 		actual := ui.RenderMoney(tc.amount, tc.currency)
 
 		if tc.expected != actual {

@@ -3,7 +3,6 @@ package user
 import (
 	"fmt"
 	"io"
-	"strings"
 
 	"github.com/benmatselby/prolificli/client"
 	"github.com/benmatselby/prolificli/ui"
@@ -18,10 +17,9 @@ func NewMeCommand(client client.API, w io.Writer) *cobra.Command {
 		Use:   "whoami",
 		Short: "Provide details about your account",
 		RunE: func(cmd *cobra.Command, args []string) error {
-
 			err := RenderMe(client, w)
 			if err != nil {
-				return fmt.Errorf("Error: %s\n", strings.ReplaceAll(err.Error(), "\n", ""))
+				return fmt.Errorf("error: %s", err.Error())
 			}
 
 			return nil

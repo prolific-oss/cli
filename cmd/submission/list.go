@@ -3,7 +3,6 @@ package submission
 import (
 	"fmt"
 	"io"
-	"strings"
 
 	"github.com/benmatselby/prolificli/client"
 	"github.com/benmatselby/prolificli/ui/submission"
@@ -46,7 +45,7 @@ func NewListCommand(client client.API, w io.Writer) *cobra.Command {
 			}, w)
 
 			if err != nil {
-				return fmt.Errorf("Error: %s", strings.ReplaceAll(err.Error(), "\n", ""))
+				return fmt.Errorf("error: %s", err.Error())
 			}
 
 			return nil

@@ -175,7 +175,7 @@ func TestCommandFailsIfNoPathSpecified(t *testing.T) {
 	_ = cmd.Flags().Set("publish", "true")
 	err := cmd.RunE(cmd, nil)
 
-	if err.Error() != "Error: Can only create via a template YAML file at the moment." {
+	if err.Error() != "error: Can only create via a template YAML file at the moment" {
 		t.Fatalf("Expected a specific error.")
 	}
 
@@ -217,7 +217,7 @@ func TestCreateCommandHandlesAnErrorFromTheAPI(t *testing.T) {
 	_ = cmd.Flags().Set("publish", "true")
 	err := cmd.RunE(cmd, nil)
 
-	if err.Error() != "Error: Whoopsie daisy\n" {
+	if err.Error() != "error: Whoopsie daisy" {
 		t.Fatalf("Expected a specific error, got %v", err)
 	}
 	writer.Flush()

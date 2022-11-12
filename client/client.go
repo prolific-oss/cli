@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -50,7 +51,6 @@ func New() Client {
 
 // Execute runs an HTTP request.
 func (c *Client) Execute(method, url string, body interface{}, response interface{}) (*http.Response, error) {
-
 	var buf io.ReadWriter
 	if body != nil {
 		buf = new(bytes.Buffer)
@@ -62,7 +62,7 @@ func (c *Client) Execute(method, url string, body interface{}, response interfac
 		}
 	}
 
-	request, err := http.NewRequest(method, c.BaseURL+url, buf)
+	request, err := http.NewRequestWithContext(context.Background(), method, c.BaseURL+url, buf)
 	if err != nil {
 		return nil, err
 	}

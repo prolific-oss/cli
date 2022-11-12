@@ -3,7 +3,6 @@ package requirement
 import (
 	"fmt"
 	"io"
-	"strings"
 
 	"github.com/benmatselby/prolificli/client"
 	"github.com/benmatselby/prolificli/model"
@@ -16,15 +15,13 @@ import (
 // NewListCommand creates a new `requirement list` command to give you details about
 // eligibility requirements.
 func NewListCommand(client client.API, w io.Writer) *cobra.Command {
-
 	cmd := &cobra.Command{
 		Use:   "requirements",
 		Short: "List all eligibility requirements available for your study",
 		RunE: func(cmd *cobra.Command, args []string) error {
-
-			err := renderList(client, w)
+			err := renderList(client)
 			if err != nil {
-				return fmt.Errorf("Error: %s", strings.ReplaceAll(err.Error(), "\n", ""))
+				return fmt.Errorf("error: %s", err.Error())
 			}
 
 			return nil
@@ -34,7 +31,7 @@ func NewListCommand(client client.API, w io.Writer) *cobra.Command {
 	return cmd
 }
 
-func renderList(client client.API, w io.Writer) error {
+func renderList(client client.API) error {
 	reqs, err := client.GetEligibilityRequirements()
 	if err != nil {
 		return err
