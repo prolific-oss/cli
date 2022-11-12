@@ -184,3 +184,8 @@ type TransitionStudyResponse struct {
 type ListHooksResponse struct {
 	Results []model.Hook `json:"results"`
 }
+
+// ListHookEventTypesResponse is the response for the event types hook API.
+type ListHookEventTypesResponse struct {
+	Results []string `json:"results"`
+}

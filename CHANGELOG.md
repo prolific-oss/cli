@@ -2,6 +2,9 @@
 
 ## next
 
+- Ability to get the event-types you can register for via `hook event-types`.
+  - Will just render a list of strings.
+
 ## 0.0.10
 
 - Set a default value for `PROLIFIC_URL`. It will default to `https://api.prolific.co`.

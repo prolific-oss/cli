@@ -23,6 +23,7 @@ type API interface {
 	GetSubmissions(ID string) (*ListSubmissionsResponse, error)
 	TransitionStudy(ID, action string) (*TransitionStudyResponse, error)
 	GetHooks(enabled bool) (*ListHooksResponse, error)
+	GetHookEventTypes() (*ListHookEventTypesResponse, error)
 }
 
 // Client is responsible for interacting with the Prolific API.
@@ -209,6 +210,20 @@ func (c *Client) GetHooks(enabled bool) (*ListHooksResponse, error) {
 	var response ListHooksResponse
 
 	url := fmt.Sprintf("/api/v1/hooks/subscriptions?is_enabled=%v", enabled)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// GetHookEventTypes will return all of the event types you can subscribe a
+// hook for.
+func (c *Client) GetHookEventTypes() (*ListHookEventTypesResponse, error) {
+	var response ListHookEventTypesResponse
+
+	url := "/api/v1/hooks/event-types"
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
