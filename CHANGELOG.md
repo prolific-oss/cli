@@ -2,6 +2,8 @@
 
 ## next
 
+## 0.0.11
+
 - Ability to get the event-types you can register for via `hook event-types`.
   - Will just render a list of strings.
 
