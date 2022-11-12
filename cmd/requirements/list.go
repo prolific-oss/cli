@@ -18,8 +18,8 @@ import (
 func NewListCommand(client client.API, w io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "List all eligibility requirements",
+		Use:   "requirements",
+		Short: "List all eligibility requirements available for your study",
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			err := renderList(client, w)

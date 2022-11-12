@@ -16,8 +16,8 @@ func TestNewListCommand(t *testing.T) {
 
 	cmd := requirement.NewListCommand(client, os.Stdout)
 
-	use := "list"
-	short := "List all eligibility requirements"
+	use := "requirements"
+	short := "List all eligibility requirements available for your study"
 
 	if cmd.Use != use {
 		t.Fatalf("expected use: %s; got %s", use, cmd.Use)

@@ -59,7 +59,7 @@ func NewRootCommand() *cobra.Command {
 		study.NewStudyCommand(&client, w),
 		study.NewListCommand("studies", &client, w),
 		submission.NewSubmissionCommand(&client, w),
-		requirement.NewRequirementCommand(&client, w),
+		requirement.NewListCommand(&client, w),
 		hook.NewHookCommand(&client, w),
 	)
 
