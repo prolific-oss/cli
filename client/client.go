@@ -25,6 +25,8 @@ type API interface {
 	TransitionStudy(ID, action string) (*TransitionStudyResponse, error)
 	GetHooks(enabled bool) (*ListHooksResponse, error)
 	GetHookEventTypes() (*ListHookEventTypesResponse, error)
+	GetWorkspaces() (*ListWorkspacesResponse, error)
+	GetProjects(workspaceID string) (*ListProjectsResponse, error)
 }
 
 // Client is responsible for interacting with the Prolific API.
@@ -224,6 +226,32 @@ func (c *Client) GetHookEventTypes() (*ListHookEventTypesResponse, error) {
 	var response ListHookEventTypesResponse
 
 	url := "/api/v1/hooks/event-types"
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// GetWorkspaces will return you the workspaces you can see
+func (c *Client) GetWorkspaces() (*ListWorkspacesResponse, error) {
+	var response ListWorkspacesResponse
+
+	url := "/api/v1/workspaces/"
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// GetProjects will return the projects for the given workspace ID
+func (c *Client) GetProjects(workspaceID string) (*ListProjectsResponse, error) {
+	var response ListProjectsResponse
+
+	url := fmt.Sprintf("/api/v1/workspaces/%s/projects/", workspaceID)
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)

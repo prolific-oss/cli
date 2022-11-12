@@ -7,10 +7,12 @@ import (
 
 	"github.com/benmatselby/prolificli/client"
 	"github.com/benmatselby/prolificli/cmd/hook"
+	"github.com/benmatselby/prolificli/cmd/project"
 	requirement "github.com/benmatselby/prolificli/cmd/requirements"
 	"github.com/benmatselby/prolificli/cmd/study"
 	"github.com/benmatselby/prolificli/cmd/submission"
 	"github.com/benmatselby/prolificli/cmd/user"
+	"github.com/benmatselby/prolificli/cmd/workspace"
 	"github.com/benmatselby/prolificli/version"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
@@ -61,6 +63,8 @@ func NewRootCommand() *cobra.Command {
 		submission.NewSubmissionCommand(&client, w),
 		requirement.NewListCommand(&client, w),
 		hook.NewHookCommand(&client, w),
+		workspace.NewListCommand("workspaces", &client, w),
+		project.NewListCommand("projects", &client, w),
 	)
 
 	return cmd

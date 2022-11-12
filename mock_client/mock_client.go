@@ -110,6 +110,21 @@ func (mr *MockAPIMockRecorder) GetMe() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMe", reflect.TypeOf((*MockAPI)(nil).GetMe))
 }
 
+// GetProjects mocks base method.
+func (m *MockAPI) GetProjects(workspaceID string) (*client.ListProjectsResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetProjects", workspaceID)
+	ret0, _ := ret[0].(*client.ListProjectsResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetProjects indicates an expected call of GetProjects.
+func (mr *MockAPIMockRecorder) GetProjects(workspaceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProjects", reflect.TypeOf((*MockAPI)(nil).GetProjects), workspaceID)
+}
+
 // GetStudies mocks base method.
 func (m *MockAPI) GetStudies(status string) (*client.ListStudiesResponse, error) {
 	m.ctrl.T.Helper()
@@ -153,6 +168,21 @@ func (m *MockAPI) GetSubmissions(ID string) (*client.ListSubmissionsResponse, er
 func (mr *MockAPIMockRecorder) GetSubmissions(ID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubmissions", reflect.TypeOf((*MockAPI)(nil).GetSubmissions), ID)
+}
+
+// GetWorkspaces mocks base method.
+func (m *MockAPI) GetWorkspaces() (*client.ListWorkspacesResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetWorkspaces")
+	ret0, _ := ret[0].(*client.ListWorkspacesResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetWorkspaces indicates an expected call of GetWorkspaces.
+func (mr *MockAPIMockRecorder) GetWorkspaces() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkspaces", reflect.TypeOf((*MockAPI)(nil).GetWorkspaces))
 }
 
 // TransitionStudy mocks base method.

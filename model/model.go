@@ -226,3 +226,29 @@ type Hook struct {
 	IsEnabled   bool   `json:"is_enabled"`
 	WorkspaceID string `json:"workspace_id"`
 }
+
+// Workspace represents the workspace model
+type Workspace struct {
+	ID                      string  `json:"id"`
+	Title                   string  `json:"title"`
+	Description             string  `json:"description"`
+	Users                   []User  `json:"users"`
+	NaivetyDistributionRate float64 `json:"naivety_distribution_rate"`
+}
+
+// Project represents the project model
+type Project struct {
+	ID                      string  `json:"id"`
+	Title                   string  `json:"title"`
+	Description             string  `json:"description"`
+	Users                   []User  `json:"users"`
+	NaivetyDistributionRate float64 `json:"naivety_distribution_rate"`
+}
+
+// User represents a user in the system
+type User struct {
+	ID    string   `json:"id"`
+	Name  string   `json:"name"`
+	Email string   `json:"email"`
+	Roles []string `json:"roles"`
+}

@@ -189,3 +189,13 @@ type ListHooksResponse struct {
 type ListHookEventTypesResponse struct {
 	Results []string `json:"results"`
 }
+
+// ListWorkspacesResponse is the response for the list workspaces endpoint.
+type ListWorkspacesResponse struct {
+	Results []model.Workspace `json:"results"`
+}
+
+// ListProjectsResponse is the response for the list projects endpoint.
+type ListProjectsResponse struct {
+	Results []model.Project `json:"results"`
+}
