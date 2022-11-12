@@ -2,6 +2,10 @@
 
 ## next
 
+## 0.0.12
+
+- Ability to list workspaces and projects.
+
 ## 0.0.11
 
 - Ability to get the event-types you can register for via `hook event-types`.
