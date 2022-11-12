@@ -55,8 +55,9 @@ func renderList(client client.API, w io.Writer) error {
 	}
 	lv.List.Title = "Eligibility requirements"
 
-	if err := tea.NewProgram(lv).Start(); err != nil {
-		return fmt.Errorf("cannot render requirements: %s", err)
+	p := tea.NewProgram(lv)
+	if _, err := p.Run(); err != nil {
+		return fmt.Errorf("cannot render studies: %s", err)
 	}
 
 	return nil

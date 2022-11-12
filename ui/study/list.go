@@ -69,7 +69,8 @@ func (r *InteractiveRenderer) Render(client client.API, opts ListUsedOptions, w 
 	}
 	lv.List.Title = "My studies"
 
-	if err := tea.NewProgram(lv).Start(); err != nil {
+	p := tea.NewProgram(lv)
+	if _, err := p.Run(); err != nil {
 		return fmt.Errorf("cannot render studies: %s", err)
 	}
 
