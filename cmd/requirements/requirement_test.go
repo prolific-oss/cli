@@ -17,7 +17,7 @@ func TestNewRequirementCommand(t *testing.T) {
 	cmd := requirement.NewRequirementCommand(client, os.Stdout)
 
 	use := "requirement"
-	short := "Requirement related commands"
+	short := "View all the requirements you can add to your studies"
 
 	if cmd.Use != use {
 		t.Fatalf("expected use: %s; got %s", use, cmd.Use)

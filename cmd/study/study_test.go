@@ -17,7 +17,7 @@ func TestNewStudyCommand(t *testing.T) {
 	cmd := study.NewStudyCommand(client, os.Stdout)
 
 	use := "study"
-	short := "Study related commands"
+	short := "Manage and view your studies"
 
 	if cmd.Use != use {
 		t.Fatalf("expected use: %s; got %s", use, cmd.Use)

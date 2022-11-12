@@ -11,7 +11,7 @@ import (
 func NewHookCommand(client client.API, w io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "hook",
-		Short: "Hook related commands",
+		Short: "Manage and view your hook subscriptions",
 	}
 
 	cmd.AddCommand(

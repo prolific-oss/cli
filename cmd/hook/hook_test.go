@@ -1,23 +1,23 @@
-package user_test
+package hook_test
 
 import (
 	"os"
 	"testing"
 
-	"github.com/benmatselby/prolificli/cmd/user"
+	"github.com/benmatselby/prolificli/cmd/hook"
 	"github.com/benmatselby/prolificli/mock_client"
 	"github.com/golang/mock/gomock"
 )
 
-func TestNewUserCommand(t *testing.T) {
+func TestNewHookCommand(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	client := mock_client.NewMockAPI(ctrl)
+	c := mock_client.NewMockAPI(ctrl)
 
-	cmd := user.NewUserCommand(client, os.Stdout)
+	cmd := hook.NewHookCommand(c, os.Stdout)
 
-	use := "user"
-	short := "User related commands"
+	use := "hook"
+	short := "Manage and view your hook subscriptions"
 
 	if cmd.Use != use {
 		t.Fatalf("expected use: %s; got %s", use, cmd.Use)

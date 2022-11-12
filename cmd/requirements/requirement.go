@@ -11,7 +11,7 @@ import (
 func NewRequirementCommand(client client.API, w io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "requirement",
-		Short: "Requirement related commands",
+		Short: "View all the requirements you can add to your studies",
 	}
 
 	cmd.AddCommand(

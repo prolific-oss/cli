@@ -15,7 +15,7 @@ import (
 // your account.
 func NewMeCommand(client client.API, w io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "me",
+		Use:   "whoami",
 		Short: "Provide details about your account",
 		RunE: func(cmd *cobra.Command, args []string) error {
 

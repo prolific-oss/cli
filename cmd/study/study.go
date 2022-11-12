@@ -11,7 +11,7 @@ import (
 func NewStudyCommand(client client.API, w io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "study",
-		Short: "Study related commands",
+		Short: "Manage and view your studies",
 	}
 
 	cmd.AddCommand(

@@ -55,7 +55,7 @@ func NewRootCommand() *cobra.Command {
 	w := os.Stdout
 
 	cmd.AddCommand(
-		user.NewUserCommand(&client, w),
+		user.NewMeCommand(&client, w),
 		study.NewStudyCommand(&client, w),
 		study.NewListCommand("studies", &client, w),
 		submission.NewSubmissionCommand(&client, w),

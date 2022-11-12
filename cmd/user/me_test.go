@@ -21,7 +21,7 @@ func TestNewMeCommand(t *testing.T) {
 
 	cmd := user.NewMeCommand(client, os.Stdout)
 
-	use := "me"
+	use := "whoami"
 	short := "Provide details about your account"
 
 	if cmd.Use != use {

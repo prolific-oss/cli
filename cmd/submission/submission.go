@@ -11,7 +11,7 @@ import (
 func NewSubmissionCommand(client client.API, w io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "submission",
-		Short: "Submission related commands",
+		Short: "View your study submissions",
 	}
 
 	cmd.AddCommand(
