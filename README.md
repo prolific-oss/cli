@@ -12,14 +12,16 @@ Usage:
   prolificli [command]
 
 Available Commands:
-  completion  Generate the autocompletion script for the specified shell
-  help        Help about any command
-  hook        Hook related commands
-  requirement Requirement related commands
-  studies     Provide details about your studies
-  study       Study related commands
-  submission  Submission related commands
-  user        User related commands
+  completion   Generate the autocompletion script for the specified shell
+  help         Help about any command
+  hook         Manage and view your hook subscriptions
+  projects     Provide details about your projects
+  requirements List all eligibility requirements available for your study
+  studies      Provide details about your studies
+  study        Manage and view your studies
+  submission   View your study submissions
+  whoami       Provide details about your account
+  workspaces   Provide details about your workspaces
 
 Flags:
       --config string   config file (default is $HOME/.benmatselby/prolificli.yaml)
