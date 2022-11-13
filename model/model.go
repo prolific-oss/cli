@@ -252,3 +252,8 @@ type User struct {
 	Email string   `json:"email"`
 	Roles []string `json:"roles"`
 }
+
+// Secret represents the secrets passed back from Prolific.
+type Secret struct {
+	Value string `json:"value"`
+}

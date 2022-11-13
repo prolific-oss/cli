@@ -36,7 +36,7 @@ func NewListCommand(commandName string, client client.API, w io.Writer) *cobra.C
 	}
 
 	flags := cmd.Flags()
-	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", "", "Filter on enabled subscriptions.")
+	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", "", "Filter projects by workspace.")
 
 	return cmd
 }

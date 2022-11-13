@@ -25,6 +25,7 @@ type API interface {
 	TransitionStudy(ID, action string) (*TransitionStudyResponse, error)
 	GetHooks(enabled bool) (*ListHooksResponse, error)
 	GetHookEventTypes() (*ListHookEventTypesResponse, error)
+	GetHookSecrets(workspaceID string) (*ListSecretsResponse, error)
 	GetWorkspaces() (*ListWorkspacesResponse, error)
 	GetProjects(workspaceID string) (*ListProjectsResponse, error)
 }
@@ -225,7 +226,20 @@ func (c *Client) GetHooks(enabled bool) (*ListHooksResponse, error) {
 func (c *Client) GetHookEventTypes() (*ListHookEventTypesResponse, error) {
 	var response ListHookEventTypesResponse
 
-	url := "/api/v1/hooks/event-types"
+	url := "/api/v1/hooks/event-types/"
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// GetHookSecrets will return the secrets for a Workspace
+func (c *Client) GetHookSecrets(workspaceID string) (*ListSecretsResponse, error) {
+	var response ListSecretsResponse
+
+	url := fmt.Sprintf("/api/v1/hooks/secrets/?workspace_id=%s", workspaceID)
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)

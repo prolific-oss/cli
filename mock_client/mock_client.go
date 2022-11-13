@@ -80,6 +80,21 @@ func (mr *MockAPIMockRecorder) GetHookEventTypes() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHookEventTypes", reflect.TypeOf((*MockAPI)(nil).GetHookEventTypes))
 }
 
+// GetHookSecrets mocks base method.
+func (m *MockAPI) GetHookSecrets(workspaceID string) (*client.ListSecretsResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetHookSecrets", workspaceID)
+	ret0, _ := ret[0].(*client.ListSecretsResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetHookSecrets indicates an expected call of GetHookSecrets.
+func (mr *MockAPIMockRecorder) GetHookSecrets(workspaceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHookSecrets", reflect.TypeOf((*MockAPI)(nil).GetHookSecrets), workspaceID)
+}
+
 // GetHooks mocks base method.
 func (m *MockAPI) GetHooks(enabled bool) (*client.ListHooksResponse, error) {
 	m.ctrl.T.Helper()

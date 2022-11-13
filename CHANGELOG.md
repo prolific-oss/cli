@@ -2,6 +2,8 @@
 
 ## next
 
+- Ability to list your hook secrets via `hook secrets`.
+
 ## 0.0.12
 
 - Ability to list workspaces and projects.

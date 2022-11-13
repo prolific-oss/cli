@@ -4,6 +4,35 @@ import (
 	"github.com/benmatselby/prolificli/model"
 )
 
+// JSONAPILinks is the standard pagination data structure.
+type JSONAPILinks struct {
+	Links struct {
+		Self struct {
+			Href  string `json:"href"`
+			Title string `json:"title"`
+		} `json:"self"`
+		Next struct {
+			Href  interface{} `json:"href"`
+			Title string      `json:"title"`
+		} `json:"next"`
+		Previous struct {
+			Href  interface{} `json:"href"`
+			Title string      `json:"title"`
+		} `json:"previous"`
+		Last struct {
+			Href  string `json:"href"`
+			Title string `json:"title"`
+		} `json:"last"`
+	} `json:"_links"`
+}
+
+// JSONAPIMeta is the standard meta data structure.
+type JSONAPIMeta struct {
+	Meta struct {
+		Count int `json:"count"`
+	} `json:"meta"`
+}
+
 // MeResponse is a struct that represents your account.
 type MeResponse struct {
 	ID               string `json:"id"`
@@ -21,79 +50,22 @@ type MeResponse struct {
 // ListStudiesResponse is the response for the /studies API response.
 type ListStudiesResponse struct {
 	Results []model.Study `json:"results"`
-	Links   struct {
-		Self struct {
-			Href  string `json:"href"`
-			Title string `json:"title"`
-		} `json:"self"`
-		Next struct {
-			Href  interface{} `json:"href"`
-			Title string      `json:"title"`
-		} `json:"next"`
-		Previous struct {
-			Href  interface{} `json:"href"`
-			Title string      `json:"title"`
-		} `json:"previous"`
-		Last struct {
-			Href  string `json:"href"`
-			Title string `json:"title"`
-		} `json:"last"`
-	} `json:"_links"`
-	Meta struct {
-		Count int `json:"count"`
-	} `json:"meta"`
+	*JSONAPILinks
+	*JSONAPIMeta
 }
 
 // ListSubmissionsResponse is the response for the submissions request.
 type ListSubmissionsResponse struct {
 	Results []model.Submission `json:"results"`
-	Links   struct {
-		Self struct {
-			Href  string `json:"href"`
-			Title string `json:"title"`
-		} `json:"self"`
-		Next struct {
-			Href  interface{} `json:"href"`
-			Title string      `json:"title"`
-		} `json:"next"`
-		Previous struct {
-			Href  interface{} `json:"href"`
-			Title string      `json:"title"`
-		} `json:"previous"`
-		Last struct {
-			Href  string `json:"href"`
-			Title string `json:"title"`
-		} `json:"last"`
-	} `json:"_links"`
-	Meta struct {
-		Count int `json:"count"`
-	} `json:"meta"`
+	*JSONAPILinks
+	*JSONAPIMeta
 }
 
 // ListRequirementsResponse is the response for the requirements request.
 type ListRequirementsResponse struct {
 	Results []model.Requirement `json:"results"`
-	Links   struct {
-		Self struct {
-			Href  string `json:"href"`
-			Title string `json:"title"`
-		} `json:"self"`
-		Next struct {
-			Href  interface{} `json:"href"`
-			Title string      `json:"title"`
-		} `json:"next"`
-		Previous struct {
-			Href  interface{} `json:"href"`
-			Title string      `json:"title"`
-		} `json:"previous"`
-		Last struct {
-			Href  string `json:"href"`
-			Title string `json:"title"`
-		} `json:"last"`
-	} `json:"_links"`
-	Meta struct {
-		Count int `json:"count"`
-	} `json:"meta"`
+	*JSONAPILinks
+	*JSONAPIMeta
 }
 
 // TransitionStudyResponse is the response for transitioning a study to another status.
@@ -134,4 +106,9 @@ type ListWorkspacesResponse struct {
 // ListProjectsResponse is the response for the list projects endpoint.
 type ListProjectsResponse struct {
 	Results []model.Project `json:"results"`
+}
+
+// ListSecretsResponse is the list secrets response.
+type ListSecretsResponse struct {
+	Results []model.Secret `json:"results"`
 }
