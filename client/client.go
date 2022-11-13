@@ -18,7 +18,7 @@ import (
 type API interface {
 	CreateStudy(model.CreateStudy) (*model.Study, error)
 	GetEligibilityRequirements() (*ListRequirementsResponse, error)
-	GetMe() (*Me, error)
+	GetMe() (*MeResponse, error)
 	GetStudies(status string) (*ListStudiesResponse, error)
 	GetStudy(ID string) (*model.Study, error)
 	GetSubmissions(ID string) (*ListSubmissionsResponse, error)
@@ -112,8 +112,8 @@ func (c *Client) CreateStudy(study model.CreateStudy) (*model.Study, error) {
 }
 
 // GetMe will return your user account details.
-func (c *Client) GetMe() (*Me, error) {
-	var response Me
+func (c *Client) GetMe() (*MeResponse, error) {
+	var response MeResponse
 
 	url := "/api/v1/users/me"
 	_, err := c.Execute(http.MethodGet, url, nil, &response)

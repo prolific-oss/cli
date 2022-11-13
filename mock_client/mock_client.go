@@ -96,10 +96,10 @@ func (mr *MockAPIMockRecorder) GetHooks(enabled interface{}) *gomock.Call {
 }
 
 // GetMe mocks base method.
-func (m *MockAPI) GetMe() (*client.Me, error) {
+func (m *MockAPI) GetMe() (*client.MeResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetMe")
-	ret0, _ := ret[0].(*client.Me)
+	ret0, _ := ret[0].(*client.MeResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

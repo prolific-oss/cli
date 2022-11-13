@@ -58,7 +58,7 @@ func TestRenderMe(t *testing.T) {
 			defer ctrl.Finish()
 			c := mock_client.NewMockAPI(ctrl)
 
-			me := client.Me{
+			me := client.MeResponse{
 				FirstName:        "Bald",
 				LastName:         "Rick",
 				Email:            "baldrick@turnip.co",
