@@ -35,6 +35,21 @@ func (m *MockAPI) EXPECT() *MockAPIMockRecorder {
 	return m.recorder
 }
 
+// CreateProject mocks base method.
+func (m *MockAPI) CreateProject(workspaceID string, project model.Project) (*client.CreateProjectResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateProject", workspaceID, project)
+	ret0, _ := ret[0].(*client.CreateProjectResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateProject indicates an expected call of CreateProject.
+func (mr *MockAPIMockRecorder) CreateProject(workspaceID, project interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateProject", reflect.TypeOf((*MockAPI)(nil).CreateProject), workspaceID, project)
+}
+
 // CreateStudy mocks base method.
 func (m *MockAPI) CreateStudy(arg0 model.CreateStudy) (*model.Study, error) {
 	m.ctrl.T.Helper()

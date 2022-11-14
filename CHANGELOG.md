@@ -5,6 +5,7 @@
 - Ability to list your hook secrets via `hook secrets`.
 - Add the ID and WorkspaceID to the secret output.
 - Ability to create a workspace via `workspace create`.
+- Ability to create a project in a workspace via `project create`.
 
 ## 0.0.12
 

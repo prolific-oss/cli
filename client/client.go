@@ -33,6 +33,7 @@ type API interface {
 	CreateWorkspace(workspace model.Workspace) (*CreateWorkspacesResponse, error)
 
 	GetProjects(workspaceID string) (*ListProjectsResponse, error)
+	CreateProject(workspaceID string, project model.Project) (*CreateProjectResponse, error)
 }
 
 // Client is responsible for interacting with the Prolific API.
@@ -285,6 +286,19 @@ func (c *Client) GetProjects(workspaceID string) (*ListProjectsResponse, error) 
 
 	url := fmt.Sprintf("/api/v1/workspaces/%s/projects/", workspaceID)
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// CreateProject will create you a project
+func (c *Client) CreateProject(workspaceID string, project model.Project) (*CreateProjectResponse, error) {
+	var response CreateProjectResponse
+
+	url := fmt.Sprintf("/api/v1/workspaces/%s/projects/", workspaceID)
+	_, err := c.Execute(http.MethodPost, url, project, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}

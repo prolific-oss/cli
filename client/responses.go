@@ -113,6 +113,11 @@ type ListProjectsResponse struct {
 	Results []model.Project `json:"results"`
 }
 
+// CreateProjectResponse is the response for creating a project
+type CreateProjectResponse struct {
+	model.Project
+}
+
 // ListSecretsResponse is the list secrets response.
 type ListSecretsResponse struct {
 	Results []model.Secret `json:"results"`

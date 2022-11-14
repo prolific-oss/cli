@@ -64,7 +64,7 @@ func NewRootCommand() *cobra.Command {
 		requirement.NewListCommand(&client, w),
 		hook.NewHookCommand(&client, w),
 		workspace.NewWorkspaceCommand(&client, w),
-		project.NewListCommand("projects", &client, w),
+		project.NewProjectCommand(&client, w),
 	)
 
 	return cmd
