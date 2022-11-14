@@ -3,6 +3,7 @@ package hook
 import (
 	"fmt"
 	"io"
+	"text/tabwriter"
 
 	"github.com/benmatselby/prolificli/client"
 	"github.com/spf13/cobra"
@@ -46,9 +47,12 @@ func renderSecrets(client client.API, opts ListSecretOptions, w io.Writer) error
 		return err
 	}
 
+	tw := tabwriter.NewWriter(w, 0, 1, 1, ' ', 0)
+	fmt.Fprintf(tw, "%s\t%s\t%s\n", "ID", "Secret", "Workspace ID")
 	for _, secret := range secrets.Results {
-		fmt.Fprintln(w, secret.Value)
+		fmt.Fprintf(tw, "%s\t%s\t%s\n", secret.ID, secret.Value, secret.WorkspaceID)
 	}
 
+	tw.Flush()
 	return nil
 }

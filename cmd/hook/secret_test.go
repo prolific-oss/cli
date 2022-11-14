@@ -3,7 +3,6 @@ package hook_test
 import (
 	"bufio"
 	"bytes"
-	"fmt"
 	"os"
 	"testing"
 
@@ -40,7 +39,7 @@ func TestNewListSecretCommandCallsAPI(t *testing.T) {
 
 	response := client.ListSecretsResponse{
 		Results: []model.Secret{
-			{Value: "Leicester Square"},
+			{ID: "63722971f9cc073ecc730f6a", Value: "Leicester Square", WorkspaceID: "63722982f9cc073ecc730f6b"},
 		},
 	}
 
@@ -57,8 +56,13 @@ func TestNewListSecretCommandCallsAPI(t *testing.T) {
 	_ = cmd.RunE(cmd, nil)
 	writer.Flush()
 
-	expected := fmt.Sprintf("%s\n", response.Results[0].Value)
-	if b.String() != expected {
-		t.Fatalf("expected '%s', got '%s'", expected, b.String())
+	expected := `ID                       Secret           Workspace ID
+63722971f9cc073ecc730f6a Leicester Square 63722982f9cc073ecc730f6b
+`
+
+	actual := b.String()
+
+	if actual != expected {
+		t.Fatalf("expected '%s', got '%s'", expected, actual)
 	}
 }

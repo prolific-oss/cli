@@ -3,6 +3,7 @@
 ## next
 
 - Ability to list your hook secrets via `hook secrets`.
+- Add the ID and WorkspaceID to the secret output.
 
 ## 0.0.12
 

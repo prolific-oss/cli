@@ -255,5 +255,7 @@ type User struct {
 
 // Secret represents the secrets passed back from Prolific.
 type Secret struct {
-	Value string `json:"value"`
+	ID          string `json:"id"`
+	Value       string `json:"value"`
+	WorkspaceID string `json:"workspace_id"`
 }
