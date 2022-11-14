@@ -50,6 +50,21 @@ func (mr *MockAPIMockRecorder) CreateStudy(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateStudy", reflect.TypeOf((*MockAPI)(nil).CreateStudy), arg0)
 }
 
+// CreateWorkspace mocks base method.
+func (m *MockAPI) CreateWorkspace(workspace model.Workspace) (*client.CreateWorkspacesResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateWorkspace", workspace)
+	ret0, _ := ret[0].(*client.CreateWorkspacesResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateWorkspace indicates an expected call of CreateWorkspace.
+func (mr *MockAPIMockRecorder) CreateWorkspace(workspace interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWorkspace", reflect.TypeOf((*MockAPI)(nil).CreateWorkspace), workspace)
+}
+
 // GetEligibilityRequirements mocks base method.
 func (m *MockAPI) GetEligibilityRequirements() (*client.ListRequirementsResponse, error) {
 	m.ctrl.T.Helper()

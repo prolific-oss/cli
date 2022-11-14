@@ -16,17 +16,22 @@ import (
 
 // API represents what is allowed to be called on the Prolific client.
 type API interface {
+	GetMe() (*MeResponse, error)
+
 	CreateStudy(model.CreateStudy) (*model.Study, error)
 	GetEligibilityRequirements() (*ListRequirementsResponse, error)
-	GetMe() (*MeResponse, error)
 	GetStudies(status string) (*ListStudiesResponse, error)
 	GetStudy(ID string) (*model.Study, error)
 	GetSubmissions(ID string) (*ListSubmissionsResponse, error)
 	TransitionStudy(ID, action string) (*TransitionStudyResponse, error)
+
 	GetHooks(enabled bool) (*ListHooksResponse, error)
 	GetHookEventTypes() (*ListHookEventTypesResponse, error)
 	GetHookSecrets(workspaceID string) (*ListSecretsResponse, error)
+
 	GetWorkspaces() (*ListWorkspacesResponse, error)
+	CreateWorkspace(workspace model.Workspace) (*CreateWorkspacesResponse, error)
+
 	GetProjects(workspaceID string) (*ListProjectsResponse, error)
 }
 
@@ -254,6 +259,19 @@ func (c *Client) GetWorkspaces() (*ListWorkspacesResponse, error) {
 
 	url := "/api/v1/workspaces/"
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// CreateWorkspace will create you a workspace
+func (c *Client) CreateWorkspace(workspace model.Workspace) (*CreateWorkspacesResponse, error) {
+	var response CreateWorkspacesResponse
+
+	url := "/api/v1/workspaces/"
+	_, err := c.Execute(http.MethodPost, url, workspace, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}

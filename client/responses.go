@@ -103,6 +103,11 @@ type ListWorkspacesResponse struct {
 	Results []model.Workspace `json:"results"`
 }
 
+// CreateWorkspacesResponse is the response for creating a workspace
+type CreateWorkspacesResponse struct {
+	model.Workspace
+}
+
 // ListProjectsResponse is the response for the list projects endpoint.
 type ListProjectsResponse struct {
 	Results []model.Project `json:"results"`
