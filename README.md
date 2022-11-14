@@ -15,13 +15,13 @@ Available Commands:
   completion   Generate the autocompletion script for the specified shell
   help         Help about any command
   hook         Manage and view your hook subscriptions
-  projects     Provide details about your projects
+  project      Manage and view your projects in a workspace
   requirements List all eligibility requirements available for your study
   studies      Provide details about your studies
   study        Manage and view your studies
   submission   View your study submissions
   whoami       Provide details about your account
-  workspaces   Provide details about your workspaces
+  workspace    Manage and view your workspaces
 
 Flags:
       --config string   config file (default is $HOME/.benmatselby/prolificli.yaml)
