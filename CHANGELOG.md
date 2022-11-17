@@ -2,6 +2,12 @@
 
 ## next
 
+## 0.0.14
+
+- Partial fix for the currency display issue identified in [#69](https://github.com/benmatselby/prolificli/issues/69)
+  - The study model now can handle the `presentment_currency_code` and `currency_code` fields and figure out what to display.
+  - It will still default to `GBP` if required.
+
 ## 0.0.13
 
 - Ability to list your hook secrets via `hook secrets`.

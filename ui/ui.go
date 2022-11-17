@@ -23,9 +23,6 @@ const (
 // AppDateTimeFormat The format for date/times in the application.
 const AppDateTimeFormat string = "02-01-2006 15:04"
 
-// DefaultCurrency is the default currency.
-const DefaultCurrency string = "GBP"
-
 // RenderTitle will render a nice coloured UI for a title based on status
 func RenderTitle(title, status string) lipgloss.Style {
 	var color = ""
@@ -67,7 +64,7 @@ func RenderHeading(heading string) string {
 // RenderMoney will return a symbolised string of money.
 func RenderMoney(amount float64, currencyCode string) string {
 	if currencyCode == "" {
-		currencyCode = DefaultCurrency
+		currencyCode = model.DefaultCurrency
 	}
 
 	p := message.NewPrinter(language.English)

@@ -5,6 +5,10 @@ import (
 	"time"
 )
 
+// DefaultCurrency is set to GBP if we cannot figure out what currency to
+// render based on other factors.
+const DefaultCurrency string = "GBP"
+
 const (
 	// StatusUnpublished is a valid study status
 	StatusUnpublished = "unpublished"
@@ -71,6 +75,7 @@ type Study struct {
 			ID    string `json:"id"`
 			Title string `json:"title"`
 		} `json:"question"`
+		DisplayDetails string `json:"details_display"`
 	} `json:"eligibility_requirements"`
 	Desc                    string      `json:"description"`
 	EstimatedCompletionTime int         `json:"estimated_completion_time"`
@@ -81,6 +86,7 @@ type Study struct {
 	StartedPublishingAt     interface{} `json:"started_publishing_at"`
 	AwardPoints             int         `json:"award_points"`
 	PresentmentCurrencyCode string      `json:"presentment_currency_code"`
+	CurrencyCode            string      `json:"currency_code"`
 	Researcher              struct {
 		ID          string `json:"id"`
 		Name        string `json:"name"`
@@ -138,6 +144,20 @@ func (s Study) Title() string { return s.Name }
 // Description will set the secondary string the view.
 func (s Study) Description() string {
 	return fmt.Sprintf("%s - %s - %d places available - %s", s.Status, s.StudyType, s.TotalAvailablePlaces, s.Desc)
+}
+
+// GetCurrencyCode handles the logic about which internal fields to use to decide
+// which currency to display. Defaults to GBP.
+func (s Study) GetCurrencyCode() string {
+	if s.PresentmentCurrencyCode != "" {
+		return s.PresentmentCurrencyCode
+	}
+
+	if s.CurrencyCode != "" {
+		return s.CurrencyCode
+	}
+
+	return DefaultCurrency
 }
 
 // Submission represents a submission to a study from a participant.
