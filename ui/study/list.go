@@ -21,6 +21,7 @@ type ListUsedOptions struct {
 	Status         string
 	NonInteractive bool
 	Fields         string
+	ProjectID      string
 }
 
 // ListStrategy defines an interface to allow different strategies to render the list view.
@@ -49,7 +50,8 @@ type InteractiveRenderer struct{}
 
 // Render will render the list in an interactive manner.
 func (r *InteractiveRenderer) Render(client client.API, opts ListUsedOptions, w io.Writer) error {
-	studies, err := client.GetStudies(opts.Status)
+	studies, err := client.GetStudies(opts.Status, opts.ProjectID)
+
 	if err != nil {
 		return err
 	}
@@ -82,7 +84,7 @@ type NonInteractiveRenderer struct{}
 
 // Render will just display the results in a table.
 func (r *NonInteractiveRenderer) Render(client client.API, opts ListUsedOptions, w io.Writer) error {
-	studies, err := client.GetStudies(opts.Status)
+	studies, err := client.GetStudies(opts.Status, opts.ProjectID)
 	if err != nil {
 		return err
 	}
@@ -116,7 +118,7 @@ type CsvRenderer struct{}
 
 // Render will render the studies in the CSV format.
 func (r *CsvRenderer) Render(client client.API, opts ListUsedOptions, w io.Writer) error {
-	studies, err := client.GetStudies(opts.Status)
+	studies, err := client.GetStudies(opts.Status, opts.ProjectID)
 	if err != nil {
 		return err
 	}

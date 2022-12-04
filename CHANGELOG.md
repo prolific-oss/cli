@@ -2,6 +2,11 @@
 
 ## next
 
+## 0.0.15
+
+- Ability to list studies in a different project.
+  - This was nearly released from Prolific, so now you can specify a `-p` flag to `study list`.
+
 ## 0.0.14
 
 - Partial fix for the currency display issue identified in [#69](https://github.com/benmatselby/prolificli/issues/69)
@@ -18,6 +23,8 @@
 ## 0.0.12
 
 - Ability to list workspaces and projects.
+  - `workspace list`
+  - `project list -w [workspace-id]`
 
 ## 0.0.11
 

@@ -14,10 +14,11 @@ import (
 // ListOptions is the options for the listing studies command.
 type ListOptions struct {
 	Args           []string
-	Status         string
-	NonInteractive bool
-	Fields         string
 	Csv            bool
+	Fields         string
+	NonInteractive bool
+	ProjectID      string
+	Status         string
 }
 
 // NewListCommand creates a new `study list` command to give you details about
@@ -42,7 +43,7 @@ func NewListCommand(commandName string, client client.API, w io.Writer) *cobra.C
 			}
 
 			err := renderer.Render(client, study.ListUsedOptions{
-				Status: opts.Status, NonInteractive: opts.NonInteractive, Fields: opts.Fields,
+				Status: opts.Status, NonInteractive: opts.NonInteractive, Fields: opts.Fields, ProjectID: opts.ProjectID,
 			}, w)
 
 			if err != nil {
@@ -58,6 +59,7 @@ func NewListCommand(commandName string, client client.API, w io.Writer) *cobra.C
 	flags.BoolVarP(&opts.NonInteractive, "non-interactive", "n", false, "Render the list details straight to the terminal.")
 	flags.BoolVarP(&opts.Csv, "csv", "c", false, "Render the list details in a CSV format.")
 	flags.StringVarP(&opts.Fields, "fields", "f", "", "Comma separated list of fields you want to display in non-interactive/csv mode.")
+	flags.StringVarP(&opts.ProjectID, "project", "p", "", "Get studies for a given project ID.")
 
 	return cmd
 }

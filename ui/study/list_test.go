@@ -19,7 +19,8 @@ func TestCsvRendererRendersInCsvFormat(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	opts := study.ListUsedOptions{
-		Status: model.StatusActive,
+		Status:    model.StatusActive,
+		ProjectID: "",
 	}
 
 	actualStudy := model.Study{
@@ -41,7 +42,7 @@ func TestCsvRendererRendersInCsvFormat(t *testing.T) {
 
 	c.
 		EXPECT().
-		GetStudies(gomock.Eq(opts.Status)).
+		GetStudies(gomock.Eq(opts.Status), gomock.Eq(opts.ProjectID)).
 		Return(&studyResponse, nil).
 		MaxTimes(1)
 
@@ -72,14 +73,15 @@ func TestCsvRendererRendersReturnsErrorIfCannotGetStudies(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	opts := study.ListUsedOptions{
-		Status: model.StatusActive,
+		Status:    model.StatusActive,
+		ProjectID: "",
 	}
 
 	expected := errors.New("What in the blazes!!!")
 
 	c.
 		EXPECT().
-		GetStudies(gomock.Eq(opts.Status)).
+		GetStudies(gomock.Eq(opts.Status), gomock.Eq(opts.ProjectID)).
 		Return(nil, expected).
 		MaxTimes(1)
 
@@ -102,8 +104,9 @@ func TestCsvRendererRendersInCsvFormatRespectingFieldOrder(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	opts := study.ListUsedOptions{
-		Status: model.StatusActive,
-		Fields: "ID,Status",
+		Status:    model.StatusActive,
+		Fields:    "ID,Status",
+		ProjectID: "",
 	}
 
 	actualStudy := model.Study{
@@ -125,7 +128,7 @@ func TestCsvRendererRendersInCsvFormatRespectingFieldOrder(t *testing.T) {
 
 	c.
 		EXPECT().
-		GetStudies(gomock.Eq(opts.Status)).
+		GetStudies(gomock.Eq(opts.Status), gomock.Eq(opts.ProjectID)).
 		Return(&studyResponse, nil).
 		MaxTimes(1)
 

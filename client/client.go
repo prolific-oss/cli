@@ -20,7 +20,7 @@ type API interface {
 
 	CreateStudy(model.CreateStudy) (*model.Study, error)
 	GetEligibilityRequirements() (*ListRequirementsResponse, error)
-	GetStudies(status string) (*ListStudiesResponse, error)
+	GetStudies(status, projectID string) (*ListStudiesResponse, error)
 	GetStudy(ID string) (*model.Study, error)
 	GetSubmissions(ID string) (*ListSubmissionsResponse, error)
 	TransitionStudy(ID, action string) (*TransitionStudyResponse, error)
@@ -132,21 +132,26 @@ func (c *Client) GetMe() (*MeResponse, error) {
 }
 
 // GetStudies will return you a list of Study objects.
-func (c *Client) GetStudies(status string) (*ListStudiesResponse, error) {
+func (c *Client) GetStudies(status, projectID string) (*ListStudiesResponse, error) {
 	var response ListStudiesResponse
+	var url string
 
-	if !slices.Contains(model.StudyListStatus, status) {
-		return nil, fmt.Errorf("%s is not a valid status: %s", status, strings.Join(model.StudyListStatus, ", "))
-	}
-
-	statusFragment := ""
-	if status == model.StatusUnpublished {
-		statusFragment = "published=0"
+	if projectID != "" {
+		url = fmt.Sprintf("/api/v1/projects/%s/studies/", projectID)
 	} else {
-		statusFragment = fmt.Sprintf("%s=1", status)
-	}
+		if !slices.Contains(model.StudyListStatus, status) {
+			return nil, fmt.Errorf("%s is not a valid status: %s", status, strings.Join(model.StudyListStatus, ", "))
+		}
 
-	url := fmt.Sprintf("/api/v1/studies/?%s", statusFragment)
+		statusFragment := ""
+		if status == model.StatusUnpublished {
+			statusFragment = "published=0"
+		} else {
+			statusFragment = fmt.Sprintf("%s=1", status)
+		}
+
+		url = fmt.Sprintf("/api/v1/studies/?%s", statusFragment)
+	}
 
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
