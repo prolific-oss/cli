@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -61,6 +62,10 @@ func New() Client {
 
 // Execute runs an HTTP request.
 func (c *Client) Execute(method, url string, body interface{}, response interface{}) (*http.Response, error) {
+	if c.Token == "" {
+		return nil, errors.New("PROLIFIC_TOKEN not set")
+	}
+
 	var buf io.ReadWriter
 	if body != nil {
 		buf = new(bytes.Buffer)
