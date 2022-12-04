@@ -19,6 +19,7 @@ type API interface {
 	GetMe() (*MeResponse, error)
 
 	CreateStudy(model.CreateStudy) (*model.Study, error)
+	DuplicateStudy(ID string) (*model.Study, error)
 	GetEligibilityRequirements() (*ListRequirementsResponse, error)
 	GetStudies(status, projectID string) (*ListStudiesResponse, error)
 	GetStudy(ID string) (*model.Study, error)
@@ -126,6 +127,24 @@ func (c *Client) GetMe() (*MeResponse, error) {
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// DuplicateStudy will duplicate an existing study.
+func (c *Client) DuplicateStudy(ID string) (*model.Study, error) {
+	var response model.Study
+
+	url := fmt.Sprintf("/api/v1/studies/%s/clone/", ID)
+	httpResponse, err := c.Execute(http.MethodPost, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unable to duplicate study: %v", string(body))
 	}
 
 	return &response, nil

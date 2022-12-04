@@ -80,6 +80,21 @@ func (mr *MockAPIMockRecorder) CreateWorkspace(workspace interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWorkspace", reflect.TypeOf((*MockAPI)(nil).CreateWorkspace), workspace)
 }
 
+// DuplicateStudy mocks base method.
+func (m *MockAPI) DuplicateStudy(ID string) (*model.Study, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DuplicateStudy", ID)
+	ret0, _ := ret[0].(*model.Study)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DuplicateStudy indicates an expected call of DuplicateStudy.
+func (mr *MockAPIMockRecorder) DuplicateStudy(ID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DuplicateStudy", reflect.TypeOf((*MockAPI)(nil).DuplicateStudy), ID)
+}
+
 // GetEligibilityRequirements mocks base method.
 func (m *MockAPI) GetEligibilityRequirements() (*client.ListRequirementsResponse, error) {
 	m.ctrl.T.Helper()

@@ -6,6 +6,7 @@
 
 - Ability to list studies in a different project.
   - This was nearly released from Prolific, so now you can specify a `-p` flag to `study list`.
+- Ability to duplicate a study via `study duplicate [id]`.
 
 ## 0.0.14
 

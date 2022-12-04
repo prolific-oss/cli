@@ -18,6 +18,7 @@ func NewStudyCommand(client client.API, w io.Writer) *cobra.Command {
 		NewListCommand("list", client, w),
 		NewViewCommand(client, w),
 		NewCreateCommand(client, w),
+		NewDuplicateCommand(client, w),
 	)
 	return cmd
 }
