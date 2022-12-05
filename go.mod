@@ -12,7 +12,7 @@ require (
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/viper v1.14.0
 	golang.org/x/exp v0.0.0-20220609121020-a51bd0440498
-	golang.org/x/text v0.4.0
+	golang.org/x/text v0.5.0
 )
 
 require (
