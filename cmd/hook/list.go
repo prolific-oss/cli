@@ -23,7 +23,7 @@ func NewListCommand(commandName string, client client.API, w io.Writer) *cobra.C
 
 	cmd := &cobra.Command{
 		Use:   commandName,
-		Short: "Provide details about your hooks",
+		Short: "Provide details about your hook subscriptions",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
 
@@ -57,9 +57,9 @@ func RenderHooks(client client.API, opts ListOptions, w io.Writer) error {
 	}
 
 	tw := tabwriter.NewWriter(w, 0, 1, 1, ' ', 0)
-	fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t\n", "Event", "Target URL", "Enabled", "Workspace ID")
+	fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\t\n", "ID", "Event", "Target URL", "Enabled", "Workspace ID")
 	for _, hook := range hooks.Results {
-		fmt.Fprintf(tw, "%s\t%s\t%v\t%s\t\n", hook.EventType, hook.TargetURL, hook.IsEnabled, hook.WorkspaceID)
+		fmt.Fprintf(tw, "%s\t%s\t%s\t%v\t%s\t\n", hook.ID, hook.EventType, hook.TargetURL, hook.IsEnabled, hook.WorkspaceID)
 	}
 
 	tw.Flush()

@@ -30,6 +30,7 @@ type API interface {
 	GetHooks(enabled bool) (*ListHooksResponse, error)
 	GetHookEventTypes() (*ListHookEventTypesResponse, error)
 	GetHookSecrets(workspaceID string) (*ListSecretsResponse, error)
+	GetEvents(subscriptionID string) (*ListHookEventsResponse, error)
 
 	GetWorkspaces() (*ListWorkspacesResponse, error)
 	CreateWorkspace(workspace model.Workspace) (*CreateWorkspacesResponse, error)
@@ -275,6 +276,19 @@ func (c *Client) GetHookSecrets(workspaceID string) (*ListSecretsResponse, error
 	var response ListSecretsResponse
 
 	url := fmt.Sprintf("/api/v1/hooks/secrets/?workspace_id=%s", workspaceID)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// GetEvents will return events created for a subscription
+func (c *Client) GetEvents(subscriptionID string) (*ListHookEventsResponse, error) {
+	var response ListHookEventsResponse
+
+	url := fmt.Sprintf("/api/v1/hooks/subscriptions/%s/events/", subscriptionID)
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)

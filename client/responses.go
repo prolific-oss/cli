@@ -98,6 +98,11 @@ type ListHookEventTypesResponse struct {
 	Results []model.HookEventType `json:"results"`
 }
 
+// ListHookEventsResponse is the response for the hook events API.
+type ListHookEventsResponse struct {
+	Results []model.HookEvent `json:"results"`
+}
+
 // ListWorkspacesResponse is the response for the list workspaces endpoint.
 type ListWorkspacesResponse struct {
 	Results []model.Workspace `json:"results"`

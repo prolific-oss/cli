@@ -18,6 +18,8 @@ func NewHookCommand(client client.API, w io.Writer) *cobra.Command {
 		NewListCommand("list", client, w),
 		NewEventTypeCommand("event-types", client, w),
 		NewListSecretCommand("secrets", client, w),
+		NewEventListCommand("events", client, w),
 	)
+
 	return cmd
 }

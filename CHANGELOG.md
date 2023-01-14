@@ -2,6 +2,8 @@
 
 ## next
 
+- Add the ability to view hook events for a given subscription `hook events -s [subscription_id]`.
+
 ## 0.0.16
 
 - Add the description to the `hook event-types` view.

@@ -110,6 +110,21 @@ func (mr *MockAPIMockRecorder) GetEligibilityRequirements() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEligibilityRequirements", reflect.TypeOf((*MockAPI)(nil).GetEligibilityRequirements))
 }
 
+// GetEvents mocks base method.
+func (m *MockAPI) GetEvents(subscriptionID string) (*client.ListHookEventsResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetEvents", subscriptionID)
+	ret0, _ := ret[0].(*client.ListHookEventsResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetEvents indicates an expected call of GetEvents.
+func (mr *MockAPIMockRecorder) GetEvents(subscriptionID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEvents", reflect.TypeOf((*MockAPI)(nil).GetEvents), subscriptionID)
+}
+
 // GetHookEventTypes mocks base method.
 func (m *MockAPI) GetHookEventTypes() (*client.ListHookEventTypesResponse, error) {
 	m.ctrl.T.Helper()
