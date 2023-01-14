@@ -2,6 +2,8 @@
 
 ## next
 
+## 0.0.16
+
 - Add the description to the `hook event-types` view.
 
 ## 0.0.15
