@@ -3,6 +3,7 @@ package hook
 import (
 	"fmt"
 	"io"
+	"text/tabwriter"
 
 	"github.com/benmatselby/prolificli/client"
 	"github.com/spf13/cobra"
@@ -34,9 +35,14 @@ func RenderEventTypes(client client.API, w io.Writer) error {
 		return err
 	}
 
+	tw := tabwriter.NewWriter(w, 0, 1, 1, ' ', 0)
+	fmt.Fprintf(tw, "%s\t%s\n", "Event Type", "Description")
+
 	for _, event := range eventTypes.Results {
-		fmt.Fprintln(w, event)
+		fmt.Fprintf(tw, "%s\t%s\n", event.EventType, event.Description)
 	}
+
+	tw.Flush()
 
 	return nil
 }

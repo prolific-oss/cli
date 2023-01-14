@@ -247,6 +247,13 @@ type Hook struct {
 	WorkspaceID string `json:"workspace_id"`
 }
 
+// HookEventType represents event types that are available
+// to register on the webhook subscription
+type HookEventType struct {
+	EventType   string `json:"event_type"`
+	Description string `json:"description"`
+}
+
 // Workspace represents the workspace model
 type Workspace struct {
 	ID                      string  `json:"id"`

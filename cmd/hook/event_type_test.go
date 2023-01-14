@@ -4,12 +4,12 @@ import (
 	"bufio"
 	"bytes"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/benmatselby/prolificli/client"
 	"github.com/benmatselby/prolificli/cmd/hook"
 	"github.com/benmatselby/prolificli/mock_client"
+	"github.com/benmatselby/prolificli/model"
 	"github.com/golang/mock/gomock"
 )
 
@@ -37,10 +37,13 @@ func TestNewEventTypeCommandCallsAPI(t *testing.T) {
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	event := "event.fluxcapacitor.wibble"
-
 	response := client.ListHookEventTypesResponse{
-		Results: []string{event},
+		Results: []model.HookEventType{
+			{
+				EventType:   "wibble",
+				Description: "The wibble event",
+			},
+		},
 	}
 
 	c.
@@ -56,7 +59,13 @@ func TestNewEventTypeCommandCallsAPI(t *testing.T) {
 	_ = cmd.RunE(cmd, nil)
 	writer.Flush()
 
-	if strings.Trim(b.String(), "\n") != event {
-		t.Fatalf("expected '%s', got '%s'", event, b.String())
+	expected := `Event Type Description
+wibble     The wibble event
+`
+
+	actual := b.String()
+
+	if actual != expected {
+		t.Fatalf("expected '%s', got '%s'", expected, actual)
 	}
 }
