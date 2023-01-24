@@ -7,6 +7,7 @@ import (
 
 	"github.com/benmatselby/prolificli/client"
 	"github.com/benmatselby/prolificli/cmd/hook"
+	"github.com/benmatselby/prolificli/cmd/participantgroup"
 	"github.com/benmatselby/prolificli/cmd/project"
 	requirement "github.com/benmatselby/prolificli/cmd/requirements"
 	"github.com/benmatselby/prolificli/cmd/study"
@@ -65,6 +66,7 @@ func NewRootCommand() *cobra.Command {
 		hook.NewHookCommand(&client, w),
 		workspace.NewWorkspaceCommand(&client, w),
 		project.NewProjectCommand(&client, w),
+		participantgroup.NewParticipantCommand(&client, w),
 	)
 
 	return cmd

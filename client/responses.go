@@ -108,7 +108,7 @@ type ListWorkspacesResponse struct {
 	Results []model.Workspace `json:"results"`
 }
 
-// CreateWorkspacesResponse is the response for creating a workspace
+// CreateWorkspacesResponse is the response for creating a workspace.
 type CreateWorkspacesResponse struct {
 	model.Workspace
 }
@@ -118,7 +118,7 @@ type ListProjectsResponse struct {
 	Results []model.Project `json:"results"`
 }
 
-// CreateProjectResponse is the response for creating a project
+// CreateProjectResponse is the response for creating a project.
 type CreateProjectResponse struct {
 	model.Project
 }
@@ -126,4 +126,9 @@ type CreateProjectResponse struct {
 // ListSecretsResponse is the list secrets response.
 type ListSecretsResponse struct {
 	Results []model.Secret `json:"results"`
+}
+
+// ListParticipantGroupsResponse is the list of participant groups response.
+type ListParticipantGroupsResponse struct {
+	Results []model.ParticipantGroup `json:"results"`
 }
