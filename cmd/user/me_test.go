@@ -22,7 +22,7 @@ func TestNewMeCommand(t *testing.T) {
 	cmd := user.NewMeCommand(client, os.Stdout)
 
 	use := "whoami"
-	short := "Provide details about your account"
+	short := "View details about your account"
 
 	if cmd.Use != use {
 		t.Fatalf("expected use: %s; got %s", use, cmd.Use)

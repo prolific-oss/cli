@@ -17,7 +17,7 @@ func TestNewSubmissionCommand(t *testing.T) {
 	cmd := submission.NewSubmissionCommand(client, os.Stdout)
 
 	use := "submission"
-	short := "View your study submissions"
+	short := "Manage and view your study submissions"
 
 	if cmd.Use != use {
 		t.Fatalf("expected use: %s; got %s", use, cmd.Use)

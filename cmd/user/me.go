@@ -15,7 +15,7 @@ import (
 func NewMeCommand(client client.API, w io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "whoami",
-		Short: "Provide details about your account",
+		Short: "View details about your account",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			err := RenderMe(client, w)
 			if err != nil {
