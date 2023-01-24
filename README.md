@@ -15,12 +15,13 @@ Available Commands:
   completion   Generate the autocompletion script for the specified shell
   help         Help about any command
   hook         Manage and view your hook subscriptions
+  participant  Manage and view your participant groups
   project      Manage and view your projects in a workspace
   requirements List all eligibility requirements available for your study
   studies      Provide details about your studies
   study        Manage and view your studies
-  submission   View your study submissions
-  whoami       Provide details about your account
+  submission   Manage and view your study submissions
+  whoami       View details about your account
   workspace    Manage and view your workspaces
 
 Flags:
