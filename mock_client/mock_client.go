@@ -185,6 +185,21 @@ func (mr *MockAPIMockRecorder) GetMe() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMe", reflect.TypeOf((*MockAPI)(nil).GetMe))
 }
 
+// GetParticipantGroup mocks base method.
+func (m *MockAPI) GetParticipantGroup(groupID string) (*client.ViewParticipantGroupResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetParticipantGroup", groupID)
+	ret0, _ := ret[0].(*client.ViewParticipantGroupResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetParticipantGroup indicates an expected call of GetParticipantGroup.
+func (mr *MockAPIMockRecorder) GetParticipantGroup(groupID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetParticipantGroup", reflect.TypeOf((*MockAPI)(nil).GetParticipantGroup), groupID)
+}
+
 // GetParticipantGroups mocks base method.
 func (m *MockAPI) GetParticipantGroups(projectID string) (*client.ListParticipantGroupsResponse, error) {
 	m.ctrl.T.Helper()

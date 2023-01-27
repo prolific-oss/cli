@@ -16,6 +16,7 @@ func NewParticipantCommand(client client.API, w io.Writer) *cobra.Command {
 
 	cmd.AddCommand(
 		NewListCommand("list", client, w),
+		NewViewCommand("view", client, w),
 	)
 	return cmd
 }

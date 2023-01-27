@@ -4,6 +4,7 @@
 
 - Add the ability to view hook events for a given subscription `hook events -s [subscription_id]`.
 - Add the ability to list participant groups via `participant list -p [project_id]`.
+- Add the ability to view a participant group via `participant view [group_id]`.
 
 ## 0.0.16
 

@@ -39,6 +39,7 @@ type API interface {
 	CreateProject(workspaceID string, project model.Project) (*CreateProjectResponse, error)
 
 	GetParticipantGroups(projectID string) (*ListParticipantGroupsResponse, error)
+	GetParticipantGroup(groupID string) (*ViewParticipantGroupResponse, error)
 }
 
 // Client is responsible for interacting with the Prolific API.
@@ -356,6 +357,19 @@ func (c *Client) GetParticipantGroups(projectID string) (*ListParticipantGroupsR
 	var response ListParticipantGroupsResponse
 
 	url := fmt.Sprintf("/api/v1/participant-groups/?project_id=%s", projectID)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// GetParticipantGroup will return the membership in the group
+func (c *Client) GetParticipantGroup(groupID string) (*ViewParticipantGroupResponse, error) {
+	var response ViewParticipantGroupResponse
+
+	url := fmt.Sprintf("/api/v1/participant-groups/%s/participants/", groupID)
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)

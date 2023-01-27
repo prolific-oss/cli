@@ -132,3 +132,8 @@ type ListSecretsResponse struct {
 type ListParticipantGroupsResponse struct {
 	Results []model.ParticipantGroup `json:"results"`
 }
+
+// ViewParticipantGroupResponse is the list of members in a group.
+type ViewParticipantGroupResponse struct {
+	Results []model.ParticipantGroupMembership `json:"results"`
+}
