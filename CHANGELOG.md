@@ -1,8 +1,12 @@
 # CHANGELOG
 
+## 0.0.20
+
+- No longer build binaries for Solaris.
+
 ## 0.0.19
 
-- Move this over to the [prolific-oss](https://github.com/prolific-oss) namespace
+- Move this over to the [prolific-oss](https://github.com/prolific-oss) namespace.
 
 ## 0.0.18
 
@@ -26,7 +30,7 @@
 
 ## 0.0.14
 
-- Partial fix for the currency display issue identified in [#69](https://github.com/benmatselby/prolificli/issues/69)
+- Partial fix for the currency display issue.
   - The study model now can handle the `presentment_currency_code` and `currency_code` fields and figure out what to display.
   - It will still default to `GBP` if required.
 
@@ -74,7 +78,7 @@
 ## 0.0.5
 
 - Ability to render a list of studies with `--non-interactive` which displays the the records in a table.
-- Ability to select which fields to render for the `study list --non-interactive` command. Add a comma separated list like `--fields=ID,Status,Reward,Name` to the end of the command. Default: `ID, Name, Status`. For more information check out the [wiki](https://github.com/benmatselby/prolificli/wiki/Fields-you-can-use-in-the-non-interactive-list-study-command).
+- Ability to select which fields to render for the `study list --non-interactive` command. Add a comma separated list like `--fields=ID,Status,Reward,Name` to the end of the command. Default: `ID, Name, Status`. For more information check out the [wiki](https://github.com/prolific-oss/prolificli/wiki/Fields-you-can-use-in-the-non-interactive-list-study-command).
 
 ## 0.0.4
 
