@@ -88,7 +88,7 @@ You can install this application a few ways:
 <details>
 <summary>Installation via Docker</summary>
 
-Other than requiring [docker](http://docker.com) to be installed, there are no other requirements to run the application this way.
+By using [Docker](http://docker.com), you will not require any dependencies on your host machine. You will need to be given access to the `prolificac` Docker account, so you can pull a private repo.
 
 ```shell
 $ docker run \
