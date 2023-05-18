@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/benmatselby/prolificli/model"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/prolific-oss/prolificli/model"
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"

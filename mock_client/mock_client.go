@@ -7,8 +7,8 @@ package mock_client
 import (
 	reflect "reflect"
 
-	client "github.com/benmatselby/prolificli/client"
-	model "github.com/benmatselby/prolificli/model"
+	client "github.com/prolific-oss/prolificli/client"
+	model "github.com/prolific-oss/prolificli/model"
 	gomock "github.com/golang/mock/gomock"
 )
 

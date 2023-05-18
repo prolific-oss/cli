@@ -7,11 +7,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/benmatselby/prolificli/client"
-	"github.com/benmatselby/prolificli/cmd/participantgroup"
-	"github.com/benmatselby/prolificli/mock_client"
-	"github.com/benmatselby/prolificli/model"
 	"github.com/golang/mock/gomock"
+	"github.com/prolific-oss/prolificli/client"
+	"github.com/prolific-oss/prolificli/cmd/participantgroup"
+	"github.com/prolific-oss/prolificli/mock_client"
+	"github.com/prolific-oss/prolificli/model"
 )
 
 func TestNewViewCommand(t *testing.T) {

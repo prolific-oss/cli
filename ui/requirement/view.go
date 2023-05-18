@@ -3,12 +3,12 @@ package requirement
 import (
 	"fmt"
 
-	"github.com/benmatselby/prolificli/client"
-	"github.com/benmatselby/prolificli/model"
-	"github.com/benmatselby/prolificli/ui"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/prolific-oss/prolificli/client"
+	"github.com/prolific-oss/prolificli/model"
+	"github.com/prolific-oss/prolificli/ui"
 )
 
 var docStyle = lipgloss.NewStyle().Margin(1, 2)

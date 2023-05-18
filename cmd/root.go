@@ -5,17 +5,17 @@ import (
 	"os"
 	"strings"
 
-	"github.com/benmatselby/prolificli/client"
-	"github.com/benmatselby/prolificli/cmd/hook"
-	"github.com/benmatselby/prolificli/cmd/participantgroup"
-	"github.com/benmatselby/prolificli/cmd/project"
-	requirement "github.com/benmatselby/prolificli/cmd/requirements"
-	"github.com/benmatselby/prolificli/cmd/study"
-	"github.com/benmatselby/prolificli/cmd/submission"
-	"github.com/benmatselby/prolificli/cmd/user"
-	"github.com/benmatselby/prolificli/cmd/workspace"
-	"github.com/benmatselby/prolificli/version"
 	homedir "github.com/mitchellh/go-homedir"
+	"github.com/prolific-oss/prolificli/client"
+	"github.com/prolific-oss/prolificli/cmd/hook"
+	"github.com/prolific-oss/prolificli/cmd/participantgroup"
+	"github.com/prolific-oss/prolificli/cmd/project"
+	requirement "github.com/prolific-oss/prolificli/cmd/requirements"
+	"github.com/prolific-oss/prolificli/cmd/study"
+	"github.com/prolific-oss/prolificli/cmd/submission"
+	"github.com/prolific-oss/prolificli/cmd/user"
+	"github.com/prolific-oss/prolificli/cmd/workspace"
+	"github.com/prolific-oss/prolificli/version"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -51,7 +51,7 @@ func NewRootCommand() *cobra.Command {
 		Version: version.GITCOMMIT,
 	}
 
-	cmd.PersistentFlags().StringVar(&cfgFile, "config", "", fmt.Sprintf("config file (default is $HOME/.benmatselby/%s.yaml)", ApplicationName))
+	cmd.PersistentFlags().StringVar(&cfgFile, "config", "", fmt.Sprintf("config file (default is $HOME/.config/prolific/%s.yaml)", ApplicationName))
 
 	client := client.New()
 
@@ -85,7 +85,7 @@ func initConfig() {
 			os.Exit(1)
 		}
 
-		viper.AddConfigPath(strings.Join([]string{home, ".benmatselby"}, "/"))
+		viper.AddConfigPath(strings.Join([]string{home, ".config/prolific"}, "/"))
 		viper.SetConfigName(ApplicationName)
 	}
 

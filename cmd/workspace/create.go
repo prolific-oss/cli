@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/benmatselby/prolificli/client"
-	"github.com/benmatselby/prolificli/model"
+	"github.com/prolific-oss/prolificli/client"
+	"github.com/prolific-oss/prolificli/model"
 	"github.com/spf13/cobra"
 )
 

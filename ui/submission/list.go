@@ -7,7 +7,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/benmatselby/prolificli/client"
+	"github.com/prolific-oss/prolificli/client"
 )
 
 // DefaultListFields is the default fields we should show if the user has not specified.

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/benmatselby/prolificli/client"
-	"github.com/benmatselby/prolificli/ui"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/prolific-oss/prolificli/client"
+	"github.com/prolific-oss/prolificli/ui"
 	"github.com/spf13/cobra"
 )
 

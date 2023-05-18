@@ -1,7 +1,6 @@
 # Prolificli
 
 ![GitHub Badge](https://github.com/prolific-oss/prolificli/workflows/Go/badge.svg)
-[![Go Report Card](https://goreportcard.com/badge/github.com/benmatselby/prolificli)](https://goreportcard.com/report/github.com/benmatselby/prolificli)
 
 CLI application for getting information out of [Prolific](https://www.prolific.co) about your research studies.
 
@@ -25,7 +24,7 @@ Available Commands:
   workspace    Manage and view your workspaces
 
 Flags:
-      --config string   config file (default is $HOME/.benmatselby/prolificli.yaml)
+      --config string   config file (default is $HOME/.prolific/prolificli.yaml)
   -h, --help            help for prolificli
   -v, --version         version for prolificli
 
@@ -44,11 +43,11 @@ Main features include:
 - Ability to render details about a study, and the submissions.
 - Ability to create a Study via a YAML/JSON configuration file.
 - Ability to publish a study whilst creating it (if you have sufficient funds).
-- Ability to silently create a study, meaning you [can script creating many studies in one go](https://github.com/benmatselby/prolificli/wiki/Create-multiple-studies-via-a-bash-script).
+- Ability to silently create a study, meaning you [can script creating many studies in one go](https://github.com/prolific-oss/prolificli/wiki/Create-multiple-studies-via-a-bash-script).
 - Ability to get your user account details.
 - Ability to list your hook subscriptions.
 
-Checkout the [wiki](https://github.com/benmatselby/prolificli/wiki) for more tips and tricks.
+Checkout the [wiki](https://github.com/prolific-oss/prolificli/wiki) for more tips and tricks.
 
 ## Requirements
 
@@ -97,17 +96,17 @@ $ docker run \
   -t \
   -ePROLIFIC_URL \
   -ePROLIFIC_TOKEN \
-  -v "${HOME}/.benmatselby":/root/.benmatselby \
-  benmatselby/prolificli:latest "$@"
+  -v "${HOME}/.prolific":/root/.prolific \
+  prolificac/prolificli:latest "$@"
 ```
 
-The `latest` tag mentioned above can be changed to a released version. For all releases, see [here](https://hub.docker.com/repository/docker/benmatselby/prolificli/tags).
+The `latest` tag mentioned above can be changed to a released version. For all releases, see [here](https://hub.docker.com/repository/docker/prolificac/prolificli/tags).
 
-| Tag      | What it means                                                                           |
-| -------- | --------------------------------------------------------------------------------------- |
-| `latest` | The latest released version                                                             |
-| `main`   | The latest git commit, not released as a tag yet                                        |
-| `v*`     | [Docker releases](https://hub.docker.com/repository/docker/benmatselby/prolificli/tags) |
+| Tag      | What it means                                                                          |
+| -------- | -------------------------------------------------------------------------------------- |
+| `latest` | The latest released version                                                            |
+| `main`   | The latest git commit, not released as a tag yet                                       |
+| `v*`     | [Docker releases](https://hub.docker.com/repository/docker/prolificac/prolificli/tags) |
 
 You can also build the image locally:
 
@@ -134,7 +133,7 @@ You can also install into your `$GOPATH/bin` by running `make build && go instal
 <details>
 <summary>Installation via Binaries</summary>
 
-You can download the binaries from the [release pages](https://github.com/benmatselby/prolificli/releases). Find the release you want, and check the "Assets" section.
+You can download the binaries from the [release pages](https://github.com/prolific-oss/prolificli/releases). Find the release you want, and check the "Assets" section.
 
 Once downloaded, be sure to put the binary in a folder that is referenced in your `$PATH`.
 

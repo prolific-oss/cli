@@ -6,11 +6,11 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/benmatselby/prolificli/client"
-	"github.com/benmatselby/prolificli/mock_client"
-	"github.com/benmatselby/prolificli/model"
-	"github.com/benmatselby/prolificli/ui/study"
 	"github.com/golang/mock/gomock"
+	"github.com/prolific-oss/prolificli/client"
+	"github.com/prolific-oss/prolificli/mock_client"
+	"github.com/prolific-oss/prolificli/model"
+	"github.com/prolific-oss/prolificli/ui/study"
 )
 
 func TestCsvRendererRendersInCsvFormat(t *testing.T) {
