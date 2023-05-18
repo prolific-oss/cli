@@ -36,7 +36,6 @@ jobs:
             linux/arm64
             linux/amd64
             linux/386
-            solaris/amd64
             windows/amd64
             windows/386
           )
