@@ -3,9 +3,7 @@ name: Publish Docker image
 on:
   push:
     branches:
-      - 'main'
-    tags:
-      - 'v*'
+      - 'main-ignore'
 
 jobs:
   push_to_registry:
