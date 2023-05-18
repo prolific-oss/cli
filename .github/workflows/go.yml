@@ -34,3 +34,27 @@ jobs:
       - name: Test
         run: |
           make test
+
+      - name: Release notification
+        id: slack
+        if: github.ref == 'refs/heads/main'
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          # Slack channel id, channel name, or user id to post message.
+          # See also: https://api.slack.com/methods/chat.postMessage#channels
+          # You can pass in multiple channels to post to by providing a comma-delimited list of channel IDs.
+          channel-id: 'tmp-circletest'
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Prolific CLI release* - ${{ job.status }}\n*Git reference* - ${{ github.ref_name }}\n*Deployed by* ${{ github.actor }}\n\n<${{ github.event.pull_request.html_url || github.event.head_commit.url }}|GitHub Context>"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
