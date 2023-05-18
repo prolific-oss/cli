@@ -66,7 +66,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*Prolific CLI versioned release* - ${{ job.status }}\n*Git reference* - ${{ github.event.release.tag_name }}\n*Deployed by* ${{ github.actor }}\n\n<${{ github.event.release.html_url || github.event.head_commit.url }}|GitHub Context>"
+                    "text": "*Prolific CLI versioned release* - ${{ job.status }}\n*Git reference* - ${{ github.event.release.tag_name }}\n*Deployed by* ${{ github.actor }}\n\n<${{ github.event.release.html_url || github.event.head_commit.url }}|${{ github.event.release.tag_name }} Release>"
                   }
                 }
               ]
