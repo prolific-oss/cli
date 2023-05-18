@@ -1,6 +1,6 @@
 # Prolificli
 
-![GitHub Badge](https://github.com/benmatselby/prolificli/workflows/Go/badge.svg)
+![GitHub Badge](https://github.com/prolific-oss/prolificli/workflows/Go/badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/benmatselby/prolificli)](https://goreportcard.com/report/github.com/benmatselby/prolificli)
 
 CLI application for getting information out of [Prolific](https://www.prolific.co) about your research studies.
