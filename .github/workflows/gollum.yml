@@ -1,0 +1,15 @@
+name: "wiki-watcher"
+on: [gollum]
+
+jobs:
+  watch:
+    name: "Watcher"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Wiki Watcher
+        uses: benmatselby/gollum-page-watcher-action@v1.8.0
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
