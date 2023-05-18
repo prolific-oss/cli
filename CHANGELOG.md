@@ -1,6 +1,8 @@
 # CHANGELOG
 
-## next
+## 0.0.19
+
+- Move this over to the [prolific-oss](https://github.com/prolific-oss) namespace
 
 ## 0.0.18
 
