@@ -1,7 +1,7 @@
 package client
 
 import (
-	"github.com/benmatselby/prolificli/model"
+	"github.com/prolific-oss/prolificli/model"
 )
 
 // JSONAPILinks is the standard pagination data structure.

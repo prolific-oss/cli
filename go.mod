@@ -1,4 +1,4 @@
-module github.com/benmatselby/prolificli
+module github.com/prolific-oss/prolificli
 
 go 1.18
 

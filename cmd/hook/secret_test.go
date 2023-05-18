@@ -6,11 +6,11 @@ import (
 	"os"
 	"testing"
 
-	"github.com/benmatselby/prolificli/client"
-	"github.com/benmatselby/prolificli/cmd/hook"
-	"github.com/benmatselby/prolificli/mock_client"
-	"github.com/benmatselby/prolificli/model"
 	"github.com/golang/mock/gomock"
+	"github.com/prolific-oss/prolificli/client"
+	"github.com/prolific-oss/prolificli/cmd/hook"
+	"github.com/prolific-oss/prolificli/mock_client"
+	"github.com/prolific-oss/prolificli/model"
 )
 
 func TestNewListSecretCommand(t *testing.T) {

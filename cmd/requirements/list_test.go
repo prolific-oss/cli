@@ -4,9 +4,9 @@ import (
 	"os"
 	"testing"
 
-	requirement "github.com/benmatselby/prolificli/cmd/requirements"
-	"github.com/benmatselby/prolificli/mock_client"
 	"github.com/golang/mock/gomock"
+	requirement "github.com/prolific-oss/prolificli/cmd/requirements"
+	"github.com/prolific-oss/prolificli/mock_client"
 )
 
 func TestNewListCommand(t *testing.T) {

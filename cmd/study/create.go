@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/benmatselby/prolificli/client"
-	"github.com/benmatselby/prolificli/model"
-	studyui "github.com/benmatselby/prolificli/ui/study"
+	"github.com/prolific-oss/prolificli/client"
+	"github.com/prolific-oss/prolificli/model"
+	studyui "github.com/prolific-oss/prolificli/ui/study"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

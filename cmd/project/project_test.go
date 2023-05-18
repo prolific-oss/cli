@@ -4,9 +4,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/benmatselby/prolificli/cmd/project"
-	"github.com/benmatselby/prolificli/mock_client"
 	"github.com/golang/mock/gomock"
+	"github.com/prolific-oss/prolificli/cmd/project"
+	"github.com/prolific-oss/prolificli/mock_client"
 )
 
 func TestNewWorkspaceCommand(t *testing.T) {

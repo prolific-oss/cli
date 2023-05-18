@@ -3,7 +3,7 @@ package ui_test
 import (
 	"testing"
 
-	"github.com/benmatselby/prolificli/ui"
+	"github.com/prolific-oss/prolificli/ui"
 )
 
 func TestRenderMoney(t *testing.T) {

@@ -3,7 +3,7 @@ package model_test
 import (
 	"testing"
 
-	"github.com/benmatselby/prolificli/model"
+	"github.com/prolific-oss/prolificli/model"
 )
 
 func TestGetCurrencyCode(t *testing.T) {
