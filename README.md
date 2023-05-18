@@ -120,7 +120,7 @@ make docker-build
 <summary>Installation via Git</summary>
 
 ```shell
-git clone git@github.com:benmatselby/prolificli.git
+git clone git@github.com:prolific-oss/prolificli.git
 cd prolificli
 make all
 ./prolificli
