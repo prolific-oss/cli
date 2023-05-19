@@ -63,5 +63,15 @@ func renderEvents(client client.API, opts EventListOptions, w io.Writer) error {
 		fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\n", event.ID, event.DateCreated.Format(ui.AppDateTimeFormat), event.DateUpdated.Format(ui.AppDateTimeFormat), event.Status, event.ResourceID)
 	}
 
-	return tw.Flush()
+	_ = tw.Flush()
+
+	eventCount := len(events.Results)
+	entityName := "event"
+	if eventCount > 1 {
+		entityName = "events"
+	}
+
+	fmt.Fprintf(w, "\nShowing %v %s of %v\n", eventCount, entityName, events.Meta.Count)
+
+	return nil
 }
