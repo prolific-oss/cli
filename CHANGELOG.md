@@ -2,6 +2,11 @@
 
 ## next
 
+## 0.0.21
+
+- Lint the Dockerfile.
+- Define a `pre-commit` hook for the repo, so we can get a quicker feedback loop.
+- Fix some `gosec` warnings.
 - Provide paging options for the `hook events` command.
   - You can now specify the following options:
   - `-l, --limit int           Limit the number of events returned (default 1)`
