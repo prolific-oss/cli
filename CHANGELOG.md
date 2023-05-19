@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## next
+
+- Provide paging options for the `hook events` command.
+  - You can now specify the following options:
+  - `-l, --limit int           Limit the number of events returned (default 1)`
+  - `-o, --offset int          The number of events to offset`
+
 ## 0.0.20
 
 - No longer build binaries for Solaris.

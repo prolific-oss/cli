@@ -7,9 +7,9 @@ package mock_client
 import (
 	reflect "reflect"
 
+	gomock "github.com/golang/mock/gomock"
 	client "github.com/prolific-oss/prolificli/client"
 	model "github.com/prolific-oss/prolificli/model"
-	gomock "github.com/golang/mock/gomock"
 )
 
 // MockAPI is a mock of API interface.
@@ -111,18 +111,18 @@ func (mr *MockAPIMockRecorder) GetEligibilityRequirements() *gomock.Call {
 }
 
 // GetEvents mocks base method.
-func (m *MockAPI) GetEvents(subscriptionID string) (*client.ListHookEventsResponse, error) {
+func (m *MockAPI) GetEvents(subscriptionID string, limit, page int) (*client.ListHookEventsResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEvents", subscriptionID)
+	ret := m.ctrl.Call(m, "GetEvents", subscriptionID, limit, page)
 	ret0, _ := ret[0].(*client.ListHookEventsResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetEvents indicates an expected call of GetEvents.
-func (mr *MockAPIMockRecorder) GetEvents(subscriptionID interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) GetEvents(subscriptionID, limit, page interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEvents", reflect.TypeOf((*MockAPI)(nil).GetEvents), subscriptionID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEvents", reflect.TypeOf((*MockAPI)(nil).GetEvents), subscriptionID, limit, page)
 }
 
 // GetHookEventTypes mocks base method.
