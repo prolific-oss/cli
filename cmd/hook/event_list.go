@@ -15,6 +15,8 @@ import (
 type EventListOptions struct {
 	Args           []string
 	SubscriptionID string
+	Limit          int
+	Offset         int
 }
 
 // NewListCommand creates a new command to deal with listing events
@@ -38,6 +40,8 @@ func NewEventListCommand(commandName string, client client.API, w io.Writer) *co
 
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.SubscriptionID, "subscription", "s", "", "List the events for a subscription")
+	flags.IntVarP(&opts.Limit, "limit", "l", 1, "Limit the number of events returned")
+	flags.IntVarP(&opts.Offset, "offset", "o", 0, "The number of events to offset")
 
 	return cmd
 }
@@ -48,7 +52,7 @@ func renderEvents(client client.API, opts EventListOptions, w io.Writer) error {
 		return errors.New("please provide a subscription ID")
 	}
 
-	events, err := client.GetEvents(opts.SubscriptionID)
+	events, err := client.GetEvents(opts.SubscriptionID, opts.Limit, opts.Offset)
 	if err != nil {
 		return err
 	}
