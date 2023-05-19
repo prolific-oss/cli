@@ -32,3 +32,17 @@ TARGETS=(
 )
 
 for target in "${TARGETS[@]}"; do runTarget "${target}"; done
+
+
+##
+# Specific targets that only care about Dockerfiles
+##
+TARGETS=(
+  lint-dockerfile
+)
+
+path="Dockerfile"
+
+if [[ $(git diff --cached -- "${path}" | wc -l) -gt 0 ]]; then
+  for target in "${TARGETS[@]}"; do runTarget "${target}"; done
+fi
