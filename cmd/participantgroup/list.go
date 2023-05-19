@@ -58,7 +58,5 @@ func render(client client.API, opts ListOptions, w io.Writer) error {
 		fmt.Fprintf(tw, "%s\t%s\n", group.ID, group.Name)
 	}
 
-	tw.Flush()
-
-	return nil
+	return tw.Flush()
 }

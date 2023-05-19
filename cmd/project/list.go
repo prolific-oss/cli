@@ -58,7 +58,5 @@ func renderProjects(client client.API, opts ListOptions, w io.Writer) error {
 		fmt.Fprintf(tw, "%s\t%s\t%v\n", project.ID, project.Title, project.Description)
 	}
 
-	tw.Flush()
-
-	return nil
+	return tw.Flush()
 }

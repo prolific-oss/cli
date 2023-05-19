@@ -72,8 +72,7 @@ func (r *NonInteractiveRenderer) Render(client client.API, opts ListUsedOptions,
 		fmt.Fprint(tw, "\n")
 	}
 
-	tw.Flush()
-	return nil
+	return tw.Flush()
 }
 
 // CsvRenderer will render the output in a CSV format.
