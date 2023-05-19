@@ -35,8 +35,7 @@ clean: ## Clean the local dependencies
 install: ## Install the local dependencies
 	cp scripts/hooks/pre-commit .git/hooks/pre-commit
 	go install github.com/golang/mock/mockgen@master
-	go install github.com/securego/gosec/cmd/gosec@master
-	go install golang.org/x/lint/golint@master
+	go install github.com/securego/gosec/v2/cmd/gosec@latest
 	go get ./...
 
 .PHONY: lint
