@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+#
+# Git pre-commit hook
+#
+
+##
+# The Makefile target runner
+##
+function runTarget {
+  target="${1}"
+
+  printf '\n🏃‍♀️ [EXEC] Running target: %s\n' "${target}"
+
+  if ! make "${target}"; then
+    printf '🔴  [FAIL] %s\n' "${target}"
+    exit 1
+  fi
+
+  printf '\n\n\n'
+}
+
+
+##
+# General targets irrelevant of changes made.
+# - Must be quick
+# - Run for many areas of the codebase
+##
+TARGETS=(
+  lint
+  security
+  test
+)
+
+for target in "${TARGETS[@]}"; do runTarget "${target}"; done
