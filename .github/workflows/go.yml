@@ -27,6 +27,10 @@ jobs:
           version: latest
           args: --verbose
 
+      - name: Lint Dockerfile
+        run: |
+            make lint-dockerfile
+
       - name: Build
         run: |
           make build

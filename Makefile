@@ -42,6 +42,10 @@ install: ## Install the local dependencies
 lint: ## Vet the code
 	golangci-lint run
 
+.PHONY: lint-dockerfile
+lint-dockerfile: ## Lint the dockerfile
+	npx dockerfilelint Dockerfile
+
 .PHONY: security
 security: ## Inspect the code
 	gosec ./...
