@@ -53,6 +53,5 @@ func renderSecrets(client client.API, opts ListSecretOptions, w io.Writer) error
 		fmt.Fprintf(tw, "%s\t%s\t%s\n", secret.ID, secret.Value, secret.WorkspaceID)
 	}
 
-	tw.Flush()
-	return nil
+	return tw.Flush()
 }

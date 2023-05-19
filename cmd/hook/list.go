@@ -62,7 +62,5 @@ func RenderHooks(client client.API, opts ListOptions, w io.Writer) error {
 		fmt.Fprintf(tw, "%s\t%s\t%s\t%v\t%s\t\n", hook.ID, hook.EventType, hook.TargetURL, hook.IsEnabled, hook.WorkspaceID)
 	}
 
-	tw.Flush()
-
-	return nil
+	return tw.Flush()
 }

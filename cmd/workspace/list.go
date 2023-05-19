@@ -40,7 +40,5 @@ func renderWorkspaces(client client.API, w io.Writer) error {
 		fmt.Fprintf(tw, "%s\t%s\t%v\n", workspace.ID, workspace.Title, workspace.Description)
 	}
 
-	tw.Flush()
-
-	return nil
+	return tw.Flush()
 }

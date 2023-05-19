@@ -63,7 +63,5 @@ func renderEvents(client client.API, opts EventListOptions, w io.Writer) error {
 		fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\n", event.ID, event.DateCreated.Format(ui.AppDateTimeFormat), event.DateUpdated.Format(ui.AppDateTimeFormat), event.Status, event.ResourceID)
 	}
 
-	tw.Flush()
-
-	return nil
+	return tw.Flush()
 }
