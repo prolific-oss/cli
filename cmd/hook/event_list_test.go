@@ -83,7 +83,7 @@ func TestNewEventListCommandCallsAPI(t *testing.T) {
 	expected := `ID   Created          Updated          Status    Resource ID
 1122 24-07-2022 08:04 24-07-2022 08:04 SUCCEEDED 313
 
-Showing 1 event of 10
+Showing 1 record of 10
 `
 	actual := b.String()
 	if actual != expected {

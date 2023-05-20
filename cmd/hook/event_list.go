@@ -65,13 +65,7 @@ func renderEvents(client client.API, opts EventListOptions, w io.Writer) error {
 
 	_ = tw.Flush()
 
-	eventCount := len(events.Results)
-	entityName := "event"
-	if eventCount > 1 {
-		entityName = "events"
-	}
-
-	fmt.Fprintf(w, "\nShowing %v %s of %v\n", eventCount, entityName, events.Meta.Count)
+	fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(events.Results), events.Meta.Count))
 
 	return nil
 }

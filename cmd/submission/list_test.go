@@ -84,7 +84,7 @@ func TestNewSubmissionCommandCallsAPI(t *testing.T) {
 	expected := `ParticipantID StartedAt                     TimeTaken StudyCode Status
 919           2022-07-24 08:04:00 +0000 UTC 99                  APPROVED
 
-Showing 1 submission of 10
+Showing 1 record of 10
 `
 
 	actual := stripansi.Strip(b.String())

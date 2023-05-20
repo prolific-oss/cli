@@ -71,3 +71,16 @@ func RenderMoney(amount float64, currencyCode string) string {
 	cur := currency.MustParseISO(currencyCode)
 	return fmt.Sprintf("%s%.2f", p.Sprint(currency.Symbol(cur)), amount)
 }
+
+// RenderRecordCounter will render a common string to explain how many records
+// are being shown out of the total collection. This will take care of pluralisation
+// for you.
+func RenderRecordCounter(count, total int) string {
+	word := "record"
+
+	if count > 1 {
+		word = "records"
+	}
+
+	return fmt.Sprintf("Showing %v %s of %v", count, word, total)
+}

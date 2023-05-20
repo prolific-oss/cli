@@ -37,3 +37,33 @@ func TestRenderMoney(t *testing.T) {
 		}
 	}
 }
+
+func TestRenderRecordCounter(t *testing.T) {
+	tt := []struct {
+		name     string
+		count    int
+		total    int
+		expected string
+	}{
+		{
+			name:     "Single record count",
+			count:    1,
+			total:    1,
+			expected: "Showing 1 record of 1",
+		},
+		{
+			name:     "Showing more than one record",
+			count:    2,
+			total:    10,
+			expected: "Showing 2 records of 10",
+		},
+	}
+
+	for _, tc := range tt {
+		actual := ui.RenderRecordCounter(tc.count, tc.total)
+
+		if tc.expected != actual {
+			t.Fatalf("expected '%v' got '%v'", tc.expected, actual)
+		}
+	}
+}
