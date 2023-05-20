@@ -90,9 +90,13 @@ all: clean install build test
 static-all: clean install static test
 
 .PHONY: docker-build
-docker-build:
-	docker build -t $(DOCKER_PREFIX)/$(NAME):$(DOCKER_RELEASE) --platform=amd64 .
+docker-build: ## Build the docker image
+	docker build -t $(DOCKER_PREFIX)/$(NAME):$(DOCKER_RELEASE) .
 
 .PHONY: docker-push
-docker-push:
+docker-push: ## Push the docker image
 	docker push $(DOCKER_PREFIX)/$(NAME):$(DOCKER_RELEASE)
+
+.PHONY: docker-scout
+docker-scout: ## Check the Docker image for vulnerabilities
+	docker scout cves $(DOCKER_PREFIX)/$(NAME):$(DOCKER_RELEASE)
