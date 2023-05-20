@@ -3,6 +3,8 @@ package hook_test
 import (
 	"bufio"
 	"bytes"
+	"errors"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -100,6 +102,32 @@ func TestNewEventListCommandProvidesErrorIfSubmissionNotPassedIn(t *testing.T) {
 	error := cmd.RunE(cmd, nil)
 
 	expected := `error: please provide a subscription ID`
+
+	if error.Error() != expected {
+		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, error.Error())
+	}
+}
+
+func TestNewEventListCommandSetsDefaultsForLimitOffset(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	subscriptionID := "subscription-id"
+	failureMessage := "Get events failed"
+
+	c.
+		EXPECT().
+		// This is the defaults we have
+		GetEvents(gomock.Eq(subscriptionID), gomock.Eq(client.DefaultRecordLimit), gomock.Eq(client.DefaultRecordOffset)).
+		Return(nil, errors.New(failureMessage)).
+		AnyTimes()
+
+	cmd := hook.NewEventListCommand("events", c, os.Stdout)
+	_ = cmd.Flags().Set("subscription", subscriptionID)
+	error := cmd.RunE(cmd, nil)
+
+	expected := fmt.Sprintf("error: %s", failureMessage)
 
 	if error.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, error.Error())
