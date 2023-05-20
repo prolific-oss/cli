@@ -15,6 +15,12 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+// DefaultRecordOffset defines how many records we should offset to start with.
+const DefaultRecordOffset = 0
+
+// DefaultRecordLimit defines how many records to return by default.
+const DefaultRecordLimit = 200
+
 // API represents what is allowed to be called on the Prolific client.
 type API interface {
 	GetMe() (*MeResponse, error)
@@ -24,13 +30,13 @@ type API interface {
 	GetEligibilityRequirements() (*ListRequirementsResponse, error)
 	GetStudies(status, projectID string) (*ListStudiesResponse, error)
 	GetStudy(ID string) (*model.Study, error)
-	GetSubmissions(ID string) (*ListSubmissionsResponse, error)
+	GetSubmissions(ID string, limit, offset int) (*ListSubmissionsResponse, error)
 	TransitionStudy(ID, action string) (*TransitionStudyResponse, error)
 
 	GetHooks(enabled bool) (*ListHooksResponse, error)
 	GetHookEventTypes() (*ListHookEventTypesResponse, error)
 	GetHookSecrets(workspaceID string) (*ListSecretsResponse, error)
-	GetEvents(subscriptionID string, limit, page int) (*ListHookEventsResponse, error)
+	GetEvents(subscriptionID string, limit, offset int) (*ListHookEventsResponse, error)
 
 	GetWorkspaces() (*ListWorkspacesResponse, error)
 	CreateWorkspace(workspace model.Workspace) (*CreateWorkspacesResponse, error)
@@ -203,10 +209,10 @@ func (c *Client) GetStudy(ID string) (*model.Study, error) {
 }
 
 // GetSubmissions will return submission data for a given study.
-func (c *Client) GetSubmissions(ID string) (*ListSubmissionsResponse, error) {
+func (c *Client) GetSubmissions(ID string, limit, offset int) (*ListSubmissionsResponse, error) {
 	var response ListSubmissionsResponse
 
-	url := fmt.Sprintf("/api/v1/studies/%s/submissions/?offset=0&limit=200", ID)
+	url := fmt.Sprintf("/api/v1/studies/%s/submissions/?limit=%v&offset=%v", ID, limit, offset)
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
@@ -288,10 +294,10 @@ func (c *Client) GetHookSecrets(workspaceID string) (*ListSecretsResponse, error
 }
 
 // GetEvents will return events created for a subscription
-func (c *Client) GetEvents(subscriptionID string, limit, page int) (*ListHookEventsResponse, error) {
+func (c *Client) GetEvents(subscriptionID string, limit, offset int) (*ListHookEventsResponse, error) {
 	var response ListHookEventsResponse
 
-	url := fmt.Sprintf("/api/v1/hooks/subscriptions/%s/events/?limit=%v&offset=%v", subscriptionID, limit, page)
+	url := fmt.Sprintf("/api/v1/hooks/subscriptions/%s/events/?limit=%v&offset=%v", subscriptionID, limit, offset)
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)

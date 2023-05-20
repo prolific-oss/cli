@@ -61,7 +61,7 @@ func (lv ListView) View() string {
 }
 
 // RenderStudy will produce a detailed view of the selected study.
-func RenderStudy(client client.API, study model.Study) string {
+func RenderStudy(c client.API, study model.Study) string {
 	marker := "\n---\n\n"
 
 	content := fmt.Sprintln(ui.RenderTitle(study.Name, study.Status))
@@ -98,7 +98,7 @@ func RenderStudy(client client.API, study model.Study) string {
 	content += marker
 
 	content += fmt.Sprintln(ui.RenderHeading("Submissions"))
-	submissions, err := client.GetSubmissions(study.ID)
+	submissions, err := c.GetSubmissions(study.ID, client.DefaultRecordLimit, client.DefaultRecordOffset)
 	if err != nil {
 		content += "Unable to retrieve submission data."
 	}

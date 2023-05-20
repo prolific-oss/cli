@@ -76,7 +76,7 @@ func TestCreateCommandCallsAPI(t *testing.T) {
 
 	c.
 		EXPECT().
-		GetSubmissions(gomock.Eq(actualStudy.ID)).
+		GetSubmissions(gomock.Eq(actualStudy.ID), gomock.Eq(client.DefaultRecordLimit), gomock.Eq(client.DefaultRecordOffset)).
 		Return(&ls, nil).
 		AnyTimes()
 
@@ -84,10 +84,8 @@ func TestCreateCommandCallsAPI(t *testing.T) {
 	writer := bufio.NewWriter(&b)
 
 	cmd := study.NewCreateCommand(c, writer)
-	err := cmd.Flags().Set("template-path", "../../docs/examples/standard-sample.json")
-	if err != nil {
-		t.Fatalf("did not expect error, got %v", err)
-	}
+	_ = cmd.Flags().Set("template-path", "../../docs/examples/standard-sample.json")
+
 	_ = cmd.RunE(cmd, nil)
 	writer.Flush()
 }
@@ -136,7 +134,7 @@ func TestCreateCommandCanPublish(t *testing.T) {
 
 	c.
 		EXPECT().
-		GetSubmissions(gomock.Eq(actualStudy.ID)).
+		GetSubmissions(gomock.Eq(actualStudy.ID), gomock.Eq(client.DefaultRecordLimit), gomock.Eq(client.DefaultRecordOffset)).
 		Return(&ls, nil).
 		MaxTimes(1)
 

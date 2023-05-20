@@ -20,6 +20,8 @@ func TestCsvRendererRendersInCsvFormat(t *testing.T) {
 
 	opts := submission.ListUsedOptions{
 		StudyID: "1234",
+		Limit:   1,
+		Offset:  client.DefaultRecordOffset,
 	}
 
 	started, _ := time.Parse("2006-01-02 15:04", "2022-07-24 08:04")
@@ -37,7 +39,7 @@ func TestCsvRendererRendersInCsvFormat(t *testing.T) {
 
 	c.
 		EXPECT().
-		GetSubmissions(gomock.Eq(opts.StudyID)).
+		GetSubmissions(gomock.Eq(opts.StudyID), gomock.Eq(1), gomock.Eq(client.DefaultRecordOffset)).
 		Return(&submissionResponse, nil).
 		MaxTimes(1)
 
@@ -70,6 +72,8 @@ func TestCsvRendererRendersInCsvFormatAndRespectsFields(t *testing.T) {
 	opts := submission.ListUsedOptions{
 		StudyID: "1234",
 		Fields:  "ID,Status",
+		Limit:   1,
+		Offset:  client.DefaultRecordOffset,
 	}
 
 	started, _ := time.Parse("2006-01-02 15:04", "2022-07-24 08:04")
@@ -87,7 +91,7 @@ func TestCsvRendererRendersInCsvFormatAndRespectsFields(t *testing.T) {
 
 	c.
 		EXPECT().
-		GetSubmissions(gomock.Eq(opts.StudyID)).
+		GetSubmissions(gomock.Eq(opts.StudyID), gomock.Eq(1), gomock.Eq(client.DefaultRecordOffset)).
 		Return(&submissionResponse, nil).
 		MaxTimes(1)
 

@@ -15,6 +15,8 @@ type ListOptions struct {
 	NonInteractive bool
 	Fields         string
 	Csv            bool
+	Limit          int
+	Offset         int
 }
 
 // NewListCommand creates a new `submission list` command to give you details about
@@ -42,6 +44,8 @@ func NewListCommand(client client.API, w io.Writer) *cobra.Command {
 				Csv:            opts.Csv,
 				NonInteractive: opts.NonInteractive,
 				Fields:         opts.Fields,
+				Limit:          opts.Limit,
+				Offset:         opts.Offset,
 			}, w)
 
 			if err != nil {
@@ -56,6 +60,8 @@ func NewListCommand(client client.API, w io.Writer) *cobra.Command {
 	flags.BoolVarP(&opts.NonInteractive, "non-interactive", "n", true, "Render the list details straight to the terminal.")
 	flags.BoolVarP(&opts.Csv, "csv", "c", false, "Render the list details in a CSV format.")
 	flags.StringVarP(&opts.Fields, "fields", "f", "", "Comma separated list of fields you want to display in non-interactive/csv mode.")
+	flags.IntVarP(&opts.Limit, "limit", "l", 1, "Limit the number of events returned")
+	flags.IntVarP(&opts.Offset, "offset", "o", 0, "The number of events to offset")
 
 	return cmd
 }
