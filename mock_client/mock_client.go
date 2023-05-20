@@ -111,18 +111,18 @@ func (mr *MockAPIMockRecorder) GetEligibilityRequirements() *gomock.Call {
 }
 
 // GetEvents mocks base method.
-func (m *MockAPI) GetEvents(subscriptionID string, limit, page int) (*client.ListHookEventsResponse, error) {
+func (m *MockAPI) GetEvents(subscriptionID string, limit, offset int) (*client.ListHookEventsResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEvents", subscriptionID, limit, page)
+	ret := m.ctrl.Call(m, "GetEvents", subscriptionID, limit, offset)
 	ret0, _ := ret[0].(*client.ListHookEventsResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetEvents indicates an expected call of GetEvents.
-func (mr *MockAPIMockRecorder) GetEvents(subscriptionID, limit, page interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) GetEvents(subscriptionID, limit, offset interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEvents", reflect.TypeOf((*MockAPI)(nil).GetEvents), subscriptionID, limit, page)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEvents", reflect.TypeOf((*MockAPI)(nil).GetEvents), subscriptionID, limit, offset)
 }
 
 // GetHookEventTypes mocks base method.
@@ -261,18 +261,18 @@ func (mr *MockAPIMockRecorder) GetStudy(ID interface{}) *gomock.Call {
 }
 
 // GetSubmissions mocks base method.
-func (m *MockAPI) GetSubmissions(ID string) (*client.ListSubmissionsResponse, error) {
+func (m *MockAPI) GetSubmissions(ID string, limit, offset int) (*client.ListSubmissionsResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSubmissions", ID)
+	ret := m.ctrl.Call(m, "GetSubmissions", ID, limit, offset)
 	ret0, _ := ret[0].(*client.ListSubmissionsResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSubmissions indicates an expected call of GetSubmissions.
-func (mr *MockAPIMockRecorder) GetSubmissions(ID interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) GetSubmissions(ID, limit, offset interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubmissions", reflect.TypeOf((*MockAPI)(nil).GetSubmissions), ID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubmissions", reflect.TypeOf((*MockAPI)(nil).GetSubmissions), ID, limit, offset)
 }
 
 // GetWorkspaces mocks base method.

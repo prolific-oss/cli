@@ -64,7 +64,7 @@ func TestViewStudyRendersStudy(t *testing.T) {
 
 	c.
 		EXPECT().
-		GetSubmissions(gomock.Eq(studyID)).
+		GetSubmissions(gomock.Eq(studyID), gomock.Eq(client.DefaultRecordLimit), gomock.Eq(client.DefaultRecordOffset)).
 		Return(&ls, nil).
 		AnyTimes()
 

@@ -20,6 +20,8 @@ type ListUsedOptions struct {
 	Csv            bool
 	NonInteractive bool
 	Fields         string
+	Limit          int
+	Offset         int
 }
 
 // ListStrategy defines an interface to allow different strategies to render the list view.
@@ -47,7 +49,7 @@ type NonInteractiveRenderer struct{}
 
 // Render will just display the results in a table.
 func (r *NonInteractiveRenderer) Render(client client.API, opts ListUsedOptions, w io.Writer) error {
-	submissions, err := client.GetSubmissions(opts.StudyID)
+	submissions, err := client.GetSubmissions(opts.StudyID, opts.Limit, opts.Offset)
 	if err != nil {
 		return err
 	}
@@ -72,7 +74,17 @@ func (r *NonInteractiveRenderer) Render(client client.API, opts ListUsedOptions,
 		fmt.Fprint(tw, "\n")
 	}
 
-	return tw.Flush()
+	_ = tw.Flush()
+
+	recordCount := len(submissions.Results)
+	recordName := "submission"
+	if recordCount > 1 {
+		recordName = "submissions"
+	}
+
+	fmt.Fprintf(w, "\nShowing %v %s of %v\n", recordCount, recordName, submissions.Meta.Count)
+
+	return nil
 }
 
 // CsvRenderer will render the output in a CSV format.
@@ -80,7 +92,7 @@ type CsvRenderer struct{}
 
 // Render will render the studies in the CSV format.
 func (r *CsvRenderer) Render(client client.API, opts ListUsedOptions, w io.Writer) error {
-	submissions, err := client.GetSubmissions(opts.StudyID)
+	submissions, err := client.GetSubmissions(opts.StudyID, opts.Limit, opts.Offset)
 	if err != nil {
 		return err
 	}
