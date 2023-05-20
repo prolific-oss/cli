@@ -21,7 +21,7 @@ type ListOptions struct {
 
 // NewListCommand creates a new `submission list` command to give you details about
 // your submissions for a study.
-func NewListCommand(client client.API, w io.Writer) *cobra.Command {
+func NewListCommand(c client.API, w io.Writer) *cobra.Command {
 	var opts ListOptions
 
 	cmd := &cobra.Command{
@@ -39,7 +39,7 @@ func NewListCommand(client client.API, w io.Writer) *cobra.Command {
 				renderer.SetStrategy(&submission.NonInteractiveRenderer{})
 			}
 
-			err := renderer.Render(client, submission.ListUsedOptions{
+			err := renderer.Render(c, submission.ListUsedOptions{
 				StudyID:        args[0],
 				Csv:            opts.Csv,
 				NonInteractive: opts.NonInteractive,
@@ -60,8 +60,8 @@ func NewListCommand(client client.API, w io.Writer) *cobra.Command {
 	flags.BoolVarP(&opts.NonInteractive, "non-interactive", "n", true, "Render the list details straight to the terminal.")
 	flags.BoolVarP(&opts.Csv, "csv", "c", false, "Render the list details in a CSV format.")
 	flags.StringVarP(&opts.Fields, "fields", "f", "", "Comma separated list of fields you want to display in non-interactive/csv mode.")
-	flags.IntVarP(&opts.Limit, "limit", "l", 1, "Limit the number of events returned")
-	flags.IntVarP(&opts.Offset, "offset", "o", 0, "The number of events to offset")
+	flags.IntVarP(&opts.Limit, "limit", "l", client.DefaultRecordLimit, "Limit the number of events returned")
+	flags.IntVarP(&opts.Offset, "offset", "o", client.DefaultRecordOffset, "The number of events to offset")
 
 	return cmd
 }

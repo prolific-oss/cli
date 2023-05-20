@@ -8,6 +8,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/prolific-oss/prolificli/client"
+	"github.com/prolific-oss/prolificli/ui"
 )
 
 // DefaultListFields is the default fields we should show if the user has not specified.
@@ -76,13 +77,7 @@ func (r *NonInteractiveRenderer) Render(client client.API, opts ListUsedOptions,
 
 	_ = tw.Flush()
 
-	recordCount := len(submissions.Results)
-	recordName := "submission"
-	if recordCount > 1 {
-		recordName = "submissions"
-	}
-
-	fmt.Fprintf(w, "\nShowing %v %s of %v\n", recordCount, recordName, submissions.Meta.Count)
+	fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(submissions.Results), submissions.Meta.Count))
 
 	return nil
 }
