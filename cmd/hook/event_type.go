@@ -16,7 +16,7 @@ func NewEventTypeCommand(commandName string, client client.API, w io.Writer) *co
 		Use:   commandName,
 		Short: "List of event types you can subscribe to",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			err := RenderEventTypes(client, w)
+			err := renderEventTypes(client, w)
 			if err != nil {
 				return fmt.Errorf("error: %s", err.Error())
 			}
@@ -28,8 +28,8 @@ func NewEventTypeCommand(commandName string, client client.API, w io.Writer) *co
 	return cmd
 }
 
-// RenderEventTypes will show all of the event types that can be registered.
-func RenderEventTypes(client client.API, w io.Writer) error {
+// renderEventTypes will show all of the event types that can be registered.
+func renderEventTypes(client client.API, w io.Writer) error {
 	eventTypes, err := client.GetHookEventTypes()
 	if err != nil {
 		return err
