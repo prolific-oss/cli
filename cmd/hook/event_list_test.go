@@ -33,7 +33,7 @@ func TestNewEventListCommand(t *testing.T) {
 	}
 }
 
-func TestNewListCommandCallsAPI(t *testing.T) {
+func TestNewEventListCommandCallsAPI(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
@@ -88,5 +88,20 @@ Showing 1 event of 10
 	actual := b.String()
 	if actual != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, b.String())
+	}
+}
+
+func TestNewEventListCommandProvidesErrorIfSubmissionNotPassedIn(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	cmd := hook.NewEventListCommand("events", c, os.Stdout)
+	error := cmd.RunE(cmd, nil)
+
+	expected := `error: please provide a subscription ID`
+
+	if error.Error() != expected {
+		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, error.Error())
 	}
 }
