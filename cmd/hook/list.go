@@ -27,7 +27,7 @@ func NewListCommand(commandName string, client client.API, w io.Writer) *cobra.C
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
 
-			err := RenderHooks(client, opts, w)
+			err := renderHooks(client, opts, w)
 			if err != nil {
 				return fmt.Errorf("error: %s", err.Error())
 			}
@@ -43,8 +43,8 @@ func NewListCommand(commandName string, client client.API, w io.Writer) *cobra.C
 	return cmd
 }
 
-// RenderHooks will show the users subscriptions.
-func RenderHooks(client client.API, opts ListOptions, w io.Writer) error {
+// renderHooks will show the users subscriptions.
+func renderHooks(client client.API, opts ListOptions, w io.Writer) error {
 	enabled := opts.Enabled
 
 	if opts.Disabled {
