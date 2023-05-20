@@ -3,6 +3,8 @@ package hook_test
 import (
 	"bufio"
 	"bytes"
+	"errors"
+	"fmt"
 	"os"
 	"testing"
 
@@ -67,5 +69,28 @@ wibble     The wibble event
 
 	if actual != expected {
 		t.Fatalf("expected '%s', got '%s'", expected, actual)
+	}
+}
+
+func TestNewEventTypeCommandHandlesErrors(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	errorMessage := "The sun went down on us"
+
+	c.
+		EXPECT().
+		GetHookEventTypes().
+		Return(nil, errors.New(errorMessage)).
+		AnyTimes()
+
+	cmd := hook.NewEventTypeCommand("event-types", c, os.Stdout)
+	err := cmd.RunE(cmd, nil)
+
+	expected := fmt.Sprintf("error: %s", errorMessage)
+
+	if err.Error() != expected {
+		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())
 	}
 }
