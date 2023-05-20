@@ -20,7 +20,7 @@ type EventListOptions struct {
 }
 
 // NewListCommand creates a new command to deal with listing events
-func NewEventListCommand(commandName string, client client.API, w io.Writer) *cobra.Command {
+func NewEventListCommand(commandName string, c client.API, w io.Writer) *cobra.Command {
 	var opts EventListOptions
 
 	cmd := &cobra.Command{
@@ -29,7 +29,7 @@ func NewEventListCommand(commandName string, client client.API, w io.Writer) *co
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
 
-			err := renderEvents(client, opts, w)
+			err := renderEvents(c, opts, w)
 			if err != nil {
 				return fmt.Errorf("error: %s", err.Error())
 			}
@@ -40,8 +40,8 @@ func NewEventListCommand(commandName string, client client.API, w io.Writer) *co
 
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.SubscriptionID, "subscription", "s", "", "List the events for a subscription")
-	flags.IntVarP(&opts.Limit, "limit", "l", 1, "Limit the number of events returned")
-	flags.IntVarP(&opts.Offset, "offset", "o", 0, "The number of events to offset")
+	flags.IntVarP(&opts.Limit, "limit", "l", client.DefaultRecordLimit, "Limit the number of events returned")
+	flags.IntVarP(&opts.Offset, "offset", "o", client.DefaultRecordOffset, "The number of events to offset")
 
 	return cmd
 }
