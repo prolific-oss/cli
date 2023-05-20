@@ -53,7 +53,7 @@ Checkout the [wiki](https://github.com/prolific-oss/prolificli/wiki) for more ti
 
 If you are wanting to build and develop this, you will need the following items installed. If, however, you just want to run the application I recommend using a binary (See below).
 
-- [Go version 1.19+](https://go.dev/doc/install)
+- [Go version 1.20+](https://go.dev/doc/install)
 
 ## Configuration
 
@@ -75,7 +75,7 @@ export PROLIFIC_TOKEN=""
 
 You can create a Researcher token in your account. Log in, and go to settings.
 
-You can optionally override the URL for the API too. This will be set as default to the Prolific API URL. You have want to override this if Prolific have granted you access to a different environment.
+You can optionally override the URL for the API too. This will be set as default to the Prolific API URL. You can override this if Prolific have granted you access to a different environment.
 
 ```shell
 export PROLIFIC_URL="https://api.prolific.co"
