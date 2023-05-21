@@ -3,6 +3,8 @@ package hook_test
 import (
 	"bufio"
 	"bytes"
+	"errors"
+	"fmt"
 	"os"
 	"testing"
 
@@ -64,5 +66,30 @@ func TestNewListSecretCommandCallsAPI(t *testing.T) {
 
 	if actual != expected {
 		t.Fatalf("expected '%s', got '%s'", expected, actual)
+	}
+}
+
+func TestNewListSecretCommandHandlesErrors(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	errorMessage := "I will try to fix you"
+	workspaceID := "workspace-id"
+
+	c.
+		EXPECT().
+		GetHookSecrets(gomock.Eq(workspaceID)).
+		Return(nil, errors.New(errorMessage)).
+		AnyTimes()
+
+	cmd := hook.NewListSecretCommand("secrets", c, os.Stdout)
+	_ = cmd.Flags().Set("workspace", workspaceID)
+	err := cmd.RunE(cmd, nil)
+
+	expected := fmt.Sprintf("error: %s", errorMessage)
+
+	if err.Error() != expected {
+		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())
 	}
 }
