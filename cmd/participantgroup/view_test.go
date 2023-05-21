@@ -3,6 +3,8 @@ package participantgroup_test
 import (
 	"bufio"
 	"bytes"
+	"errors"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -74,5 +76,45 @@ func TestNewViewCommandCallsAPI(t *testing.T) {
 	actual := b.String()
 	if actual != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, b.String())
+	}
+}
+func TestNewViewCommandReturnsErrorIfParticipantGroupNotDefined(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	cmd := participantgroup.NewViewCommand("view", c, os.Stdout)
+	err := cmd.RunE(cmd, nil)
+
+	expected := "error: please provide a participant group ID"
+	if err.Error() != expected {
+		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())
+	}
+}
+
+func TestNewViewCommandHandlesAnAPIError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	groupID := "777111999"
+
+	errorMessage := "Rocket man burning out his fuse up here alone"
+
+	c.
+		EXPECT().
+		GetParticipantGroup(gomock.Eq(groupID)).
+		Return(nil, errors.New(errorMessage)).
+		AnyTimes()
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := participantgroup.NewViewCommand("view", c, writer)
+	err := cmd.RunE(cmd, []string{groupID})
+
+	expected := fmt.Sprintf("error: %s", errorMessage)
+	if err.Error() != expected {
+		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())
 	}
 }

@@ -3,6 +3,8 @@ package participantgroup_test
 import (
 	"bufio"
 	"bytes"
+	"errors"
+	"fmt"
 	"os"
 	"testing"
 
@@ -76,5 +78,47 @@ func TestNewListCommandCallsAPI(t *testing.T) {
 	actual := b.String()
 	if actual != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, b.String())
+	}
+}
+
+func TestNewListCommandReturnsErrorIfProjectNotDefined(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	cmd := participantgroup.NewListCommand("list", c, os.Stdout)
+	err := cmd.RunE(cmd, nil)
+
+	expected := "error: please provide a project ID"
+	if err.Error() != expected {
+		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())
+	}
+}
+
+func TestNewListCommandHandlesAnAPIError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	projectID := "777111999"
+
+	errorMessage := "Rocket man burning out his fuse up here alone"
+
+	c.
+		EXPECT().
+		GetParticipantGroups(gomock.Eq(projectID)).
+		Return(nil, errors.New(errorMessage)).
+		AnyTimes()
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := participantgroup.NewListCommand("list", c, writer)
+	_ = cmd.Flags().Set("project", projectID)
+	err := cmd.RunE(cmd, nil)
+
+	expected := fmt.Sprintf("error: %s", errorMessage)
+	if err.Error() != expected {
+		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())
 	}
 }
