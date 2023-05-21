@@ -12,23 +12,25 @@ type Requirement struct {
 	// 	Value string `json:"value"`
 	// 	Index int    `json:"index"`
 	// } `json:"attributes"`
-	Query struct {
-		ID                  string `json:"id"`
-		Question            string `json:"question"`
-		Description         string `json:"description"`
-		Title               string `json:"title"`
-		HelpText            string `json:"help_text"`
-		ParticipantHelpText string `json:"participant_help_text"`
-		ResearcherHelpText  string `json:"researcher_help_text"`
-		IsNew               bool   `json:"is_new"`
-	} `json:"query,omitempty"`
-	Cls             string      `json:"_cls"`
-	Category        string      `json:"category"`
-	Subcategory     interface{} `json:"subcategory"`
-	Order           int         `json:"order"`
-	Recommended     bool        `json:"recommended"`
-	DetailsDisplay  string      `json:"details_display"`
-	RequirementType string      `json:"requirement_type"`
+	Query           RequirementQuestion `json:"query,omitempty"`
+	Cls             string              `json:"_cls"`
+	Category        string              `json:"category"`
+	Subcategory     interface{}         `json:"subcategory"`
+	Order           int                 `json:"order"`
+	Recommended     bool                `json:"recommended"`
+	DetailsDisplay  string              `json:"details_display"`
+	RequirementType string              `json:"requirement_type"`
+}
+
+type RequirementQuestion struct {
+	ID                  string `json:"id"`
+	Question            string `json:"question"`
+	Description         string `json:"description"`
+	Title               string `json:"title"`
+	HelpText            string `json:"help_text"`
+	ParticipantHelpText string `json:"participant_help_text"`
+	ResearcherHelpText  string `json:"researcher_help_text"`
+	IsNew               bool   `json:"is_new"`
 }
 
 // FilterValue will help the bubbletea views run
