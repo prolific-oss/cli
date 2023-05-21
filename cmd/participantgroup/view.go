@@ -41,7 +41,7 @@ func NewViewCommand(commandName string, client client.API, w io.Writer) *cobra.C
 
 // renderGroup will show your participant group
 func renderGroup(client client.API, opts ListOptions, w io.Writer) error {
-	if opts.Args[0] == "" {
+	if len(opts.Args) < 1 || opts.Args[0] == "" {
 		return errors.New("please provide a participant group ID")
 	}
 
