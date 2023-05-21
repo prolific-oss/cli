@@ -3,6 +3,8 @@ package workspace_test
 import (
 	"bufio"
 	"bytes"
+	"errors"
+	"fmt"
 	"os"
 	"testing"
 
@@ -50,11 +52,18 @@ func TestNewEventTypeCommandCallsAPI(t *testing.T) {
 				Description: "The home workspace",
 			},
 		},
+		JSONAPIMeta: &client.JSONAPIMeta{
+			Meta: struct {
+				Count int `json:"count"`
+			}{
+				Count: 10,
+			},
+		},
 	}
 
 	c.
 		EXPECT().
-		GetWorkspaces().
+		GetWorkspaces(client.DefaultRecordLimit, client.DefaultRecordOffset).
 		Return(&response, nil).
 		AnyTimes()
 
@@ -69,9 +78,34 @@ func TestNewEventTypeCommandCallsAPI(t *testing.T) {
 	expected := `ID  Title  Description
 444 Office The office workspace
 555 Home   The home workspace
+
+Showing 2 records of 10
 `
 	actual := b.String()
 	if actual != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, b.String())
+	}
+}
+
+func TestNewListCommandHandlesErrors(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	errorMessage := "I am titanium"
+
+	c.
+		EXPECT().
+		GetWorkspaces(client.DefaultRecordLimit, client.DefaultRecordOffset).
+		Return(nil, errors.New(errorMessage)).
+		AnyTimes()
+
+	cmd := workspace.NewListCommand("list", c, os.Stdout)
+	err := cmd.RunE(cmd, nil)
+
+	expected := fmt.Sprintf("error: %s", errorMessage)
+
+	if err.Error() != expected {
+		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())
 	}
 }
