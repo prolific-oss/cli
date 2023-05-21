@@ -107,6 +107,7 @@ type ListHookEventsResponse struct {
 // ListWorkspacesResponse is the response for the list workspaces endpoint.
 type ListWorkspacesResponse struct {
 	Results []model.Workspace `json:"results"`
+	*JSONAPIMeta
 }
 
 // CreateWorkspacesResponse is the response for creating a workspace.

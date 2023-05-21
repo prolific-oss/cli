@@ -38,7 +38,7 @@ type API interface {
 	GetHookSecrets(workspaceID string) (*ListSecretsResponse, error)
 	GetEvents(subscriptionID string, limit, offset int) (*ListHookEventsResponse, error)
 
-	GetWorkspaces() (*ListWorkspacesResponse, error)
+	GetWorkspaces(limit, offset int) (*ListWorkspacesResponse, error)
 	CreateWorkspace(workspace model.Workspace) (*CreateWorkspacesResponse, error)
 
 	GetProjects(workspaceID string) (*ListProjectsResponse, error)
@@ -307,13 +307,17 @@ func (c *Client) GetEvents(subscriptionID string, limit, offset int) (*ListHookE
 }
 
 // GetWorkspaces will return you the workspaces you can see
-func (c *Client) GetWorkspaces() (*ListWorkspacesResponse, error) {
+func (c *Client) GetWorkspaces(limit, offset int) (*ListWorkspacesResponse, error) {
 	var response ListWorkspacesResponse
 
-	url := "/api/v1/workspaces/"
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	url := fmt.Sprintf("/api/v1/workspaces/?limit=%v&offset=%v", limit, offset)
+	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("status code was %v, so therefore unable to get workspaces", httpResponse.StatusCode)
 	}
 
 	return &response, nil

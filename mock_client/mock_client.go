@@ -276,18 +276,18 @@ func (mr *MockAPIMockRecorder) GetSubmissions(ID, limit, offset interface{}) *go
 }
 
 // GetWorkspaces mocks base method.
-func (m *MockAPI) GetWorkspaces() (*client.ListWorkspacesResponse, error) {
+func (m *MockAPI) GetWorkspaces(limit, offset int) (*client.ListWorkspacesResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetWorkspaces")
+	ret := m.ctrl.Call(m, "GetWorkspaces", limit, offset)
 	ret0, _ := ret[0].(*client.ListWorkspacesResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetWorkspaces indicates an expected call of GetWorkspaces.
-func (mr *MockAPIMockRecorder) GetWorkspaces() *gomock.Call {
+func (mr *MockAPIMockRecorder) GetWorkspaces(limit, offset interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkspaces", reflect.TypeOf((*MockAPI)(nil).GetWorkspaces))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkspaces", reflect.TypeOf((*MockAPI)(nil).GetWorkspaces), limit, offset)
 }
 
 // TransitionStudy mocks base method.
