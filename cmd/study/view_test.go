@@ -9,7 +9,6 @@ import (
 
 	"github.com/acarl005/stripansi"
 	"github.com/golang/mock/gomock"
-	"github.com/prolific-oss/prolificli/client"
 	"github.com/prolific-oss/prolificli/cmd/study"
 	"github.com/prolific-oss/prolificli/mock_client"
 	"github.com/prolific-oss/prolificli/model"
@@ -54,18 +53,10 @@ func TestViewStudyRendersStudy(t *testing.T) {
 		DeviceCompatibility:     []string{"desktop", "tablet", "mobile"},
 	}
 
-	ls := client.ListSubmissionsResponse{}
-
 	c.
 		EXPECT().
 		GetStudy(gomock.Eq(studyID)).
 		Return(&actualStudy, nil).
-		AnyTimes()
-
-	c.
-		EXPECT().
-		GetSubmissions(gomock.Eq(studyID), gomock.Eq(client.DefaultRecordLimit), gomock.Eq(client.DefaultRecordOffset)).
-		Return(&ls, nil).
 		AnyTimes()
 
 	var b bytes.Buffer
@@ -99,11 +90,6 @@ Eligibility requirements
 
 No eligibility requirements are defined for this study.
 
----
-
-Submissions
-
-No submissions have been submitted for this study yet.
 ---
 
 View study in the application: https://app.prolific.co/researcher/studies/11223344

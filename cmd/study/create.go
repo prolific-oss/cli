@@ -93,7 +93,7 @@ func createStudy(client client.API, opts CreateOptions, w io.Writer) error {
 	}
 
 	if !opts.Silent {
-		fmt.Fprintln(w, studyui.RenderStudy(client, *study))
+		fmt.Fprintln(w, studyui.RenderStudy(*study))
 	}
 
 	return nil
