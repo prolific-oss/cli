@@ -11,8 +11,6 @@ import (
 	"github.com/prolific-oss/prolificli/ui"
 )
 
-var docStyle = lipgloss.NewStyle().Margin(1, 2)
-
 // ListView is responsible for presenting a list view to the user.
 type ListView struct {
 	List    list.Model
@@ -43,7 +41,7 @@ func (lv ListView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case tea.WindowSizeMsg:
-		h, v := docStyle.GetFrameSize()
+		h, v := lipgloss.NewStyle().GetFrameSize()
 		lv.List.SetSize(msg.Width-h, msg.Height-v)
 	}
 
@@ -55,9 +53,9 @@ func (lv ListView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // View will render the view.
 func (lv ListView) View() string {
 	if lv.Study != nil {
-		return docStyle.Render(RenderStudy(*lv.Study))
+		return lipgloss.NewStyle().Render(RenderStudy(*lv.Study))
 	}
-	return docStyle.Render(lv.List.View())
+	return lipgloss.NewStyle().Render(lv.List.View())
 }
 
 // RenderStudy will produce a detailed view of the selected study.
