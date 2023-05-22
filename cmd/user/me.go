@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/charmbracelet/lipgloss"
 	"github.com/prolific-oss/prolificli/client"
 	"github.com/prolific-oss/prolificli/ui"
 	"github.com/spf13/cobra"
@@ -36,23 +35,13 @@ func RenderMe(client client.API, w io.Writer) error {
 		return err
 	}
 
-	var docStyle = lipgloss.NewStyle().Margin(1, 2)
-
-	content := lipgloss.NewStyle().
-		// Bold(true).
-		// Underline(true).
-		Background(lipgloss.Color(ui.Green)).
-		MarginBottom(1).
-		Padding(1).
-		Align(lipgloss.Center).
-		Render(fmt.Sprintf("%s %s", me.FirstName, me.LastName))
-
+	content := ui.RenderHeading(fmt.Sprintf("%s %s", me.FirstName, me.LastName))
 	content += fmt.Sprintln()
 	content += fmt.Sprintf("Email:             %s\n", me.Email)
 	content += fmt.Sprintf("Available balance: %s\n", ui.RenderMoney((float64(me.AvailableBalance)/100), me.CurrencyCode))
 	content += fmt.Sprintf("Balance:           %s\n", ui.RenderMoney((float64(me.Balance)/100), me.CurrencyCode))
 
-	fmt.Fprintln(w, docStyle.Render(content))
+	fmt.Fprintln(w, content)
 
 	return nil
 }
