@@ -169,7 +169,6 @@ func TestCommandFailsIfNoPathSpecified(t *testing.T) {
 	writer := bufio.NewWriter(&b)
 
 	cmd := study.NewCreateCommand(c, writer)
-	// _ = cmd.Flags().Set("template-path", "../../docs/examples/standard-sample.json")
 	_ = cmd.Flags().Set("publish", "true")
 	err := cmd.RunE(cmd, nil)
 
