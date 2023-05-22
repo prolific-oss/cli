@@ -2,6 +2,8 @@
 
 ## next
 
+## 0.0.22
+
 - Provide paging options for the following commands:
   - `submission list` command.
   - `workspace list` command.
