@@ -55,13 +55,13 @@ func (lv ListView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // View will render the view.
 func (lv ListView) View() string {
 	if lv.Study != nil {
-		return docStyle.Render(RenderStudy(lv.Client, *lv.Study))
+		return docStyle.Render(RenderStudy(*lv.Study))
 	}
 	return docStyle.Render(lv.List.View())
 }
 
 // RenderStudy will produce a detailed view of the selected study.
-func RenderStudy(c client.API, study model.Study) string {
+func RenderStudy(study model.Study) string {
 	marker := "\n---\n\n"
 
 	content := fmt.Sprintln(ui.RenderTitle(study.Name, study.Status))
@@ -94,29 +94,6 @@ func RenderStudy(c client.API, study model.Study) string {
 		content += fmt.Sprintln("No eligibility requirements are defined for this study.")
 	} else {
 		content += erContent
-	}
-	content += marker
-
-	content += fmt.Sprintln(ui.RenderHeading("Submissions"))
-	submissions, err := c.GetSubmissions(study.ID, client.DefaultRecordLimit, client.DefaultRecordOffset)
-	if err != nil {
-		content += "Unable to retrieve submission data."
-	}
-
-	if len(submissions.Results) == 0 {
-		content += "No submissions have been submitted for this study yet."
-	} else {
-		content += fmt.Sprintf("%s\n", lipgloss.NewStyle().
-			Underline(true).
-			Render("This shows the first 200 responses\n\n"))
-
-		content += "Participant Prolific ID\tStarted\t\t\tCompletion code\tStatus\n"
-		content += "-----------------------\t-------\t\t\t---------------\t------\n"
-		for _, submission := range submissions.Results {
-			content += fmt.Sprintf("%s\t%s\t%s\t%s\n", submission.ParticipantID, submission.StartedAt.Format(ui.AppDateTimeFormat), submission.StudyCode, submission.Status)
-		}
-
-		content += fmt.Sprintf("\nFurther data can be found in the application: https://app.prolific.co/researcher/workspaces/studies/%s/submissions", study.ID)
 	}
 
 	content += marker

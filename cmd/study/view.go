@@ -22,7 +22,7 @@ func NewViewCommand(client client.API, w io.Writer) *cobra.Command {
 				return fmt.Errorf("error: %s", err.Error())
 			}
 
-			fmt.Fprintln(w, studyui.RenderStudy(client, *study))
+			fmt.Fprintln(w, studyui.RenderStudy(*study))
 
 			return nil
 		},
