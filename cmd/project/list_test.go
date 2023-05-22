@@ -3,6 +3,8 @@ package project_test
 import (
 	"bufio"
 	"bytes"
+	"errors"
+	"fmt"
 	"os"
 	"testing"
 
@@ -32,7 +34,7 @@ func TestNewListCommand(t *testing.T) {
 	}
 }
 
-func TestNewEventTypeCommandCallsAPI(t *testing.T) {
+func TestNewListCommandCallsAPI(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
@@ -74,5 +76,47 @@ func TestNewEventTypeCommandCallsAPI(t *testing.T) {
 	actual := b.String()
 	if actual != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, b.String())
+	}
+}
+
+func TestNewListCommandHandlesErrorsFromTheCliParams(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	errorMessage := "please provide a workspace ID"
+
+	cmd := project.NewListCommand("list", c, os.Stdout)
+	err := cmd.RunE(cmd, nil)
+
+	expected := fmt.Sprintf("error: %s", errorMessage)
+
+	if err.Error() != expected {
+		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())
+	}
+}
+
+func TestNewListCommandHandlesErrorsFromTheAPI(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	workspaceID := "workspace-id"
+	errorMessage := "API says no"
+
+	c.
+		EXPECT().
+		GetProjects(gomock.Eq(workspaceID)).
+		Return(nil, errors.New(errorMessage)).
+		AnyTimes()
+
+	cmd := project.NewListCommand("list", c, os.Stdout)
+	_ = cmd.Flags().Set("workspace", workspaceID)
+	err := cmd.RunE(cmd, nil)
+
+	expected := fmt.Sprintf("error: %s", errorMessage)
+
+	if err.Error() != expected {
+		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())
 	}
 }
