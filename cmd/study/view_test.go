@@ -66,10 +66,7 @@ func TestViewStudyRendersStudy(t *testing.T) {
 	_ = cmd.RunE(cmd, []string{studyID})
 	writer.Flush()
 
-	expected := `
- My first standard sample
-
-
+	expected := `My first standard sample
 This is my first standard sample study on the Prolific system.
 
 ID:                        11223344
@@ -87,7 +84,6 @@ Available places:          10
 ---
 
 Eligibility requirements
-
 No eligibility requirements are defined for this study.
 
 ---

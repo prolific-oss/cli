@@ -39,15 +39,10 @@ func TestRenderMe(t *testing.T) {
 		output string
 		err    error
 	}{
-		{name: "can return a list of sprints", output: `
-
-   Bald Rick
-
-
-  Email:             baldrick@turnip.co
-  Available balance: £10.00
-  Balance:           £8.50
-
+		{name: "can return a list of sprints", output: `Bald Rick
+Email:             baldrick@turnip.co
+Available balance: £10.00
+Balance:           £8.50
 
 `, err: nil},
 	}

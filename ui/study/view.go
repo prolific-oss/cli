@@ -62,9 +62,7 @@ func (lv ListView) View() string {
 
 // RenderStudy will produce a detailed view of the selected study.
 func RenderStudy(study model.Study) string {
-	marker := "\n---\n\n"
-
-	content := fmt.Sprintln(ui.RenderTitle(study.Name, study.Status))
+	content := fmt.Sprintln(ui.RenderHeading(study.Name))
 	content += fmt.Sprintf("%s\n\n", study.Desc)
 	content += fmt.Sprintf("ID:                        %s\n", study.ID)
 	content += fmt.Sprintf("Status:                    %s\n", study.Status)
@@ -77,7 +75,7 @@ func RenderStudy(study model.Study) string {
 	content += fmt.Sprintf("Study URL:                 %s\n", study.ExternalStudyURL)
 	content += fmt.Sprintf("Places taken:              %d\n", study.PlacesTaken)
 	content += fmt.Sprintf("Available places:          %d\n", study.TotalAvailablePlaces)
-	content += marker
+	content += fmt.Sprintf("\n%s\n\n", ui.RenderSectionMarker())
 
 	content += fmt.Sprintln(ui.RenderHeading("Eligibility requirements"))
 
@@ -96,7 +94,7 @@ func RenderStudy(study model.Study) string {
 		content += erContent
 	}
 
-	content += marker
+	content += fmt.Sprintf("\n%s\n\n", ui.RenderSectionMarker())
 
 	content += fmt.Sprintf("View study in the application: https://app.prolific.co/researcher/studies/%s", study.ID)
 
