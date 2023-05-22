@@ -28,7 +28,7 @@ func NewCreateCommand(commandName string, client client.API, w io.Writer) *cobra
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
 
-			err := createproject(client, opts, w)
+			err := createProject(client, opts, w)
 			if err != nil {
 				return fmt.Errorf("error: %s", err.Error())
 			}
@@ -45,8 +45,8 @@ func NewCreateCommand(commandName string, client client.API, w io.Writer) *cobra
 	return cmd
 }
 
-// createproject will create a workspace for you
-func createproject(client client.API, opts CreateOptions, w io.Writer) error {
+// createProject will create a project for you
+func createProject(client client.API, opts CreateOptions, w io.Writer) error {
 	if opts.Title == "" {
 		return errors.New("title is required")
 	}
