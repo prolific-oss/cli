@@ -17,7 +17,7 @@ func TestNewViewCommand(t *testing.T) {
 	cmd := study.NewListCommand("list", client, os.Stdout)
 
 	use := "list"
-	short := "Provide details about your studies"
+	short := "List all of your studies"
 
 	if cmd.Use != use {
 		t.Fatalf("expected use: %s; got %s", use, cmd.Use)
