@@ -3,6 +3,7 @@ package study_test
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"testing"
@@ -70,5 +71,31 @@ func TestDuplicateStudyCallsClient(t *testing.T) {
 
 	if actual != expected {
 		t.Fatalf("expected \n'%s'\ngot\n'%s'", expected, actual)
+	}
+}
+
+func TestDuplicateStudyHandlesApiErrors(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	studyID := "11223344"
+
+	c.
+		EXPECT().
+		DuplicateStudy(gomock.Eq(studyID)).
+		Return(nil, errors.New("No no no")).
+		AnyTimes()
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := study.NewDuplicateCommand(c, writer)
+	err := cmd.RunE(cmd, []string{studyID})
+	writer.Flush()
+
+	expected := "error: No no no"
+	if err.Error() != expected {
+		t.Fatalf("expected %s, got %s", expected, err.Error())
 	}
 }
