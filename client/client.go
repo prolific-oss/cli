@@ -32,6 +32,7 @@ type API interface {
 	GetStudy(ID string) (*model.Study, error)
 	GetSubmissions(ID string, limit, offset int) (*ListSubmissionsResponse, error)
 	TransitionStudy(ID, action string) (*TransitionStudyResponse, error)
+	UpdateStudy(ID string, study model.UpdateStudy) (*model.Study, error)
 
 	GetHooks(enabled bool) (*ListHooksResponse, error)
 	GetHookEventTypes() (*ListHookEventTypesResponse, error)
@@ -238,16 +239,33 @@ func (c *Client) GetEligibilityRequirements() (*ListRequirementsResponse, error)
 func (c *Client) TransitionStudy(ID, action string) (*TransitionStudyResponse, error) {
 	var response TransitionStudyResponse
 
-	transtion := struct {
+	transition := struct {
 		Action string `json:"action"`
 	}{
 		Action: action,
 	}
 
 	url := fmt.Sprintf("/api/v1/studies/%s/transition/", ID)
-	_, err := c.Execute(http.MethodPost, url, transtion, &response)
+	_, err := c.Execute(http.MethodPost, url, transition, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to transition study to %s: %v", action, err)
+	}
+
+	return &response, nil
+}
+
+// UpdateStudy is responsible for updating the Study with a PATCH request.
+func (c *Client) UpdateStudy(ID string, study model.UpdateStudy) (*model.Study, error) {
+	var response model.Study
+
+	url := fmt.Sprintf("/api/v1/studies/%s/", ID)
+	httpResponse, err := c.Execute(http.MethodPatch, url, study, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to update study: %v", err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		return nil, errors.New(`unable to update study`)
 	}
 
 	return &response, nil

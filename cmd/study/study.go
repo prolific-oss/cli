@@ -19,6 +19,7 @@ func NewStudyCommand(client client.API, w io.Writer) *cobra.Command {
 		NewViewCommand(client, w),
 		NewCreateCommand(client, w),
 		NewDuplicateCommand(client, w),
+		NewIncreasePlacesCommand(client, w),
 	)
 	return cmd
 }

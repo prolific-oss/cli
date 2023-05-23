@@ -304,3 +304,18 @@ func (mr *MockAPIMockRecorder) TransitionStudy(ID, action interface{}) *gomock.C
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransitionStudy", reflect.TypeOf((*MockAPI)(nil).TransitionStudy), ID, action)
 }
+
+// UpdateStudy mocks base method.
+func (m *MockAPI) UpdateStudy(ID string, study model.UpdateStudy) (*model.Study, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateStudy", ID, study)
+	ret0, _ := ret[0].(*model.Study)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateStudy indicates an expected call of UpdateStudy.
+func (mr *MockAPIMockRecorder) UpdateStudy(ID, study interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStudy", reflect.TypeOf((*MockAPI)(nil).UpdateStudy), ID, study)
+}
