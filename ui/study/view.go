@@ -53,9 +53,9 @@ func (lv ListView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // View will render the view.
 func (lv ListView) View() string {
 	if lv.Study != nil {
-		return lipgloss.NewStyle().Render(RenderStudy(*lv.Study))
+		return RenderStudy(*lv.Study)
 	}
-	return lipgloss.NewStyle().Render(lv.List.View())
+	return lv.List.View()
 }
 
 // RenderStudy will produce a detailed view of the selected study.

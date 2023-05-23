@@ -53,9 +53,9 @@ func (lv ListView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // View will render the view.
 func (lv ListView) View() string {
 	if lv.Requirement != nil {
-		return lipgloss.NewStyle().Render(RenderRequirement(*lv.Requirement))
+		return RenderRequirement(*lv.Requirement)
 	}
-	return lipgloss.NewStyle().Render(lv.List.View())
+	return lv.List.View()
 }
 
 // RenderRequirement will provide a more indepth view of the requirement.
