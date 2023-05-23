@@ -28,7 +28,7 @@ func NewListCommand(commandName string, client client.API, w io.Writer) *cobra.C
 
 	cmd := &cobra.Command{
 		Use:   commandName,
-		Short: "Provide details about your studies",
+		Short: "List all of your studies",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
 
