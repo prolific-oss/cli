@@ -1,6 +1,6 @@
-# Prolificli
+# Prolific CLI
 
-![GitHub Badge](https://github.com/prolific-oss/prolificli/workflows/Go/badge.svg)
+![GitHub Badge](https://github.com/prolific-oss/cli/workflows/Go/badge.svg)
 
 CLI application for getting information out of [Prolific](https://www.prolific.co) about your research studies.
 
@@ -8,7 +8,7 @@ CLI application for getting information out of [Prolific](https://www.prolific.c
 CLI application for retrieving data from Prolific
 
 Usage:
-  prolificli [command]
+  prolific [command]
 
 Available Commands:
   completion   Generate the autocompletion script for the specified shell
@@ -24,11 +24,11 @@ Available Commands:
   workspace    Manage and view your workspaces
 
 Flags:
-      --config string   config file (default is $HOME/.prolific/prolificli.yaml)
-  -h, --help            help for prolificli
-  -v, --version         version for prolificli
+      --config string   config file (default is $HOME/.prolific/prolific.yaml)
+  -h, --help            help for prolific
+  -v, --version         version for prolific
 
-Use "prolificli [command] --help" for more information about a command.
+Use "prolific [command] --help" for more information about a command.
 ```
 
 ![List view of studies](docs/img/list-view.png)
@@ -43,11 +43,11 @@ Main features include:
 - Ability to render details about a study, and the submissions.
 - Ability to create a Study via a YAML/JSON configuration file.
 - Ability to publish a study whilst creating it (if you have sufficient funds).
-- Ability to silently create a study, meaning you [can script creating many studies in one go](https://github.com/prolific-oss/prolificli/wiki/Create-multiple-studies-via-a-bash-script).
+- Ability to silently create a study, meaning you [can script creating many studies in one go](https://github.com/prolific-oss/cli/wiki/Create-multiple-studies-via-a-bash-script).
 - Ability to get your user account details.
 - Ability to list your hook subscriptions.
 
-Checkout the [wiki](https://github.com/prolific-oss/prolificli/wiki) for more tips and tricks.
+Checkout the [wiki](https://github.com/prolific-oss/cli/wiki) for more tips and tricks.
 
 ## Requirements
 
@@ -62,7 +62,7 @@ You can create studies via a configuration file. See some examples in `/docs/exa
 You can then create a study by calling:
 
 ```shell
-prolificli study create -t docs/examples/standard-sample.yaml
+prolific study create -t docs/examples/standard-sample.yaml
 ```
 
 ### Environment variables
@@ -120,10 +120,10 @@ make docker-build
 <summary>Installation via Git</summary>
 
 ```shell
-git clone git@github.com:prolific-oss/prolificli.git
-cd prolificli
+git clone git@github.com:prolific-oss/cli.git
+cd cli
 make all
-./prolificli
+./prolific
 ```
 
 You can also install into your `$GOPATH/bin` by running `make build && go install`.
@@ -133,7 +133,7 @@ You can also install into your `$GOPATH/bin` by running `make build && go instal
 <details>
 <summary>Installation via Binaries</summary>
 
-You can download the binaries from the [release pages](https://github.com/prolific-oss/prolificli/releases). Find the release you want, and check the "Assets" section.
+You can download the binaries from the [release pages](https://github.com/prolific-oss/cli/releases). Find the release you want, and check the "Assets" section.
 
 Once downloaded, be sure to put the binary in a folder that is referenced in your `$PATH`.
 

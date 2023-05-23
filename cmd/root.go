@@ -6,16 +6,16 @@ import (
 	"strings"
 
 	homedir "github.com/mitchellh/go-homedir"
-	"github.com/prolific-oss/prolificli/client"
-	"github.com/prolific-oss/prolificli/cmd/hook"
-	"github.com/prolific-oss/prolificli/cmd/participantgroup"
-	"github.com/prolific-oss/prolificli/cmd/project"
-	requirement "github.com/prolific-oss/prolificli/cmd/requirements"
-	"github.com/prolific-oss/prolificli/cmd/study"
-	"github.com/prolific-oss/prolificli/cmd/submission"
-	"github.com/prolific-oss/prolificli/cmd/user"
-	"github.com/prolific-oss/prolificli/cmd/workspace"
-	"github.com/prolific-oss/prolificli/version"
+	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/cmd/hook"
+	"github.com/prolific-oss/cli/cmd/participantgroup"
+	"github.com/prolific-oss/cli/cmd/project"
+	requirement "github.com/prolific-oss/cli/cmd/requirements"
+	"github.com/prolific-oss/cli/cmd/study"
+	"github.com/prolific-oss/cli/cmd/submission"
+	"github.com/prolific-oss/cli/cmd/user"
+	"github.com/prolific-oss/cli/cmd/workspace"
+	"github.com/prolific-oss/cli/version"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -23,7 +23,7 @@ import (
 var cfgFile string
 
 // ApplicationName is the name of the cli binary
-const ApplicationName = "prolificli"
+const ApplicationName = "prolific"
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once
@@ -51,7 +51,7 @@ func NewRootCommand() *cobra.Command {
 		Version: version.GITCOMMIT,
 	}
 
-	cmd.PersistentFlags().StringVar(&cfgFile, "config", "", fmt.Sprintf("config file (default is $HOME/.config/prolific/%s.yaml)", ApplicationName))
+	cmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/prolific/cli.yaml)")
 
 	client := client.New()
 

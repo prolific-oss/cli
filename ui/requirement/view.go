@@ -6,9 +6,9 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/prolific-oss/prolificli/client"
-	"github.com/prolific-oss/prolificli/model"
-	"github.com/prolific-oss/prolificli/ui"
+	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/model"
+	"github.com/prolific-oss/cli/ui"
 )
 
 // ListView is responsible for presenting a list view to the user.

@@ -6,9 +6,9 @@ import (
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/prolific-oss/prolificli/client"
-	"github.com/prolific-oss/prolificli/model"
-	"github.com/prolific-oss/prolificli/ui/requirement"
+	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/model"
+	"github.com/prolific-oss/cli/ui/requirement"
 	"github.com/spf13/cobra"
 )
 

@@ -10,9 +10,9 @@ import (
 
 	"github.com/acarl005/stripansi"
 	"github.com/golang/mock/gomock"
-	"github.com/prolific-oss/prolificli/cmd/study"
-	"github.com/prolific-oss/prolificli/mock_client"
-	"github.com/prolific-oss/prolificli/model"
+	"github.com/prolific-oss/cli/cmd/study"
+	"github.com/prolific-oss/cli/mock_client"
+	"github.com/prolific-oss/cli/model"
 )
 
 func TestNewStudyViewCommand(t *testing.T) {

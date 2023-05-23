@@ -3,13 +3,13 @@ package cmd_test
 import (
 	"testing"
 
-	"github.com/prolific-oss/prolificli/cmd"
+	"github.com/prolific-oss/cli/cmd"
 )
 
 func TestNewGitHubCommand(t *testing.T) {
 	cmd := cmd.NewRootCommand()
 
-	use := "prolificli"
+	use := "prolific"
 	short := "CLI application for retrieving data from Prolific"
 
 	if cmd.Use != use {
