@@ -3,6 +3,7 @@ package study_test
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"os"
 	"strings"
 	"testing"
@@ -97,5 +98,31 @@ View study in the application: https://app.prolific.co/researcher/studies/112233
 
 	if actual != expected {
 		t.Fatalf("expected \n'%s'\ngot\n'%s'", expected, actual)
+	}
+}
+
+func TestViewStudyHandlesApiErrors(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	studyID := "11223344"
+
+	c.
+		EXPECT().
+		GetStudy(gomock.Eq(studyID)).
+		Return(nil, errors.New("unable to get study")).
+		AnyTimes()
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := study.NewViewCommand(c, writer)
+	err := cmd.RunE(cmd, []string{studyID})
+	writer.Flush()
+
+	expected := "error: unable to get study"
+	if err.Error() != expected {
+		t.Fatalf("expected %s, got %s", expected, err.Error())
 	}
 }
