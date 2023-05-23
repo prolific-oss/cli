@@ -2,6 +2,10 @@
 
 ## next
 
+## 0.0.23
+
+- Provide the ability to increase places on your study via the `study increase-places` command.
+
 ## 0.0.22
 
 - Provide paging options for the following commands:

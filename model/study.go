@@ -131,6 +131,12 @@ type CreateStudy struct {
 	PeripheralRequirements []string `json:"peripheral_requirements"`
 }
 
+// UpdateStudy represents the model we will send back to Prolific to update
+// the study.
+type UpdateStudy struct {
+	TotalAvailablePlaces int `json:"total_available_places,omitempty"`
+}
+
 // FilterValue will help the bubbletea views run
 func (s Study) FilterValue() string { return s.Name }
 
