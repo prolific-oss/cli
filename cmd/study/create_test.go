@@ -3,6 +3,7 @@ package study_test
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"testing"
@@ -13,6 +14,34 @@ import (
 	"github.com/prolific-oss/prolificli/mock_client"
 	"github.com/prolific-oss/prolificli/model"
 )
+
+var studyTemplate = model.CreateStudy{
+	Name:                    "My first standard sample",
+	InternalName:            "Standard sample",
+	Description:             "This is my first standard sample study on the Prolific system.",
+	ExternalStudyURL:        "https://eggs-experriment.com?participant={{%PROLIFIC_PID%}}",
+	ProlificIDOption:        "question",
+	CompletionCode:          "COMPLE01",
+	CompletionOption:        "code",
+	TotalAvailablePlaces:    10,
+	EstimatedCompletionTime: 10,
+	MaximumAllowedTime:      10,
+	Reward:                  400,
+	DeviceCompatibility:     []string{"desktop", "tablet", "mobile"},
+	PeripheralRequirements:  []string{"audio", "camera", "download", "microphone"},
+}
+
+var actualStudy = model.Study{
+	Name:                    "My first standard sample",
+	InternalName:            "Standard sample",
+	Desc:                    "This is my first standard sample study on the Prolific system.",
+	ExternalStudyURL:        "https://eggs-experriment.com?participant={{%PROLIFIC_PID%}}",
+	TotalAvailablePlaces:    10,
+	EstimatedCompletionTime: 10,
+	MaximumAllowedTime:      10,
+	Reward:                  400,
+	DeviceCompatibility:     []string{"desktop", "tablet", "mobile"},
+}
 
 func TestNewCreateCommand(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -33,38 +62,44 @@ func TestNewCreateCommand(t *testing.T) {
 	}
 }
 
-func TestCreateCommandCallsAPI(t *testing.T) {
+func TestCreateCommandHandlesFailureToReadConfig(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	studyTemplate := model.CreateStudy{
-		Name:                    "My first standard sample",
-		InternalName:            "Standard sample",
-		Description:             "This is my first standard sample study on the Prolific system.",
-		ExternalStudyURL:        "https://eggs-experriment.com?participant={{%PROLIFIC_PID%}}",
-		ProlificIDOption:        "question",
-		CompletionCode:          "COMPLE01",
-		CompletionOption:        "code",
-		TotalAvailablePlaces:    10,
-		EstimatedCompletionTime: 10,
-		MaximumAllowedTime:      10,
-		Reward:                  400,
-		DeviceCompatibility:     []string{"desktop", "tablet", "mobile"},
-		PeripheralRequirements:  []string{"audio", "camera", "download", "microphone"},
-	}
+	ls := client.ListSubmissionsResponse{}
 
-	actualStudy := model.Study{
-		Name:                    "My first standard sample",
-		InternalName:            "Standard sample",
-		Desc:                    "This is my first standard sample study on the Prolific system.",
-		ExternalStudyURL:        "https://eggs-experriment.com?participant={{%PROLIFIC_PID%}}",
-		TotalAvailablePlaces:    10,
-		EstimatedCompletionTime: 10,
-		MaximumAllowedTime:      10,
-		Reward:                  400,
-		DeviceCompatibility:     []string{"desktop", "tablet", "mobile"},
+	c.
+		EXPECT().
+		CreateStudy(gomock.Eq(studyTemplate)).
+		Return(&actualStudy, nil).
+		AnyTimes()
+
+	c.
+		EXPECT().
+		GetSubmissions(gomock.Eq(actualStudy.ID), gomock.Eq(client.DefaultRecordLimit), gomock.Eq(client.DefaultRecordOffset)).
+		Return(&ls, nil).
+		AnyTimes()
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := study.NewCreateCommand(c, writer)
+	_ = cmd.Flags().Set("template-path", "broken-path.json")
+
+	err := cmd.RunE(cmd, nil)
+	writer.Flush()
+
+	expected := "error: open broken-path.json: no such file or directory"
+	if err.Error() != expected {
+		t.Fatalf("expected %s, got %s", expected, err.Error())
 	}
+}
+
+func TestCreateCommandCallsAPI(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
 
 	ls := client.ListSubmissionsResponse{}
 
@@ -94,34 +129,6 @@ func TestCreateCommandCanPublish(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
-
-	studyTemplate := model.CreateStudy{
-		Name:                    "My first standard sample",
-		InternalName:            "Standard sample",
-		Description:             "This is my first standard sample study on the Prolific system.",
-		ExternalStudyURL:        "https://eggs-experriment.com?participant={{%PROLIFIC_PID%}}",
-		ProlificIDOption:        "question",
-		CompletionCode:          "COMPLE01",
-		CompletionOption:        "code",
-		TotalAvailablePlaces:    10,
-		EstimatedCompletionTime: 10,
-		MaximumAllowedTime:      10,
-		Reward:                  400,
-		DeviceCompatibility:     []string{"desktop", "tablet", "mobile"},
-		PeripheralRequirements:  []string{"audio", "camera", "download", "microphone"},
-	}
-
-	actualStudy := model.Study{
-		Name:                    "My first standard sample",
-		InternalName:            "Standard sample",
-		Desc:                    "This is my first standard sample study on the Prolific system.",
-		ExternalStudyURL:        "https://eggs-experriment.com?participant={{%PROLIFIC_PID%}}",
-		TotalAvailablePlaces:    10,
-		EstimatedCompletionTime: 10,
-		MaximumAllowedTime:      10,
-		Reward:                  400,
-		DeviceCompatibility:     []string{"desktop", "tablet", "mobile"},
-	}
 
 	ls := client.ListSubmissionsResponse{}
 	tsr := client.TransitionStudyResponse{}
@@ -184,22 +191,6 @@ func TestCreateCommandHandlesAnErrorFromTheAPI(t *testing.T) {
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	studyTemplate := model.CreateStudy{
-		Name:                    "My first standard sample",
-		InternalName:            "Standard sample",
-		Description:             "This is my first standard sample study on the Prolific system.",
-		ExternalStudyURL:        "https://eggs-experriment.com?participant={{%PROLIFIC_PID%}}",
-		ProlificIDOption:        "question",
-		CompletionCode:          "COMPLE01",
-		CompletionOption:        "code",
-		TotalAvailablePlaces:    10,
-		EstimatedCompletionTime: 10,
-		MaximumAllowedTime:      10,
-		Reward:                  400,
-		DeviceCompatibility:     []string{"desktop", "tablet", "mobile"},
-		PeripheralRequirements:  []string{"audio", "camera", "download", "microphone"},
-	}
-
 	c.
 		EXPECT().
 		CreateStudy(gomock.Eq(studyTemplate)).
@@ -218,4 +209,97 @@ func TestCreateCommandHandlesAnErrorFromTheAPI(t *testing.T) {
 		t.Fatalf("Expected a specific error, got %v", err)
 	}
 	writer.Flush()
+}
+
+func TestCreateCommandCanHandleErrorsWhenGettingStudy(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	ls := client.ListSubmissionsResponse{}
+	tsr := client.TransitionStudyResponse{}
+
+	c.
+		EXPECT().
+		CreateStudy(gomock.Eq(studyTemplate)).
+		Return(&actualStudy, nil).
+		MaxTimes(1)
+
+	c.
+		EXPECT().
+		GetSubmissions(gomock.Eq(actualStudy.ID), gomock.Eq(client.DefaultRecordLimit), gomock.Eq(client.DefaultRecordOffset)).
+		Return(&ls, nil).
+		MaxTimes(1)
+
+	c.
+		EXPECT().
+		TransitionStudy(gomock.Eq(actualStudy.ID), gomock.Eq(model.TransitionStudyPublish)).
+		Return(&tsr, nil).
+		MaxTimes(1)
+
+	c.
+		EXPECT().
+		GetStudy(gomock.Eq(actualStudy.ID)).
+		Return(nil, errors.New("could not get study")).
+		MaxTimes(1)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := study.NewCreateCommand(c, writer)
+	_ = cmd.Flags().Set("template-path", "../../docs/examples/standard-sample.json")
+	_ = cmd.Flags().Set("publish", "true")
+	err := cmd.RunE(cmd, nil)
+	writer.Flush()
+
+	expected := "error: could not get study"
+	if err.Error() != expected {
+		t.Fatalf("expected %s; got %v", expected, err.Error())
+	}
+}
+
+func TestCreateCommandCanHandleErrorsWhenPublishing(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	ls := client.ListSubmissionsResponse{}
+
+	c.
+		EXPECT().
+		CreateStudy(gomock.Eq(studyTemplate)).
+		Return(&actualStudy, nil).
+		MaxTimes(1)
+
+	c.
+		EXPECT().
+		GetSubmissions(gomock.Eq(actualStudy.ID), gomock.Eq(client.DefaultRecordLimit), gomock.Eq(client.DefaultRecordOffset)).
+		Return(&ls, nil).
+		MaxTimes(1)
+
+	c.
+		EXPECT().
+		TransitionStudy(gomock.Eq(actualStudy.ID), gomock.Eq(model.TransitionStudyPublish)).
+		Return(nil, errors.New("could not publish")).
+		MaxTimes(1)
+
+	c.
+		EXPECT().
+		GetStudy(gomock.Eq(actualStudy.ID)).
+		Return(&actualStudy, nil).
+		MaxTimes(1)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := study.NewCreateCommand(c, writer)
+	_ = cmd.Flags().Set("template-path", "../../docs/examples/standard-sample.json")
+	_ = cmd.Flags().Set("publish", "true")
+	err := cmd.RunE(cmd, nil)
+	writer.Flush()
+
+	expected := "error: could not publish"
+	if err.Error() != expected {
+		t.Fatalf("expected %s; got %v", expected, err.Error())
+	}
 }
