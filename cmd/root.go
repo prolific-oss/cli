@@ -47,7 +47,7 @@ func Execute() {
 func NewRootCommand() *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:     ApplicationName,
-		Short:   "CLI application for retrieving data from Prolific",
+		Short:   "CLI application for retrieving data from the Prolific Platform",
 		Version: version.GITCOMMIT,
 	}
 

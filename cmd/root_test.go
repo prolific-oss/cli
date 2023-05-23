@@ -10,7 +10,7 @@ func TestNewGitHubCommand(t *testing.T) {
 	cmd := cmd.NewRootCommand()
 
 	use := "prolific"
-	short := "CLI application for retrieving data from Prolific"
+	short := "CLI application for retrieving data from the Prolific Platform"
 
 	if cmd.Use != use {
 		t.Fatalf("expected use: %s; got %s", use, cmd.Use)
