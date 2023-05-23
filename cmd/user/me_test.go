@@ -9,9 +9,9 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/prolific-oss/prolificli/client"
-	"github.com/prolific-oss/prolificli/cmd/user"
-	"github.com/prolific-oss/prolificli/mock_client"
+	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/cmd/user"
+	"github.com/prolific-oss/cli/mock_client"
 )
 
 func TestNewMeCommand(t *testing.T) {

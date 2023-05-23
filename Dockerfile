@@ -1,7 +1,7 @@
 FROM golang:1.20.4-alpine as builder
 LABEL maintainer="Ben Selby <ben.selby@prolific.co>"
 
-ENV APPNAME prolificli
+ENV APPNAME prolific
 ENV PATH /go/bin:/usr/local/go/bin:$PATH
 ENV GOPATH /go
 
@@ -30,5 +30,5 @@ COPY --from=builder /etc/ssl/certs/ /etc/ssl/certs
 
 ENV HOME /root
 
-ENTRYPOINT [ "prolificli" ]
+ENTRYPOINT [ "prolific" ]
 CMD [ "--help"]

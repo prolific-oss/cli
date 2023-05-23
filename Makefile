@@ -1,4 +1,4 @@
-NAME := prolificli
+NAME := prolific
 DOCKER_PREFIX = prolificac
 DOCKER_RELEASE ?= latest
 BUILD_DIR ?= build
@@ -52,7 +52,7 @@ security: ## Inspect the code
 
 .PHONY: build
 build: ## Build the application
-	go build .
+	go build -o $(NAME) .
 
 .PHONY: static
 static: ## Build the application

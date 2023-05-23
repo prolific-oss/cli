@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/prolific-oss/prolificli/client"
-	"github.com/prolific-oss/prolificli/model"
-	studyui "github.com/prolific-oss/prolificli/ui/study"
+	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/model"
+	studyui "github.com/prolific-oss/cli/ui/study"
 	"github.com/spf13/cobra"
 )
 
@@ -29,8 +29,8 @@ You can only increase places on your study, not decrease. This is helpful if you
 run a trial study with a smaller group of participants, and then want to expand
 to a wider audience.`,
 		Example: `
-$ prolificli study increase-places 64395e9c2332b8a59a65d51e -p 300
-$ prolificli study increase-places 64395e9c2332b8a59a65d51e --places 5000`,
+$ prolific study increase-places 64395e9c2332b8a59a65d51e -p 300
+$ prolific study increase-places 64395e9c2332b8a59a65d51e --places 5000`,
 		Short: "Increase the total available places on a study",
 		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

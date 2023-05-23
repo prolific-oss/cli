@@ -10,10 +10,10 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
-	"github.com/prolific-oss/prolificli/client"
-	"github.com/prolific-oss/prolificli/cmd/hook"
-	"github.com/prolific-oss/prolificli/mock_client"
-	"github.com/prolific-oss/prolificli/model"
+	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/cmd/hook"
+	"github.com/prolific-oss/cli/mock_client"
+	"github.com/prolific-oss/cli/model"
 )
 
 func TestNewEventListCommand(t *testing.T) {

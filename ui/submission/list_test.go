@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
-	"github.com/prolific-oss/prolificli/client"
-	"github.com/prolific-oss/prolificli/mock_client"
-	"github.com/prolific-oss/prolificli/model"
-	"github.com/prolific-oss/prolificli/ui/submission"
+	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/mock_client"
+	"github.com/prolific-oss/cli/model"
+	"github.com/prolific-oss/cli/ui/submission"
 )
 
 func TestCsvRendererRendersInCsvFormat(t *testing.T) {
