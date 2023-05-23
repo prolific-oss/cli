@@ -3,6 +3,7 @@ package workspace_test
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"testing"
@@ -96,5 +97,39 @@ func TestCreateCommandCreatesWorkspace(t *testing.T) {
 
 	if actual != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, b.String())
+	}
+}
+
+func TestCreateCommandHandlesFailureToCreateWorkspace(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	r := client.CreateWorkspacesResponse{}
+
+	model := model.Workspace{
+		ID:                      "123123",
+		Title:                   "Titan",
+		NaivetyDistributionRate: 0,
+	}
+	r.ID = model.ID
+
+	c.
+		EXPECT().
+		CreateWorkspace(gomock.Any()).
+		Return(nil, errors.New("unable to create workspace")).
+		MaxTimes(1)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := workspace.NewCreateCommand("create", c, writer)
+	_ = cmd.Flags().Set("title", model.Title)
+	err := cmd.RunE(cmd, nil)
+
+	expected := "error: unable to create workspace"
+
+	if err.Error() != expected {
+		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())
 	}
 }
