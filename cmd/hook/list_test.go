@@ -43,7 +43,7 @@ func TestNewListCommandHandlesErrors(t *testing.T) {
 
 	c.
 		EXPECT().
-		GetHooks(gomock.Eq(true)).
+		GetHooks(gomock.Eq(""), gomock.Eq(true)).
 		Return(nil, errors.New(errorMessage)).
 		AnyTimes()
 
@@ -66,7 +66,7 @@ func TestNewListCommandCanAskForDisabledHooks(t *testing.T) {
 
 	c.
 		EXPECT().
-		GetHooks(gomock.Eq(false)).
+		GetHooks(gomock.Eq(""), gomock.Eq(false)).
 		Return(nil, errors.New(errorMessage)).
 		AnyTimes()
 
@@ -86,6 +86,7 @@ func TestNewListCommandCallsTheAPI(t *testing.T) {
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
+	workspaceID := "workspace-id"
 	response := client.ListHooksResponse{
 		Results: []model.Hook{
 			{
@@ -100,7 +101,7 @@ func TestNewListCommandCallsTheAPI(t *testing.T) {
 
 	c.
 		EXPECT().
-		GetHooks(gomock.Eq(false)).
+		GetHooks(gomock.Eq(workspaceID), gomock.Eq(false)).
 		Return(&response, nil).
 		AnyTimes()
 
@@ -109,6 +110,7 @@ func TestNewListCommandCallsTheAPI(t *testing.T) {
 
 	cmd := hook.NewListCommand("list", c, writer)
 	_ = cmd.Flags().Set("disabled", "true")
+	_ = cmd.Flags().Set("workspace", workspaceID)
 	_ = cmd.RunE(cmd, nil)
 
 	writer.Flush()

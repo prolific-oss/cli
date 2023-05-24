@@ -34,7 +34,7 @@ type API interface {
 	TransitionStudy(ID, action string) (*TransitionStudyResponse, error)
 	UpdateStudy(ID string, study model.UpdateStudy) (*model.Study, error)
 
-	GetHooks(enabled bool) (*ListHooksResponse, error)
+	GetHooks(workspaceID string, enabled bool) (*ListHooksResponse, error)
 	GetHookEventTypes() (*ListHookEventTypesResponse, error)
 	GetHookSecrets(workspaceID string) (*ListSecretsResponse, error)
 	GetEvents(subscriptionID string, limit, offset int) (*ListHookEventsResponse, error)
@@ -272,10 +272,10 @@ func (c *Client) UpdateStudy(ID string, study model.UpdateStudy) (*model.Study, 
 }
 
 // GetHooks will return the subscriptions to event types for current user.
-func (c *Client) GetHooks(enabled bool) (*ListHooksResponse, error) {
+func (c *Client) GetHooks(workspaceID string, enabled bool) (*ListHooksResponse, error) {
 	var response ListHooksResponse
 
-	url := fmt.Sprintf("/api/v1/hooks/subscriptions?is_enabled=%v", enabled)
+	url := fmt.Sprintf("/api/v1/hooks/subscriptions?workspace_id=%s&is_enabled=%v", workspaceID, enabled)
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
