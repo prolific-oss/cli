@@ -2,6 +2,12 @@
 
 ## next
 
+## 0.0.25
+
+- Provide the ability to specify a different workspace on the `hook list` command.
+- Add paging to the `hook list` command.
+- Add a long description for the `hook event_types` command.
+
 ## 0.0.24
 
 - Rename app/binary to `prolific` rather than `prolificli` for branding.
