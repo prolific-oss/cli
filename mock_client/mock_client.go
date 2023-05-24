@@ -156,18 +156,18 @@ func (mr *MockAPIMockRecorder) GetHookSecrets(workspaceID interface{}) *gomock.C
 }
 
 // GetHooks mocks base method.
-func (m *MockAPI) GetHooks(workspaceID string, enabled bool) (*client.ListHooksResponse, error) {
+func (m *MockAPI) GetHooks(workspaceID string, enabled bool, limit, offset int) (*client.ListHooksResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetHooks", workspaceID, enabled)
+	ret := m.ctrl.Call(m, "GetHooks", workspaceID, enabled, limit, offset)
 	ret0, _ := ret[0].(*client.ListHooksResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetHooks indicates an expected call of GetHooks.
-func (mr *MockAPIMockRecorder) GetHooks(workspaceID, enabled interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) GetHooks(workspaceID, enabled, limit, offset interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHooks", reflect.TypeOf((*MockAPI)(nil).GetHooks), workspaceID, enabled)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHooks", reflect.TypeOf((*MockAPI)(nil).GetHooks), workspaceID, enabled, limit, offset)
 }
 
 // GetMe mocks base method.

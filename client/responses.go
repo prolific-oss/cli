@@ -91,6 +91,7 @@ type TransitionStudyResponse struct {
 // ListHooksResponse is the response for the hook subscriptions.
 type ListHooksResponse struct {
 	Results []model.Hook `json:"results"`
+	*JSONAPIMeta
 }
 
 // ListHookEventTypesResponse is the response for the event types hook API.
