@@ -6,6 +6,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -15,11 +16,13 @@ type ListOptions struct {
 	WorkspaceID string
 	Enabled     bool
 	Disabled    bool
+	Limit       int
+	Offset      int
 }
 
 // NewListCommand creates a new `hook list` command to give you details about
 // your hooks.
-func NewListCommand(commandName string, client client.API, w io.Writer) *cobra.Command {
+func NewListCommand(commandName string, c client.API, w io.Writer) *cobra.Command {
 	var opts ListOptions
 
 	cmd := &cobra.Command{
@@ -44,7 +47,7 @@ $ prolific hook list -w 3461321e223a605c7a4f7612 -e
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
 
-			err := renderHooks(client, opts, w)
+			err := renderHooks(c, opts, w)
 			if err != nil {
 				return fmt.Errorf("error: %s", err.Error())
 			}
@@ -57,6 +60,8 @@ $ prolific hook list -w 3461321e223a605c7a4f7612 -e
 	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", "", "Filter hooks by workspace.")
 	flags.BoolVarP(&opts.Enabled, "enabled", "e", true, "Filter on enabled subscriptions.")
 	flags.BoolVarP(&opts.Disabled, "disabled", "d", false, "Filter on disabled subscriptions.")
+	flags.IntVarP(&opts.Limit, "limit", "l", client.DefaultRecordLimit, "Limit the number of subscriptions returned")
+	flags.IntVarP(&opts.Offset, "offset", "o", client.DefaultRecordOffset, "The number of subscriptions to offset")
 
 	return cmd
 }
@@ -69,7 +74,7 @@ func renderHooks(client client.API, opts ListOptions, w io.Writer) error {
 		enabled = false
 	}
 
-	hooks, err := client.GetHooks(opts.WorkspaceID, enabled)
+	hooks, err := client.GetHooks(opts.WorkspaceID, enabled, opts.Limit, opts.Offset)
 	if err != nil {
 		return err
 	}
@@ -80,5 +85,9 @@ func renderHooks(client client.API, opts ListOptions, w io.Writer) error {
 		fmt.Fprintf(tw, "%s\t%s\t%s\t%v\t%s\n", hook.ID, hook.EventType, hook.TargetURL, hook.IsEnabled, hook.WorkspaceID)
 	}
 
-	return tw.Flush()
+	_ = tw.Flush()
+
+	fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(hooks.Results), hooks.Meta.Count))
+
+	return nil
 }

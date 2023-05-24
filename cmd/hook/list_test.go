@@ -43,7 +43,7 @@ func TestNewListCommandHandlesErrors(t *testing.T) {
 
 	c.
 		EXPECT().
-		GetHooks(gomock.Eq(""), gomock.Eq(true)).
+		GetHooks(gomock.Eq(""), gomock.Eq(true), gomock.Eq(client.DefaultRecordLimit), gomock.Eq(client.DefaultRecordOffset)).
 		Return(nil, errors.New(errorMessage)).
 		AnyTimes()
 
@@ -66,7 +66,7 @@ func TestNewListCommandCanAskForDisabledHooks(t *testing.T) {
 
 	c.
 		EXPECT().
-		GetHooks(gomock.Eq(""), gomock.Eq(false)).
+		GetHooks(gomock.Eq(""), gomock.Eq(false), gomock.Eq(client.DefaultRecordLimit), gomock.Eq(client.DefaultRecordOffset)).
 		Return(nil, errors.New(errorMessage)).
 		AnyTimes()
 
@@ -97,11 +97,18 @@ func TestNewListCommandCallsTheAPI(t *testing.T) {
 				WorkspaceID: "workspace-id",
 			},
 		},
+		JSONAPIMeta: &client.JSONAPIMeta{
+			Meta: struct {
+				Count int `json:"count"`
+			}{
+				Count: 10,
+			},
+		},
 	}
 
 	c.
 		EXPECT().
-		GetHooks(gomock.Eq(workspaceID), gomock.Eq(false)).
+		GetHooks(gomock.Eq(workspaceID), gomock.Eq(false), gomock.Eq(44), gomock.Eq(33)).
 		Return(&response, nil).
 		AnyTimes()
 
@@ -111,6 +118,8 @@ func TestNewListCommandCallsTheAPI(t *testing.T) {
 	cmd := hook.NewListCommand("list", c, writer)
 	_ = cmd.Flags().Set("disabled", "true")
 	_ = cmd.Flags().Set("workspace", workspaceID)
+	_ = cmd.Flags().Set("limit", "44")
+	_ = cmd.Flags().Set("offset", "33")
 	_ = cmd.RunE(cmd, nil)
 
 	writer.Flush()
@@ -118,6 +127,8 @@ func TestNewListCommandCallsTheAPI(t *testing.T) {
 	actual := b.String()
 	expected := `ID      Event  Target URL              Enabled Workspace ID
 hook-id wibble https://app.prolific.co true    workspace-id
+
+Showing 1 record of 10
 `
 
 	if actual != expected {
