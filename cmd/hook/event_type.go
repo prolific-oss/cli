@@ -15,6 +15,11 @@ func NewEventTypeCommand(commandName string, client client.API, w io.Writer) *co
 	cmd := &cobra.Command{
 		Use:   commandName,
 		Short: "List of event types you can subscribe to",
+		Long: `List event types you can subscribe to.
+
+There are several events in the Prolific Platform you can listen to. This
+command aims to surface those events so you can decide what to register
+interest for.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			err := renderEventTypes(client, w)
 			if err != nil {
