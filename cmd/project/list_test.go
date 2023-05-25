@@ -52,11 +52,18 @@ func TestNewListCommandCallsAPI(t *testing.T) {
 				Description: "Project about beans",
 			},
 		},
+		JSONAPIMeta: &client.JSONAPIMeta{
+			Meta: struct {
+				Count int `json:"count"`
+			}{
+				Count: 10,
+			},
+		},
 	}
 
 	c.
 		EXPECT().
-		GetProjects(gomock.Eq("991199")).
+		GetProjects(gomock.Eq("991199"), gomock.Eq(10), gomock.Eq(2)).
 		Return(&response, nil).
 		AnyTimes()
 
@@ -65,6 +72,8 @@ func TestNewListCommandCallsAPI(t *testing.T) {
 
 	cmd := project.NewListCommand("projects", c, writer)
 	_ = cmd.Flags().Set("workspace", "991199")
+	_ = cmd.Flags().Set("limit", "10")
+	_ = cmd.Flags().Set("offset", "2")
 	_ = cmd.RunE(cmd, nil)
 
 	writer.Flush()
@@ -72,6 +81,8 @@ func TestNewListCommandCallsAPI(t *testing.T) {
 	expected := `ID      Title Description
 123     Titan Project about moons
 8889991 Beans Project about beans
+
+Showing 2 records of 10
 `
 	actual := b.String()
 	if actual != expected {
@@ -106,7 +117,7 @@ func TestNewListCommandHandlesErrorsFromTheAPI(t *testing.T) {
 
 	c.
 		EXPECT().
-		GetProjects(gomock.Eq(workspaceID)).
+		GetProjects(gomock.Eq(workspaceID), client.DefaultRecordLimit, client.DefaultRecordOffset).
 		Return(nil, errors.New(errorMessage)).
 		AnyTimes()
 

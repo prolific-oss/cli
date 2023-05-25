@@ -2,6 +2,8 @@
 
 ## next
 
+- Provide paging options for the `project list` command.
+
 ## 0.0.25
 
 - Provide the ability to specify a different workspace on the `hook list` command.

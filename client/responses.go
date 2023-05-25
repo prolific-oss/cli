@@ -119,6 +119,7 @@ type CreateWorkspacesResponse struct {
 // ListProjectsResponse is the response for the list projects endpoint.
 type ListProjectsResponse struct {
 	Results []model.Project `json:"results"`
+	*JSONAPIMeta
 }
 
 // CreateProjectResponse is the response for creating a project.

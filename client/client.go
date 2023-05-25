@@ -42,7 +42,7 @@ type API interface {
 	GetWorkspaces(limit, offset int) (*ListWorkspacesResponse, error)
 	CreateWorkspace(workspace model.Workspace) (*CreateWorkspacesResponse, error)
 
-	GetProjects(workspaceID string) (*ListProjectsResponse, error)
+	GetProjects(workspaceID string, limit, offset int) (*ListProjectsResponse, error)
 	CreateProject(workspaceID string, project model.Project) (*CreateProjectResponse, error)
 
 	GetParticipantGroups(projectID string) (*ListParticipantGroupsResponse, error)
@@ -361,10 +361,10 @@ func (c *Client) CreateWorkspace(workspace model.Workspace) (*CreateWorkspacesRe
 }
 
 // GetProjects will return the projects for the given workspace ID
-func (c *Client) GetProjects(workspaceID string) (*ListProjectsResponse, error) {
+func (c *Client) GetProjects(workspaceID string, limit, offset int) (*ListProjectsResponse, error) {
 	var response ListProjectsResponse
 
-	url := fmt.Sprintf("/api/v1/workspaces/%s/projects/", workspaceID)
+	url := fmt.Sprintf("/api/v1/workspaces/%s/projects/?limit=%v&offset=%v", workspaceID, limit, offset)
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
