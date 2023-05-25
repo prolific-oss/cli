@@ -2,6 +2,8 @@
 
 ## next
 
+## 0.0.26
+
 - Provide paging options for the `project list` command.
 
 ## 0.0.25
