@@ -101,6 +101,10 @@ func (c *Client) Execute(method, url string, body interface{}, response interfac
 	request.Header.Set("User-Agent", "prolific/cli")
 	request.Header.Set("Authorization", fmt.Sprintf("Token %s", c.Token))
 
+	if c.Debug {
+		fmt.Println(request)
+	}
+
 	httpResponse, err := c.Client.Do(request)
 	if err != nil {
 		return nil, err

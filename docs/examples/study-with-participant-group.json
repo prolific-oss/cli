@@ -1,0 +1,21 @@
+{
+  "name": "Study with a participant group",
+  "internal_name": "Study with a participant group",
+  "description": "This study will be published to the participants in the participant group",
+  "external_study_url": "https://google.com",
+  "prolific_id_option": "question",
+  "completion_code": "COMPLE01",
+  "completion_option": "code",
+  "total_available_places": 10,
+  "estimated_completion_time": 10,
+  "maximum_allowed_time": 10,
+  "reward": 400,
+  "device_compatibility": ["desktop", "tablet", "mobile"],
+  "peripheral_requirements": ["audio", "camera", "download", "microphone"],
+  "eligibility_requirements": [
+    {
+      "attributes": [{ "id": "6429b0ea05b2a24cac83c3a4", "value": true }],
+      "_cls": "web.eligibility.models.ParticipantGroupEligibilityRequirement"
+    }
+  ]
+}

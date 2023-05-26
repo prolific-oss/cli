@@ -110,26 +110,34 @@ type Study struct {
 }
 
 // CreateStudy is responsible for capturing what fields we need to send
-// to Prolific to create a study.
+// to Prolific to create a study. The `mapstructure` is so we can take a viper
+// configuration file.
 type CreateStudy struct {
-	Name             string `json:"name"`
-	InternalName     string `json:"internal_name"`
-	Description      string `json:"description"`
-	ExternalStudyURL string `json:"external_study_url"`
+	Name             string `json:"name" mapstructure:"name"`
+	InternalName     string `json:"internal_name" mapstructure:"internal_name"`
+	Description      string `json:"description" mapstructure:"description"`
+	ExternalStudyURL string `json:"external_study_url" mapstructure:"external_study_url"`
 	// Enum "question", "url_parameters" (Recommended), "not_required"
-	ProlificIDOption string `json:"prolific_id_option"`
-	CompletionCode   string `json:"completion_code"`
+	ProlificIDOption string `json:"prolific_id_option" mapstructure:"prolific_id_option"`
+	CompletionCode   string `json:"completion_code" mapstructure:"completion_code"`
 	// Enum: "url", "code"
-	CompletionOption     string `json:"completion_option"`
-	TotalAvailablePlaces int    `json:"total_available_places"`
+	CompletionOption     string `json:"completion_option" mapstructure:"completion_option"`
+	TotalAvailablePlaces int    `json:"total_available_places" mapstructure:"total_available_places"`
 	// Minutes
-	EstimatedCompletionTime int     `json:"estimated_completion_time"`
-	MaximumAllowedTime      int     `json:"maximum_allowed_time"`
-	Reward                  float64 `json:"reward"`
+	EstimatedCompletionTime int     `json:"estimated_completion_time" mapstructure:"estimated_completion_time"`
+	MaximumAllowedTime      int     `json:"maximum_allowed_time" mapstructure:"maximum_allowed_time"`
+	Reward                  float64 `json:"reward" mapstructure:"reward"`
 	// Enum: "desktop", "tablet", "mobile"
-	DeviceCompatibility []string `json:"device_compatibility"`
+	DeviceCompatibility []string `json:"device_compatibility" mapstructure:"device_compatibility"`
 	// Enum: "audio", "camera", "download", "microphone"
-	PeripheralRequirements []string `json:"peripheral_requirements"`
+	PeripheralRequirements  []string `json:"peripheral_requirements" mapstructure:"peripheral_requirements"`
+	EligibilityRequirements []struct {
+		Attributes []struct {
+			ID    string `json:"id" mapstructure:"id"`
+			Value bool   `json:"value" mapstructure:"value"`
+		} `json:"attributes" mapstructure:"attributes"`
+		Cls string `json:"_cls" mapstructure:"_cls"`
+	} `json:"eligibility_requirements" mapstructure:"eligibility_requirements"`
 }
 
 // UpdateStudy represents the model we will send back to Prolific to update
