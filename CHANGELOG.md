@@ -2,6 +2,8 @@
 
 ## next
 
+## 0.0.27
+
 - Provide `message list` command that allows you to pull back messages from the Prolific Platform.
 - Provide `message send` command that allows you to send messages on the Prolific Platform.
 - Add the researcher ID to the `whoami` command.
