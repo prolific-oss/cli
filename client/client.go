@@ -49,6 +49,7 @@ type API interface {
 	GetParticipantGroups(projectID string) (*ListParticipantGroupsResponse, error)
 	GetParticipantGroup(groupID string) (*ViewParticipantGroupResponse, error)
 	GetMessages(userID *string, createdAfter *string) (*ListMessagesResponse, error)
+	SendMessage(body string, recipientID string, studyID string) error
 }
 
 // Client is responsible for interacting with the Prolific API.
@@ -112,8 +113,10 @@ func (c *Client) Execute(method, url string, body interface{}, response interfac
 		fmt.Println(string(responseBody))
 	}
 
-	if err := json.NewDecoder(io.NopCloser(bytes.NewBuffer(responseBody))).Decode(&response); err != nil {
-		return nil, fmt.Errorf("decoding JSON response from %s failed: %v", request.URL, err)
+	if response != nil {
+		if err := json.NewDecoder(io.NopCloser(bytes.NewBuffer(responseBody))).Decode(response); err != nil {
+			return nil, fmt.Errorf("decoding JSON response from %s failed: %v", request.URL, err)
+		}
 	}
 
 	return httpResponse, nil
@@ -450,4 +453,22 @@ func (c *Client) GetMessages(userID *string, createdAfter *string) (*ListMessage
 	}
 
 	return &response, nil
+}
+
+// SendMessage will send a message
+func (c *Client) SendMessage(body string, recipientID string, studyID string) error {
+	payload := SendMessagePayload{
+		RecipientID: recipientID,
+		StudyID:     studyID,
+		Body:        body,
+	}
+
+	url := "/api/v1/messages/"
+	_, err := c.Execute(http.MethodPost, url, payload, nil)
+
+	if err != nil {
+		return fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return nil
 }
