@@ -16,6 +16,7 @@ func NewMessageCommand(client client.API, w io.Writer) *cobra.Command {
 
 	cmd.AddCommand(
 		NewListCommand("list", client, w),
+		NewSendCommand("send", client, w),
 	)
 
 	return cmd
