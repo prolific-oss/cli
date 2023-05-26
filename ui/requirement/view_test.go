@@ -15,7 +15,7 @@ func TestRenderRequirement(t *testing.T) {
 		Cls:         "this is the cls",
 		Category:    "category",
 		Subcategory: "sub-category",
-		Query:       model.RequirementQuestion{Title: "requirement title", Question: "query-quest", Description: "query-description"},
+		Query:       model.RequirementQuestion{ID: "query-id", Title: "requirement title", Question: "query-quest", Description: "query-description"},
 		Attributes:  []model.RequirementAttribute{{Label: "attribute-label"}},
 	}
 
@@ -30,6 +30,7 @@ Subcategory:sub-category
 ---
 
 Query
+ID:query-id
 Question:query-quest
 Title:requirementtitle
 Description:query-description
@@ -41,6 +42,7 @@ Name:
 Label:attribute-label
 Index:0
 Value:<nil>
+
 
 `
 

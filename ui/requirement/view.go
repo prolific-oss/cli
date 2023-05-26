@@ -72,6 +72,7 @@ func RenderRequirement(req model.Requirement) string {
 	content += fmt.Sprintf("\n%s\n\n", ui.RenderSectionMarker())
 
 	content += fmt.Sprintln(ui.RenderHeading("Query"))
+	content += fmt.Sprintf("ID:                 %s\n", req.Query.ID)
 	content += fmt.Sprintf("Question:           %s\n", req.Query.Question)
 	content += fmt.Sprintf("Title:              %s\n", req.Query.Title)
 	content += fmt.Sprintf("Description:        %s\n", req.Query.Description)
@@ -84,7 +85,7 @@ func RenderRequirement(req model.Requirement) string {
 		content += fmt.Sprintf("Label:              %v\n", attribute.Label)
 		content += fmt.Sprintf("Index:              %v\n", attribute.Index)
 		content += fmt.Sprintf("Value:              %v\n", attribute.Value)
-		content += ""
+		content += "\n"
 	}
 
 	return fmt.Sprintln(content)
