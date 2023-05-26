@@ -11,6 +11,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/hook"
+	"github.com/prolific-oss/cli/config"
 	"github.com/prolific-oss/cli/mock_client"
 	"github.com/prolific-oss/cli/model"
 )
@@ -92,7 +93,7 @@ func TestNewListCommandCallsTheAPI(t *testing.T) {
 			{
 				ID:          "hook-id",
 				EventType:   "wibble",
-				TargetURL:   "https://app.prolific.co",
+				TargetURL:   config.GetApplicationURL(),
 				IsEnabled:   true,
 				WorkspaceID: "workspace-id",
 			},
@@ -125,11 +126,11 @@ func TestNewListCommandCallsTheAPI(t *testing.T) {
 	writer.Flush()
 
 	actual := b.String()
-	expected := `ID      Event  Target URL              Enabled Workspace ID
-hook-id wibble https://app.prolific.co true    workspace-id
+	expected := fmt.Sprintf(`ID      Event  Target URL              Enabled Workspace ID
+hook-id wibble %s true    workspace-id
 
 Showing 1 record of 10
-`
+`, config.GetApplicationURL())
 
 	if actual != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, actual)

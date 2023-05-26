@@ -2,6 +2,8 @@
 
 ## next
 
+- Provide an easy access link to the message centre in the `message list` command.
+
 ## 0.0.27
 
 - Provide `message list` command that allows you to pull back messages from the Prolific Platform.
