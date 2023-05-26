@@ -61,3 +61,13 @@ type Secret struct {
 	Value       string `json:"value"`
 	WorkspaceID string `json:"workspace_id"`
 }
+
+// Message represents the message model
+type Message struct {
+	SenderID        string                 `json:"sender_id"`
+	StudyID         string                 `json:"study_id,omitempty"`
+	ChannelID       string                 `json:"channel_id"`
+	DatetimeCreated string                 `json:"datetime_created"`
+	Body            string                 `json:"body"`
+	Data            map[string]interface{} `json:"data,omitempty"`
+}

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/prolific-oss/cli/model"
@@ -47,6 +48,7 @@ type API interface {
 
 	GetParticipantGroups(projectID string) (*ListParticipantGroupsResponse, error)
 	GetParticipantGroup(groupID string) (*ViewParticipantGroupResponse, error)
+	GetMessages(userID *string, createdAfter *string) (*ListMessagesResponse, error)
 }
 
 // Client is responsible for interacting with the Prolific API.
@@ -407,6 +409,44 @@ func (c *Client) GetParticipantGroup(groupID string) (*ViewParticipantGroupRespo
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// GetMessages will return the messages for the authenticated user
+func (c *Client) GetMessages(userID *string, createdAfter *string) (*ListMessagesResponse, error) {
+	var response ListMessagesResponse
+
+	if userID == nil && createdAfter == nil {
+		return nil, fmt.Errorf("either userID or createdAfter must be provided")
+	}
+
+	baseURL := "/api/v1/messages/"
+	params := url.Values{}
+
+	if userID != nil {
+		params.Add("user_id", *userID)
+	}
+
+	if createdAfter != nil {
+		params.Add("created_after", *createdAfter)
+	}
+
+	url := baseURL + "?" + params.Encode()
+
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	for index, message := range response.Results {
+		if value, ok := message.Data["study_id"].(string); ok {
+			response.Results[index].StudyID = value
+		}
+		// Now remove the data field
+		response.Results[index].Data = nil
 	}
 
 	return &response, nil
