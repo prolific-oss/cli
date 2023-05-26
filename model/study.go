@@ -134,8 +134,12 @@ type CreateStudy struct {
 	EligibilityRequirements []struct {
 		Attributes []struct {
 			ID    string `json:"id" mapstructure:"id"`
-			Value bool   `json:"value" mapstructure:"value"`
+			Index any    `json:"index,omitempty" mapstructure:"index,omitempty"`
+			Value any    `json:"value" mapstructure:"value"`
 		} `json:"attributes" mapstructure:"attributes"`
+		Query struct {
+			ID string `json:"id" mapstructure:"id"`
+		} `json:"query" mapstructure:"query"`
 		Cls string `json:"_cls" mapstructure:"_cls"`
 	} `json:"eligibility_requirements" mapstructure:"eligibility_requirements"`
 }
