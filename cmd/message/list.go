@@ -39,8 +39,8 @@ func NewListCommand(commandName string, client client.API, w io.Writer) *cobra.C
 
 	flags := cmd.Flags()
 
-	flags.StringVarP(&opts.UserID, "user", "u", "", "Filter messages by user.")
-	flags.StringVarP(&opts.CreatedAfter, "created_after", "c", "", "Filter messages created after a certain date (YYYY-MM-DD).")
+	flags.StringVarP(&opts.UserID, "user", "u", "", "Filter messages sent to user.")
+	flags.StringVarP(&opts.CreatedAfter, "created_after", "c", "", "Filter messages created after a certain date (YYYY-MM-DD). You can only fetch up to the last 30 days of messages.")
 	flags.BoolVarP(&opts.Unread, "unread", "U", false, "Filter messages to show only unread. Cannot be used with any other flags.")
 
 	return cmd
