@@ -3,6 +3,7 @@ package study
 import (
 	"fmt"
 	"io"
+	"log"
 
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/model"
@@ -59,20 +60,10 @@ func createStudy(client client.API, opts CreateOptions, w io.Writer) error {
 		return err
 	}
 
-	s := model.CreateStudy{
-		Name:                    v.GetString("name"),
-		InternalName:            v.GetString("internal_name"),
-		Description:             v.GetString("description"),
-		ExternalStudyURL:        v.GetString("external_study_url"),
-		ProlificIDOption:        v.GetString("prolific_id_option"),
-		CompletionCode:          v.GetString("completion_code"),
-		CompletionOption:        v.GetString("completion_option"),
-		TotalAvailablePlaces:    v.GetInt("total_available_places"),
-		EstimatedCompletionTime: v.GetInt("estimated_completion_time"),
-		MaximumAllowedTime:      v.GetInt("maximum_allowed_time"),
-		Reward:                  v.GetFloat64("reward"),
-		DeviceCompatibility:     v.GetStringSlice("device_compatibility"),
-		PeripheralRequirements:  v.GetStringSlice("peripheral_requirements"),
+	var s model.CreateStudy
+	err = v.Unmarshal(&s)
+	if err != nil {
+		log.Fatalf("unable to map %s to study model: %s", opts.TemplatePath, err)
 	}
 
 	study, err := client.CreateStudy(s)
