@@ -2,6 +2,9 @@
 
 ## next
 
+- Provide `message list` command that allows you to pull back messages from the Prolific Platform.
+- Provide `message send` command that allows you to send messages on the Prolific Platform.
+
 ## 0.0.26
 
 - Provide paging options for the `project list` command.
