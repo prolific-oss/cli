@@ -8,6 +8,7 @@ import (
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/hook"
+	"github.com/prolific-oss/cli/cmd/message"
 	"github.com/prolific-oss/cli/cmd/participantgroup"
 	"github.com/prolific-oss/cli/cmd/project"
 	requirement "github.com/prolific-oss/cli/cmd/requirements"
@@ -67,6 +68,7 @@ func NewRootCommand() *cobra.Command {
 		workspace.NewWorkspaceCommand(&client, w),
 		project.NewProjectCommand(&client, w),
 		participantgroup.NewParticipantCommand(&client, w),
+		message.NewMessageCommand(&client, w),
 	)
 
 	return cmd
