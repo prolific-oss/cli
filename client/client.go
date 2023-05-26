@@ -207,9 +207,14 @@ func (c *Client) GetStudy(ID string) (*model.Study, error) {
 	var response model.Study
 
 	url := fmt.Sprintf("/api/v1/studies/%s", ID)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unable to get study: %v", string(body))
 	}
 
 	return &response, nil

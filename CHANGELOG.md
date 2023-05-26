@@ -3,6 +3,7 @@
 ## next
 
 - Provide an easy access link to the message centre in the `message list` command.
+- Show the submissions configuration data when rendering a study.
 
 ## 0.0.27
 

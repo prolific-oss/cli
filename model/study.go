@@ -94,18 +94,19 @@ type Study struct {
 			Link string      `json:"link"`
 		} `json:"institution"`
 	} `json:"researcher"`
-	Status                 string        `json:"status"`
-	AverageRewardPerHour   float64       `json:"average_reward_per_hour"`
-	DeviceCompatibility    []string      `json:"device_compatibility"`
-	PeripheralRequirements []interface{} `json:"peripheral_requirements"`
-	PlacesTaken            int           `json:"places_taken"`
-	EstimatedRewardPerHour float64       `json:"estimated_reward_per_hour"`
-	Ref                    interface{}   `json:"_ref"`
-	StudyType              string        `json:"study_type"`
-	TotalCost              float64       `json:"total_cost"`
-	PublishAt              interface{}   `json:"publish_at"`
-	IsPilot                bool          `json:"is_pilot"`
-	IsUnderpaying          interface{}   `json:"is_underpaying"`
+	Status                 string            `json:"status"`
+	AverageRewardPerHour   float64           `json:"average_reward_per_hour"`
+	DeviceCompatibility    []string          `json:"device_compatibility"`
+	PeripheralRequirements []interface{}     `json:"peripheral_requirements"`
+	PlacesTaken            int               `json:"places_taken"`
+	EstimatedRewardPerHour float64           `json:"estimated_reward_per_hour"`
+	Ref                    interface{}       `json:"_ref"`
+	StudyType              string            `json:"study_type"`
+	TotalCost              float64           `json:"total_cost"`
+	PublishAt              interface{}       `json:"publish_at"`
+	IsPilot                bool              `json:"is_pilot"`
+	IsUnderpaying          interface{}       `json:"is_underpaying"`
+	SubmissionsConfig      SubmissionsConfig `json:"submissions_config"`
 }
 
 // CreateStudy is responsible for capturing what fields we need to send
@@ -135,6 +136,12 @@ type CreateStudy struct {
 // the study.
 type UpdateStudy struct {
 	TotalAvailablePlaces int `json:"total_available_places,omitempty"`
+}
+
+// SubmissionsConfig represents configuration around submission gathering
+type SubmissionsConfig struct {
+	MaxSubmissionsPerParticipant int `json:"max_submissions_per_participant"`
+	MaxConcurrentSubmissions     int `json:"max_concurrent_submissions"`
 }
 
 // FilterValue will help the bubbletea views run
