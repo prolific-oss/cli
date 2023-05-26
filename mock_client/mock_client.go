@@ -185,6 +185,21 @@ func (mr *MockAPIMockRecorder) GetMe() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMe", reflect.TypeOf((*MockAPI)(nil).GetMe))
 }
 
+// GetMessages mocks base method.
+func (m *MockAPI) GetMessages(userID, createdAfter *string) (*client.ListMessagesResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMessages", userID, createdAfter)
+	ret0, _ := ret[0].(*client.ListMessagesResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMessages indicates an expected call of GetMessages.
+func (mr *MockAPIMockRecorder) GetMessages(userID, createdAfter interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMessages", reflect.TypeOf((*MockAPI)(nil).GetMessages), userID, createdAfter)
+}
+
 // GetParticipantGroup mocks base method.
 func (m *MockAPI) GetParticipantGroup(groupID string) (*client.ViewParticipantGroupResponse, error) {
 	m.ctrl.T.Helper()
