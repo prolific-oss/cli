@@ -49,7 +49,7 @@ type API interface {
 	GetParticipantGroups(projectID string) (*ListParticipantGroupsResponse, error)
 	GetParticipantGroup(groupID string) (*ViewParticipantGroupResponse, error)
 	GetMessages(userID *string, createdAfter *string) (*ListMessagesResponse, error)
-	SendMessage(body string, recipientID string, studyID string) error
+	SendMessage(body, recipientID, studyID string) error
 	GetUnreadMessages() (*ListUnreadMessagesResponse, error)
 }
 

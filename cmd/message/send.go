@@ -27,7 +27,7 @@ func NewSendCommand(commandName string, client client.API, w io.Writer) *cobra.C
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
 
-			err := renderMessage(client, opts, w)
+			err := createMessage(client, opts, w)
 			if err != nil {
 				return fmt.Errorf("error: %s", err.Error())
 			}
@@ -37,25 +37,15 @@ func NewSendCommand(commandName string, client client.API, w io.Writer) *cobra.C
 	}
 
 	flags := cmd.Flags()
-	flags.StringVarP(&opts.RecipientID, "recipient_id", "r", "", "Specify the recipient.")
-	flags.StringVarP(&opts.StudyID, "study_id", "s", "", "Specify the study to which the message relates.")
+	flags.StringVarP(&opts.RecipientID, "recipient", "r", "", "Specify the recipient.")
+	flags.StringVarP(&opts.StudyID, "study", "s", "", "Specify the study to which the message relates.")
 	flags.StringVarP(&opts.Body, "body", "b", "", "Specific the body of message.")
-
-	if err := cmd.MarkFlagRequired("recipient_id"); err != nil {
-		panic(err)
-	}
-	if err := cmd.MarkFlagRequired("study_id"); err != nil {
-		panic(err)
-	}
-	if err := cmd.MarkFlagRequired("body"); err != nil {
-		panic(err)
-	}
 
 	return cmd
 }
 
-// renderMessage will show your message
-func renderMessage(client client.API, opts SendOptions, w io.Writer) error {
+// createMessage will show your message
+func createMessage(client client.API, opts SendOptions, w io.Writer) error {
 	err := client.SendMessage(opts.Body, opts.RecipientID, opts.StudyID)
 	if err != nil {
 		return err

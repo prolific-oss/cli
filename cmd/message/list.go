@@ -6,6 +6,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -38,9 +39,9 @@ func NewListCommand(commandName string, client client.API, w io.Writer) *cobra.C
 
 	flags := cmd.Flags()
 
-	flags.StringVarP(&opts.UserID, "id", "i", "", "Filter messages by user.")
+	flags.StringVarP(&opts.UserID, "user", "u", "", "Filter messages by user.")
 	flags.StringVarP(&opts.CreatedAfter, "created_after", "c", "", "Filter messages created after a certain date (YYYY-MM-DD).")
-	flags.BoolVarP(&opts.Unread, "unread", "u", false, "Filter messages to show only unread. Cannot be used with any other flags.")
+	flags.BoolVarP(&opts.Unread, "unread", "U", false, "Filter messages to show only unread. Cannot be used with any other flags.")
 
 	return cmd
 }
@@ -61,24 +62,22 @@ func renderMessages(c client.API, opts ListOptions, w io.Writer) error {
 		createdAfter = &opts.CreatedAfter
 	}
 
+	tw := tabwriter.NewWriter(w, 0, 1, 1, ' ', 0)
+
 	if opts.Unread {
 		messages, err := c.GetUnreadMessages()
 		if err != nil {
 			return err
 		}
 
-		tw := tabwriter.NewWriter(w, 0, 1, 1, ' ', 0)
-		fmt.Fprintf(tw, "%s\t%s\t%s\t%s\n", "Sender ID", "Channel ID", "Datetime Created", "Body")
+		fmt.Fprintf(tw, "%s\t%s\t%s\n", "Sender ID", "Datetime Created", "Body")
 		for _, message := range messages.Results {
-			fmt.Fprintf(tw, "%s\t%s\t%s\t%s\n",
+			fmt.Fprintf(tw, "%s\t%s\t%s\n",
 				message.Sender,
-				message.ChannelID,
-				message.DatetimeCreated,
+				message.DatetimeCreated.Format(ui.AppDateTimeFormat),
 				message.Body,
 			)
 		}
-
-		return nil
 	} else {
 		messages, err := c.GetMessages(userID, createdAfter)
 
@@ -86,20 +85,16 @@ func renderMessages(c client.API, opts ListOptions, w io.Writer) error {
 			return err
 		}
 
-		tw := tabwriter.NewWriter(w, 0, 1, 1, ' ', 0)
-		fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\n", "Sender ID", "Study ID", "Channel ID", "Datetime Created", "Body")
+		fmt.Fprintf(tw, "%s\t%s\t%s\t%s\n", "Sender ID", "Study ID", "Datetime Created", "Body")
 		for _, message := range messages.Results {
-			fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\n",
+			fmt.Fprintf(tw, "%s\t%s\t%s\t%s\n",
 				message.SenderID,
 				message.StudyID,
-				message.ChannelID,
-				message.DatetimeCreated,
+				message.DatetimeCreated.Format(ui.AppDateTimeFormat),
 				message.Body,
 			)
 		}
-
-		_ = tw.Flush()
 	}
 
-	return nil
+	return tw.Flush()
 }
