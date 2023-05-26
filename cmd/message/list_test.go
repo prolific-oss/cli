@@ -12,6 +12,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/message"
+	"github.com/prolific-oss/cli/config"
 	"github.com/prolific-oss/cli/mock_client"
 	"github.com/prolific-oss/cli/model"
 )
@@ -100,9 +101,11 @@ func TestNewListCommandCallsTheAPI(t *testing.T) {
 	writer.Flush()
 
 	actual := b.String()
-	expected := `Sender ID Study ID Datetime Created Body
+	expected := fmt.Sprintf(`Sender ID Study ID Datetime Created Body
 sender-id study-id 27-01-2023 19:39 body
-`
+
+View messages in the application: %s/messages/inbox
+`, config.GetApplicationURL())
 
 	if actual != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, actual)
@@ -151,9 +154,11 @@ func TestNewListCommandWithUnreadFlagCallsTheAPI(t *testing.T) {
 	writer.Flush()
 
 	actual := b.String()
-	expected := `Sender ID Datetime Created Body
+	expected := fmt.Sprintf(`Sender ID Datetime Created Body
 sender-id 27-01-2023 19:39 body
-`
+
+View messages in the application: %s/messages/inbox
+`, config.GetApplicationURL())
 
 	if actual != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, actual)

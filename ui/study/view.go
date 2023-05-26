@@ -7,6 +7,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/config"
 	"github.com/prolific-oss/cli/model"
 	"github.com/prolific-oss/cli/ui"
 )
@@ -94,7 +95,7 @@ func RenderStudy(study model.Study) string {
 
 	content += fmt.Sprintf("\n%s\n\n", ui.RenderSectionMarker())
 
-	content += fmt.Sprintf("View study in the application: https://app.prolific.co/researcher/studies/%s", study.ID)
+	content += fmt.Sprintf("View study in the application: %s/researcher/studies/%s", config.GetApplicationURL(), study.ID)
 
 	return content
 }

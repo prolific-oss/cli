@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -11,6 +12,7 @@ import (
 	"github.com/acarl005/stripansi"
 	"github.com/golang/mock/gomock"
 	"github.com/prolific-oss/cli/cmd/study"
+	"github.com/prolific-oss/cli/config"
 	"github.com/prolific-oss/cli/mock_client"
 	"github.com/prolific-oss/cli/model"
 )
@@ -46,7 +48,7 @@ func TestViewStudyRendersStudy(t *testing.T) {
 		Name:                    "My first standard sample",
 		InternalName:            "Standard sample",
 		Desc:                    "This is my first standard sample study on the Prolific system.",
-		ExternalStudyURL:        "https://eggs-experriment.com?participant={{%PROLIFIC_PID%}}",
+		ExternalStudyURL:        "https://eggs-experriment.com?participant=",
 		TotalAvailablePlaces:    10,
 		EstimatedCompletionTime: 10,
 		MaximumAllowedTime:      10,
@@ -67,7 +69,7 @@ func TestViewStudyRendersStudy(t *testing.T) {
 	_ = cmd.RunE(cmd, []string{studyID})
 	writer.Flush()
 
-	expected := `My first standard sample
+	expected := fmt.Sprintf(`My first standard sample
 This is my first standard sample study on the Prolific system.
 
 ID:                        11223344
@@ -78,7 +80,7 @@ Reward:                    £4.00
 Hourly rate:               £0.00
 Estimated completion time: 10
 Maximum allowed time:      10
-Study URL:                 https://eggs-experriment.com?participant={{%PROLIFIC_PID%}}
+Study URL:                 https://eggs-experriment.com?participant=
 Places taken:              0
 Available places:          10
 
@@ -89,8 +91,8 @@ No eligibility requirements are defined for this study.
 
 ---
 
-View study in the application: https://app.prolific.co/researcher/studies/11223344
-`
+View study in the application: %s/researcher/studies/11223344
+`, config.GetApplicationURL())
 
 	actual := stripansi.Strip(b.String())
 	actual = strings.ReplaceAll(actual, " ", "")
