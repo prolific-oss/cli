@@ -1,25 +1,31 @@
 package model
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // Requirement represents an eligibility requirement in the system.
 type Requirement struct {
-	ID   string `json:"id"`
-	Type string `json:"type"`
-	// Attributes []struct {
-	// 	Label string `json:"label"`
-	// 	Name  string `json:"name"`
-	// 	Value string `json:"value"`
-	// 	Index int    `json:"index"`
-	// } `json:"attributes"`
-	Query           RequirementQuestion `json:"query,omitempty"`
-	Cls             string              `json:"_cls"`
-	Category        string              `json:"category"`
-	Subcategory     interface{}         `json:"subcategory"`
-	Order           int                 `json:"order"`
-	Recommended     bool                `json:"recommended"`
-	DetailsDisplay  string              `json:"details_display"`
-	RequirementType string              `json:"requirement_type"`
+	ID              string                 `json:"id"`
+	Type            string                 `json:"type"`
+	Attributes      []RequirementAttribute `json:"attributes,omitempty"`
+	Query           RequirementQuestion    `json:"query,omitempty"`
+	Cls             string                 `json:"_cls"`
+	Category        string                 `json:"category"`
+	Subcategory     interface{}            `json:"subcategory"`
+	Order           int                    `json:"order"`
+	Recommended     bool                   `json:"recommended"`
+	DetailsDisplay  string                 `json:"details_display"`
+	RequirementType string                 `json:"requirement_type"`
+}
+
+// RequirementAttribute are all the attributes for a given requirement
+type RequirementAttribute struct {
+	Label string `json:"label,omitempty"`
+	Name  string `json:"name,omitempty"`
+	Value any    `json:"value,omitempty"`
+	Index int    `json:"index,omitempty"`
 }
 
 type RequirementQuestion struct {
@@ -39,7 +45,7 @@ func (r Requirement) FilterValue() string {
 	if title == "" {
 		title = r.Query.Title
 	}
-	return title
+	return strings.Trim(title, " ")
 }
 
 // Title will set the main string for the view.
@@ -48,7 +54,7 @@ func (r Requirement) Title() string {
 	if title == "" {
 		title = r.Query.Title
 	}
-	return title
+	return strings.Trim(title, " ")
 }
 
 // Description will set the secondary string the view.
