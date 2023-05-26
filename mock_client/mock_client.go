@@ -290,6 +290,21 @@ func (mr *MockAPIMockRecorder) GetSubmissions(ID, limit, offset interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubmissions", reflect.TypeOf((*MockAPI)(nil).GetSubmissions), ID, limit, offset)
 }
 
+// GetUnreadMessages mocks base method.
+func (m *MockAPI) GetUnreadMessages() (*client.ListUnreadMessagesResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUnreadMessages")
+	ret0, _ := ret[0].(*client.ListUnreadMessagesResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUnreadMessages indicates an expected call of GetUnreadMessages.
+func (mr *MockAPIMockRecorder) GetUnreadMessages() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUnreadMessages", reflect.TypeOf((*MockAPI)(nil).GetUnreadMessages))
+}
+
 // GetWorkspaces mocks base method.
 func (m *MockAPI) GetWorkspaces(limit, offset int) (*client.ListWorkspacesResponse, error) {
 	m.ctrl.T.Helper()

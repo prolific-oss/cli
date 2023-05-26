@@ -93,7 +93,7 @@ func TestNewListCommandCallsTheAPI(t *testing.T) {
 	writer := bufio.NewWriter(&b)
 
 	cmd := message.NewListCommand("list", c, writer)
-	_ = cmd.Flags().Set("user_id", userID)
+	_ = cmd.Flags().Set("id", userID)
 	_ = cmd.Flags().Set("created_after", createdAfter)
 	_ = cmd.RunE(cmd, nil)
 
@@ -106,5 +106,73 @@ sender-id study-id channel-id datetime-created body
 
 	if actual != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, actual)
+	}
+}
+
+func TestNewListCommandWithUnreadFlagCallsTheAPI(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	response := client.ListUnreadMessagesResponse{
+		Results: []model.UnreadMessage{
+			{
+				Sender:          "sender-id",
+				ChannelID:       "channel-id",
+				DatetimeCreated: "datetime-created",
+				Body:            "body",
+			},
+		},
+		JSONAPIMeta: &client.JSONAPIMeta{
+			Meta: struct {
+				Count int `json:"count"`
+			}{
+				Count: 10,
+			},
+		},
+	}
+
+	c.
+		EXPECT().
+		GetUnreadMessages().
+		Return(&response, nil).
+		AnyTimes()
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := message.NewListCommand("list", c, writer)
+	_ = cmd.Flags().Set("unread", "true")
+	err := cmd.RunE(cmd, nil)
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	writer.Flush()
+
+	actual := b.String()
+	expected := `Sender Channel ID Datetime Created Body
+sender-id channel-id datetime-created body
+`
+
+	if actual != expected {
+		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, actual)
+	}
+}
+
+func TestNewListCommandWithUnreadFlagAndOtherFlagsReturnsError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	cmd := message.NewListCommand("list", c, os.Stdout)
+	_ = cmd.Flags().Set("unread", "true")
+	_ = cmd.Flags().Set("id", "user-id") // Set another flag along with 'unread'
+	err := cmd.RunE(cmd, nil)
+
+	expectedError := `error: 'unread' cannot be used with any other flags`
+	if err == nil || err.Error() != expectedError {
+		t.Fatalf("expected error: '%s'; got error: '%v'", expectedError, err)
 	}
 }

@@ -50,6 +50,7 @@ type API interface {
 	GetParticipantGroup(groupID string) (*ViewParticipantGroupResponse, error)
 	GetMessages(userID *string, createdAfter *string) (*ListMessagesResponse, error)
 	SendMessage(body string, recipientID string, studyID string) error
+	GetUnreadMessages() (*ListUnreadMessagesResponse, error)
 }
 
 // Client is responsible for interacting with the Prolific API.
@@ -471,4 +472,19 @@ func (c *Client) SendMessage(body string, recipientID string, studyID string) er
 	}
 
 	return nil
+}
+
+// GetMessages will return the unread messages for the authenticated user
+func (c *Client) GetUnreadMessages() (*ListUnreadMessagesResponse, error) {
+	var response ListUnreadMessagesResponse
+
+	url := "/api/v1/messages/unread/"
+
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
 }
