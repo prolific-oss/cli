@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/prolific-oss/cli/client"
@@ -69,8 +70,7 @@ func TestNewListCommandCallsTheAPI(t *testing.T) {
 			{
 				SenderID:        "sender-id",
 				StudyID:         "study-id",
-				ChannelID:       "channel-id",
-				DatetimeCreated: "datetime-created",
+				DatetimeCreated: time.Date(2023, 01, 27, 19, 39, 0, 0, time.UTC),
 				Body:            "body",
 			},
 		},
@@ -93,15 +93,15 @@ func TestNewListCommandCallsTheAPI(t *testing.T) {
 	writer := bufio.NewWriter(&b)
 
 	cmd := message.NewListCommand("list", c, writer)
-	_ = cmd.Flags().Set("id", userID)
+	_ = cmd.Flags().Set("user", userID)
 	_ = cmd.Flags().Set("created_after", createdAfter)
 	_ = cmd.RunE(cmd, nil)
 
 	writer.Flush()
 
 	actual := b.String()
-	expected := `Sender ID Study ID Channel ID Datetime Created Body
-sender-id study-id channel-id datetime-created body
+	expected := `Sender ID Study ID Datetime Created Body
+sender-id study-id 27-01-2023 19:39 body
 `
 
 	if actual != expected {
@@ -118,8 +118,7 @@ func TestNewListCommandWithUnreadFlagCallsTheAPI(t *testing.T) {
 		Results: []model.UnreadMessage{
 			{
 				Sender:          "sender-id",
-				ChannelID:       "channel-id",
-				DatetimeCreated: "datetime-created",
+				DatetimeCreated: time.Date(2023, 01, 27, 19, 39, 0, 0, time.UTC),
 				Body:            "body",
 			},
 		},
@@ -152,8 +151,8 @@ func TestNewListCommandWithUnreadFlagCallsTheAPI(t *testing.T) {
 	writer.Flush()
 
 	actual := b.String()
-	expected := `Sender Channel ID Datetime Created Body
-sender-id channel-id datetime-created body
+	expected := `Sender ID Datetime Created Body
+sender-id 27-01-2023 19:39 body
 `
 
 	if actual != expected {
@@ -168,7 +167,7 @@ func TestNewListCommandWithUnreadFlagAndOtherFlagsReturnsError(t *testing.T) {
 
 	cmd := message.NewListCommand("list", c, os.Stdout)
 	_ = cmd.Flags().Set("unread", "true")
-	_ = cmd.Flags().Set("id", "user-id") // Set another flag along with 'unread'
+	_ = cmd.Flags().Set("user", "user-id") // Set another flag along with 'unread'
 	err := cmd.RunE(cmd, nil)
 
 	expectedError := `error: 'unread' cannot be used with any other flags`

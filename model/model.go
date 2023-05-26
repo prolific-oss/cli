@@ -64,8 +64,7 @@ type Secret struct {
 
 // Message represents the message model
 type Message struct {
-	ChannelID       string                 `json:"channel_id"`
-	DatetimeCreated string                 `json:"datetime_created"`
+	DatetimeCreated time.Time              `json:"datetime_created"`
 	Body            string                 `json:"body"`
 	SenderID        string                 `json:"sender_id"`
 	StudyID         string                 `json:"study_id,omitempty"`
@@ -74,8 +73,7 @@ type Message struct {
 
 // UnreadMessage represents the unread message model
 type UnreadMessage struct {
-	ChannelID       string `json:"channel_id"`
-	DatetimeCreated string `json:"datetime_created"`
-	Body            string `json:"body"`
-	Sender          string `json:"sender"`
+	DatetimeCreated time.Time `json:"datetime_created"`
+	Body            string    `json:"body"`
+	Sender          string    `json:"sender"`
 }
