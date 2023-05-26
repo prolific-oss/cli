@@ -2,6 +2,8 @@
 
 ## next
 
+## 0.0.28
+
 - Provide an easy access link to the message centre in the `message list` command.
 - Show the submissions configuration data when rendering a study.
 - Provide the ability to create studies with eligibility requirements.
