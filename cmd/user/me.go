@@ -37,6 +37,7 @@ func RenderMe(client client.API, w io.Writer) error {
 
 	content := ui.RenderHeading(fmt.Sprintf("%s %s", me.FirstName, me.LastName))
 	content += fmt.Sprintln()
+	content += fmt.Sprintf("ID:                %s\n", me.ID)
 	content += fmt.Sprintf("Email:             %s\n", me.Email)
 	content += fmt.Sprintf("Available balance: %s\n", ui.RenderMoney((float64(me.AvailableBalance)/100), me.CurrencyCode))
 	content += fmt.Sprintf("Balance:           %s\n", ui.RenderMoney((float64(me.Balance)/100), me.CurrencyCode))
