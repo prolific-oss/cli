@@ -74,6 +74,14 @@ func RenderStudy(study model.Study) string {
 	content += fmt.Sprintf("Study URL:                 %s\n", study.ExternalStudyURL)
 	content += fmt.Sprintf("Places taken:              %d\n", study.PlacesTaken)
 	content += fmt.Sprintf("Available places:          %d\n", study.TotalAvailablePlaces)
+
+	content += fmt.Sprintf("\n%s\n\n", ui.RenderSectionMarker())
+
+	content += fmt.Sprintln(ui.RenderHeading("Submissions configuration"))
+
+	content += fmt.Sprintf("Max submissions per participant: %v\n", study.SubmissionsConfig.MaxSubmissionsPerParticipant)
+	content += fmt.Sprintf("Max concurrent submissions:      %v\n", study.SubmissionsConfig.MaxConcurrentSubmissions)
+
 	content += fmt.Sprintf("\n%s\n\n", ui.RenderSectionMarker())
 
 	content += fmt.Sprintln(ui.RenderHeading("Eligibility requirements"))

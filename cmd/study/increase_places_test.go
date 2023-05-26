@@ -223,6 +223,12 @@ Available places:          11
 
 ---
 
+Submissions configuration
+Maxsubmissionsperparticipant: 0
+Maxconcurrentsubmissions:     0
+
+---
+
 Eligibility requirements
 No eligibility requirements are defined for this study.
 
