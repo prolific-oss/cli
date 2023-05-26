@@ -14,6 +14,7 @@ Available Commands:
   completion   Generate the autocompletion script for the specified shell
   help         Help about any command
   hook         Manage and view your hook subscriptions
+  message      Send and retrieve messages
   participant  Manage and view your participant groups
   project      Manage and view your projects in a workspace
   requirements List all eligibility requirements available for your study
@@ -46,6 +47,7 @@ Main features include:
 - Ability to silently create a study, meaning you [can script creating many studies in one go](https://github.com/prolific-oss/cli/wiki/Create-multiple-studies-via-a-bash-script).
 - Ability to get your user account details.
 - Ability to list your hook subscriptions.
+- Ability to send and retrieve messages.
 
 Checkout the [wiki](https://github.com/prolific-oss/cli/wiki) for more tips and tricks.
 
