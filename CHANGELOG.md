@@ -5,6 +5,7 @@
 - Provide an easy access link to the message centre in the `message list` command.
 - Show the submissions configuration data when rendering a study.
 - Provide the ability to create studies with eligibility requirements.
+- Provide more details in the `requirements` view so you can construct the `eligibility_requirements` payload in create study.
 
 ## 0.0.27
 

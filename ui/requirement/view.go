@@ -61,13 +61,31 @@ func (lv ListView) View() string {
 // RenderRequirement will provide a more indepth view of the requirement.
 func RenderRequirement(req model.Requirement) string {
 	content := fmt.Sprintln(ui.RenderHeading(req.Title()))
-	content += fmt.Sprintf("ID:                 %s\n", req.Query.ID)
+
+	content += fmt.Sprintf("ID:                 %s\n", req.ID)
+	content += fmt.Sprintf("CLS (_cls):         %s\n", req.Cls)
+	content += fmt.Sprintf("Category:           %s\n", req.Category)
+	if req.Subcategory != nil {
+		content += fmt.Sprintf("Subcategory:        %s\n", req.Subcategory)
+	}
+
+	content += fmt.Sprintf("\n%s\n\n", ui.RenderSectionMarker())
+
+	content += fmt.Sprintln(ui.RenderHeading("Query"))
 	content += fmt.Sprintf("Question:           %s\n", req.Query.Question)
 	content += fmt.Sprintf("Title:              %s\n", req.Query.Title)
 	content += fmt.Sprintf("Description:        %s\n", req.Query.Description)
-	content += fmt.Sprintf("Category:           %s\n", req.Category)
-	content += fmt.Sprintf("Subcategory:        %s\n", req.Subcategory)
-	content += fmt.Sprintf("Type:               %s\n", req.RequirementType)
+
+	content += fmt.Sprintf("\n%s\n\n", ui.RenderSectionMarker())
+
+	content += fmt.Sprintln(ui.RenderHeading("Attributes"))
+	for _, attribute := range req.Attributes {
+		content += fmt.Sprintf("Name:               %v\n", attribute.Name)
+		content += fmt.Sprintf("Label:              %v\n", attribute.Label)
+		content += fmt.Sprintf("Index:              %v\n", attribute.Index)
+		content += fmt.Sprintf("Value:              %v\n", attribute.Value)
+		content += ""
+	}
 
 	return fmt.Sprintln(content)
 }
