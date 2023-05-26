@@ -40,6 +40,7 @@ func TestRenderMe(t *testing.T) {
 		err    error
 	}{
 		{name: "can return a list of sprints", output: `Bald Rick
+ID:                616
 Email:             baldrick@turnip.co
 Available balance: £10.00
 Balance:           £8.50
@@ -54,6 +55,7 @@ Balance:           £8.50
 			c := mock_client.NewMockAPI(ctrl)
 
 			me := client.MeResponse{
+				ID:               "616",
 				FirstName:        "Bald",
 				LastName:         "Rick",
 				Email:            "baldrick@turnip.co",
