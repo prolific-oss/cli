@@ -305,6 +305,20 @@ func (mr *MockAPIMockRecorder) GetWorkspaces(limit, offset interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkspaces", reflect.TypeOf((*MockAPI)(nil).GetWorkspaces), limit, offset)
 }
 
+// SendMessage mocks base method.
+func (m *MockAPI) SendMessage(body, recipientID, studyID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SendMessage", body, recipientID, studyID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SendMessage indicates an expected call of SendMessage.
+func (mr *MockAPIMockRecorder) SendMessage(body, recipientID, studyID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendMessage", reflect.TypeOf((*MockAPI)(nil).SendMessage), body, recipientID, studyID)
+}
+
 // TransitionStudy mocks base method.
 func (m *MockAPI) TransitionStudy(ID, action string) (*client.TransitionStudyResponse, error) {
 	m.ctrl.T.Helper()
