@@ -26,6 +26,24 @@ func NewEventListCommand(commandName string, c client.API, w io.Writer) *cobra.C
 	cmd := &cobra.Command{
 		Use:   commandName,
 		Short: "Provide a list of events for your subscription",
+		Long: `List all events sent to your subscription
+
+If you have a subscription for a Prolific Platform event, we will deliver a
+payload to your target URL. We save this audit record. This means you can query
+the Prolific Platform to get events for a given subscription. This maybe be
+useful for reconciliation or testing.
+		`,
+		Example: `
+Get the last 200 events for the 637e081185389c0ca5595915 subscription
+$ prolific hook events -s 637e081185389c0ca5595915
+
+You can also use the standard limit and offset parameters. This will get you
+the last 10 events for your subscription.
+$ prolific hook events -s 637e081185389c0ca5595915 -l 10
+
+This will offset by 10 events, and get the next 10 events.
+$ prolific hook events -s 637e081185389c0ca5595915 -l 10 -o 10
+`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
 
