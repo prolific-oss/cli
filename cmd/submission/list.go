@@ -1,6 +1,7 @@
 package submission
 
 import (
+	"errors"
 	"fmt"
 	"io"
 
@@ -14,6 +15,7 @@ type ListOptions struct {
 	Args           []string
 	NonInteractive bool
 	Fields         string
+	Study          string
 	Csv            bool
 	Limit          int
 	Offset         int
@@ -27,9 +29,12 @@ func NewListCommand(c client.API, w io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "Provide details about your submissions, requires Study ID",
-		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
+
+			if opts.Study == "" {
+				return errors.New("please provide a study ID")
+			}
 
 			renderer := submission.ListRenderer{}
 
@@ -40,7 +45,7 @@ func NewListCommand(c client.API, w io.Writer) *cobra.Command {
 			}
 
 			err := renderer.Render(c, submission.ListUsedOptions{
-				StudyID:        args[0],
+				StudyID:        opts.Study,
 				Csv:            opts.Csv,
 				NonInteractive: opts.NonInteractive,
 				Fields:         opts.Fields,
@@ -59,9 +64,10 @@ func NewListCommand(c client.API, w io.Writer) *cobra.Command {
 	flags := cmd.Flags()
 	flags.BoolVarP(&opts.NonInteractive, "non-interactive", "n", true, "Render the list details straight to the terminal.")
 	flags.BoolVarP(&opts.Csv, "csv", "c", false, "Render the list details in a CSV format.")
+	flags.StringVarP(&opts.Study, "study", "s", "", "The study we want submissions for.")
 	flags.StringVarP(&opts.Fields, "fields", "f", "", "Comma separated list of fields you want to display in non-interactive/csv mode.")
-	flags.IntVarP(&opts.Limit, "limit", "l", client.DefaultRecordLimit, "Limit the number of events returned")
-	flags.IntVarP(&opts.Offset, "offset", "o", client.DefaultRecordOffset, "The number of events to offset")
+	flags.IntVarP(&opts.Limit, "limit", "l", client.DefaultRecordLimit, "Limit the number of events returned.")
+	flags.IntVarP(&opts.Offset, "offset", "o", client.DefaultRecordOffset, "The number of events to offset.")
 
 	return cmd
 }
