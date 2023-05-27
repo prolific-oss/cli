@@ -24,6 +24,18 @@ func NewSendCommand(commandName string, client client.API, w io.Writer) *cobra.C
 	cmd := &cobra.Command{
 		Use:   commandName,
 		Short: "Send a message",
+		Long: `Send messages to other users
+
+If participants have ever taken one of your studies before, you can message then.
+This will appear in their Message Centre.
+`,
+		Example: `
+Sending a message takes a few arguments.
+
+$ prolific message send -r participant-id -s study-id -b "This is my message"
+
+Please make sure you quote the message with "" for the -b flag.
+`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
 
