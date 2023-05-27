@@ -26,6 +26,25 @@ func NewListCommand(commandName string, client client.API, w io.Writer) *cobra.C
 	cmd := &cobra.Command{
 		Use:   commandName,
 		Short: "View all your messages",
+		Long: `Retrieve your messages from the Prolific Platform
+
+This command will allow you to send and retrieve messages on the Prolific
+Platform. Please note that if you retrieve messages via the CLI, the notification
+count is not updated in the web application.
+`,
+		Example: `
+If you want to see all the messages between you and another user, you can provide
+their user ID
+$ prolific message list -u 6262a15c0c745235a82a150c
+
+If, however, you want to see all messages in the last 30 days (or less), you can
+run
+$ prolific message list -c 2023-05-01
+
+You can also return unread messages. Please note, that if you call this command,
+it will not mark the messages as read in the web application.
+$ prolific message list -U
+`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
 
