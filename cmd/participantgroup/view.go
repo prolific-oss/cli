@@ -24,6 +24,15 @@ func NewViewCommand(commandName string, client client.API, w io.Writer) *cobra.C
 		Use:   commandName,
 		Args:  cobra.MinimumNArgs(1),
 		Short: "Provide details about your participant group",
+		Long: `View your participant group
+
+A participant group contains one or more participants.
+`,
+		Example: `
+List the participants in your participant group
+
+$ prolific participant view 6429b0ea05b2a24cac83c3a4
+`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
 
