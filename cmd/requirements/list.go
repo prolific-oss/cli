@@ -18,6 +18,18 @@ func NewListCommand(client client.API, w io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "requirements",
 		Short: "List all eligibility requirements available for your study",
+		Long: `List eligibility requirements to filter participants for your study
+
+When you run a study, you can decide who is eligible from Prolific's pool of
+participants. These requirements are called eligibility requirements. From the
+list view you can press enter to get more details about that requirement. Those
+details can then be used in the "study create" command.`,
+		Example: `
+To list all the requirements
+$ prolific requirements
+
+This will provide you with an interactive list you can search. Once you have picked
+a requirement, press enter to get more details`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			err := renderList(client)
 			if err != nil {
