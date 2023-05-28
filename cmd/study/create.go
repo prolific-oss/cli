@@ -28,6 +28,79 @@ func NewCreateCommand(client client.API, w io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create",
 		Short: "Creation of studies",
+		Long:  `Create studies on the Prolific Platform`,
+		Example: `
+To create studies via the CLI, you define your study as a JSON/YAML file
+$ prolific study create -t /path/to/study.json
+$ prolific study create -t /path/to/study.yml
+
+You can also create and publish a study at the same time
+$ prolific study create -t /path/to/study.json -p
+
+If you are using the CLI in other tooling, you may want to silence the returned
+output of the study creation, so you can use the "-s" flag.
+$ prolific study create -t /path/to/study.json -p -s
+
+An example of a JSON study file, with an ethnicity screener
+
+{
+  "name": "Study with a ethnicity screener",
+  "internal_name": "Study with a ethnicity screener",
+  "description": "This study will be published to the participants with the selected ethnicity",
+  "external_study_url": "https://google.com",
+  "prolific_id_option": "question",
+  "completion_code": "COMPLE01",
+  "completion_option": "code",
+  "total_available_places": 10,
+  "estimated_completion_time": 10,
+  "maximum_allowed_time": 10,
+  "reward": 400,
+  "device_compatibility": ["desktop", "tablet", "mobile"],
+  "peripheral_requirements": ["audio", "camera", "download", "microphone"],
+  "eligibility_requirements": [
+    {
+      "attributes": [{ "index": 3, "value": true }],
+      "query": { "id": "5950c8413e9d730001924f2a" },
+      "_cls": "web.eligibility.models.SelectAnswerEligibilityRequirement"
+    }
+  ]
+}
+
+An example of a YAML study file
+
+---
+name: My first standard sample
+internal_name: Standard sample
+description: This is my first standard sample study on the Prolific system.
+external_study_url: https://eggs-experriment.com
+# Enum: "question", "url_parameters" (Recommended), "not_required"
+prolific_id_option: question
+completion_code: COMPLE01
+# Enum: "url", "code"
+completion_option: code
+total_available_places: 10
+# In minutes
+estimated_completion_time: 10
+
+###
+# Optional fields
+###
+# In minutes
+maximum_allowed_time: 10
+# In cents
+reward: 400
+# Enum: "desktop", "tablet", "mobile"
+device_compatibility:
+  - desktop
+  - tablet
+  - mobile
+# Enum: "audio", "camera", "download", "microphone"
+peripheral_requirements:
+  - audio
+  - camera
+  - download
+  - microphone
+---`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
 
