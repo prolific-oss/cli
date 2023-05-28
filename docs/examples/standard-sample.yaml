@@ -1,7 +1,7 @@
 name: My first standard sample
 internal_name: Standard sample
 description: This is my first standard sample study on the Prolific system.
-external_study_url: https://eggs-experriment.com?participant={{%PROLIFIC_PID%}}
+external_study_url: https://eggs-experriment.com
 # Enum: "question", "url_parameters" (Recommended), "not_required"
 prolific_id_option: question
 completion_code: COMPLE01
