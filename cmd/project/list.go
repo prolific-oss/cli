@@ -26,6 +26,21 @@ func NewListCommand(commandName string, c client.API, w io.Writer) *cobra.Comman
 	cmd := &cobra.Command{
 		Use:   commandName,
 		Short: "Provide details about your projects",
+		Long: `List your projects
+
+Studies are assigned to projects. This allows you to view all of the studies in
+your workspaces.
+		`,
+		Example: `
+List your projects in a given workspace
+$ prolific project list -w 61a65c06b084910b3f0c00d5
+
+Utilise the paging options to limit your projects, for example one project
+$ prolific project list -w 61a65c06b084910b3f0c00d5 -l 1
+
+Offset records in the result set, for example by 2
+$ prolific project list -w 61a65c06b084910b3f0c00d5 -l 1 -o 2
+		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
 

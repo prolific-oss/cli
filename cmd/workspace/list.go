@@ -24,6 +24,22 @@ func NewListCommand(commandName string, c client.API, w io.Writer) *cobra.Comman
 	cmd := &cobra.Command{
 		Use:   commandName,
 		Short: "Provide details about your workspaces",
+		Long: `List your workspaces
+
+As a user, you can have many workspaces, maybe personally or for your organisation.
+This allows you to list all of the workspaces your token has access to. Each
+workspace then has one or many projects to organise your studies.
+`,
+		Example: `
+List your workspaces
+$ prolific workspace list
+
+Utilise the paging options to limit your workspaces, for example one workspace
+$ prolific workspace list -l 1
+
+Offset records in the result set, for example by 2
+$ prolific workspace list -l 1 -o 2
+		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
 
