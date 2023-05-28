@@ -29,6 +29,62 @@ func NewListCommand(commandName string, client client.API, w io.Writer) *cobra.C
 	cmd := &cobra.Command{
 		Use:   commandName,
 		Short: "List all of your studies",
+		Long: `List your studies
+
+This command allows you to understand what is happening with your studies on the
+Prolific Platform.`,
+		Example: `
+You can list all your studies in an interactive manner. This is a searchable
+interface. When you have found the study you want to look into in more detail,
+press enter.
+$ prolific study list
+
+You can provide a non-iterative experience, if you want to get details in the
+terminal, or into another application
+$ prolific study list -n
+
+You can filter the studies by the project they are assigned to
+$ prolific study list -p 6261321e223a605c7a4f7561
+
+You can filter the studies by their status, for example your active studies
+$ prolific study list -s active
+
+You can render the results as a CSV format
+$ prolific study list -c
+
+You can specify the fields you want to render in either the non-iterative or CSV
+view
+$ prolific study list -f ID,InternalName,TotalCost -c
+
+The fields you can use are
+- ID
+- Name
+- InternalName
+- DateCreated
+- TotalAvailablePlaces
+- Reward
+- CanAutoReview
+- Desc
+- EstimatedCompletionTime
+- MaximumAllowedTime
+- CompletionURL
+- ExternalStudyURL
+- PublishedAt
+- StartedPublishingAt
+- AwardPoints
+- PresentmentCurrencyCode
+- Status
+- AverageRewardPerHour
+- DeviceCompatibility
+- PeripheralRequirements
+- PlacesTaken
+- EstimatedRewardPerHour
+- Ref
+- StudyType
+- TotalCost
+- PublishAt
+- IsPilot
+- IsUnderpaying`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
 
