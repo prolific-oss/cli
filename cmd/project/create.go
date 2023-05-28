@@ -25,6 +25,20 @@ func NewCreateCommand(commandName string, client client.API, w io.Writer) *cobra
 	cmd := &cobra.Command{
 		Use:   commandName,
 		Short: "Create a project",
+		Long: `Create a project in your workspace
+
+As a user, you can have many projects inside your workspace. You can then assign
+studies to your projects, to neatly organise your work.`,
+		Example: `
+To create a project inside a workspace
+$ prolific project create -t "Research into AI" -w 6261321e223a605c7a4f7564
+
+You can also configure if your studies should focus on speed, or participant
+naivety. By specifying 0, your study will become available to all eligible
+participants straight away. By specifying anything greater than 0, up to 1, you
+are delaying your study for participants who are rather active on the Prolific
+Platform.
+$ prolific project create -t "Research into AI" -w 6261321e223a605c7a4f7564 -n 0`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
 

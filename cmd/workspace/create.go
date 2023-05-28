@@ -24,6 +24,23 @@ func NewCreateCommand(commandName string, client client.API, w io.Writer) *cobra
 	cmd := &cobra.Command{
 		Use:   commandName,
 		Short: "Create a workspace",
+		Long: `Create a workspace on your account
+
+As a user, you can have many workspaces, maybe personally or for your organisation.
+This allows you to create a workspace. Each workspace can then have one or more
+projects to organise your studies.
+`,
+		Example: `
+To create a workspace
+$ prolific workspace create -t "Research into AI"
+
+You can also configure if your studies should focus on speed, or participant
+naivety. By specifying 0, your study will become available to all eligible
+participants straight away. By specifying anything greater than 0, up to 1, you
+are delaying your study for participants who are rather active on the Prolific
+Platform. This can be overridden at the project level.
+$ prolific workspace create -t "Research into AI" -n 0
+		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
 
