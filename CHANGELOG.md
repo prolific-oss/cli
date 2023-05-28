@@ -2,6 +2,10 @@
 
 ## next
 
+## 0.0.29
+
+- Make sure all commands have both a long description and also usage examples.
+
 ## 0.0.28
 
 - Provide an easy access link to the message centre in the `message list` command.
