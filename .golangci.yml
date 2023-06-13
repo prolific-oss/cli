@@ -5,7 +5,7 @@ run:
 linters:
   disable-all: true
   enable:
-    - depguard
+    # - depguard
     - dogsled
     - dupl
     - errcheck
