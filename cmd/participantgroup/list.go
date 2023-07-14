@@ -7,6 +7,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -14,10 +15,12 @@ import (
 type ListOptions struct {
 	Args      []string
 	ProjectID string
+	Limit     int
+	Offset    int
 }
 
 // NewListCommand creates a new command to deal with participant groups
-func NewListCommand(commandName string, client client.API, w io.Writer) *cobra.Command {
+func NewListCommand(commandName string, c client.API, w io.Writer) *cobra.Command {
 	var opts ListOptions
 
 	cmd := &cobra.Command{
@@ -35,7 +38,7 @@ $ prolific participant list -p 6261321e223a605c7a4f7623
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
 
-			err := render(client, opts, w)
+			err := render(c, opts, w)
 			if err != nil {
 				return fmt.Errorf("error: %s", err.Error())
 			}
@@ -46,6 +49,8 @@ $ prolific participant list -p 6261321e223a605c7a4f7623
 
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.ProjectID, "project", "p", "", "Filter participant groups by project.")
+	flags.IntVarP(&opts.Limit, "limit", "l", client.DefaultRecordLimit, "Limit the number of participant groups returned")
+	flags.IntVarP(&opts.Offset, "offset", "o", client.DefaultRecordOffset, "The number of participant groups to offset")
 
 	return cmd
 }
@@ -56,7 +61,7 @@ func render(client client.API, opts ListOptions, w io.Writer) error {
 		return errors.New("please provide a project ID")
 	}
 
-	groups, err := client.GetParticipantGroups(opts.ProjectID)
+	groups, err := client.GetParticipantGroups(opts.ProjectID, opts.Limit, opts.Offset)
 	if err != nil {
 		return err
 	}
@@ -67,5 +72,9 @@ func render(client client.API, opts ListOptions, w io.Writer) error {
 		fmt.Fprintf(tw, "%s\t%s\n", group.ID, group.Name)
 	}
 
-	return tw.Flush()
+	_ = tw.Flush()
+
+	fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(groups.Results), groups.Meta.Count))
+
+	return nil
 }
