@@ -142,6 +142,12 @@ type ViewParticipantGroupResponse struct {
 	Results []model.ParticipantGroupMembership `json:"results"`
 }
 
+type ListFilterSetsResponse struct {
+	Results []model.FilterSet `json:"results"`
+	*JSONAPILinks
+	*JSONAPIMeta
+}
+
 // ListMessagesResponse is the response for the list messages endpoint.
 type ListMessagesResponse struct {
 	Results []model.Message `json:"results"`

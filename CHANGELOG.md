@@ -2,6 +2,8 @@
 
 ## next
 
+- Provide `filter-sets list` command that allows you to pull back a list of your Filter Sets.
+
 ## 0.0.29
 
 - Make sure all commands have both a long description and also usage examples.

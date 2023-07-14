@@ -48,6 +48,9 @@ type API interface {
 
 	GetParticipantGroups(projectID string) (*ListParticipantGroupsResponse, error)
 	GetParticipantGroup(groupID string) (*ViewParticipantGroupResponse, error)
+
+	GetFilterSets(workspaceID string, limit, offset int) (*ListFilterSetsResponse, error)
+
 	GetMessages(userID *string, createdAfter *string) (*ListMessagesResponse, error)
 	SendMessage(body, recipientID, studyID string) error
 	GetUnreadMessages() (*ListUnreadMessagesResponse, error)
@@ -419,6 +422,19 @@ func (c *Client) GetParticipantGroup(groupID string) (*ViewParticipantGroupRespo
 	var response ViewParticipantGroupResponse
 
 	url := fmt.Sprintf("/api/v1/participant-groups/%s/participants/", groupID)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// GetFilterSets will return the filter sets in a workspace
+func (c *Client) GetFilterSets(workspaceID string, limit, offset int) (*ListFilterSetsResponse, error) {
+	var response ListFilterSetsResponse
+
+	url := fmt.Sprintf("/api/v1/filter-sets/?workspace_id=%s&limit=%v&offset=%v", workspaceID, limit, offset)
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
