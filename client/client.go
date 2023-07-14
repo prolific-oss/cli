@@ -46,7 +46,7 @@ type API interface {
 	GetProjects(workspaceID string, limit, offset int) (*ListProjectsResponse, error)
 	CreateProject(workspaceID string, project model.Project) (*CreateProjectResponse, error)
 
-	GetParticipantGroups(projectID string) (*ListParticipantGroupsResponse, error)
+	GetParticipantGroups(projectID string, limit, offset int) (*ListParticipantGroupsResponse, error)
 	GetParticipantGroup(groupID string) (*ViewParticipantGroupResponse, error)
 
 	GetFilterSets(workspaceID string, limit, offset int) (*ListFilterSetsResponse, error)
@@ -405,10 +405,10 @@ func (c *Client) CreateProject(workspaceID string, project model.Project) (*Crea
 }
 
 // GetParticipantGroups will return all the participant groups you have access to for a given ProjectID
-func (c *Client) GetParticipantGroups(projectID string) (*ListParticipantGroupsResponse, error) {
+func (c *Client) GetParticipantGroups(projectID string, limit, offset int) (*ListParticipantGroupsResponse, error) {
 	var response ListParticipantGroupsResponse
 
-	url := fmt.Sprintf("/api/v1/participant-groups/?project_id=%s", projectID)
+	url := fmt.Sprintf("/api/v1/participant-groups/?project_id=%s&limit=%v&offset=%v", projectID, limit, offset)
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)

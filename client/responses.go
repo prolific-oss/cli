@@ -135,6 +135,8 @@ type ListSecretsResponse struct {
 // ListParticipantGroupsResponse is the list of participant groups response.
 type ListParticipantGroupsResponse struct {
 	Results []model.ParticipantGroup `json:"results"`
+	*JSONAPILinks
+	*JSONAPIMeta
 }
 
 // ViewParticipantGroupResponse is the list of members in a group.

@@ -54,11 +54,18 @@ func TestNewListCommandCallsAPI(t *testing.T) {
 				ProjectID: projectID,
 			},
 		},
+		JSONAPIMeta: &client.JSONAPIMeta{
+			Meta: struct {
+				Count int `json:"count"`
+			}{
+				Count: 10,
+			},
+		},
 	}
 
 	c.
 		EXPECT().
-		GetParticipantGroups(gomock.Eq(projectID)).
+		GetParticipantGroups(gomock.Eq(projectID), client.DefaultRecordLimit, client.DefaultRecordOffset).
 		Return(&response, nil).
 		AnyTimes()
 
@@ -74,6 +81,8 @@ func TestNewListCommandCallsAPI(t *testing.T) {
 	expected := `ID   Name
 1122 R.E.M. fans
 3344 Radiohead fans
+
+Showing 2 records of 10
 `
 	actual := b.String()
 	if actual != expected {
@@ -106,7 +115,7 @@ func TestNewListCommandHandlesAnAPIError(t *testing.T) {
 
 	c.
 		EXPECT().
-		GetParticipantGroups(gomock.Eq(projectID)).
+		GetParticipantGroups(gomock.Eq(projectID), client.DefaultRecordLimit, client.DefaultRecordOffset).
 		Return(nil, errors.New(errorMessage)).
 		AnyTimes()
 
