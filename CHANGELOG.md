@@ -2,6 +2,8 @@
 
 ## next
 
+## 0.0.30
+
 - Provide `filter-sets list` command that allows you to pull back a list of your Filter Sets.
 
 ## 0.0.29
