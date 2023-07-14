@@ -1,0 +1,80 @@
+package filtersets
+
+import (
+	"errors"
+	"fmt"
+	"io"
+	"text/tabwriter"
+
+	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/ui"
+	"github.com/spf13/cobra"
+)
+
+// ListOptions is the options for the listing filter sets command.
+type ListOptions struct {
+	Args        []string
+	WorkspaceID string
+	Limit       int
+	Offset      int
+}
+
+// NewListCommand creates a new command to deal with filter sets
+func NewListCommand(commandName string, c client.API, w io.Writer) *cobra.Command {
+	var opts ListOptions
+
+	cmd := &cobra.Command{
+		Use:   commandName,
+		Short: "Provide a list of your filter sets",
+		Long: `List your Filter Sets
+
+Filter Sets are assigned to a workspace.
+`,
+		Example: `
+List the Filter Sets you have defined in a given workspace
+
+$ prolific filters list -w 6261321e223a605c7a4f7623
+`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			opts.Args = args
+
+			err := render(c, opts, w)
+			if err != nil {
+				return fmt.Errorf("error: %s", err.Error())
+			}
+
+			return nil
+		},
+	}
+
+	flags := cmd.Flags()
+	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", "", "Filter Filter Sets by workspace.")
+	flags.IntVarP(&opts.Limit, "limit", "l", client.DefaultRecordLimit, "Limit the number of workspaces returned")
+	flags.IntVarP(&opts.Offset, "offset", "o", client.DefaultRecordOffset, "The number of workspaces to offset")
+
+	return cmd
+}
+
+// render will list your filter sets
+func render(client client.API, opts ListOptions, w io.Writer) error {
+	if opts.WorkspaceID == "" {
+		return errors.New("please provide a workspace ID")
+	}
+
+	records, err := client.GetFilterSets(opts.WorkspaceID, opts.Limit, opts.Offset)
+	if err != nil {
+		return err
+	}
+
+	tw := tabwriter.NewWriter(w, 0, 1, 1, ' ', 0)
+	fmt.Fprintf(tw, "%s\t%s\n", "ID", "Name")
+	for _, record := range records.Results {
+		fmt.Fprintf(tw, "%s\t%s\n", record.ID, record.Name)
+	}
+
+	_ = tw.Flush()
+
+	fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(records.Results), records.Meta.Count))
+
+	return nil
+}
