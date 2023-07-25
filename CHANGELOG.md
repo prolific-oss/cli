@@ -2,6 +2,12 @@
 
 ## next
 
+## 0.0.32
+
+- Update the README with the summary output of the application.
+- Document the licenses used for our dependencies.
+- Update the go.mod file to Go 1.20.
+
 ## 0.0.31
 
 - Add paging to the `participant list` command.
