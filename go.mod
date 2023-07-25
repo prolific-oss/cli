@@ -3,16 +3,16 @@ module github.com/prolific-oss/cli
 go 1.18
 
 require (
-	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
-	github.com/charmbracelet/bubbles v0.16.1
-	github.com/charmbracelet/bubbletea v0.24.2
-	github.com/charmbracelet/lipgloss v0.7.1
-	github.com/golang/mock v1.6.0
-	github.com/mitchellh/go-homedir v1.1.0
-	github.com/spf13/cobra v1.7.0
-	github.com/spf13/viper v1.16.0
-	golang.org/x/exp v0.0.0-20220609121020-a51bd0440498
-	golang.org/x/text v0.11.0
+	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d // MIT
+	github.com/charmbracelet/bubbles v0.16.1 // MIT
+	github.com/charmbracelet/bubbletea v0.24.2 // MIT
+	github.com/charmbracelet/lipgloss v0.7.1 // MIT
+	github.com/golang/mock v1.6.0 // Apache 2.0
+	github.com/mitchellh/go-homedir v1.1.0 // MIT
+	github.com/spf13/cobra v1.7.0 // Apache 2.0
+	github.com/spf13/viper v1.16.0 // MIT
+	golang.org/x/exp v0.0.0-20230725093048-515e97ebf090 // BSD-3-Clause
+	golang.org/x/text v0.11.0 // BSD-3-Clause
 )
 
 require (
