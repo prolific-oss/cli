@@ -5,27 +5,28 @@
 CLI application for getting information out of [Prolific](https://www.prolific.co) about your research studies.
 
 ```text
-CLI application for retrieving data from Prolific
+CLI application for retrieving data from the Prolific Platform
 
 Usage:
   prolific [command]
 
 Available Commands:
   completion   Generate the autocompletion script for the specified shell
+  filter-sets  Manage and view your filter sets
   help         Help about any command
   hook         Manage and view your hook subscriptions
   message      Send and retrieve messages
   participant  Manage and view your participant groups
   project      Manage and view your projects in a workspace
   requirements List all eligibility requirements available for your study
-  studies      Provide details about your studies
+  studies      List all of your studies
   study        Manage and view your studies
   submission   Manage and view your study submissions
   whoami       View details about your account
   workspace    Manage and view your workspaces
 
 Flags:
-      --config string   config file (default is $HOME/.prolific/prolific.yaml)
+      --config string   config file (default is $HOME/.config/prolific/cli.yaml)
   -h, --help            help for prolific
   -v, --version         version for prolific
 
