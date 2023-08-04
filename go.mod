@@ -12,7 +12,7 @@ require (
 	github.com/spf13/cobra v1.7.0 // Apache 2.0
 	github.com/spf13/viper v1.16.0 // MIT
 	golang.org/x/exp v0.0.0-20230725093048-515e97ebf090 // BSD-3-Clause
-	golang.org/x/text v0.11.0 // BSD-3-Clause
+	golang.org/x/text v0.12.0 // BSD-3-Clause
 )
 
 require (
