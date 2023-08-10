@@ -66,6 +66,11 @@ func render(client client.API, opts ListOptions, w io.Writer) error {
 		return err
 	}
 
+	count := 0
+	if records.JSONAPIMeta != nil {
+		count = records.Meta.Count
+	}
+
 	tw := tabwriter.NewWriter(w, 0, 1, 1, ' ', 0)
 	fmt.Fprintf(tw, "%s\t%s\n", "ID", "Name")
 	for _, record := range records.Results {
@@ -74,7 +79,7 @@ func render(client client.API, opts ListOptions, w io.Writer) error {
 
 	_ = tw.Flush()
 
-	fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(records.Results), records.Meta.Count))
+	fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(records.Results), count))
 
 	return nil
 }

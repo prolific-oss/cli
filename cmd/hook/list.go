@@ -79,6 +79,11 @@ func renderHooks(client client.API, opts ListOptions, w io.Writer) error {
 		return err
 	}
 
+	count := 0
+	if hooks.JSONAPIMeta != nil {
+		count = hooks.Meta.Count
+	}
+
 	tw := tabwriter.NewWriter(w, 0, 1, 1, ' ', 0)
 	fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\n", "ID", "Event", "Target URL", "Enabled", "Workspace ID")
 	for _, hook := range hooks.Results {
@@ -87,7 +92,7 @@ func renderHooks(client client.API, opts ListOptions, w io.Writer) error {
 
 	_ = tw.Flush()
 
-	fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(hooks.Results), hooks.Meta.Count))
+	fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(hooks.Results), count))
 
 	return nil
 }
