@@ -2,6 +2,10 @@
 
 ## next
 
+## 0.0.33
+
+- Validation on zero results for list views.
+
 ## 0.0.32
 
 - Update the README with the summary output of the application.
