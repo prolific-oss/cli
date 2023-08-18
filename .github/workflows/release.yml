@@ -12,7 +12,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4.1.0
         with:
-          go-version: 1.18.x
+          go-version: 1.21.x
 
       - name: Check out code into the Go module directory
         uses: actions/checkout@v3
@@ -58,7 +58,7 @@ jobs:
           # Slack channel id, channel name, or user id to post message.
           # See also: https://api.slack.com/methods/chat.postMessage#channels
           # You can pass in multiple channels to post to by providing a comma-delimited list of channel IDs.
-          channel-id: 'product-releases'
+          channel-id: "product-releases"
           payload: |
             {
               "blocks": [
