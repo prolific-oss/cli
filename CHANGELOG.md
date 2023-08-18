@@ -2,6 +2,10 @@
 
 ## next
 
+## 0.0.24
+
+- Update the go runtime to 1.21
+
 ## 0.0.33
 
 - Validation on zero results for list views.
