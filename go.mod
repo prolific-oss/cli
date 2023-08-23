@@ -6,7 +6,7 @@ require (
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d // MIT
 	github.com/charmbracelet/bubbles v0.16.1 // MIT
 	github.com/charmbracelet/bubbletea v0.24.2 // MIT
-	github.com/charmbracelet/lipgloss v0.7.1 // MIT
+	github.com/charmbracelet/lipgloss v0.8.0 // MIT
 	github.com/golang/mock v1.6.0 // Apache 2.0
 	github.com/mitchellh/go-homedir v1.1.0 // MIT
 	github.com/spf13/cobra v1.7.0 // Apache 2.0
@@ -31,7 +31,7 @@ require (
 	github.com/muesli/ansi v0.0.0-20211018074035-2e021307bc4b // indirect
 	github.com/muesli/cancelreader v0.2.2 // indirect
 	github.com/muesli/reflow v0.3.0 // indirect
-	github.com/muesli/termenv v0.15.1 // indirect
+	github.com/muesli/termenv v0.15.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/sahilm/fuzzy v0.1.0 // indirect
