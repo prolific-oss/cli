@@ -10,6 +10,6 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Wiki Watcher
-        uses: benmatselby/gollum-page-watcher-action@v1.8.0
+        uses: benmatselby/gollum-page-watcher-action@v1.9.0
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
