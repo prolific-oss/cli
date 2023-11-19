@@ -42,8 +42,6 @@ func TestRenderMe(t *testing.T) {
 		{name: "can return a list of sprints", output: `Bald Rick
 ID:                616
 Email:             baldrick@turnip.co
-Available balance: £10.00
-Balance:           £8.50
 
 `, err: nil},
 	}
