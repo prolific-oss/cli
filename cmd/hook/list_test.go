@@ -126,7 +126,7 @@ func TestNewListCommandCallsTheAPI(t *testing.T) {
 	writer.Flush()
 
 	actual := b.String()
-	expected := fmt.Sprintf(`ID      Event  Target URL              Enabled Workspace ID
+	expected := fmt.Sprintf(`ID      Event  Target URL               Enabled Workspace ID
 hook-id wibble %s true    workspace-id
 
 Showing 1 record of 10

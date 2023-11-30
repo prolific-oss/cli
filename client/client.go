@@ -66,7 +66,7 @@ type Client struct {
 
 // New will return a new Prolific client.
 func New() Client {
-	viper.SetDefault("PROLIFIC_URL", "https://api.prolific.co")
+	viper.SetDefault("PROLIFIC_URL", "https://api.prolific.com")
 
 	client := Client{
 		Client:  http.DefaultClient,

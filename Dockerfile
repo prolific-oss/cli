@@ -1,5 +1,5 @@
 FROM golang:1.21.4-alpine as builder
-LABEL maintainer="Ben Selby <ben.selby@prolific.co>"
+LABEL maintainer="Ben Selby <ben.selby@prolific.com>"
 
 ENV APPNAME prolific
 ENV PATH /go/bin:/usr/local/go/bin:$PATH

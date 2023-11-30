@@ -2,7 +2,7 @@
 
 ![GitHub Badge](https://github.com/prolific-oss/cli/workflows/Go/badge.svg)
 
-CLI application for getting information out of [Prolific](https://www.prolific.co) about your research studies.
+CLI application for getting information out of [Prolific](https://www.prolific.com) about your research studies.
 
 ```text
 CLI application for retrieving data from the Prolific Platform
@@ -81,7 +81,7 @@ You can create a Researcher token in your account. Log in, and go to settings.
 You can optionally override the URL for the API too. This will be set as default to the Prolific API URL. You can override this if Prolific have granted you access to a different environment.
 
 ```shell
-export PROLIFIC_URL="https://api.prolific.co"
+export PROLIFIC_URL="https://api.prolific.com"
 ```
 
 ## Installation
