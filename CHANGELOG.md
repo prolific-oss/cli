@@ -2,7 +2,15 @@
 
 ## next
 
-## 0.0.24
+## 0.0.36
+
+- Move to `.com` in the configuration and docs.
+
+## 0.0.35
+
+- Remove the balance data from `whoami`.
+
+## 0.0.34
 
 - Update the go runtime to 1.21
 
