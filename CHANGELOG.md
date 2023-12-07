@@ -2,6 +2,10 @@
 
 ## next
 
+## 0.0.37
+
+- Update dependencies.
+
 ## 0.0.36
 
 - Move to `.com` in the configuration and docs.
