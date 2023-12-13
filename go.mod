@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d // MIT
-	github.com/charmbracelet/bubbles v0.16.1 // MIT
+	github.com/charmbracelet/bubbles v0.17.0 // MIT
 	github.com/charmbracelet/bubbletea v0.25.0 // MIT
 	github.com/charmbracelet/lipgloss v0.9.1 // MIT
 	github.com/golang/mock v1.6.0 // Apache 2.0
@@ -36,7 +36,7 @@ require (
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
-	github.com/sahilm/fuzzy v0.1.0 // indirect
+	github.com/sahilm/fuzzy v0.1.1-0.20230530133925-c48e322e2a8f // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
