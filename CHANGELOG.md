@@ -2,6 +2,11 @@
 
 ## next
 
+## 0.0.38
+
+- Update dependencies.
+- Minor tidyings.
+
 ## 0.0.37
 
 - Update dependencies.
