@@ -18,6 +18,7 @@ const (
 // AppDateTimeFormat The format for date/times in the application.
 const AppDateTimeFormat string = "02-01-2006 15:04"
 
+// RenderSectionMarker will render a section marker in the output.
 func RenderSectionMarker() string {
 	return lipgloss.NewStyle().Foreground(lipgloss.Color(DarkGrey)).Render("---")
 }
@@ -27,7 +28,7 @@ func RenderHeading(heading string) string {
 	return lipgloss.NewStyle().Bold(true).Render(heading)
 }
 
-// RenderMoney will return a symbolised string of money.
+// RenderMoney will return a symbolised string of money, e.g. £10.00
 func RenderMoney(amount float64, currencyCode string) string {
 	if currencyCode == "" {
 		currencyCode = model.DefaultCurrency
