@@ -5,3 +5,9 @@ package config
 func GetApplicationURL() string {
 	return "https://app.prolific.com"
 }
+
+// GetAPIURL will return the API URL. This is the default API, but we allow
+// users to override this with an environment variable.
+func GetAPIURL() string {
+	return "https://api.prolific.com"
+}

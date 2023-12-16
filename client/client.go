@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/prolific-oss/cli/config"
 	"github.com/prolific-oss/cli/model"
 	"github.com/spf13/viper"
 	"golang.org/x/exp/slices"
@@ -66,7 +67,7 @@ type Client struct {
 
 // New will return a new Prolific client.
 func New() Client {
-	viper.SetDefault("PROLIFIC_URL", "https://api.prolific.com")
+	viper.SetDefault("PROLIFIC_URL", config.GetAPIURL())
 
 	client := Client{
 		Client:  http.DefaultClient,
