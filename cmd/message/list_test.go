@@ -64,7 +64,7 @@ func TestNewListCommandCallsTheAPI(t *testing.T) {
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	user := "user-id"
+	receiver := "wibblet"
 	createdAfter := "2023-01-01"
 	response := client.ListMessagesResponse{
 		Results: []model.Message{
@@ -94,7 +94,7 @@ func TestNewListCommandCallsTheAPI(t *testing.T) {
 	writer := bufio.NewWriter(&b)
 
 	cmd := message.NewListCommand("list", c, writer)
-	_ = cmd.Flags().Set("user", user)
+	_ = cmd.Flags().Set("user", receiver)
 	_ = cmd.Flags().Set("created_after", createdAfter)
 	_ = cmd.RunE(cmd, nil)
 
