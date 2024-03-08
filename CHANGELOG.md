@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.0.42
+
+- Update the go runtime to 1.22
+
 ## 0.0.41
 
 - Provide a project detail view `project view [id]`.
