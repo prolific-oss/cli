@@ -245,6 +245,21 @@ func (mr *MockAPIMockRecorder) GetParticipantGroups(projectID, limit, offset int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetParticipantGroups", reflect.TypeOf((*MockAPI)(nil).GetParticipantGroups), projectID, limit, offset)
 }
 
+// GetProject mocks base method.
+func (m *MockAPI) GetProject(ID string) (*model.Project, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetProject", ID)
+	ret0, _ := ret[0].(*model.Project)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetProject indicates an expected call of GetProject.
+func (mr *MockAPIMockRecorder) GetProject(ID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProject", reflect.TypeOf((*MockAPI)(nil).GetProject), ID)
+}
+
 // GetProjects mocks base method.
 func (m *MockAPI) GetProjects(workspaceID string, limit, offset int) (*client.ListProjectsResponse, error) {
 	m.ctrl.T.Helper()
