@@ -20,6 +20,7 @@ Projects are a way to organise studies in a workspace.
 	cmd.AddCommand(
 		NewListCommand("list", client, w),
 		NewCreateCommand("create", client, w),
+		NewViewCommand("view", client, w),
 	)
 	return cmd
 }

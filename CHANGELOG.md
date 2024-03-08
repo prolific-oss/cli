@@ -1,6 +1,8 @@
 # CHANGELOG
 
-## Unreleased
+## 0.0.41
+
+- Provide a project detail view `project view [id]`.
 
 ## 0.0.38
 
