@@ -1,9 +1,11 @@
 package filtersets
 
 import (
+	"fmt"
 	"io"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/config"
 	"github.com/spf13/cobra"
 )
 
@@ -28,6 +30,17 @@ Filters are broadly found in two distinct types:
 
 	cmd.AddCommand(
 		NewListCommand("list", client, w),
+		NewViewCommand("view", client, w),
 	)
 	return cmd
+}
+
+// GetFilterSetPath returns the URL path to a filter set, agnostic of domain
+func GetFilterSetPath(workspaceID, FilterSetID string) string {
+	return fmt.Sprintf("researcher/workspaces/%s/screener-sets/%s", workspaceID, FilterSetID)
+}
+
+// GetFilterSetURL returns the full URL to a filter set using configuration
+func GetFilterSetURL(workspaceID, FilterSetID string) string {
+	return fmt.Sprintf("%s/%s", config.GetApplicationURL(), GetFilterSetPath(workspaceID, FilterSetID))
 }
