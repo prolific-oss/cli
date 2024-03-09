@@ -6,7 +6,6 @@ import (
 	"text/tabwriter"
 
 	"github.com/prolific-oss/cli/client"
-	"github.com/prolific-oss/cli/config"
 	"github.com/prolific-oss/cli/ui"
 	"github.com/spf13/cobra"
 )
@@ -118,7 +117,7 @@ func renderMessages(c client.API, opts ListOptions, w io.Writer) error {
 
 	_ = tw.Flush()
 
-	fmt.Fprintf(w, "\nView messages in the application: %s/messages/inbox\n", config.GetApplicationURL())
+	fmt.Fprintln(w, ui.RenderApplicationLink("messages", "messages/inbox"))
 
 	return nil
 }
