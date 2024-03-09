@@ -2,6 +2,8 @@
 
 ## release-next
 
+## 0.0.43
+
 - Capture the fact a project may not exist when trying to view it.
 - Render Workspace on the `project view [id]` command.
 - Render the application link to the project view.
