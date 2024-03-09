@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/prolific-oss/cli/config"
 	"github.com/prolific-oss/cli/model"
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
@@ -50,4 +51,12 @@ func RenderRecordCounter(count, total int) string {
 	}
 
 	return fmt.Sprintf("Showing %v %s of %v", count, word, total)
+}
+
+// RenderApplicationLink will standardise the way we render application links.
+func RenderApplicationLink(entity, slug string) string {
+	content := fmt.Sprintf("\n%s\n\n", RenderSectionMarker())
+	content += fmt.Sprintf("View %s in the application: %s/%s", entity, config.GetApplicationURL(), slug)
+
+	return content
 }
