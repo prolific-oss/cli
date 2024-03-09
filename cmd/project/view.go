@@ -6,6 +6,7 @@ import (
 	"io"
 	"text/tabwriter"
 
+	"github.com/pkg/browser"
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/ui"
 	"github.com/spf13/cobra"
@@ -14,11 +15,12 @@ import (
 // ViewOptions is the options for the detail view of a project.
 type ViewOptions struct {
 	Args []string
+	Web  bool
 }
 
 // NewViewCommand creates a new command to show a project.
 func NewViewCommand(commandName string, client client.API, w io.Writer) *cobra.Command {
-	var opts ListOptions
+	var opts ViewOptions
 
 	cmd := &cobra.Command{
 		Use:   commandName,
@@ -36,6 +38,10 @@ $ prolific project view 6261321e223a605c7a4f7678
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
 
+			if opts.Web {
+				return browser.OpenURL(GetProjectURL(opts.Args[0]))
+			}
+
 			err := renderProject(client, opts, w)
 			if err != nil {
 				return fmt.Errorf("error: %s", err.Error())
@@ -45,11 +51,15 @@ $ prolific project view 6261321e223a605c7a4f7678
 		},
 	}
 
+	flags := cmd.Flags()
+
+	flags.BoolVarP(&opts.Web, "web", "W", false, "Open the project in the web application")
+
 	return cmd
 }
 
 // renderProject will show your project
-func renderProject(client client.API, opts ListOptions, w io.Writer) error {
+func renderProject(client client.API, opts ViewOptions, w io.Writer) error {
 	if len(opts.Args) < 1 || opts.Args[0] == "" {
 		return errors.New("please provide a project ID")
 	}
@@ -81,7 +91,7 @@ func renderProject(client client.API, opts ListOptions, w io.Writer) error {
 	fmt.Fprintln(w, content)
 	_ = tw.Flush()
 
-	fmt.Fprintln(w, ui.RenderApplicationLink("project", fmt.Sprintf("researcher/workspaces/projects/%s/", project.ID)))
+	fmt.Fprintln(w, ui.RenderApplicationLink("project", GetProjectPath(project.ID)))
 
 	return nil
 }

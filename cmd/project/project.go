@@ -1,9 +1,11 @@
 package project
 
 import (
+	"fmt"
 	"io"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/config"
 	"github.com/spf13/cobra"
 )
 
@@ -23,4 +25,14 @@ Projects are a way to organise studies in a workspace.
 		NewViewCommand("view", client, w),
 	)
 	return cmd
+}
+
+// GetProjectPath returns the URL path to a project, agnostic of domain
+func GetProjectPath(ID string) string {
+	return fmt.Sprintf("researcher/workspaces/projects/%s/", ID)
+}
+
+// GetProjectURL returns the full URL to a project using configuration
+func GetProjectURL(ID string) string {
+	return fmt.Sprintf("%s/%s", config.GetApplicationURL(), GetProjectPath(ID))
 }
