@@ -21,7 +21,7 @@ const AppDateTimeFormat string = "02-01-2006 15:04"
 
 // RenderSectionMarker will render a section marker in the output.
 func RenderSectionMarker() string {
-	return lipgloss.NewStyle().Foreground(lipgloss.Color(DarkGrey)).Render("---")
+	return fmt.Sprintf("\n%s\n\n", lipgloss.NewStyle().Foreground(lipgloss.Color(DarkGrey)).Render("---"))
 }
 
 // RenderHeading will render a heading in the output.
@@ -55,7 +55,7 @@ func RenderRecordCounter(count, total int) string {
 
 // RenderApplicationLink will standardise the way we render application links.
 func RenderApplicationLink(entity, slug string) string {
-	content := fmt.Sprintf("\n%s\n\n", RenderSectionMarker())
+	content := RenderSectionMarker()
 	content += fmt.Sprintf("View %s in the application: %s/%s", entity, config.GetApplicationURL(), slug)
 
 	return content

@@ -52,6 +52,7 @@ type API interface {
 	GetParticipantGroup(groupID string) (*ViewParticipantGroupResponse, error)
 
 	GetFilterSets(workspaceID string, limit, offset int) (*ListFilterSetsResponse, error)
+	GetFilterSet(ID string) (*model.FilterSet, error)
 
 	GetMessages(userID *string, createdAfter *string) (*ListMessagesResponse, error)
 	SendMessage(body, recipientID, studyID string) error
@@ -457,6 +458,23 @@ func (c *Client) GetFilterSets(workspaceID string, limit, offset int) (*ListFilt
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// GetFilterSet will return the filter set for the given filter set ID
+func (c *Client) GetFilterSet(ID string) (*model.FilterSet, error) {
+	var response model.FilterSet
+
+	url := fmt.Sprintf("/api/v1/filter-sets/%s/", ID)
+	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("status code was %v, so therefore unable to get filter set: %v", httpResponse.StatusCode, ID)
 	}
 
 	return &response, nil
