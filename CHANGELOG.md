@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## release-next
+
+- Capture the fact a project may not exist when trying to view it.
+
 ## 0.0.42
 
 - Update the go runtime to 1.22
