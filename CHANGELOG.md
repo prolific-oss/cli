@@ -2,6 +2,13 @@
 
 ## release-next
 
+## 0.0.44
+
+- Provide the ability to open some resources in a browser with the `-W flag`
+  - `project view [id] -W`
+  - `study view [id] -W`
+  - This will open the resource in the Prolific web application with your system browser.
+
 ## 0.0.43
 
 - Capture the fact a project may not exist when trying to view it.
