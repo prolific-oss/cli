@@ -7,6 +7,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/config"
 	"github.com/prolific-oss/cli/model"
 	"github.com/prolific-oss/cli/ui"
 )
@@ -100,7 +101,17 @@ func RenderStudy(study model.Study) string {
 		content += erContent
 	}
 
-	content += ui.RenderApplicationLink("study", fmt.Sprintf("researcher/studies/%s", study.ID))
+	content += ui.RenderApplicationLink("study", GetStudyPath(study.ID))
 
 	return content
+}
+
+// GetStudyPath returns the URL path to a study, agnostic of domain
+func GetStudyPath(ID string) string {
+	return fmt.Sprintf("researcher/studies/%s", ID)
+}
+
+// GetStudyURL returns the full URL to a study using configuration
+func GetStudyURL(ID string) string {
+	return fmt.Sprintf("%s/%s", config.GetApplicationURL(), GetStudyPath(ID))
 }
