@@ -43,6 +43,7 @@ func TestNewViewCommandCallsAPI(t *testing.T) {
 		ID:                      projectID,
 		Title:                   "Titan",
 		Description:             "Project about moons",
+		Workspace:               "777777",
 		Owner:                   "Dr. Who",
 		NaivetyDistributionRate: 0.6,
 		Users: []model.User{
@@ -71,12 +72,17 @@ func TestNewViewCommandCallsAPI(t *testing.T) {
 	expected := `Titan
 Project about moons
 
+Workspace:                 777777
 Owner:                     Dr. Who
 Naivety distribution rate: 0.6
 
 Users:
 ID  Name   Email
 123 Dr Who dr@who.me
+
+---
+
+View project in the application: https://app.prolific.com/researcher/workspaces/projects/991199/
 `
 	actual := b.String()
 	if actual != expected {

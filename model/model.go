@@ -43,6 +43,7 @@ type Project struct {
 	ID                      string  `json:"id"`
 	Title                   string  `json:"title"`
 	Description             string  `json:"description"`
+	Workspace               string  `json:"workspace"`
 	Owner                   string  `json:"owner"`
 	Users                   []User  `json:"users"`
 	NaivetyDistributionRate float64 `json:"naivety_distribution_rate"`

@@ -65,6 +65,7 @@ func renderProject(client client.API, opts ListOptions, w io.Writer) error {
 		content += fmt.Sprintf("%s\n", project.Description)
 	}
 
+	content += fmt.Sprintf("\nWorkspace:                 %v", project.Workspace)
 	content += fmt.Sprintf("\nOwner:                     %v", project.Owner)
 	content += fmt.Sprintf("\nNaivety distribution rate: %v", project.NaivetyDistributionRate)
 	content += "\n"
@@ -78,5 +79,9 @@ func renderProject(client client.API, opts ListOptions, w io.Writer) error {
 	}
 
 	fmt.Fprintln(w, content)
-	return tw.Flush()
+	_ = tw.Flush()
+
+	fmt.Fprintln(w, ui.RenderApplicationLink("project", fmt.Sprintf("researcher/workspaces/projects/%s/", project.ID)))
+
+	return nil
 }
