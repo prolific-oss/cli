@@ -398,9 +398,13 @@ func (c *Client) GetProject(ID string) (*model.Project, error) {
 	var response model.Project
 
 	url := fmt.Sprintf("/api/v1/projects/%s/", ID)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("status code was %v, so therefore unable to get project: %v", httpResponse.StatusCode, ID)
 	}
 
 	return &response, nil
