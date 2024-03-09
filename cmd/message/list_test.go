@@ -104,6 +104,8 @@ func TestNewListCommandCallsTheAPI(t *testing.T) {
 	expected := fmt.Sprintf(`Sender ID Study ID Datetime Created Body
 sender-id study-id 27-01-2023 19:39 body
 
+---
+
 View messages in the application: %s/messages/inbox
 `, config.GetApplicationURL())
 
@@ -156,6 +158,8 @@ func TestNewListCommandWithUnreadFlagCallsTheAPI(t *testing.T) {
 	actual := b.String()
 	expected := fmt.Sprintf(`Sender ID Datetime Created Body
 sender-id 27-01-2023 19:39 body
+
+---
 
 View messages in the application: %s/messages/inbox
 `, config.GetApplicationURL())
