@@ -49,6 +49,8 @@ Main features include:
 - Ability to get your user account details.
 - Ability to list your hook subscriptions.
 - Ability to send and retrieve messages.
+- Ability to list and view your filter sets
+- Ability to list and view your participant groups
 
 Checkout the [wiki](https://github.com/prolific-oss/cli/wiki) for more tips and tricks.
 

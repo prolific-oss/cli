@@ -2,6 +2,12 @@
 
 ## release-next
 
+## 0.0.45
+
+- Provide a filter set view command `filter-sets view 65ecbe2cba93fe76699213f5`
+  - This includes the ability to open the filter set in the web application using your system browser.
+  - Just add the `-W` flag.
+
 ## 0.0.44
 
 - Provide the ability to open some resources in a browser with the `-W flag`
