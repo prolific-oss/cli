@@ -36,6 +36,8 @@ type API interface {
 	TransitionStudy(ID, action string) (*TransitionStudyResponse, error)
 	UpdateStudy(ID string, study model.UpdateStudy) (*model.Study, error)
 
+	GetCampaigns(workspaceID string, limit, offset int) (*ListCampaignsResponse, error)
+
 	GetHooks(workspaceID string, enabled bool, limit, offset int) (*ListHooksResponse, error)
 	GetHookEventTypes() (*ListHookEventTypesResponse, error)
 	GetHookSecrets(workspaceID string) (*ListSecretsResponse, error)
@@ -270,6 +272,19 @@ func (c *Client) TransitionStudy(ID, action string) (*TransitionStudyResponse, e
 	_, err := c.Execute(http.MethodPost, url, transition, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to transition study to %s: %v", action, err)
+	}
+
+	return &response, nil
+}
+
+// GetCampaigns will return you a list of Campaign objects.
+func (c *Client) GetCampaigns(workspaceID string, limit, offset int) (*ListCampaignsResponse, error) {
+	var response ListCampaignsResponse
+
+	url := fmt.Sprintf("/api/v1/campaigns/?workspace_id=%s&limit=%v&offset=%v", workspaceID, limit, offset)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
 
 	return &response, nil

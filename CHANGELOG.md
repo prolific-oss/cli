@@ -2,6 +2,8 @@
 
 ## release-next
 
+- Provide the ability to list your campaigns (Bring your own participants) `campaign list -w [workspace_id]`
+
 ## 0.0.45
 
 - Provide a filter set view command `filter-sets view 65ecbe2cba93fe76699213f5`

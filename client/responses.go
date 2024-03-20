@@ -88,6 +88,13 @@ type TransitionStudyResponse struct {
 	Status                  string        `json:"status"`
 }
 
+// ListCampaignsResponse is the response for the campaigns request.
+type ListCampaignsResponse struct {
+	Results []model.Campaign `json:"results"`
+	*JSONAPILinks
+	*JSONAPIMeta
+}
+
 // ListHooksResponse is the response for the hook subscriptions.
 type ListHooksResponse struct {
 	Results []model.Hook `json:"results"`
