@@ -95,6 +95,21 @@ func (mr *MockAPIMockRecorder) DuplicateStudy(ID interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DuplicateStudy", reflect.TypeOf((*MockAPI)(nil).DuplicateStudy), ID)
 }
 
+// GetCampaigns mocks base method.
+func (m *MockAPI) GetCampaigns(workspaceID string, limit, offset int) (*client.ListCampaignsResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCampaigns", workspaceID, limit, offset)
+	ret0, _ := ret[0].(*client.ListCampaignsResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCampaigns indicates an expected call of GetCampaigns.
+func (mr *MockAPIMockRecorder) GetCampaigns(workspaceID, limit, offset interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCampaigns", reflect.TypeOf((*MockAPI)(nil).GetCampaigns), workspaceID, limit, offset)
+}
+
 // GetEligibilityRequirements mocks base method.
 func (m *MockAPI) GetEligibilityRequirements() (*client.ListRequirementsResponse, error) {
 	m.ctrl.T.Helper()
