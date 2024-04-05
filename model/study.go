@@ -130,7 +130,11 @@ type CreateStudy struct {
 	// Enum: "desktop", "tablet", "mobile"
 	DeviceCompatibility []string `json:"device_compatibility" mapstructure:"device_compatibility"`
 	// Enum: "audio", "camera", "download", "microphone"
-	PeripheralRequirements  []string `json:"peripheral_requirements" mapstructure:"peripheral_requirements"`
+	PeripheralRequirements []string `json:"peripheral_requirements" mapstructure:"peripheral_requirements"`
+	SubmissionsConfig      struct {
+		MaxSubmissionsPerParticipant int `json:"max_submissions_per_participant" mapstructure:"max_submissions_per_participant"`
+		MaxConcurrentSubmissions     int `json:"max_concurrent_submissions" mapstructure:"max_concurrent_submissions"`
+	} `json:"submissions_config" mapstructure:"submissions_config"`
 	EligibilityRequirements []struct {
 		Attributes []struct {
 			ID    string `json:"id" mapstructure:"id"`
