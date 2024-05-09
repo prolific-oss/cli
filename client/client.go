@@ -106,7 +106,7 @@ func (c *Client) Execute(method, url string, body interface{}, response interfac
 	}
 
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("User-Agent", "prolific/cli")
+	request.Header.Set("User-Agent", "benmatselby/prolificli")
 	request.Header.Set("Authorization", fmt.Sprintf("Token %s", c.Token))
 
 	if c.Debug {
