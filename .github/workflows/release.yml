@@ -50,26 +50,3 @@ jobs:
           done
 
           gh release upload ${{ github.event.release.tag_name }} build/*
-
-      - name: Release notification
-        id: slack
-        uses: slackapi/slack-github-action@v1.26.0
-        with:
-          # Slack channel id, channel name, or user id to post message.
-          # See also: https://api.slack.com/methods/chat.postMessage#channels
-          # You can pass in multiple channels to post to by providing a comma-delimited list of channel IDs.
-          channel-id: "product-releases"
-          payload: |
-            {
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Prolific CLI versioned release* - ${{ job.status }}\n*Git reference* - ${{ github.event.release.tag_name }}\n*Deployed by* ${{ github.actor }}\n\n<${{ github.event.release.html_url || github.event.head_commit.url }}|${{ github.event.release.tag_name }} Release>"
-                  }
-                }
-              ]
-            }
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
