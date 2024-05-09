@@ -2,7 +2,7 @@
 
 ![GitHub Badge](https://github.com/prolific-oss/cli/workflows/Go/badge.svg)
 
-CLI application for getting information out of [Prolific](https://www.prolific.com) about your research studies.
+CLI application for getting information out of [Prolific](https://www.prolific.com) about your research studies. **This project is not affiliated to Prolific in any way.**
 
 ```text
 CLI application for retrieving data from the Prolific Platform
