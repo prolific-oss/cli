@@ -1,6 +1,6 @@
 # Prolific CLI
 
-![GitHub Badge](https://github.com/prolific-oss/cli/workflows/Go/badge.svg)
+![GitHub Badge](https://github.com/benmatselby/prolificli/workflows/Go/badge.svg)
 
 CLI application for getting information out of [Prolific](https://www.prolific.com) about your research studies. **This project is not affiliated to Prolific in any way.**
 
@@ -45,14 +45,14 @@ Main features include:
 - Ability to render details about a study, and the submissions.
 - Ability to create a Study via a YAML/JSON configuration file.
 - Ability to publish a study whilst creating it (if you have sufficient funds).
-- Ability to silently create a study, meaning you [can script creating many studies in one go](https://github.com/prolific-oss/cli/wiki/Create-multiple-studies-via-a-bash-script).
+- Ability to silently create a study, meaning you [can script creating many studies in one go](https://github.com/benmatselby/prolificli/wiki/Create-multiple-studies-via-a-bash-script).
 - Ability to get your user account details.
 - Ability to list your hook subscriptions.
 - Ability to send and retrieve messages.
 - Ability to list and view your filter sets
 - Ability to list and view your participant groups
 
-Checkout the [wiki](https://github.com/prolific-oss/cli/wiki) for more tips and tricks.
+Checkout the [wiki](https://github.com/benmatselby/prolificli/wiki) for more tips and tricks.
 
 ## Requirements
 
@@ -125,8 +125,8 @@ make docker-build
 <summary>Installation via Git</summary>
 
 ```shell
-git clone git@github.com:prolific-oss/cli.git
-cd cli
+git clone https://github.com/benmatselby/prolificli.git
+cd prolificli
 make all
 ./prolific
 ```
@@ -138,7 +138,7 @@ You can also install into your `$GOPATH/bin` by running `make build && go instal
 <details>
 <summary>Installation via Binaries</summary>
 
-You can download the binaries from the [release pages](https://github.com/prolific-oss/cli/releases). Find the release you want, and check the "Assets" section.
+You can download the binaries from the [release pages](https://github.com/benmatselby/prolificli/releases). Find the release you want, and check the "Assets" section.
 
 Once downloaded, be sure to put the binary in a folder that is referenced in your `$PATH`.
 

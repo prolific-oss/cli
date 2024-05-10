@@ -206,7 +206,7 @@
 ## 0.0.5
 
 - Ability to render a list of studies with `--non-interactive` which displays the the records in a table.
-- Ability to select which fields to render for the `study list --non-interactive` command. Add a comma separated list like `--fields=ID,Status,Reward,Name` to the end of the command. Default: `ID, Name, Status`. For more information check out the [wiki](https://github.com/prolific-oss/cli/wiki/Fields-you-can-use-in-the-non-interactive-list-study-command).
+- Ability to select which fields to render for the `study list --non-interactive` command. Add a comma separated list like `--fields=ID,Status,Reward,Name` to the end of the command. Default: `ID, Name, Status`. For more information check out the [wiki](https://github.com/benmatselby/prolificli/wiki/Fields-you-can-use-in-the-non-interactive-list-study-command).
 
 ## 0.0.4
 
