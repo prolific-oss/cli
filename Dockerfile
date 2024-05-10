@@ -1,4 +1,4 @@
-FROM golang:1.22.2-alpine as builder
+FROM golang:1.22.3-alpine as builder
 LABEL maintainer="Ben Selby <ben.selby@prolific.com>"
 
 ENV APPNAME prolific

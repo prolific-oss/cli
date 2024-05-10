@@ -3,6 +3,7 @@
 ## release-next
 
 - Provide the ability to list your campaigns (Bring your own participants) `campaign list -w [workspace_id]`
+- Bump go version in the Docker image to 1.22.3
 
 ## 0.0.45
 
