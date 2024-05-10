@@ -2,20 +2,22 @@
 
 ## release-next
 
+- Show selected ranges for the filter set view command `filter-sets view 65ecbe2cba93fe76699213f5`.
+
 ## 0.0.46
 
-- Provide the ability to list your campaigns (Bring your own participants) `campaign list -w [workspace_id]`
-- Bump go version in the Docker image to 1.22.3
+- Provide the ability to list your campaigns (Bring your own participants) `campaign list -w [workspace_id]`.
+- Bump go version in the Docker image to 1.22.3.
 
 ## 0.0.45
 
-- Provide a filter set view command `filter-sets view 65ecbe2cba93fe76699213f5`
+- Provide a filter set view command `filter-sets view 65ecbe2cba93fe76699213f5`.
   - This includes the ability to open the filter set in the web application using your system browser.
   - Just add the `-W` flag.
 
 ## 0.0.44
 
-- Provide the ability to open some resources in a browser with the `-W flag`
+- Provide the ability to open some resources in a browser with the `-W flag`.
   - `project view [id] -W`
   - `study view [id] -W`
   - This will open the resource in the Prolific web application with your system browser.
@@ -29,7 +31,7 @@
 
 ## 0.0.42
 
-- Update the go runtime to 1.22
+- Update the go runtime to 1.22.
 
 ## 0.0.41
 
