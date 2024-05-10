@@ -32,7 +32,7 @@ const ApplicationName = "prolific"
 // This is called by main.main(). It only needs to happen once
 func Execute() {
 	// We need the configuration loaded before we create a NewCli
-	// as that needs the viper configration up and running
+	// as that needs the viper configuration up and running
 	initConfig()
 
 	// Build the root command
@@ -54,7 +54,7 @@ func NewRootCommand() *cobra.Command {
 		Version: version.GITCOMMIT,
 	}
 
-	cmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/prolific/cli.yaml)")
+	cmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/benmatselby/prolificli.yaml)")
 
 	client := client.New()
 
@@ -91,7 +91,7 @@ func initConfig() {
 			os.Exit(1)
 		}
 
-		viper.AddConfigPath(strings.Join([]string{home, ".config/prolific"}, "/"))
+		viper.AddConfigPath(strings.Join([]string{home, ".config/benmatselby"}, "/"))
 		viper.SetConfigName(ApplicationName)
 	}
 
