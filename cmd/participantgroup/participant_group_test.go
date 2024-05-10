@@ -4,9 +4,9 @@ import (
 	"os"
 	"testing"
 
+	"github.com/benmatselby/prolificli/cmd/participantgroup"
+	"github.com/benmatselby/prolificli/mock_client"
 	"github.com/golang/mock/gomock"
-	"github.com/prolific-oss/cli/cmd/participantgroup"
-	"github.com/prolific-oss/cli/mock_client"
 )
 
 func TestNewStudyCommand(t *testing.T) {

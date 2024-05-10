@@ -3,7 +3,7 @@ package model_test
 import (
 	"testing"
 
-	"github.com/prolific-oss/cli/model"
+	"github.com/benmatselby/prolificli/model"
 )
 
 func TestFilterValueReturnsValueDependingOnRules(t *testing.T) {

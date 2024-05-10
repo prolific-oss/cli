@@ -4,9 +4,9 @@ import (
 	"os"
 	"testing"
 
+	"github.com/benmatselby/prolificli/cmd/hook"
+	"github.com/benmatselby/prolificli/mock_client"
 	"github.com/golang/mock/gomock"
-	"github.com/prolific-oss/cli/cmd/hook"
-	"github.com/prolific-oss/cli/mock_client"
 )
 
 func TestNewHookCommand(t *testing.T) {

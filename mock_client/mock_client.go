@@ -8,8 +8,8 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	client "github.com/prolific-oss/cli/client"
-	model "github.com/prolific-oss/cli/model"
+	client "github.com/benmatselby/prolificli/client"
+	model "github.com/benmatselby/prolificli/model"
 )
 
 // MockAPI is a mock of API interface.

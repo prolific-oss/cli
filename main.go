@@ -1,6 +1,6 @@
 package main
 
-import "github.com/prolific-oss/cli/cmd"
+import "github.com/benmatselby/prolificli/cmd"
 
 // main executes the commands
 func main() {

@@ -1,4 +1,4 @@
-module github.com/prolific-oss/cli
+module github.com/benmatselby/prolificli
 
 go 1.22
 

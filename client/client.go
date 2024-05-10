@@ -11,8 +11,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/prolific-oss/cli/config"
-	"github.com/prolific-oss/cli/model"
+	"github.com/benmatselby/prolificli/config"
+	"github.com/benmatselby/prolificli/model"
 	"github.com/spf13/viper"
 	"golang.org/x/exp/slices"
 )

@@ -3,7 +3,7 @@ package study
 import (
 	"io"
 
-	"github.com/prolific-oss/cli/client"
+	"github.com/benmatselby/prolificli/client"
 	"github.com/spf13/cobra"
 )
 

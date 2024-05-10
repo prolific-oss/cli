@@ -3,13 +3,13 @@ package study
 import (
 	"fmt"
 
+	"github.com/benmatselby/prolificli/client"
+	"github.com/benmatselby/prolificli/config"
+	"github.com/benmatselby/prolificli/model"
+	"github.com/benmatselby/prolificli/ui"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/prolific-oss/cli/client"
-	"github.com/prolific-oss/cli/config"
-	"github.com/prolific-oss/cli/model"
-	"github.com/prolific-oss/cli/ui"
 )
 
 // ListView is responsible for presenting a list view to the user.

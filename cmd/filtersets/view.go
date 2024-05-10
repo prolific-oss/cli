@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/benmatselby/prolificli/client"
+	"github.com/benmatselby/prolificli/ui"
 	"github.com/pkg/browser"
-	"github.com/prolific-oss/cli/client"
-	"github.com/prolific-oss/cli/ui"
 	"github.com/spf13/cobra"
 )
 

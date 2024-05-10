@@ -5,9 +5,9 @@ import (
 	"io"
 	"log"
 
-	"github.com/prolific-oss/cli/client"
-	"github.com/prolific-oss/cli/model"
-	studyui "github.com/prolific-oss/cli/ui/study"
+	"github.com/benmatselby/prolificli/client"
+	"github.com/benmatselby/prolificli/model"
+	studyui "github.com/benmatselby/prolificli/ui/study"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
