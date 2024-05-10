@@ -15,6 +15,13 @@ type FilterSet struct {
 
 // Filter holds information about the filter that makes up a filter set
 type Filter struct {
-	FilterID       string   `json:"filter_id"`
-	SelectedValues []string `json:"selected_values"`
+	FilterID       string      `json:"filter_id"`
+	SelectedValues []string    `json:"selected_values,omitempty"`
+	SelectedRange  FilterRange `json:"selected_range,omitempty"`
+}
+
+// FilterRange holds the lower and upper bounds of a filter
+type FilterRange struct {
+	Lower interface{} `json:"lower,omitempty"`
+	Upper interface{} `json:"upper,omitempty"`
 }

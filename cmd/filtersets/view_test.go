@@ -111,6 +111,18 @@ func TestNewViewCommandHandlesFiltersInTheSet(t *testing.T) {
 				FilterID:       "456",
 				SelectedValues: []string{"d", "e", "f"},
 			},
+			{
+				FilterID: "777",
+				SelectedRange: model.FilterRange{
+					Lower: 1,
+				},
+			},
+			{
+				FilterID: "888",
+				SelectedRange: model.FilterRange{
+					Upper: 10,
+				},
+			},
 		},
 	}
 
@@ -150,6 +162,14 @@ Selected values:
 - d
 - e
 - f
+
+Filter ID: 777
+Selected range:
+- Lower: 1
+
+Filter ID: 888
+Selected range:
+- Upper: 10
 
 ---
 

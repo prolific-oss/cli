@@ -84,10 +84,24 @@ func renderProject(client client.API, opts ViewOptions, w io.Writer) error {
 	for _, filter := range filterSet.Filters {
 		filterLength--
 		content += fmt.Sprintf("Filter ID: %v", filter.FilterID)
-		content += "\nSelected values:"
 
-		for _, value := range filter.SelectedValues {
-			content += fmt.Sprintf("\n- %v", value)
+		if len(filter.SelectedValues) > 0 {
+			content += "\nSelected values:"
+			for _, value := range filter.SelectedValues {
+				content += fmt.Sprintf("\n- %v", value)
+			}
+		}
+
+		if filter.SelectedRange.Lower != nil || filter.SelectedRange.Upper != nil {
+			content += "\nSelected range:"
+
+			if filter.SelectedRange.Upper != nil {
+				content += fmt.Sprintf("\n- Upper: %v", filter.SelectedRange.Upper)
+			}
+
+			if filter.SelectedRange.Lower != nil {
+				content += fmt.Sprintf("\n- Lower: %v", filter.SelectedRange.Lower)
+			}
 		}
 
 		if filterLength > 0 {
