@@ -11,7 +11,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0 // MIT
 	github.com/spf13/cobra v1.8.0 // Apache 2.0
 	github.com/spf13/viper v1.18.2 // MIT
-	golang.org/x/exp v0.0.0-20240222234643-814bf88cf225 // BSD-3-Clause
+	golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842 // BSD-3-Clause
 	golang.org/x/text v0.15.0 // BSD-3-Clause
 )
 
@@ -34,7 +34,7 @@ require (
 	github.com/muesli/cancelreader v0.2.2 // indirect
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/muesli/termenv v0.15.2 // indirect
-	github.com/pelletier/go-toml/v2 v2.1.1 // indirect
+	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
