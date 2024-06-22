@@ -2,7 +2,11 @@
 
 ## release-next
 
+## 0.0.47
+
 - Show selected ranges for the filter set view command `filter-sets view 65ecbe2cba93fe76699213f5`.
+- Better error handling if you encounter a permission error.
+- Project maintenance, removed deprecated go linters.
 
 ## 0.0.46
 
