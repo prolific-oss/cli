@@ -73,6 +73,7 @@ type Study struct {
 		} `json:"question"`
 		DisplayDetails string `json:"details_display"`
 	} `json:"eligibility_requirements"`
+	Filters                 []Filter    `json:"filters"`
 	Desc                    string      `json:"description"`
 	EstimatedCompletionTime int         `json:"estimated_completion_time"`
 	MaximumAllowedTime      int         `json:"maximum_allowed_time"`

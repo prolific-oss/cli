@@ -84,21 +84,23 @@ func RenderStudy(study model.Study) string {
 
 	content += ui.RenderSectionMarker()
 
-	content += fmt.Sprintln(ui.RenderHeading("Eligibility requirements"))
+	content += fmt.Sprintln(ui.RenderHeading("Filters"))
 
-	erCount := 0
-	erContent := ""
-	for _, er := range study.EligibilityRequirements {
-		if er.Question.Title != "" {
-			erContent += fmt.Sprintf("- %s\n", er.Question.Title)
-			erCount++
+	filterCount := 0
+	filterContent := ""
+	for _, filter := range study.Filters {
+		filterContent += fmt.Sprintf("\n%s\n", filter.FilterID)
+
+		for _, value := range filter.SelectedValues {
+			filterContent += fmt.Sprintf("- %s\n", value)
 		}
+		filterCount++
 	}
 
-	if erCount == 0 {
-		content += fmt.Sprintln("No eligibility requirements are defined for this study.")
+	if filterCount == 0 {
+		content += fmt.Sprintln("No filters are defined for this study.")
 	} else {
-		content += erContent
+		content += filterContent
 	}
 
 	content += ui.RenderApplicationLink("study", GetStudyPath(study.ID))

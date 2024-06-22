@@ -54,6 +54,12 @@ func TestViewStudyRendersStudy(t *testing.T) {
 		MaximumAllowedTime:      10,
 		Reward:                  400,
 		DeviceCompatibility:     []string{"desktop", "tablet", "mobile"},
+		Filters: []model.Filter{
+			{
+				FilterID:       "handedness",
+				SelectedValues: []string{"left"},
+			},
+		},
 	}
 
 	c.
@@ -92,8 +98,10 @@ Maxconcurrentsubmissions:     0
 
 ---
 
-Eligibility requirements
-No eligibility requirements are defined for this study.
+Filters
+
+handedness
+-left
 
 ---
 

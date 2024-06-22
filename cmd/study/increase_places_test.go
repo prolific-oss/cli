@@ -229,8 +229,8 @@ Maxconcurrentsubmissions:     0
 
 ---
 
-Eligibility requirements
-No eligibility requirements are defined for this study.
+Filters
+Nofiltersaredefinedforthisstudy.
 
 ---
 
