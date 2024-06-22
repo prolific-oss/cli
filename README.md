@@ -105,7 +105,7 @@ $ docker run \
   prolificac/prolificli:latest "$@"
 ```
 
-The `latest` tag mentioned above can be changed to a released version. For all releases, see [here](https://hub.docker.com/repository/docker/prolificac/prolificli/tags).
+The `latest` tag mentioned above can be changed to a released version. For all releases, see [here](https://hub.docker.com/repository/docker/benmatselby/prolificli/tags).
 
 | Tag      | What it means                                                                          |
 | -------- | -------------------------------------------------------------------------------------- |
