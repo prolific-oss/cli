@@ -2,6 +2,12 @@
 
 ## release-next
 
+## 0.0.48
+
+- Display the screeners/filters applied to study. `prolific study view [study-id]`
+  - This will now render a "Filters" section.
+  - Documented [here](https://docs.prolific.com/docs/api-docs/public/#tag/Studies/operation/GetStudy)
+
 ## 0.0.47
 
 - Show selected ranges for the filter set view command `filter-sets view 65ecbe2cba93fe76699213f5`.
