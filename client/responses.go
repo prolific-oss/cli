@@ -33,6 +33,16 @@ type JSONAPIMeta struct {
 	} `json:"meta"`
 }
 
+type JSONAPIError struct {
+	Error struct {
+		Status                int    `json:"status"`
+		Title                 string `json:"title"`
+		ErrorCode             int    `json:"error_code"`
+		Detail                string `json:"detail"`
+		AdditionalInformation string `json:"additional_information"`
+	} `json:"error"`
+}
+
 // MeResponse is a struct that represents your account.
 type MeResponse struct {
 	ID               string `json:"id"`

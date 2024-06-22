@@ -126,6 +126,15 @@ func (c *Client) Execute(method, url string, body interface{}, response interfac
 		fmt.Println(string(responseBody))
 	}
 
+	if httpResponse.StatusCode >= 400 {
+		var apiError JSONAPIError
+		if err := json.NewDecoder(io.NopCloser(bytes.NewBuffer(responseBody))).Decode(&apiError); err != nil {
+			return nil, fmt.Errorf("decoding JSON response from %s failed: %v", request.URL, err)
+		}
+
+		return nil, fmt.Errorf(apiError.Error.Detail)
+	}
+
 	if response != nil {
 		if err := json.NewDecoder(io.NopCloser(bytes.NewBuffer(responseBody))).Decode(response); err != nil {
 			return nil, fmt.Errorf("decoding JSON response from %s failed: %v", request.URL, err)
