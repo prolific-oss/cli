@@ -5,7 +5,7 @@ go 1.22
 require (
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d // MIT
 	github.com/charmbracelet/bubbles v0.18.0 // MIT
-	github.com/charmbracelet/bubbletea v0.26.4 // MIT
+	github.com/charmbracelet/bubbletea v0.26.5 // MIT
 	github.com/charmbracelet/lipgloss v0.11.0 // MIT
 	github.com/golang/mock v1.6.0 // Apache 2.0
 	github.com/mitchellh/go-homedir v1.1.0 // MIT
@@ -51,7 +51,7 @@ require (
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/sys v0.20.0 // indirect
+	golang.org/x/sys v0.21.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
