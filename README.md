@@ -102,7 +102,7 @@ You can install this application a few ways:
 <details>
 <summary>Installation via Docker</summary>
 
-By using [Docker](http://docker.com), you will not require any dependencies on your host machine. You will need to be given access to the `prolificac` Docker account, so you can pull a private repo.
+By using [Docker](http://docker.com), you will not require any dependencies on your host machine.
 
 ```shell
 $ docker run \
@@ -111,16 +111,16 @@ $ docker run \
   -ePROLIFIC_URL \
   -ePROLIFIC_TOKEN \
   -v "${HOME}/.prolific":/root/.prolific \
-  prolificac/prolificli:latest "$@"
+  benmatselby/prolificli:latest "$@"
 ```
 
 The `latest` tag mentioned above can be changed to a released version. For all releases, see [here](https://hub.docker.com/repository/docker/benmatselby/prolificli/tags).
 
-| Tag      | What it means                                                                          |
-| -------- | -------------------------------------------------------------------------------------- |
-| `latest` | The latest released version                                                            |
-| `main`   | The latest git commit, not released as a tag yet                                       |
-| `v*`     | [Docker releases](https://hub.docker.com/repository/docker/prolificac/prolificli/tags) |
+| Tag      | What it means                                                                           |
+| -------- | --------------------------------------------------------------------------------------- |
+| `latest` | The latest released version                                                             |
+| `main`   | The latest git commit, not released as a tag yet                                        |
+| `v*`     | [Docker releases](https://hub.docker.com/repository/docker/benmatselby/prolificli/tags) |
 
 You can also build the image locally:
 
