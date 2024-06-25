@@ -7,6 +7,7 @@ import (
 
 	"github.com/benmatselby/prolificli/client"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // ListOptions is the options for the listing secrets command.
@@ -35,7 +36,7 @@ func NewListSecretCommand(commandName string, client client.API, w io.Writer) *c
 	}
 
 	flags := cmd.Flags()
-	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", "", "Filter secrets by workspace.")
+	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "Filter secrets by workspace.")
 
 	return cmd
 }

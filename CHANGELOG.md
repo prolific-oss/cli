@@ -2,6 +2,11 @@
 
 ## release-next
 
+## 0.0.49
+
+- Allow the user to define the default `workspace` value in the config file `$HOME/.config/benmatselby/prolific.yaml`.
+  - This will be the default value for all commands that take a `--workspace` argument.
+
 ## 0.0.48
 
 - Display the screeners/filters applied to study. `prolific study view [study-id]`

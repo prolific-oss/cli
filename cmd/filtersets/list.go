@@ -9,6 +9,7 @@ import (
 	"github.com/benmatselby/prolificli/client"
 	"github.com/benmatselby/prolificli/ui"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // ListOptions is the options for the listing filter sets command.
@@ -48,7 +49,7 @@ $ prolific filters list -w 6261321e223a605c7a4f7623
 	}
 
 	flags := cmd.Flags()
-	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", "", "Filter filter sets by workspace.")
+	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "Filter filter sets by workspace.")
 	flags.IntVarP(&opts.Limit, "limit", "l", client.DefaultRecordLimit, "Limit the number of filter sets returned")
 	flags.IntVarP(&opts.Offset, "offset", "o", client.DefaultRecordOffset, "The number of filter sets to offset")
 

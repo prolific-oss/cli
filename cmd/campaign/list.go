@@ -9,6 +9,7 @@ import (
 	"github.com/benmatselby/prolificli/client"
 	"github.com/benmatselby/prolificli/ui"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // CampaignListOptions is the options for the listing campaigns command.
@@ -56,7 +57,7 @@ $ prolific campaign list -w <workspace_id> -l 1 -o 2
 	}
 
 	flags := cmd.Flags()
-	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", "", "Filter campaigns by workspace.")
+	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "Filter campaigns by workspace.")
 	flags.IntVarP(&opts.Limit, "limit", "l", client.DefaultRecordLimit, "Limit the number of campaigns returned")
 	flags.IntVarP(&opts.Offset, "offset", "o", client.DefaultRecordOffset, "The number of campaigns to offset")
 

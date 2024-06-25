@@ -11,6 +11,7 @@ Usage:
   prolific [command]
 
 Available Commands:
+  campaign     Provide details about your campaigns
   completion   Generate the autocompletion script for the specified shell
   filter-sets  Manage and view your filter sets
   help         Help about any command
@@ -26,7 +27,7 @@ Available Commands:
   workspace    Manage and view your workspaces
 
 Flags:
-      --config string   config file (default is $HOME/.config/prolific/cli.yaml)
+      --config string   config file (default is $HOME/.config/benmatselby/prolific.yaml)
   -h, --help            help for prolific
   -v, --version         version for prolific
 
@@ -68,6 +69,14 @@ You can then create a study by calling:
 
 ```shell
 prolific study create -t docs/examples/standard-sample.yaml
+```
+
+You can also define some defaults in the configuration file: `$HOME/.config/benmatselby/prolific.yaml`.
+
+Currently you can define the following:
+
+```yaml
+workspace: xxxxxxxxxx
 ```
 
 ### Environment variables
