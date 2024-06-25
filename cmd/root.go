@@ -54,7 +54,7 @@ func NewRootCommand() *cobra.Command {
 		Version: version.GITCOMMIT,
 	}
 
-	cmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/benmatselby/prolificli.yaml)")
+	cmd.PersistentFlags().StringVar(&cfgFile, "config", "", fmt.Sprintf("config file (default is $HOME/.config/benmatselby/%s.yaml)", ApplicationName))
 
 	client := client.New()
 
