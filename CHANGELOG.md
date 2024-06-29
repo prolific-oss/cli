@@ -2,6 +2,11 @@
 
 ## release-next
 
+## 0.0.50
+
+- Allow the user to create a study with the `filters` attribute.
+- Remove the description from the interactive study list view.
+
 ## 0.0.49
 
 - Allow the user to define the default `workspace` value in the config file `$HOME/.config/benmatselby/prolific.yaml`.
