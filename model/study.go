@@ -170,7 +170,7 @@ func (s Study) Title() string { return s.Name }
 
 // Description will set the secondary string the view.
 func (s Study) Description() string {
-	return fmt.Sprintf("%s - %s - %d places available - %s", s.Status, s.StudyType, s.TotalAvailablePlaces, s.Desc)
+	return fmt.Sprintf("%s - %s - %d places available", s.Status, s.StudyType, s.TotalAvailablePlaces)
 }
 
 // GetCurrencyCode handles the logic about which internal fields to use to decide
