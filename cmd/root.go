@@ -7,6 +7,7 @@ import (
 
 	"github.com/benmatselby/prolificli/client"
 	"github.com/benmatselby/prolificli/cmd/campaign"
+	"github.com/benmatselby/prolificli/cmd/filters"
 	"github.com/benmatselby/prolificli/cmd/filtersets"
 	"github.com/benmatselby/prolificli/cmd/hook"
 	"github.com/benmatselby/prolificli/cmd/message"
@@ -62,6 +63,7 @@ func NewRootCommand() *cobra.Command {
 
 	cmd.AddCommand(
 		campaign.NewListCommand("campaign", &client, w),
+		filters.NewListCommand(&client, w),
 		filtersets.NewFilterSetCommand(&client, w),
 		hook.NewHookCommand(&client, w),
 		message.NewMessageCommand(&client, w),

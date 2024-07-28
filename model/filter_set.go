@@ -12,16 +12,3 @@ type FilterSet struct {
 	EligibleParticipantCount int      `json:"eligible_participant_count"`
 	Filters                  []Filter `json:"filters"`
 }
-
-// Filter holds information about the filter that makes up a filter set
-type Filter struct {
-	FilterID       string      `json:"filter_id" mapstructure:"filter_id"`
-	SelectedValues []string    `json:"selected_values,omitempty" mapstructure:"selected_values"`
-	SelectedRange  FilterRange `json:"selected_range,omitempty" mapstructure:"selected_range"`
-}
-
-// FilterRange holds the lower and upper bounds of a filter
-type FilterRange struct {
-	Lower interface{} `json:"lower,omitempty" mapstructure:"lower"`
-	Upper interface{} `json:"upper,omitempty" mapstructure:"upper"`
-}

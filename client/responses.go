@@ -78,6 +78,12 @@ type ListRequirementsResponse struct {
 	*JSONAPIMeta
 }
 
+type ListFiltersResponse struct {
+	Results []model.Filter `json:"results"`
+	*JSONAPILinks
+	*JSONAPIMeta
+}
+
 // TransitionStudyResponse is the response for transitioning a study to another status.
 type TransitionStudyResponse struct {
 	ID                      string        `json:"id"`

@@ -7,9 +7,9 @@ package mock_client
 import (
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	client "github.com/benmatselby/prolificli/client"
 	model "github.com/benmatselby/prolificli/model"
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockAPI is a mock of API interface.
@@ -168,6 +168,21 @@ func (m *MockAPI) GetFilterSets(workspaceID string, limit, offset int) (*client.
 func (mr *MockAPIMockRecorder) GetFilterSets(workspaceID, limit, offset interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFilterSets", reflect.TypeOf((*MockAPI)(nil).GetFilterSets), workspaceID, limit, offset)
+}
+
+// GetFilters mocks base method.
+func (m *MockAPI) GetFilters() (*client.ListFiltersResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFilters")
+	ret0, _ := ret[0].(*client.ListFiltersResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFilters indicates an expected call of GetFilters.
+func (mr *MockAPIMockRecorder) GetFilters() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFilters", reflect.TypeOf((*MockAPI)(nil).GetFilters))
 }
 
 // GetHookEventTypes mocks base method.

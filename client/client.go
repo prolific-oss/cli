@@ -53,6 +53,8 @@ type API interface {
 	GetParticipantGroups(projectID string, limit, offset int) (*ListParticipantGroupsResponse, error)
 	GetParticipantGroup(groupID string) (*ViewParticipantGroupResponse, error)
 
+	GetFilters() (*ListFiltersResponse, error)
+
 	GetFilterSets(workspaceID string, limit, offset int) (*ListFilterSetsResponse, error)
 	GetFilterSet(ID string) (*model.FilterSet, error)
 
@@ -466,6 +468,18 @@ func (c *Client) GetParticipantGroup(groupID string) (*ViewParticipantGroupRespo
 	var response ViewParticipantGroupResponse
 
 	url := fmt.Sprintf("/api/v1/participant-groups/%s/participants/", groupID)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+func (c *Client) GetFilters() (*ListFiltersResponse, error) {
+	var response ListFiltersResponse
+
+	url := "/api/v1/filters/"
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
