@@ -132,7 +132,7 @@ func (c *Client) Execute(method, url string, body interface{}, response interfac
 			return nil, fmt.Errorf("decoding JSON response from %s failed: %v", request.URL, err)
 		}
 
-		return nil, fmt.Errorf(apiError.Error.Detail)
+		return nil, fmt.Errorf("request failed: %v", apiError.Error.Detail)
 	}
 
 	if response != nil {
