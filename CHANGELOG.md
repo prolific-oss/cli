@@ -2,6 +2,8 @@
 
 ## release-next
 
+- Consistently use Go 1.23 in the project.
+
 ## 0.0.50
 
 - Allow the user to create a study with the `filters` attribute.
