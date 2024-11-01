@@ -2,6 +2,13 @@
 
 ## release-next
 
+## 0.0.52
+
+- Provide the ability to transition a study `study transition 65ecbe2cba93fe76699213f5 -a START`.
+  - Actions include: `START`, `PAUSE`, `STOP`, `PUBLISH`.
+
+## 0.0.51
+
 - Consistently use Go 1.23 in the project.
 
 ## 0.0.50
