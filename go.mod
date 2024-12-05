@@ -12,7 +12,7 @@ require (
 	github.com/spf13/cobra v1.8.1 // Apache 2.0
 	github.com/spf13/viper v1.19.0 // MIT
 	golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842 // BSD-3-Clause
-	golang.org/x/text v0.20.0 // BSD-3-Clause
+	golang.org/x/text v0.21.0 // BSD-3-Clause
 )
 
 require github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
@@ -46,7 +46,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/sync v0.9.0 // indirect
+	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.27.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
