@@ -87,7 +87,7 @@ You will need the following environment variables defining:
 export PROLIFIC_TOKEN=""
 ```
 
-You can create a Researcher token in your account. Log in, and go to settings.
+You can create a Researcher token in your [account](https://app.prolific.com/researcher/tokens/).
 
 You can optionally override the URL for the API too. This will be set as default to the Prolific API URL. You can override this if Prolific have granted you access to a different environment.
 
