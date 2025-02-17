@@ -9,7 +9,7 @@ require (
 	github.com/charmbracelet/lipgloss v1.0.0 // MIT
 	github.com/golang/mock v1.6.0 // Apache 2.0
 	github.com/mitchellh/go-homedir v1.1.0 // MIT
-	github.com/spf13/cobra v1.8.1 // Apache 2.0
+	github.com/spf13/cobra v1.9.1 // Apache 2.0
 	github.com/spf13/viper v1.19.0 // MIT
 	golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842 // BSD-3-Clause
 	golang.org/x/text v0.22.0 // BSD-3-Clause
@@ -43,7 +43,7 @@ require (
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
-	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/sync v0.11.0 // indirect
