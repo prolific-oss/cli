@@ -11,7 +11,7 @@ require (
 	github.com/golang/mock v1.6.0 // Apache 2.0
 	github.com/mitchellh/go-homedir v1.1.0 // MIT
 	github.com/spf13/cobra v1.9.1 // Apache 2.0
-	github.com/spf13/viper v1.20.0 // MIT
+	github.com/spf13/viper v1.20.1 // MIT
 	golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842 // BSD-3-Clause
 	golang.org/x/text v0.23.0 // BSD-3-Clause
 )
