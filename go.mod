@@ -6,7 +6,7 @@ toolchain go1.24.2
 
 require (
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d // MIT
-	github.com/charmbracelet/bubbles v0.20.0 // MIT
+	github.com/charmbracelet/bubbles v0.21.0 // MIT
 	github.com/charmbracelet/bubbletea v1.3.4 // MIT
 	github.com/charmbracelet/lipgloss v1.1.0 // MIT
 	github.com/golang/mock v1.6.0 // Apache 2.0
