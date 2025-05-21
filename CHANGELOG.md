@@ -2,6 +2,10 @@
 
 ## release-next
 
+## 0.0.53
+
+- Dependency management
+
 ## 0.0.52
 
 - Provide the ability to transition a study `study transition 65ecbe2cba93fe76699213f5 -a START`.
