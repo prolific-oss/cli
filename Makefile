@@ -47,10 +47,6 @@ lint: ## Vet the code
 lint-dockerfile: ## Lint the dockerfile
 	npx dockerfilelint Dockerfile
 
-.PHONY: security
-security: ## Inspect the code
-	gosec ./...
-
 .PHONY: build
 build: ## Build the application
 	go build -o $(NAME) .
