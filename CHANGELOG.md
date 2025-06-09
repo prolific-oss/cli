@@ -2,6 +2,8 @@
 
 ## release-next
 
+- Bump the project to Go 1.24.
+
 ## 0.0.53
 
 - Dependency management
