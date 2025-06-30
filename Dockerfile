@@ -1,9 +1,9 @@
-FROM golang:1.24.4-alpine as builder
+FROM golang:1.24.4-alpine AS builder
 LABEL maintainer="Ben Selby <benmatselby@gmail.com>"
 
-ENV APPNAME prolific
-ENV PATH /go/bin:/usr/local/go/bin:$PATH
-ENV GOPATH /go
+ENV APPNAME=prolific
+ENV PATH=/go/bin:/usr/local/go/bin:$PATH
+ENV GOPATH=/go
 
 COPY . /go/src/github.com/benmatselby/${APPNAME}
 
@@ -25,10 +25,12 @@ RUN cd /go/src/github.com/benmatselby/${APPNAME} && \
 
 FROM scratch
 
+ENV APPNAME=prolific
+
 COPY --from=builder /usr/bin/${APPNAME} /usr/bin/${APPNAME}
 COPY --from=builder /etc/ssl/certs/ /etc/ssl/certs
 
-ENV HOME /root
+ENV HOME=/root
 
 ENTRYPOINT [ "prolific" ]
 CMD [ "--help"]
