@@ -2,7 +2,11 @@
 
 ## release-next
 
+## 0.0.54
+
 - Bump the project to Go 1.24.
+- Some formatting fixes for the Docker image (Updated linter).
+- Define the Copilot instructions for the project.
 
 ## 0.0.53
 
