@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/benmatselby/prolificli/client"
-	"github.com/benmatselby/prolificli/ui/filter"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/ui/filter"
 	"github.com/spf13/cobra"
 )
 

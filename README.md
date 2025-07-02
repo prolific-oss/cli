@@ -1,8 +1,8 @@
 # Prolific CLI
 
-![GitHub Badge](https://github.com/benmatselby/prolificli/workflows/Go/badge.svg)
+![GitHub Badge](https://github.com/prolific-oss/cli/workflows/Go/badge.svg)
 
-CLI application for getting information out of [Prolific](https://www.prolific.com) about your research studies. **This project is not affiliated to Prolific in any way.**
+CLI application for getting information out of [Prolific](https://www.prolific.com) about your research studies.
 
 ```text
 CLI application for retrieving data from the Prolific Platform
@@ -27,7 +27,7 @@ Available Commands:
   workspace    Manage and view your workspaces
 
 Flags:
-      --config string   config file (default is $HOME/.config/benmatselby/prolific.yaml)
+      --config string   config file (default is $HOME/.config/prolific-oss/prolific.yaml)
   -h, --help            help for prolific
   -v, --version         version for prolific
 
@@ -46,14 +46,14 @@ Main features include:
 - Ability to render details about a study, and the submissions.
 - Ability to create a Study via a YAML/JSON configuration file.
 - Ability to publish a study whilst creating it (if you have sufficient funds).
-- Ability to silently create a study, meaning you [can script creating many studies in one go](https://github.com/benmatselby/prolificli/wiki/Create-multiple-studies-via-a-bash-script).
+- Ability to silently create a study, meaning you [can script creating many studies in one go](https://github.com/prolific-oss/cli/wiki/Create-multiple-studies-via-a-bash-script).
 - Ability to get your user account details.
 - Ability to list your hook subscriptions.
 - Ability to send and retrieve messages.
 - Ability to list and view your filter sets
 - Ability to list and view your participant groups
 
-Checkout the [wiki](https://github.com/benmatselby/prolificli/wiki) for more tips and tricks.
+Checkout the [wiki](https://github.com/prolific-oss/cli/wiki) for more tips and tricks.
 
 ## Requirements
 
@@ -71,7 +71,7 @@ You can then create a study by calling:
 prolific study create -t docs/examples/standard-sample.yaml
 ```
 
-You can also define some defaults in the configuration file: `$HOME/.config/benmatselby/prolific.yaml`.
+You can also define some defaults in the configuration file: `$HOME/.config/prolific-oss/prolific.yaml`.
 
 Currently you can define the following:
 
@@ -100,42 +100,11 @@ export PROLIFIC_URL="https://api.prolific.com"
 You can install this application a few ways:
 
 <details>
-<summary>Installation via Docker</summary>
-
-By using [Docker](http://docker.com), you will not require any dependencies on your host machine.
-
-```shell
-$ docker run \
-  --rm \
-  -t \
-  -ePROLIFIC_URL \
-  -ePROLIFIC_TOKEN \
-  -v "${HOME}/.prolific":/root/.prolific \
-  benmatselby/prolificli:latest "$@"
-```
-
-The `latest` tag mentioned above can be changed to a released version. For all releases, see [here](https://hub.docker.com/repository/docker/benmatselby/prolificli/tags).
-
-| Tag      | What it means                                                                           |
-| -------- | --------------------------------------------------------------------------------------- |
-| `latest` | The latest released version                                                             |
-| `main`   | The latest git commit, not released as a tag yet                                        |
-| `v*`     | [Docker releases](https://hub.docker.com/repository/docker/benmatselby/prolificli/tags) |
-
-You can also build the image locally:
-
-```shell
-make docker-build
-```
-
-</details>
-
-<details>
 <summary>Installation via Git</summary>
 
 ```shell
-git clone https://github.com/benmatselby/prolificli.git
-cd prolificli
+git clone https://github.com/prolific-oss/cli.git
+cd cli
 make all
 ./prolific
 ```
@@ -147,7 +116,7 @@ You can also install into your `$GOPATH/bin` by running `make build && go instal
 <details>
 <summary>Installation via Binaries</summary>
 
-You can download the binaries from the [release pages](https://github.com/benmatselby/prolificli/releases). Find the release you want, and check the "Assets" section.
+You can download the binaries from the [release pages](https://github.com/prolific-oss/cli/releases). Find the release you want, and check the "Assets" section.
 
 Once downloaded, be sure to put the binary in a folder that is referenced in your `$PATH`.
 

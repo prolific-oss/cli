@@ -3,7 +3,7 @@ package cmd_test
 import (
 	"testing"
 
-	"github.com/benmatselby/prolificli/cmd"
+	"github.com/prolific-oss/cli/cmd"
 )
 
 func TestNewGitHubCommand(t *testing.T) {

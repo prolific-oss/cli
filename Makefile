@@ -1,7 +1,7 @@
 NAME := prolific
-DOCKER_PREFIX = benmatselby
+DOCKER_PREFIX = prolific-oss
 DOCKER_RELEASE ?= latest
-GIT_ORG = benmatselby
+GIT_ORG = prolific-oss
 BUILD_DIR ?= build
 GOOS ?=
 ARCH ?=

@@ -5,7 +5,7 @@ import (
 	"io"
 	"text/tabwriter"
 
-	"github.com/benmatselby/prolificli/client"
+	"github.com/prolific-oss/cli/client"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
