@@ -1,7 +1,7 @@
 package client
 
 import (
-	"github.com/prolific-oss/cli/model"
+	"github.com/benmatselby/prolificli/model"
 )
 
 // JSONAPILinks is the standard pagination data structure.
@@ -31,6 +31,16 @@ type JSONAPIMeta struct {
 	Meta struct {
 		Count int `json:"count"`
 	} `json:"meta"`
+}
+
+type JSONAPIError struct {
+	Error struct {
+		Status                int    `json:"status"`
+		Title                 string `json:"title"`
+		ErrorCode             int    `json:"error_code"`
+		Detail                string `json:"detail"`
+		AdditionalInformation string `json:"additional_information"`
+	} `json:"error"`
 }
 
 // MeResponse is a struct that represents your account.
@@ -64,6 +74,12 @@ type ListSubmissionsResponse struct {
 // ListRequirementsResponse is the response for the requirements request.
 type ListRequirementsResponse struct {
 	Results []model.Requirement `json:"results"`
+	*JSONAPILinks
+	*JSONAPIMeta
+}
+
+type ListFiltersResponse struct {
+	Results []model.Filter `json:"results"`
 	*JSONAPILinks
 	*JSONAPIMeta
 }

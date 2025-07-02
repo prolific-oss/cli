@@ -2,17 +2,61 @@
 
 ## release-next
 
-- Provide the ability to list your campaigns (Bring your own participants) `campaign list -w [workspace_id]`
+## 0.0.54
+
+- Bump the project to Go 1.24.
+- Some formatting fixes for the Docker image (Updated linter).
+- Define the Copilot instructions for the project.
+
+## 0.0.53
+
+- Dependency management
+
+## 0.0.52
+
+- Provide the ability to transition a study `study transition 65ecbe2cba93fe76699213f5 -a START`.
+  - Actions include: `START`, `PAUSE`, `STOP`, `PUBLISH`.
+
+## 0.0.51
+
+- Consistently use Go 1.23 in the project.
+
+## 0.0.50
+
+- Allow the user to create a study with the `filters` attribute.
+- Remove the description from the interactive study list view.
+
+## 0.0.49
+
+- Allow the user to define the default `workspace` value in the config file `$HOME/.config/benmatselby/prolific.yaml`.
+  - This will be the default value for all commands that take a `--workspace` argument.
+
+## 0.0.48
+
+- Display the screeners/filters applied to study. `prolific study view [study-id]`
+  - This will now render a "Filters" section.
+  - Documented [here](https://docs.prolific.com/docs/api-docs/public/#tag/Studies/operation/GetStudy)
+
+## 0.0.47
+
+- Show selected ranges for the filter set view command `filter-sets view 65ecbe2cba93fe76699213f5`.
+- Better error handling if you encounter a permission error.
+- Project maintenance, removed deprecated go linters.
+
+## 0.0.46
+
+- Provide the ability to list your campaigns (Bring your own participants) `campaign list -w [workspace_id]`.
+- Bump go version in the Docker image to 1.22.3.
 
 ## 0.0.45
 
-- Provide a filter set view command `filter-sets view 65ecbe2cba93fe76699213f5`
+- Provide a filter set view command `filter-sets view 65ecbe2cba93fe76699213f5`.
   - This includes the ability to open the filter set in the web application using your system browser.
   - Just add the `-W` flag.
 
 ## 0.0.44
 
-- Provide the ability to open some resources in a browser with the `-W flag`
+- Provide the ability to open some resources in a browser with the `-W flag`.
   - `project view [id] -W`
   - `study view [id] -W`
   - This will open the resource in the Prolific web application with your system browser.
@@ -26,7 +70,7 @@
 
 ## 0.0.42
 
-- Update the go runtime to 1.22
+- Update the go runtime to 1.22.
 
 ## 0.0.41
 
@@ -203,7 +247,7 @@
 ## 0.0.5
 
 - Ability to render a list of studies with `--non-interactive` which displays the the records in a table.
-- Ability to select which fields to render for the `study list --non-interactive` command. Add a comma separated list like `--fields=ID,Status,Reward,Name` to the end of the command. Default: `ID, Name, Status`. For more information check out the [wiki](https://github.com/prolific-oss/cli/wiki/Fields-you-can-use-in-the-non-interactive-list-study-command).
+- Ability to select which fields to render for the `study list --non-interactive` command. Add a comma separated list like `--fields=ID,Status,Reward,Name` to the end of the command. Default: `ID, Name, Status`. For more information check out the [wiki](https://github.com/benmatselby/prolificli/wiki/Fields-you-can-use-in-the-non-interactive-list-study-command).
 
 ## 0.0.4
 

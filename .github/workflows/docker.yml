@@ -3,7 +3,9 @@ name: Publish Docker image
 on:
   push:
     branches:
-      - 'main'
+      - "main"
+    tags:
+      - "v*.*.*"
 
 jobs:
   push_to_registry:
@@ -26,7 +28,7 @@ jobs:
           images: ${{ secrets.DOCKER_ORG }}/${{ secrets.DOCKER_IMAGE }}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true

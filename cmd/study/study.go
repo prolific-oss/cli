@@ -3,7 +3,7 @@ package study
 import (
 	"io"
 
-	"github.com/prolific-oss/cli/client"
+	"github.com/benmatselby/prolificli/client"
 	"github.com/spf13/cobra"
 )
 
@@ -20,6 +20,7 @@ func NewStudyCommand(client client.API, w io.Writer) *cobra.Command {
 		NewCreateCommand(client, w),
 		NewDuplicateCommand(client, w),
 		NewIncreasePlacesCommand(client, w),
+		NewTransitionCommand(client, w),
 	)
 	return cmd
 }

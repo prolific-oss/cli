@@ -3,7 +3,7 @@ package model_test
 import (
 	"testing"
 
-	"github.com/prolific-oss/cli/model"
+	"github.com/benmatselby/prolificli/model"
 )
 
 func TestFilterValueReturnsName(t *testing.T) {
@@ -37,10 +37,9 @@ func TestDescriptionReturnsADescriptiveString(t *testing.T) {
 		Status:               model.StatusActive,
 		StudyType:            "single",
 		TotalAvailablePlaces: 515,
-		Desc:                 "This study is going to be longitudinal study around bird migration",
 	}
 
-	expected := "active - single - 515 places available - This study is going to be longitudinal study around bird migration"
+	expected := "active - single - 515 places available"
 	if study.Description() != expected {
 		t.Fatalf("expected filter value to be %s, got %s", expected, study.Description())
 	}

@@ -73,6 +73,7 @@ type Study struct {
 		} `json:"question"`
 		DisplayDetails string `json:"details_display"`
 	} `json:"eligibility_requirements"`
+	Filters                 []Filter    `json:"filters"`
 	Desc                    string      `json:"description"`
 	EstimatedCompletionTime int         `json:"estimated_completion_time"`
 	MaximumAllowedTime      int         `json:"maximum_allowed_time"`
@@ -146,6 +147,7 @@ type CreateStudy struct {
 		} `json:"query" mapstructure:"query"`
 		Cls string `json:"_cls" mapstructure:"_cls"`
 	} `json:"eligibility_requirements" mapstructure:"eligibility_requirements"`
+	Filters []Filter `json:"filters" mapstructure:"filters"`
 }
 
 // UpdateStudy represents the model we will send back to Prolific to update
@@ -168,7 +170,7 @@ func (s Study) Title() string { return s.Name }
 
 // Description will set the secondary string the view.
 func (s Study) Description() string {
-	return fmt.Sprintf("%s - %s - %d places available - %s", s.Status, s.StudyType, s.TotalAvailablePlaces, s.Desc)
+	return fmt.Sprintf("%s - %s - %d places available", s.Status, s.StudyType, s.TotalAvailablePlaces)
 }
 
 // GetCurrencyCode handles the logic about which internal fields to use to decide

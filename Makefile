@@ -1,6 +1,7 @@
 NAME := prolific
-DOCKER_PREFIX = prolificac
+DOCKER_PREFIX = benmatselby
 DOCKER_RELEASE ?= latest
+GIT_ORG = benmatselby
 BUILD_DIR ?= build
 GOOS ?=
 ARCH ?=
@@ -46,10 +47,6 @@ lint: ## Vet the code
 lint-dockerfile: ## Lint the dockerfile
 	npx dockerfilelint Dockerfile
 
-.PHONY: security
-security: ## Inspect the code
-	gosec ./...
-
 .PHONY: build
 build: ## Build the application
 	go build -o $(NAME) .
@@ -57,14 +54,14 @@ build: ## Build the application
 .PHONY: static
 static: ## Build the application
 	CGO_ENABLED=0 go build \
-		-ldflags "-extldflags -static -X github.com/prolific-oss/$(NAME)/version.GITCOMMIT=$(GIT_RELEASE)" \
+		-ldflags "-extldflags -static -X github.com/$(GIT_ORG)/$(NAME)/version.GITCOMMIT=$(GIT_RELEASE)" \
 		-o $(NAME) .
 
 .PHONY: static-named
 static-named: ## Build the application with named outputs
 	GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 \
 		go build \
-		-ldflags "-extldflags -static -X github.com/prolific-oss/$(NAME)/version.GITCOMMIT=$(GIT_RELEASE)" \
+		-ldflags "-extldflags -static -X github.com/$(GIT_ORG)/$(NAME)/version.GITCOMMIT=$(GIT_RELEASE)" \
 		-o $(OUT_PATH) .
 
 	md5sum $(OUT_PATH) > $(OUT_PATH).md5 || md5 $(OUT_PATH) > $(OUT_PATH).md5

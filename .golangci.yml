@@ -1,37 +1,45 @@
-run:
-  deadline: 5m
-
-# https://golangci-lint.run/usage/linters/
+version: "2"
 linters:
-  disable-all: true
+  default: none
   enable:
-    # - depguard
     - dogsled
     - dupl
     - errcheck
     - exhaustive
-    #- funlen
-    - gas
     - gochecknoinits
     - goconst
     - gocyclo
-    - gofmt
-    - goimports
     - goprintffuncname
     - gosec
-    - gosimple
     - govet
     - ineffassign
-    - megacheck
     - misspell
     - nakedret
     - noctx
     - nolintlint
     - staticcheck
-    - stylecheck
-    - typecheck
     - unconvert
     - unparam
     - unused
     - whitespace
-  fast: false
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

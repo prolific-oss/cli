@@ -5,9 +5,10 @@ import (
 	"io"
 	"text/tabwriter"
 
-	"github.com/prolific-oss/cli/client"
-	"github.com/prolific-oss/cli/ui"
+	"github.com/benmatselby/prolificli/client"
+	"github.com/benmatselby/prolificli/ui"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // ListOptions is the options for the listing hooks command.
@@ -57,7 +58,7 @@ $ prolific hook list -w 3461321e223a605c7a4f7612 -e
 	}
 
 	flags := cmd.Flags()
-	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", "", "Filter hooks by workspace.")
+	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "Filter hooks by workspace.")
 	flags.BoolVarP(&opts.Enabled, "enabled", "e", true, "Filter on enabled subscriptions.")
 	flags.BoolVarP(&opts.Disabled, "disabled", "d", false, "Filter on disabled subscriptions.")
 	flags.IntVarP(&opts.Limit, "limit", "l", client.DefaultRecordLimit, "Limit the number of subscriptions returned")

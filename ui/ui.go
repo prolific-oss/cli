@@ -3,9 +3,9 @@ package ui
 import (
 	"fmt"
 
+	"github.com/benmatselby/prolificli/config"
+	"github.com/benmatselby/prolificli/model"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/prolific-oss/cli/config"
-	"github.com/prolific-oss/cli/model"
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"

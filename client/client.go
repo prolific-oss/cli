@@ -11,8 +11,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/prolific-oss/cli/config"
-	"github.com/prolific-oss/cli/model"
+	"github.com/benmatselby/prolificli/config"
+	"github.com/benmatselby/prolificli/model"
 	"github.com/spf13/viper"
 	"golang.org/x/exp/slices"
 )
@@ -52,6 +52,8 @@ type API interface {
 
 	GetParticipantGroups(projectID string, limit, offset int) (*ListParticipantGroupsResponse, error)
 	GetParticipantGroup(groupID string) (*ViewParticipantGroupResponse, error)
+
+	GetFilters() (*ListFiltersResponse, error)
 
 	GetFilterSets(workspaceID string, limit, offset int) (*ListFilterSetsResponse, error)
 	GetFilterSet(ID string) (*model.FilterSet, error)
@@ -106,7 +108,7 @@ func (c *Client) Execute(method, url string, body interface{}, response interfac
 	}
 
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("User-Agent", "prolific/cli")
+	request.Header.Set("User-Agent", "benmatselby/prolificli")
 	request.Header.Set("Authorization", fmt.Sprintf("Token %s", c.Token))
 
 	if c.Debug {
@@ -124,6 +126,15 @@ func (c *Client) Execute(method, url string, body interface{}, response interfac
 
 	if c.Debug {
 		fmt.Println(string(responseBody))
+	}
+
+	if httpResponse.StatusCode >= 400 {
+		var apiError JSONAPIError
+		if err := json.NewDecoder(io.NopCloser(bytes.NewBuffer(responseBody))).Decode(&apiError); err != nil {
+			return nil, fmt.Errorf("decoding JSON response from %s failed: %v", request.URL, err)
+		}
+
+		return nil, fmt.Errorf("request failed: %v", apiError.Error.Detail)
 	}
 
 	if response != nil {
@@ -457,6 +468,18 @@ func (c *Client) GetParticipantGroup(groupID string) (*ViewParticipantGroupRespo
 	var response ViewParticipantGroupResponse
 
 	url := fmt.Sprintf("/api/v1/participant-groups/%s/participants/", groupID)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+func (c *Client) GetFilters() (*ListFiltersResponse, error) {
+	var response ListFiltersResponse
+
+	url := "/api/v1/filters/"
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)

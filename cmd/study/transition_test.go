@@ -4,25 +4,25 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"fmt"
 	"os"
 	"testing"
 
+	"github.com/benmatselby/prolificli/client"
 	"github.com/benmatselby/prolificli/cmd/study"
 	"github.com/benmatselby/prolificli/mock_client"
 	"github.com/benmatselby/prolificli/model"
 	"github.com/golang/mock/gomock"
 )
 
-func TestNewDuplicateCommand(t *testing.T) {
+func TestNewTransitionCommand(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	client := mock_client.NewMockAPI(ctrl)
 
-	cmd := study.NewDuplicateCommand(client, os.Stdout)
+	cmd := study.NewTransitionCommand(client, os.Stdout)
 
-	use := "duplicate"
-	short := "Duplicate an existing study"
+	use := "transition"
+	short := "Transition the status of a study"
 
 	if cmd.Use != use {
 		t.Fatalf("expected use: %s; got %s", use, cmd.Use)
@@ -33,15 +33,17 @@ func TestNewDuplicateCommand(t *testing.T) {
 	}
 }
 
-func TestDuplicateStudyCallsClient(t *testing.T) {
+func TestTransitionCommandCallsClient(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
 	studyID := "11223344"
 
+	response := client.TransitionStudyResponse{}
+
 	actualStudy := model.Study{
-		ID:                      "9999999",
+		ID:                      studyID,
 		Name:                    "My first standard sample",
 		InternalName:            "Standard sample",
 		Desc:                    "This is my first standard sample study on the Prolific system.",
@@ -55,18 +57,26 @@ func TestDuplicateStudyCallsClient(t *testing.T) {
 
 	c.
 		EXPECT().
-		DuplicateStudy(gomock.Eq(studyID)).
+		TransitionStudy(gomock.Eq(studyID), gomock.Eq(model.TransitionStudyPause)).
+		Return(&response, nil).
+		AnyTimes()
+
+	c.
+		EXPECT().
+		GetStudy(gomock.Eq(studyID)).
 		Return(&actualStudy, nil).
 		AnyTimes()
 
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
 
-	cmd := study.NewDuplicateCommand(c, writer)
+	cmd := study.NewTransitionCommand(c, writer)
+	_ = cmd.Flags().Set("action", model.TransitionStudyPause)
+	_ = cmd.Flags().Set("silent", "true")
 	_ = cmd.RunE(cmd, []string{studyID})
 	writer.Flush()
 
-	expected := fmt.Sprintf("%s\n", actualStudy.ID)
+	expected := ""
 	actual := b.String()
 
 	if actual != expected {
@@ -74,7 +84,7 @@ func TestDuplicateStudyCallsClient(t *testing.T) {
 	}
 }
 
-func TestDuplicateStudyHandlesApiErrors(t *testing.T) {
+func TestTransitionStudyHandlesApiErrors(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
@@ -83,18 +93,39 @@ func TestDuplicateStudyHandlesApiErrors(t *testing.T) {
 
 	c.
 		EXPECT().
-		DuplicateStudy(gomock.Eq(studyID)).
+		TransitionStudy(gomock.Eq(studyID), gomock.Eq(model.TransitionStudyPause)).
 		Return(nil, errors.New("No no no")).
 		AnyTimes()
 
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
 
-	cmd := study.NewDuplicateCommand(c, writer)
+	cmd := study.NewTransitionCommand(c, writer)
+	_ = cmd.Flags().Set("action", model.TransitionStudyPause)
 	err := cmd.RunE(cmd, []string{studyID})
 	writer.Flush()
 
 	expected := "error: No no no"
+	if err.Error() != expected {
+		t.Fatalf("expected %s, got %s", expected, err.Error())
+	}
+}
+
+func TestTransitionStudyHandlesNoActionSpecified(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	studyID := "11223344"
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := study.NewTransitionCommand(c, writer)
+	err := cmd.RunE(cmd, []string{studyID})
+	writer.Flush()
+
+	expected := "error: you must provide an action to transition the study to"
 	if err.Error() != expected {
 		t.Fatalf("expected %s, got %s", expected, err.Error())
 	}

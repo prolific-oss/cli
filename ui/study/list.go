@@ -7,10 +7,10 @@ import (
 	"strings"
 	"text/tabwriter"
 
+	"github.com/benmatselby/prolificli/client"
+	"github.com/benmatselby/prolificli/model"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/prolific-oss/cli/client"
-	"github.com/prolific-oss/cli/model"
 )
 
 // DefaultListFields is the default fields we should show if the user has not specified.

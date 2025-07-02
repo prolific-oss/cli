@@ -12,9 +12,3 @@ type FilterSet struct {
 	EligibleParticipantCount int      `json:"eligible_participant_count"`
 	Filters                  []Filter `json:"filters"`
 }
-
-// Filter holds information about the filter that makes up a filter set
-type Filter struct {
-	FilterID       string   `json:"filter_id"`
-	SelectedValues []string `json:"selected_values"`
-}

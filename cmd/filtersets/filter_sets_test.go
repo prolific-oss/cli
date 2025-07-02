@@ -4,9 +4,9 @@ import (
 	"os"
 	"testing"
 
+	"github.com/benmatselby/prolificli/cmd/filtersets"
+	"github.com/benmatselby/prolificli/mock_client"
 	"github.com/golang/mock/gomock"
-	"github.com/prolific-oss/cli/cmd/filtersets"
-	"github.com/prolific-oss/cli/mock_client"
 )
 
 func TestNewFilterSetCommand(t *testing.T) {

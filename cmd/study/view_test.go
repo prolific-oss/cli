@@ -10,11 +10,11 @@ import (
 	"testing"
 
 	"github.com/acarl005/stripansi"
+	"github.com/benmatselby/prolificli/cmd/study"
+	"github.com/benmatselby/prolificli/config"
+	"github.com/benmatselby/prolificli/mock_client"
+	"github.com/benmatselby/prolificli/model"
 	"github.com/golang/mock/gomock"
-	"github.com/prolific-oss/cli/cmd/study"
-	"github.com/prolific-oss/cli/config"
-	"github.com/prolific-oss/cli/mock_client"
-	"github.com/prolific-oss/cli/model"
 )
 
 func TestNewStudyViewCommand(t *testing.T) {
@@ -54,6 +54,12 @@ func TestViewStudyRendersStudy(t *testing.T) {
 		MaximumAllowedTime:      10,
 		Reward:                  400,
 		DeviceCompatibility:     []string{"desktop", "tablet", "mobile"},
+		Filters: []model.Filter{
+			{
+				FilterID:       "handedness",
+				SelectedValues: []string{"left"},
+			},
+		},
 	}
 
 	c.
@@ -92,8 +98,10 @@ Maxconcurrentsubmissions:     0
 
 ---
 
-Eligibility requirements
-No eligibility requirements are defined for this study.
+Filters
+
+handedness
+-left
 
 ---
 
