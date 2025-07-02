@@ -11,8 +11,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/benmatselby/prolificli/config"
-	"github.com/benmatselby/prolificli/model"
+	"github.com/prolific-oss/cli/config"
+	"github.com/prolific-oss/cli/model"
 	"github.com/spf13/viper"
 	"golang.org/x/exp/slices"
 )
@@ -108,7 +108,7 @@ func (c *Client) Execute(method, url string, body interface{}, response interfac
 	}
 
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("User-Agent", "benmatselby/prolificli")
+	request.Header.Set("User-Agent", "prolific-oss/cli")
 	request.Header.Set("Authorization", fmt.Sprintf("Token %s", c.Token))
 
 	if c.Debug {

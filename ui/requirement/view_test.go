@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/acarl005/stripansi"
-	"github.com/benmatselby/prolificli/model"
-	"github.com/benmatselby/prolificli/ui/requirement"
+	"github.com/prolific-oss/cli/model"
+	"github.com/prolific-oss/cli/ui/requirement"
 )
 
 func TestRenderRequirement(t *testing.T) {

@@ -1,8 +1,8 @@
-# GitHub Copilot Instructions for prolificli
+# GitHub Copilot Instructions for the Prolific CLI Project
 
 ## Project Overview
 
-- **prolificli** is a CLI tool for retrieving and displaying data from the Prolific Platform.
+- **prolific** is a CLI tool for retrieving and displaying data from the Prolific Platform.
 - Written in Go, using Cobra for CLI
 
 ## Coding Guidelines

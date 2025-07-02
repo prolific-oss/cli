@@ -1,11 +1,11 @@
 FROM golang:1.24.4-alpine AS builder
-LABEL maintainer="Ben Selby <benmatselby@gmail.com>"
+LABEL maintainer="Ben Selby <ben.selby@prolific.com>"
 
 ENV APPNAME=prolific
 ENV PATH=/go/bin:/usr/local/go/bin:$PATH
 ENV GOPATH=/go
 
-COPY . /go/src/github.com/benmatselby/${APPNAME}
+COPY . /go/src/github.com/prolific-oss/${APPNAME}
 
 RUN apk update && \
 	apk add --no-cache --virtual .build-deps \
@@ -17,7 +17,7 @@ RUN apk update && \
 	curl \
 	make
 
-RUN cd /go/src/github.com/benmatselby/${APPNAME} && \
+RUN cd /go/src/github.com/prolific-oss/${APPNAME} && \
 	make static-all  && \
 	mv ${APPNAME} /usr/bin/${APPNAME}  && \
 	apk del .build-deps  && \

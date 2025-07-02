@@ -5,21 +5,21 @@ import (
 	"os"
 	"strings"
 
-	"github.com/benmatselby/prolificli/client"
-	"github.com/benmatselby/prolificli/cmd/campaign"
-	"github.com/benmatselby/prolificli/cmd/filters"
-	"github.com/benmatselby/prolificli/cmd/filtersets"
-	"github.com/benmatselby/prolificli/cmd/hook"
-	"github.com/benmatselby/prolificli/cmd/message"
-	"github.com/benmatselby/prolificli/cmd/participantgroup"
-	"github.com/benmatselby/prolificli/cmd/project"
-	requirement "github.com/benmatselby/prolificli/cmd/requirements"
-	"github.com/benmatselby/prolificli/cmd/study"
-	"github.com/benmatselby/prolificli/cmd/submission"
-	"github.com/benmatselby/prolificli/cmd/user"
-	"github.com/benmatselby/prolificli/cmd/workspace"
-	"github.com/benmatselby/prolificli/version"
 	homedir "github.com/mitchellh/go-homedir"
+	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/cmd/campaign"
+	"github.com/prolific-oss/cli/cmd/filters"
+	"github.com/prolific-oss/cli/cmd/filtersets"
+	"github.com/prolific-oss/cli/cmd/hook"
+	"github.com/prolific-oss/cli/cmd/message"
+	"github.com/prolific-oss/cli/cmd/participantgroup"
+	"github.com/prolific-oss/cli/cmd/project"
+	requirement "github.com/prolific-oss/cli/cmd/requirements"
+	"github.com/prolific-oss/cli/cmd/study"
+	"github.com/prolific-oss/cli/cmd/submission"
+	"github.com/prolific-oss/cli/cmd/user"
+	"github.com/prolific-oss/cli/cmd/workspace"
+	"github.com/prolific-oss/cli/version"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -55,7 +55,7 @@ func NewRootCommand() *cobra.Command {
 		Version: version.GITCOMMIT,
 	}
 
-	cmd.PersistentFlags().StringVar(&cfgFile, "config", "", fmt.Sprintf("config file (default is $HOME/.config/benmatselby/%s.yaml)", ApplicationName))
+	cmd.PersistentFlags().StringVar(&cfgFile, "config", "", fmt.Sprintf("config file (default is $HOME/.config/prolific-oss/%s.yaml)", ApplicationName))
 
 	client := client.New()
 
@@ -93,7 +93,7 @@ func initConfig() {
 			os.Exit(1)
 		}
 
-		viper.AddConfigPath(strings.Join([]string{home, ".config/benmatselby"}, "/"))
+		viper.AddConfigPath(strings.Join([]string{home, ".config/prolific-oss"}, "/"))
 		viper.SetConfigName(ApplicationName)
 	}
 
