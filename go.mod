@@ -7,7 +7,7 @@ toolchain go1.24.2
 require (
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d // MIT
 	github.com/charmbracelet/bubbles v0.21.0 // MIT
-	github.com/charmbracelet/bubbletea v1.3.5 // MIT
+	github.com/charmbracelet/bubbletea v1.3.6 // MIT
 	github.com/charmbracelet/lipgloss v1.1.0 // MIT
 	github.com/golang/mock v1.6.0 // Apache 2.0
 	github.com/mitchellh/go-homedir v1.1.0 // MIT
@@ -23,7 +23,7 @@ require (
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/charmbracelet/colorprofile v0.3.1 // indirect
-	github.com/charmbracelet/x/ansi v0.9.2 // indirect
+	github.com/charmbracelet/x/ansi v0.9.3 // indirect
 	github.com/charmbracelet/x/cellbuf v0.0.13 // indirect
 	github.com/charmbracelet/x/term v0.2.1 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
