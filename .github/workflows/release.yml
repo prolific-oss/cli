@@ -50,3 +50,19 @@ jobs:
           done
 
           gh release upload ${{ github.event.release.tag_name }} build/*
+
+      - name: Release notification
+        id: slack
+        uses: slackapi/slack-github-action@v2.1.0
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          payload: |
+            channel: "product-releases"
+            blocks:
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "*💻 Prolific CLI versioned release* - ${{ job.status }}\n*Git reference:* ${{ github.event.release.tag_name }}\n*Deployed by* ${{ github.actor }}\n\n<${{ github.event.release.html_url || github.event.head_commit.url }}|${{ github.event.release.tag_name }} Release>"
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
