@@ -1,4 +1,13 @@
-# Prolific CLI
+<div align="center">
+  <img alt="logo" src="./docs/img/logo.png" height="250px">
+
+  <h1>Prolific CLI</h1>
+
+<i>A command-line interface for Prolific</i>
+
+</div>
+
+<hr />
 
 ![GitHub Badge](https://github.com/prolific-oss/cli/workflows/Go/badge.svg)
 
