@@ -13,6 +13,8 @@
 
 CLI application for getting information out of [Prolific](https://www.prolific.com) about your research studies.
 
+This CLI is an experimental open project from engineers at Prolific.
+
 ```text
 CLI application for retrieving data from the Prolific Platform
 
