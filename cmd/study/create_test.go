@@ -20,15 +20,21 @@ var studyTemplate = model.CreateStudy{
 	InternalName:            "Standard sample",
 	Description:             "This is my first standard sample study on the Prolific system.",
 	ExternalStudyURL:        "https://eggs-experriment.com?participant={{%PROLIFIC_PID%}}",
-	ProlificIDOption:        "question",
+	ProlificIDOption:        "url_parameters",
 	CompletionCode:          "COMPLE01",
-	CompletionOption:        "code",
 	TotalAvailablePlaces:    10,
 	EstimatedCompletionTime: 10,
 	MaximumAllowedTime:      10,
 	Reward:                  400,
 	DeviceCompatibility:     []string{"desktop", "tablet", "mobile"},
 	PeripheralRequirements:  []string{"audio", "camera", "download", "microphone"},
+	SubmissionsConfig: struct {
+		MaxSubmissionsPerParticipant int `json:"max_submissions_per_participant" mapstructure:"max_submissions_per_participant"`
+		MaxConcurrentSubmissions     int `json:"max_concurrent_submissions" mapstructure:"max_concurrent_submissions"`
+	}{
+		MaxSubmissionsPerParticipant: -1,
+		MaxConcurrentSubmissions:     0,
+	},
 }
 
 var actualStudy = model.Study{
