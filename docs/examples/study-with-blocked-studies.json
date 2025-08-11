@@ -1,0 +1,45 @@
+{
+  "name": "Study about APIs with blocked studies",
+  "description": "This study is not accessible to participants of studies 319e049f7648a4e1f8f3645a and 919e049f7648a4e1f8f3645d",
+  "external_study_url": "https://eggs-experriment.com?participant={{%PROLIFIC_PID%}}",
+  "prolific_id_option": "url_parameters",
+  "completion_code": "ABC123",
+  "completion_codes": [
+    {
+      "code": "ABC123",
+      "code_type": "COMPLETED",
+      "actions": [
+        {
+          "action": "AUTOMATICALLY_APPROVE"
+        }
+      ]
+    },
+    {
+      "code": "DEF234",
+      "code_type": "FOLLOW_UP_STUDY",
+      "actions": [
+        {
+          "action": "AUTOMATICALLY_APPROVE"
+        },
+        {
+          "action": "ADD_TO_PARTICIPANT_GROUP",
+          "participant_group": "619e049f7648a4e1f8f3645b"
+        }
+      ]
+    }
+  ],
+  "total_available_places": 30,
+  "estimated_completion_time": 5,
+  "reward": 100,
+  "device_compatibility": ["mobile", "desktop", "tablet"],
+  "peripheral_requirements": [],
+  "filters": [
+    {
+      "filter_id": "previous_studies_blocklist",
+      "selected_values": ["619e049f7648a4e1f8f3645b"]
+    }
+  ],
+  "submissions_config": {
+    "max_submissions_per_participant": 1
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "Programming Survey",
+  "description": "A survey for Javascript developers",
+  "external_study_url": "https://example.com/study",
+  "reward": 13,
+  "total_available_places": 500,
+  "prolific_id_option": "question",
+  "completion_code": "ABC123",
+  "completion_codes": [
+    {
+      "code": "ABC123",
+      "code_type": "COMPLETED",
+      "actions": [
+        {
+          "action": "MANUALLY_REVIEW"
+        }
+      ]
+    }
+  ],
+  "device_compatibility": ["mobile", "desktop", "tablet"],
+  "peripheral_requirements": [],
+  "estimated_completion_time": 1,
+  "filters": [
+    {
+      "filter_id": "javascript",
+      "selected_values": ["0"]
+    }
+  ],
+  "submissions_config": {
+    "max_submissions_per_participant": 1
+  }
+}
