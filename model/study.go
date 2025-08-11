@@ -148,6 +148,7 @@ type CreateStudy struct {
 		Cls string `json:"_cls" mapstructure:"_cls"`
 	} `json:"eligibility_requirements" mapstructure:"eligibility_requirements"`
 	Filters []Filter `json:"filters" mapstructure:"filters"`
+	Project string   `json:"project,omitempty" mapstructure:"project"`
 }
 
 // UpdateStudy represents the model we will send back to Prolific to update
