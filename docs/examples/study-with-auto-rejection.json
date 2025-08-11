@@ -1,0 +1,29 @@
+{
+  "name": "User Experience Survey",
+  "description": "A short survey about your experience with our app",
+  "external_study_url": "https://example.com/survey",
+  "reward": 50,
+  "total_available_places": 100,
+  "prolific_id_option": "question",
+  "completion_code": "COMP123",
+  "completion_codes": [
+    {
+      "code": "COMP123",
+      "code_type": "COMPLETED",
+      "actions": [
+        {
+          "action": "MANUALLY_REVIEW"
+        }
+      ]
+    }
+  ],
+  "device_compatibility": ["mobile", "desktop", "tablet"],
+  "peripheral_requirements": [],
+  "estimated_completion_time": 5,
+  "filters": [],
+  "submissions_config": {
+    "max_submissions_per_participant": 1,
+    "max_concurrent_submissions": -1,
+    "auto_rejection_categories": ["EXCEPTIONALLY_FAST"]
+  }
+}

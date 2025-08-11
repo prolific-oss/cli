@@ -1,0 +1,39 @@
+{
+  "name": "Test",
+  "description": "test",
+  "reward": 10,
+  "total_available_places": 50,
+  "prolific_id_option": "question",
+  "completion_code": "ABC123",
+  "completion_codes": [
+    {
+      "code": "ABC123",
+      "code_type": "COMPLETED",
+      "actions": [
+        {
+          "action": "MANUALLY_REVIEW"
+        }
+      ]
+    }
+  ],
+  "device_compatibility": ["mobile", "desktop", "tablet"],
+  "peripheral_requirements": [],
+  "estimated_completion_time": 1,
+  "access_details": [
+    {
+      "external_url": "https://google.com",
+      "total_allocation": 20
+    },
+    {
+      "external_url": "https://bing.com",
+      "total_allocation": 20
+    },
+    {
+      "external_url": "https://yahoo.com",
+      "total_allocation": 10
+    }
+  ],
+  "submissions_config": {
+    "max_submissions_per_participant": 1
+  }
+}
