@@ -1,0 +1,33 @@
+{
+  "name": "Example where a participant can be in either participant group",
+  "internal_name": "Study with multiple participant groups",
+  "description": "A participant can be in either of these groups to gain study access",
+  "external_study_url": "https://eggs-experriment.com",
+  "prolific_id_option": "question",
+  "completion_code": "ABC123",
+  "completion_codes": [
+    {
+      "code": "ABC123",
+      "code_type": "COMPLETED",
+      "actions": [
+        {
+          "action": "AUTOMATICALLY_APPROVE"
+        }
+      ]
+    }
+  ],
+  "total_available_places": 30,
+  "estimated_completion_time": 1,
+  "reward": 100,
+  "device_compatibility": ["mobile", "desktop", "tablet"],
+  "peripheral_requirements": [],
+  "filters": [
+    {
+      "filter_id": "participant_group_allowlist",
+      "selected_values": ["64514609c0265e1da4a74127", "64660e2e0ce5307750bf5c99"]
+    }
+  ],
+  "submissions_config": {
+    "max_submissions_per_participant": 1
+  }
+}
