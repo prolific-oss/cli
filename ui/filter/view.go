@@ -2,6 +2,7 @@ package filter
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -67,6 +68,25 @@ func RenderFilter(filter model.Filter) string {
 	content += fmt.Sprintf("Title:             %s\n", filter.Title())
 	content += fmt.Sprintf("Question:          %s\n", filter.Question)
 	content += fmt.Sprintf("Description:       %s\n", filter.Description())
+	content += fmt.Sprintf("Type:              %s\n", filter.Type)
+	content += fmt.Sprintf("Data Type:         %s\n", filter.DataType)
+	content += fmt.Sprintf("Min:               %v\n", filter.Min)
+	content += fmt.Sprintf("Max:               %v\n", filter.Max)
+
+	if len(filter.Choices) > 0 {
+		content += "Choices:\n"
+
+		// Ensure ordering
+		keys := make([]string, 0, len(filter.Choices))
+		for k := range filter.Choices {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+
+		for _, k := range keys {
+			content += fmt.Sprintf("  %s: %s\n", k, filter.Choices[k])
+		}
+	}
 
 	return fmt.Sprintln(content)
 }
