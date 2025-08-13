@@ -2,6 +2,14 @@
 
 ## release-next
 
+## 0.0.55
+
+- Provide more context for the filter view command
+- Support project field in study creation templates
+- Dependency updates
+- Provide examples for all API doc examples
+- Rebrand from `benmatselby/prolificli` back to `prolific-oss/cli`
+
 ## 0.0.54
 
 - Bump the project to Go 1.24.
