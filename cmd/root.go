@@ -7,6 +7,7 @@ import (
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/cmd/aitaskbuilder"
 	"github.com/prolific-oss/cli/cmd/campaign"
 	"github.com/prolific-oss/cli/cmd/filters"
 	"github.com/prolific-oss/cli/cmd/filtersets"
@@ -62,6 +63,7 @@ func NewRootCommand() *cobra.Command {
 	w := os.Stdout
 
 	cmd.AddCommand(
+		aitaskbuilder.NewAITaskBuilderCommand(&client, w),
 		campaign.NewListCommand("campaign", &client, w),
 		filters.NewListCommand(&client, w),
 		filtersets.NewFilterSetCommand(&client, w),
