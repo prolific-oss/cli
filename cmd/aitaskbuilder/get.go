@@ -53,9 +53,9 @@ $ prolific aitaskbuilder get -b <batch_id> -n "Data Collection Batch" -w <worksp
 	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "Workspace ID (required) - The workspace containing the batch.")
 	flags.BoolVarP(&opts.NonInteractive, "non-interactive", "i", false, "Render the batch details straight to the terminal.")
 
-	cmd.MarkFlagRequired("batch-id")
-	cmd.MarkFlagRequired("name")
-	cmd.MarkFlagRequired("workspace")
+	_ = cmd.MarkFlagRequired("batch-id")
+	_ = cmd.MarkFlagRequired("name")
+	_ = cmd.MarkFlagRequired("workspace")
 
 	return cmd
 }
