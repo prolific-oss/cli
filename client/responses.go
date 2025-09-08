@@ -35,11 +35,11 @@ type JSONAPIMeta struct {
 
 type JSONAPIError struct {
 	Error struct {
-		Status                int    `json:"status"`
-		Title                 string `json:"title"`
-		ErrorCode             int    `json:"error_code"`
-		Detail                string `json:"detail"`
-		AdditionalInformation string `json:"additional_information"`
+		Status                int         `json:"status"`
+		Title                 string      `json:"title"`
+		ErrorCode             int         `json:"error_code"`
+		Detail                interface{} `json:"detail"`
+		AdditionalInformation string      `json:"additional_information"`
 	} `json:"error"`
 }
 
@@ -185,4 +185,9 @@ type ListUnreadMessagesResponse struct {
 	Results []model.UnreadMessage `json:"results"`
 	*JSONAPILinks
 	*JSONAPIMeta
+}
+
+// GetAITaskBuilderBatchResponse is the response for the get AI task builder get batch endpoint.
+type GetAITaskBuilderBatchResponse struct {
+	model.AITaskBuilderBatch
 }
