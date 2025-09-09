@@ -41,8 +41,6 @@ func TestNewGetCommandCallsAPI(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	batchID := "01954894-65b3-779e-aaf6-348698e23608"
-	name := "Test Batch"
-	workspaceID := "6745ab669112d10b9b3afb48"
 
 	createdAt, _ := time.Parse(time.RFC3339, "2025-02-27T18:03:59.795Z")
 	response := client.GetAITaskBuilderBatchResponse{
@@ -50,11 +48,11 @@ func TestNewGetCommandCallsAPI(t *testing.T) {
 			ID:                    batchID,
 			CreatedAt:             createdAt,
 			CreatedBy:             "6139f0d1dc08858054c63b2c",
-			Name:                  name,
+			Name:                  "Test Batch",
 			Status:                "UNINITIALISED",
 			TotalTaskCount:        0,
 			TotalInstructionCount: 5,
-			WorkspaceID:           workspaceID,
+			WorkspaceID:           "6745ab669112d10b9b3afb48",
 			SchemaVersion:         3,
 			Datasets: []model.Dataset{
 				{
@@ -115,8 +113,6 @@ func TestNewGetCommandCallsAPIWithoutOptionalFields(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	batchID := "01954894-65b3-779e-aaf6-348698e23608"
-	name := "Simple Batch"
-	workspaceID := "6745ab669112d10b9b3afb48"
 
 	createdAt, _ := time.Parse(time.RFC3339, "2025-02-27T18:03:59.795Z")
 	response := client.GetAITaskBuilderBatchResponse{
@@ -124,11 +120,11 @@ func TestNewGetCommandCallsAPIWithoutOptionalFields(t *testing.T) {
 			ID:                    batchID,
 			CreatedAt:             createdAt,
 			CreatedBy:             "6139f0d1dc08858054c63b2c",
-			Name:                  name,
+			Name:                  "Simple Batch",
 			Status:                "ACTIVE",
 			TotalTaskCount:        5,
 			TotalInstructionCount: 0,
-			WorkspaceID:           workspaceID,
+			WorkspaceID:           "6745ab669112d10b9b3afb48",
 			SchemaVersion:         1,
 			Datasets:              []model.Dataset{},   // Empty datasets
 			TaskDetails:           model.TaskDetails{}, // Empty task details
