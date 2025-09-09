@@ -72,7 +72,7 @@ func TestNewGetCommandCallsAPI(t *testing.T) {
 
 	c.
 		EXPECT().
-		GetAITaskBuilderBatch(gomock.Eq(batchID), gomock.Eq(name), gomock.Eq(workspaceID)).
+		GetAITaskBuilderBatch(gomock.Eq(batchID)).
 		Return(&response, nil).
 		AnyTimes()
 
@@ -81,8 +81,6 @@ func TestNewGetCommandCallsAPI(t *testing.T) {
 
 	cmd := aitaskbuilder.NewGetCommand(c, writer)
 	_ = cmd.Flags().Set("batch-id", batchID)
-	_ = cmd.Flags().Set("name", name)
-	_ = cmd.Flags().Set("workspace", workspaceID)
 	_ = cmd.RunE(cmd, nil)
 
 	writer.Flush()
@@ -139,7 +137,7 @@ func TestNewGetCommandCallsAPIWithoutOptionalFields(t *testing.T) {
 
 	c.
 		EXPECT().
-		GetAITaskBuilderBatch(gomock.Eq(batchID), gomock.Eq(name), gomock.Eq(workspaceID)).
+		GetAITaskBuilderBatch(gomock.Eq(batchID)).
 		Return(&response, nil).
 		AnyTimes()
 
@@ -148,8 +146,6 @@ func TestNewGetCommandCallsAPIWithoutOptionalFields(t *testing.T) {
 
 	cmd := aitaskbuilder.NewGetCommand(c, writer)
 	_ = cmd.Flags().Set("batch-id", batchID)
-	_ = cmd.Flags().Set("name", name)
-	_ = cmd.Flags().Set("workspace", workspaceID)
 	_ = cmd.RunE(cmd, nil)
 
 	writer.Flush()
@@ -177,20 +173,16 @@ func TestNewGetCommandHandlesErrors(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	batchID := "invalid-batch-id"
-	name := "Test Batch"
-	workspaceID := "invalid-workspace"
 	errorMessage := "batch not found"
 
 	c.
 		EXPECT().
-		GetAITaskBuilderBatch(gomock.Eq(batchID), gomock.Eq(name), gomock.Eq(workspaceID)).
+		GetAITaskBuilderBatch(gomock.Eq(batchID)).
 		Return(nil, errors.New(errorMessage)).
 		AnyTimes()
 
 	cmd := aitaskbuilder.NewGetCommand(c, os.Stdout)
 	_ = cmd.Flags().Set("batch-id", batchID)
-	_ = cmd.Flags().Set("name", name)
-	_ = cmd.Flags().Set("workspace", workspaceID)
 	err := cmd.RunE(cmd, nil)
 
 	expected := fmt.Sprintf("error: %s", errorMessage)
@@ -206,8 +198,6 @@ func TestNewGetCommandRequiresBatchID(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	cmd := aitaskbuilder.NewGetCommand(c, os.Stdout)
-	_ = cmd.Flags().Set("name", "Test Batch")
-	_ = cmd.Flags().Set("workspace", "workspace-id")
 	err := cmd.RunE(cmd, nil)
 
 	if err == nil {
@@ -216,50 +206,6 @@ func TestNewGetCommandRequiresBatchID(t *testing.T) {
 
 	if !cmd.Flags().Changed("batch-id") {
 		expected := "batch ID is required"
-		if err.Error() != "error: "+expected {
-			t.Fatalf("expected error to contain '%s', got '%s'", expected, err.Error())
-		}
-	}
-}
-
-func TestNewGetCommandRequiresName(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	c := mock_client.NewMockAPI(ctrl)
-
-	cmd := aitaskbuilder.NewGetCommand(c, os.Stdout)
-	_ = cmd.Flags().Set("batch-id", "batch-id")
-	_ = cmd.Flags().Set("workspace", "workspace-id")
-	err := cmd.RunE(cmd, nil)
-
-	if err == nil {
-		t.Fatal("expected error when name is missing")
-	}
-
-	if !cmd.Flags().Changed("name") {
-		expected := "batch name is required"
-		if err.Error() != "error: "+expected {
-			t.Fatalf("expected error to contain '%s', got '%s'", expected, err.Error())
-		}
-	}
-}
-
-func TestNewGetCommandRequiresWorkspace(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	c := mock_client.NewMockAPI(ctrl)
-
-	cmd := aitaskbuilder.NewGetCommand(c, os.Stdout)
-	_ = cmd.Flags().Set("batch-id", "batch-id")
-	_ = cmd.Flags().Set("name", "Test Batch")
-	err := cmd.RunE(cmd, nil)
-
-	if err == nil {
-		t.Fatal("expected error when workspace is missing")
-	}
-
-	if !cmd.Flags().Changed("workspace") {
-		expected := "workspace ID is required"
 		if err.Error() != "error: "+expected {
 			t.Fatalf("expected error to contain '%s', got '%s'", expected, err.Error())
 		}
