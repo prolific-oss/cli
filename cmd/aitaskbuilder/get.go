@@ -7,15 +7,12 @@ import (
 
 	"github.com/prolific-oss/cli/client"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // BatchGetOptions is the options for the get aitaskbuilder batch command.
 type BatchGetOptions struct {
 	Args           []string
 	BatchID        string
-	Name           string
-	WorkspaceID    string
 	NonInteractive bool
 }
 
@@ -30,10 +27,10 @@ func NewGetCommand(client client.API, w io.Writer) *cobra.Command {
 		Long: `Get details about a specific AI task builder batch
 
 This command allows you to retrieve details of a specific AI task builder batch by providing
-the batch ID, name, and workspace ID.`,
+the batch ID.`,
 		Example: `
 Get an AI task builder batch:
-$ prolific aitaskbuilder get -b <batch_id> -n "Data Collection Batch" -w <workspace_id>
+$ prolific aitaskbuilder get -b <batch_id>
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
@@ -49,13 +46,9 @@ $ prolific aitaskbuilder get -b <batch_id> -n "Data Collection Batch" -w <worksp
 
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.BatchID, "batch-id", "b", "", "Batch ID (required) - The ID of the batch to retrieve.")
-	flags.StringVarP(&opts.Name, "name", "n", "", "Batch name (required) - The name of the batch.")
-	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "Workspace ID (required) - The workspace containing the batch.")
 	flags.BoolVarP(&opts.NonInteractive, "non-interactive", "i", false, "Render the batch details straight to the terminal.")
 
 	_ = cmd.MarkFlagRequired("batch-id")
-	_ = cmd.MarkFlagRequired("name")
-	_ = cmd.MarkFlagRequired("workspace")
 
 	return cmd
 }
@@ -65,14 +58,8 @@ func renderAITaskBuilderBatch(c client.API, opts BatchGetOptions, w io.Writer) e
 	if opts.BatchID == "" {
 		return errors.New("batch ID is required")
 	}
-	if opts.Name == "" {
-		return errors.New("batch name is required")
-	}
-	if opts.WorkspaceID == "" {
-		return errors.New("workspace ID is required")
-	}
 
-	response, err := c.GetAITaskBuilderBatch(opts.BatchID, opts.Name, opts.WorkspaceID)
+	response, err := c.GetAITaskBuilderBatch(opts.BatchID)
 	if err != nil {
 		return err
 	}

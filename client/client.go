@@ -62,7 +62,7 @@ type API interface {
 	SendMessage(body, recipientID, studyID string) error
 	GetUnreadMessages() (*ListUnreadMessagesResponse, error)
 
-	GetAITaskBuilderBatch(batchID, name, workspaceID string) (*GetAITaskBuilderBatchResponse, error)
+	GetAITaskBuilderBatch(batchID string) (*GetAITaskBuilderBatchResponse, error)
 }
 
 // Client is responsible for interacting with the Prolific API.
@@ -592,14 +592,10 @@ func (c *Client) GetUnreadMessages() (*ListUnreadMessagesResponse, error) {
 }
 
 // GetAITaskBuilderBatch will return details of an AI task builder batch.
-func (c *Client) GetAITaskBuilderBatch(batchID, name, workspaceID string) (*GetAITaskBuilderBatchResponse, error) {
+func (c *Client) GetAITaskBuilderBatch(batchID string) (*GetAITaskBuilderBatchResponse, error) {
 	var response GetAITaskBuilderBatchResponse
 
-	// Use query parameters instead of request body for GET request
-	url := fmt.Sprintf("/api/v1/data-collection/batches/%s?name=%s&workspace_id=%s",
-		batchID,
-		url.QueryEscape(name),
-		url.QueryEscape(workspaceID))
+	url := fmt.Sprintf("/api/v1/data-collection/batches/%s", batchID)
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
