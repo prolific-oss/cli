@@ -2,6 +2,8 @@
 
 ## release-next
 
+- Bump the project to Go 1.25
+
 ## 0.0.55
 
 - Provide more context for the filter view command
