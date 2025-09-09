@@ -96,18 +96,18 @@ func (mr *MockAPIMockRecorder) DuplicateStudy(ID interface{}) *gomock.Call {
 }
 
 // GetAITaskBuilderBatch mocks base method.
-func (m *MockAPI) GetAITaskBuilderBatch(batchID, name, workspaceID string) (*client.GetAITaskBuilderBatchResponse, error) {
+func (m *MockAPI) GetAITaskBuilderBatch(batchID string) (*client.GetAITaskBuilderBatchResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAITaskBuilderBatch", batchID, name, workspaceID)
+	ret := m.ctrl.Call(m, "GetAITaskBuilderBatch", batchID)
 	ret0, _ := ret[0].(*client.GetAITaskBuilderBatchResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAITaskBuilderBatch indicates an expected call of GetAITaskBuilderBatch.
-func (mr *MockAPIMockRecorder) GetAITaskBuilderBatch(batchID, name, workspaceID interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) GetAITaskBuilderBatch(batchID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAITaskBuilderBatch", reflect.TypeOf((*MockAPI)(nil).GetAITaskBuilderBatch), batchID, name, workspaceID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAITaskBuilderBatch", reflect.TypeOf((*MockAPI)(nil).GetAITaskBuilderBatch), batchID)
 }
 
 // GetCampaigns mocks base method.
