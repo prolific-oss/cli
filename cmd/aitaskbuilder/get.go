@@ -11,9 +11,8 @@ import (
 
 // BatchGetOptions is the options for the get aitaskbuilder batch command.
 type BatchGetOptions struct {
-	Args           []string
-	BatchID        string
-	NonInteractive bool
+	Args    []string
+	BatchID string
 }
 
 // NewGetCommand creates a new `aitaskbuilder get` command to get details about
