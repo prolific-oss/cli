@@ -46,7 +46,6 @@ $ prolific aitaskbuilder get -b <batch_id>
 
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.BatchID, "batch-id", "b", "", "Batch ID (required) - The ID of the batch to retrieve.")
-	flags.BoolVarP(&opts.NonInteractive, "non-interactive", "i", false, "Render the batch details straight to the terminal.")
 
 	_ = cmd.MarkFlagRequired("batch-id")
 
