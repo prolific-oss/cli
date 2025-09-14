@@ -19,6 +19,11 @@ type AITaskBuilderBatch struct {
 	TaskDetails           TaskDetails `json:"task_details"`
 }
 
+// AITaskBuilderBatchStatus represents the status of an AI task builder batch.
+type AITaskBuilderBatchStatus struct {
+	Status AITaskBuilderBatchStatusEnum `json:"status"`
+}
+
 // Dataset represents a dataset in a batch.
 type Dataset struct {
 	ID                  string `json:"id"`
@@ -31,3 +36,16 @@ type TaskDetails struct {
 	TaskIntroduction string `json:"task_introduction"`
 	TaskSteps        string `json:"task_steps"`
 }
+
+type AITaskBuilderBatchStatusEnum string
+
+const (
+	// UNINITIALISED: the batch has been created, but contains no tasks.
+	AITaskBuilderBatchStatusUninitialised AITaskBuilderBatchStatusEnum = "UNINITIALISED"
+	// PROCESSING: The batch is being processed into tasks.
+	AITaskBuilderBatchStatusProcessing AITaskBuilderBatchStatusEnum = "PROCESSING"
+	// READY: The batch is processed and ready to be attached to a Prolific study.
+	AITaskBuilderBatchStatusReady AITaskBuilderBatchStatusEnum = "READY"
+	// ERROR: The batch has encountered an error and the data may not be usable.
+	AITaskBuilderBatchStatusError AITaskBuilderBatchStatusEnum = "ERROR"
+)

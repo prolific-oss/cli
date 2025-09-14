@@ -9,19 +9,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// BatchGetOptions is the options for the get aitaskbuilder batch command.
 type BatchGetOptions struct {
 	Args    []string
 	BatchID string
 }
 
-// NewGetCommand creates a new `aitaskbuilder get` command to get details about
-// a specific AI task builder batch.
-func NewGetCommand(client client.API, w io.Writer) *cobra.Command {
+func GetBatchCommand(client client.API, w io.Writer) *cobra.Command {
 	var opts BatchGetOptions
 
 	cmd := &cobra.Command{
-		Use:   "get",
+		Use:   "getbatch",
 		Short: "Get an AI task builder batch",
 		Long: `Get details about a specific AI task builder batch
 

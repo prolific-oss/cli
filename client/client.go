@@ -63,6 +63,7 @@ type API interface {
 	GetUnreadMessages() (*ListUnreadMessagesResponse, error)
 
 	GetAITaskBuilderBatch(batchID string) (*GetAITaskBuilderBatchResponse, error)
+	GetAITaskBuilderBatchStatus(batchID string) (*GetAITaskBuilderBatchStatusResponse, error)
 }
 
 // Client is responsible for interacting with the Prolific API.
@@ -601,5 +602,17 @@ func (c *Client) GetAITaskBuilderBatch(batchID string) (*GetAITaskBuilderBatchRe
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
 
+	return &response, nil
+}
+
+// GetAITaskBuilderBatchStatus will return the status of an AI task builder batch.
+func (c *Client) GetAITaskBuilderBatchStatus(batchID string) (*GetAITaskBuilderBatchStatusResponse, error) {
+	var response GetAITaskBuilderBatchStatusResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/status", batchID)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
 	return &response, nil
 }
