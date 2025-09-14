@@ -26,7 +26,7 @@ This command allows you to retrieve the status of a specific AI task builder bat
 the batch ID.`,
 		Example: `
 Get an AI task builder batch status:
-$ prolific aitaskbuilder get-batch-status -b <batch_id>
+$ prolific aitaskbuilder getbatchstatus -b <batch_id>
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
