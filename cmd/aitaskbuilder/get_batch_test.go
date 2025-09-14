@@ -16,14 +16,14 @@ import (
 	"github.com/prolific-oss/cli/model"
 )
 
-func TestNewGetCommand(t *testing.T) {
+func TestNewGetBatchCommand(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	cmd := aitaskbuilder.NewGetCommand(c, os.Stdout)
+	cmd := aitaskbuilder.GetBatchCommand(c, os.Stdout)
 
-	use := "get"
+	use := "getbatch"
 	short := "Get an AI task builder batch"
 
 	if cmd.Use != use {
@@ -35,12 +35,12 @@ func TestNewGetCommand(t *testing.T) {
 	}
 }
 
-func TestNewGetCommandCallsAPI(t *testing.T) {
+func TestNewGetBatchCommandCallsAPI(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	batchID := "01954894-65b3-779e-aaf6-348698e23608"
+	batchID := "01954894-65b3-779e-aaf6-348698e23634"
 
 	createdAt, _ := time.Parse(time.RFC3339, "2025-02-27T18:03:59.795Z")
 	response := client.GetAITaskBuilderBatchResponse{
@@ -77,14 +77,14 @@ func TestNewGetCommandCallsAPI(t *testing.T) {
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
 
-	cmd := aitaskbuilder.NewGetCommand(c, writer)
+	cmd := aitaskbuilder.GetBatchCommand(c, writer)
 	_ = cmd.Flags().Set("batch-id", batchID)
 	_ = cmd.RunE(cmd, nil)
 
 	writer.Flush()
 
 	expected := `AI Task Builder Batch Details:
-ID: 01954894-65b3-779e-aaf6-348698e23608
+ID: 01954894-65b3-779e-aaf6-348698e23634
 Name: Test Batch
 Status: UNINITIALISED
 Total Task Count: 0
@@ -107,12 +107,12 @@ Task Details:
 	}
 }
 
-func TestNewGetCommandCallsAPIWithoutOptionalFields(t *testing.T) {
+func TestNewGetBatchCommandCallsAPIWithoutOptionalFields(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	batchID := "01954894-65b3-779e-aaf6-348698e23608"
+	batchID := "01954894-65b3-779e-aaf6-348698e23699"
 
 	createdAt, _ := time.Parse(time.RFC3339, "2025-02-27T18:03:59.795Z")
 	response := client.GetAITaskBuilderBatchResponse{
@@ -140,14 +140,14 @@ func TestNewGetCommandCallsAPIWithoutOptionalFields(t *testing.T) {
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
 
-	cmd := aitaskbuilder.NewGetCommand(c, writer)
+	cmd := aitaskbuilder.GetBatchCommand(c, writer)
 	_ = cmd.Flags().Set("batch-id", batchID)
 	_ = cmd.RunE(cmd, nil)
 
 	writer.Flush()
 
 	expected := `AI Task Builder Batch Details:
-ID: 01954894-65b3-779e-aaf6-348698e23608
+ID: 01954894-65b3-779e-aaf6-348698e23699
 Name: Simple Batch
 Status: ACTIVE
 Total Task Count: 5
@@ -163,7 +163,7 @@ Schema Version: 1
 	}
 }
 
-func TestNewGetCommandHandlesErrors(t *testing.T) {
+func TestNewGetBatchCommandHandlesErrors(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
@@ -177,7 +177,7 @@ func TestNewGetCommandHandlesErrors(t *testing.T) {
 		Return(nil, errors.New(errorMessage)).
 		AnyTimes()
 
-	cmd := aitaskbuilder.NewGetCommand(c, os.Stdout)
+	cmd := aitaskbuilder.GetBatchCommand(c, os.Stdout)
 	_ = cmd.Flags().Set("batch-id", batchID)
 	err := cmd.RunE(cmd, nil)
 
@@ -188,12 +188,12 @@ func TestNewGetCommandHandlesErrors(t *testing.T) {
 	}
 }
 
-func TestNewGetCommandRequiresBatchID(t *testing.T) {
+func TestNewGetBatchCommandRequiresBatchID(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	cmd := aitaskbuilder.NewGetCommand(c, os.Stdout)
+	cmd := aitaskbuilder.GetBatchCommand(c, os.Stdout)
 	err := cmd.RunE(cmd, nil)
 
 	if err == nil {

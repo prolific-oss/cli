@@ -191,3 +191,8 @@ type ListUnreadMessagesResponse struct {
 type GetAITaskBuilderBatchResponse struct {
 	model.AITaskBuilderBatch
 }
+
+// GetAITaskBuilderBatchStatusResponse is the response for the get AI task builder get batch status endpoint.
+type GetAITaskBuilderBatchStatusResponse struct {
+	model.AITaskBuilderBatchStatus
+}
