@@ -43,7 +43,7 @@ func TestNewGetBatchStatusCommandCallsAPI(t *testing.T) {
 
 	response := client.GetAITaskBuilderBatchStatusResponse{
 		AITaskBuilderBatchStatus: model.AITaskBuilderBatchStatus{
-			Status: "UNINITIALISED",
+			Status: model.AITaskBuilderBatchStatusUninitialised,
 		},
 	}
 
