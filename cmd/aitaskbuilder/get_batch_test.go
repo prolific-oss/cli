@@ -21,7 +21,7 @@ func TestNewGetBatchCommand(t *testing.T) {
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	cmd := aitaskbuilder.GetBatchCommand(c, os.Stdout)
+	cmd := aitaskbuilder.NewGetBatchCommand(c, os.Stdout)
 
 	use := "getbatch"
 	short := "Get an AI task builder batch"
@@ -77,7 +77,7 @@ func TestNewGetBatchCommandCallsAPI(t *testing.T) {
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
 
-	cmd := aitaskbuilder.GetBatchCommand(c, writer)
+	cmd := aitaskbuilder.NewGetBatchCommand(c, writer)
 	_ = cmd.Flags().Set("batch-id", batchID)
 	_ = cmd.RunE(cmd, nil)
 
@@ -140,7 +140,7 @@ func TestNewGetBatchCommandCallsAPIWithoutOptionalFields(t *testing.T) {
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
 
-	cmd := aitaskbuilder.GetBatchCommand(c, writer)
+	cmd := aitaskbuilder.NewGetBatchCommand(c, writer)
 	_ = cmd.Flags().Set("batch-id", batchID)
 	_ = cmd.RunE(cmd, nil)
 
@@ -177,7 +177,7 @@ func TestNewGetBatchCommandHandlesErrors(t *testing.T) {
 		Return(nil, errors.New(errorMessage)).
 		AnyTimes()
 
-	cmd := aitaskbuilder.GetBatchCommand(c, os.Stdout)
+	cmd := aitaskbuilder.NewGetBatchCommand(c, os.Stdout)
 	_ = cmd.Flags().Set("batch-id", batchID)
 	err := cmd.RunE(cmd, nil)
 
@@ -193,7 +193,7 @@ func TestNewGetBatchCommandRequiresBatchID(t *testing.T) {
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	cmd := aitaskbuilder.GetBatchCommand(c, os.Stdout)
+	cmd := aitaskbuilder.NewGetBatchCommand(c, os.Stdout)
 	err := cmd.RunE(cmd, nil)
 
 	if err == nil {

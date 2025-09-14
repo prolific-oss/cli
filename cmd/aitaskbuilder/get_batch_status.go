@@ -14,7 +14,7 @@ type BatchGetStatusOptions struct {
 	BatchID string
 }
 
-func GetBatchStatusCommand(client client.API, w io.Writer) *cobra.Command {
+func NewGetBatchStatusCommand(client client.API, w io.Writer) *cobra.Command {
 	var opts BatchGetStatusOptions
 
 	cmd := &cobra.Command{
