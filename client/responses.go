@@ -180,7 +180,7 @@ type ListMessagesResponse struct {
 	*JSONAPIMeta
 }
 
-// ListMessagesResponse is the response for the list messages endpoint.
+// ListUnreadMessagesResponse is the response for the unread messages endpoint.
 type ListUnreadMessagesResponse struct {
 	Results []model.UnreadMessage `json:"results"`
 	*JSONAPILinks
