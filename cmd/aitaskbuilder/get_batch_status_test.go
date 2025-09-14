@@ -20,7 +20,7 @@ func TestNewGetBatchStatusCommand(t *testing.T) {
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	cmd := aitaskbuilder.GetBatchStatusCommand(c, os.Stdout)
+	cmd := aitaskbuilder.NewGetBatchStatusCommand(c, os.Stdout)
 
 	use := "getbatchstatus"
 	short := "Get an AI task builder batch status"
@@ -56,7 +56,7 @@ func TestNewGetBatchStatusCommandCallsAPI(t *testing.T) {
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
 
-	cmd := aitaskbuilder.GetBatchStatusCommand(c, writer)
+	cmd := aitaskbuilder.NewGetBatchStatusCommand(c, writer)
 	_ = cmd.Flags().Set("batch-id", batchID)
 	_ = cmd.RunE(cmd, nil)
 
@@ -86,7 +86,7 @@ func TestNewGetBatchStatusCommandHandlesErrors(t *testing.T) {
 		Return(nil, errors.New(errorMessage)).
 		AnyTimes()
 
-	cmd := aitaskbuilder.GetBatchStatusCommand(c, os.Stdout)
+	cmd := aitaskbuilder.NewGetBatchStatusCommand(c, os.Stdout)
 	_ = cmd.Flags().Set("batch-id", batchID)
 	err := cmd.RunE(cmd, nil)
 
@@ -102,7 +102,7 @@ func TestNewGetBatchStatusCommandRequiresBatchID(t *testing.T) {
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	cmd := aitaskbuilder.GetBatchStatusCommand(c, os.Stdout)
+	cmd := aitaskbuilder.NewGetBatchStatusCommand(c, os.Stdout)
 	err := cmd.RunE(cmd, nil)
 
 	if err == nil {
