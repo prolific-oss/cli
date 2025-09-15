@@ -125,6 +125,21 @@ func (mr *MockAPIMockRecorder) GetAITaskBuilderBatchStatus(batchID interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAITaskBuilderBatchStatus", reflect.TypeOf((*MockAPI)(nil).GetAITaskBuilderBatchStatus), batchID)
 }
 
+// GetAITaskBuilderBatchesByWorkspace mocks base method.
+func (m *MockAPI) GetAITaskBuilderBatchesByWorkspace(workspaceID string) (*client.GetAITaskBuilderBatchesByWorkspaceResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAITaskBuilderBatchesByWorkspace", workspaceID)
+	ret0, _ := ret[0].(*client.GetAITaskBuilderBatchesByWorkspaceResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAITaskBuilderBatchesByWorkspace indicates an expected call of GetAITaskBuilderBatchesByWorkspace.
+func (mr *MockAPIMockRecorder) GetAITaskBuilderBatchesByWorkspace(workspaceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAITaskBuilderBatchesByWorkspace", reflect.TypeOf((*MockAPI)(nil).GetAITaskBuilderBatchesByWorkspace), workspaceID)
+}
+
 // GetCampaigns mocks base method.
 func (m *MockAPI) GetCampaigns(workspaceID string, limit, offset int) (*client.ListCampaignsResponse, error) {
 	m.ctrl.T.Helper()

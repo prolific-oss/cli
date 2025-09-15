@@ -187,12 +187,17 @@ type ListUnreadMessagesResponse struct {
 	*JSONAPIMeta
 }
 
-// GetAITaskBuilderBatchResponse is the response for the get AI task builder get batch endpoint.
+// GetAITaskBuilderBatchResponse is the response for the get AI Task Builder get batch endpoint.
 type GetAITaskBuilderBatchResponse struct {
 	model.AITaskBuilderBatch
 }
 
-// GetAITaskBuilderBatchStatusResponse is the response for the get AI task builder get batch status endpoint.
+// GetAITaskBuilderBatchStatusResponse is the response for the get AI Task Builder get batch status endpoint.
 type GetAITaskBuilderBatchStatusResponse struct {
 	model.AITaskBuilderBatchStatus
+}
+
+// GetAITaskBuilderBatchesByWorkspaceResponse is the response for the get AI Task Builder get batches by workspace endpoint.
+type GetAITaskBuilderBatchesByWorkspaceResponse struct {
+	Results []model.AITaskBuilderBatch `json:"results"`
 }
