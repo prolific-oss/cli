@@ -12,6 +12,7 @@ type AITaskBuilderBatch struct {
 	Datasets              []Dataset   `json:"datasets"`
 	Name                  string      `json:"name"`
 	Status                string      `json:"status"`
+	TasksPerGroup         int         `json:"tasks_per_group"`
 	TotalTaskCount        int         `json:"total_task_count"`
 	TotalInstructionCount int         `json:"total_instruction_count"`
 	WorkspaceID           string      `json:"workspace_id"`
