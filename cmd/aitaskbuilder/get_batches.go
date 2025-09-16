@@ -19,7 +19,7 @@ func renderAITaskBuilderBatches(c client.API, opts BatchGetBatchesOptions, w io.
 		return errors.New("workspace ID is required")
 	}
 
-	response, err := c.GetAITaskBuilderBatchesByWorkspace(opts.WorkspaceID)
+	response, err := c.GetAITaskBuilderBatches(opts.WorkspaceID)
 	if err != nil {
 		return err
 	}
