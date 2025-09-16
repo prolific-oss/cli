@@ -7,6 +7,7 @@ import (
 
 	"github.com/prolific-oss/cli/client"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 type BatchGetBatchesOptions struct {
@@ -65,7 +66,7 @@ $ prolific aitaskbuilder getbatches -w <workspace_id>
 	}
 
 	flags := cmd.Flags()
-	flags.StringVarP(&opts.WorkspaceID, "workspace-id", "w", "", "Workspace ID (required) - The ID of the workspace to retrieve batches from.")
+	flags.StringVarP(&opts.WorkspaceID, "workspace-id", "w", viper.GetString("workspace"), "Workspace ID (required) - The ID of the workspace to retrieve batches from.")
 
 	_ = cmd.MarkFlagRequired("workspace-id")
 
