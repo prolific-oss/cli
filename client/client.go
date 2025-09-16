@@ -64,7 +64,7 @@ type API interface {
 
 	GetAITaskBuilderBatch(batchID string) (*GetAITaskBuilderBatchResponse, error)
 	GetAITaskBuilderBatchStatus(batchID string) (*GetAITaskBuilderBatchStatusResponse, error)
-	GetAITaskBuilderBatchesByWorkspace(workspaceID string) (*GetAITaskBuilderBatchesByWorkspaceResponse, error)
+	GetAITaskBuilderBatches(workspaceID string) (*GetAITaskBuilderBatchesResponse, error)
 }
 
 // Client is responsible for interacting with the Prolific API.
@@ -618,9 +618,9 @@ func (c *Client) GetAITaskBuilderBatchStatus(batchID string) (*GetAITaskBuilderB
 	return &response, nil
 }
 
-// GetAITaskBuilderBatchesByWorkspace will return the batches for a given workspace.
-func (c *Client) GetAITaskBuilderBatchesByWorkspace(workspaceID string) (*GetAITaskBuilderBatchesByWorkspaceResponse, error) {
-	var response GetAITaskBuilderBatchesByWorkspaceResponse
+// GetAITaskBuilderBatches will return the batches for a given workspace.
+func (c *Client) GetAITaskBuilderBatches(workspaceID string) (*GetAITaskBuilderBatchesResponse, error) {
+	var response GetAITaskBuilderBatchesResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/?workspace_id=%s", workspaceID)
 	_, err := c.Execute(http.MethodGet, url, nil, &response)

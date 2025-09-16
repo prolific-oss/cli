@@ -197,7 +197,7 @@ type GetAITaskBuilderBatchStatusResponse struct {
 	model.AITaskBuilderBatchStatus
 }
 
-// GetAITaskBuilderBatchesByWorkspaceResponse is the response for the get AI Task Builder get batches by workspace endpoint.
-type GetAITaskBuilderBatchesByWorkspaceResponse struct {
+// GetAITaskBuilderBatchesResponse is the response for the get AI Task Builder get batches by workspace endpoint.
+type GetAITaskBuilderBatchesResponse struct {
 	Results []model.AITaskBuilderBatch `json:"results"`
 }

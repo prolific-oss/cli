@@ -43,7 +43,7 @@ func TestNewGetBatchesCommandCallsAPI(t *testing.T) {
 	workspaceID := "workspace-123"
 	createdAt, _ := time.Parse(time.RFC3339, "2024-01-01T00:00:00Z")
 
-	response := client.GetAITaskBuilderBatchesByWorkspaceResponse{
+	response := client.GetAITaskBuilderBatchesResponse{
 		Results: []model.AITaskBuilderBatch{
 			{
 				ID:                    "batch-1",
@@ -84,7 +84,7 @@ func TestNewGetBatchesCommandCallsAPI(t *testing.T) {
 
 	c.
 		EXPECT().
-		GetAITaskBuilderBatchesByWorkspace(gomock.Eq(workspaceID)).
+		GetAITaskBuilderBatches(gomock.Eq(workspaceID)).
 		Return(&response, nil).
 		AnyTimes()
 
@@ -119,7 +119,7 @@ func TestNewGetBatchesCommandHandlesErrors(t *testing.T) {
 
 	c.
 		EXPECT().
-		GetAITaskBuilderBatchesByWorkspace(gomock.Eq(workspaceID)).
+		GetAITaskBuilderBatches(gomock.Eq(workspaceID)).
 		Return(nil, errors.New(errorMessage)).
 		AnyTimes()
 
@@ -161,13 +161,13 @@ func TestNewGetBatchesCommandWithNoBatches(t *testing.T) {
 
 	workspaceID := "empty-workspace"
 
-	response := client.GetAITaskBuilderBatchesByWorkspaceResponse{
+	response := client.GetAITaskBuilderBatchesResponse{
 		Results: []model.AITaskBuilderBatch{},
 	}
 
 	c.
 		EXPECT().
-		GetAITaskBuilderBatchesByWorkspace(gomock.Eq(workspaceID)).
+		GetAITaskBuilderBatches(gomock.Eq(workspaceID)).
 		Return(&response, nil).
 		AnyTimes()
 
