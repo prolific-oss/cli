@@ -18,7 +18,7 @@ func NewAITaskBuilderCommand(client client.API, w io.Writer) *cobra.Command {
 	cmd.AddCommand(
 		NewGetBatchCommand(client, w),
 		NewGetBatchStatusCommand(client, w),
-		NewGetBatchesByWorkspaceCommand(client, w),
+		NewGetBatchesCommand(client, w),
 	)
 
 	return cmd

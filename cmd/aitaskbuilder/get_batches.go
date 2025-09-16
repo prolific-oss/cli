@@ -9,12 +9,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type BatchGetBatchesByWorkspaceOptions struct {
+type BatchGetBatchesOptions struct {
 	Args        []string
 	WorkspaceID string
 }
 
-func renderAITaskBuilderBatchesByWorkspace(c client.API, opts BatchGetBatchesByWorkspaceOptions, w io.Writer) error {
+func renderAITaskBuilderBatches(c client.API, opts BatchGetBatchesOptions, w io.Writer) error {
 	if opts.WorkspaceID == "" {
 		return errors.New("workspace ID is required")
 	}
@@ -38,24 +38,24 @@ func renderAITaskBuilderBatchesByWorkspace(c client.API, opts BatchGetBatchesByW
 	return nil
 }
 
-func NewGetBatchesByWorkspaceCommand(client client.API, w io.Writer) *cobra.Command {
-	var opts BatchGetBatchesByWorkspaceOptions
+func NewGetBatchesCommand(client client.API, w io.Writer) *cobra.Command {
+	var opts BatchGetBatchesOptions
 
 	cmd := &cobra.Command{
-		Use:   "getbatchesbyworkspace",
-		Short: "Get AI Task Builder batches by workspace",
+		Use:   "getbatches",
+		Short: "Get AI Task Builder batches",
 		Long: `Get the batches for a given workspace.
 
 This command allows you to retrieve the batches for a given workspace by providing
 the workspace ID.`,
 		Example: `
-Get AI Task Builder batches by workspace:
-$ prolific aitaskbuilder getbatchesbyworkspace -w <workspace_id>
+Get AI Task Builder batches:
+$ prolific aitaskbuilder getbatches -w <workspace_id>
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
 
-			err := renderAITaskBuilderBatchesByWorkspace(client, opts, w)
+			err := renderAITaskBuilderBatches(client, opts, w)
 			if err != nil {
 				return fmt.Errorf("error: %s", err.Error())
 			}
