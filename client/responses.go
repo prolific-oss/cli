@@ -201,3 +201,8 @@ type GetAITaskBuilderBatchStatusResponse struct {
 type GetAITaskBuilderBatchesResponse struct {
 	Results []model.AITaskBuilderBatch `json:"results"`
 }
+
+// GetAITaskBuilderResponsesResponse is the response for the get AI Task Builder responses endpoint.
+type GetAITaskBuilderResponsesResponse struct {
+	Responses []model.AITaskBuilderResponse `json:"responses"`
+}

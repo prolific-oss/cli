@@ -19,13 +19,13 @@ func NewGetBatchStatusCommand(client client.API, w io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "getbatchstatus",
-		Short: "Get an AI task builder batch status",
-		Long: `Get the status of a specific AI task builder batch
+		Short: "Get an AI Task Builder batch status",
+		Long: `Get the status of a specific AI Task Builder batch
 
-This command allows you to retrieve the status of a specific AI task builder batch by providing
+This command allows you to retrieve the status of a specific AI Task Builder batch by providing
 the batch ID.`,
 		Example: `
-Get an AI task builder batch status:
+Get an AI Task Builder batch status:
 $ prolific aitaskbuilder getbatchstatus -b <batch_id>
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -50,7 +50,7 @@ $ prolific aitaskbuilder getbatchstatus -b <batch_id>
 
 func renderAITaskBuilderBatchStatus(c client.API, opts BatchGetStatusOptions, w io.Writer) error {
 	if opts.BatchID == "" {
-		return errors.New("batch ID is required")
+		return errors.New(ErrBatchIDRequired)
 	}
 
 	response, err := c.GetAITaskBuilderBatchStatus(opts.BatchID)
