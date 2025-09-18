@@ -77,7 +77,7 @@ func TestNewGetBatchStatusCommandHandlesErrors(t *testing.T) {
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	batchID := aitaskbuilder.TestInvalidBatchID
+	batchID := "the-invalid-batch-id"
 	errorMessage := aitaskbuilder.ErrBatchNotFound
 
 	c.
