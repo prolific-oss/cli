@@ -204,5 +204,11 @@ type GetAITaskBuilderBatchesResponse struct {
 
 // GetAITaskBuilderResponsesResponse is the response for the get AI Task Builder responses endpoint.
 type GetAITaskBuilderResponsesResponse struct {
-	Responses []model.AITaskBuilderResponse `json:"responses"`
+	Results []model.AITaskBuilderResponse `json:"results"`
+	Meta    ResponseMeta                  `json:"meta"`
+}
+
+// ResponseMeta contains metadata about the response.
+type ResponseMeta struct {
+	Count int `json:"count"`
 }

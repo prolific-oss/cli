@@ -4,8 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"sort"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/model"
 	"github.com/spf13/cobra"
 )
 
@@ -60,26 +62,76 @@ func renderAITaskBuilderResponses(c client.API, opts BatchGetResponsesOptions, w
 
 	fmt.Fprintf(w, "AI Task Builder Batch Responses:\n")
 	fmt.Fprintf(w, "Batch ID: %s\n", opts.BatchID)
-	fmt.Fprintf(w, "Total Responses: %d\n", len(response.Responses))
+	fmt.Fprintf(w, "Total Responses: %d\n", response.Meta.Count)
 	fmt.Fprintf(w, "\n")
 
-	if len(response.Responses) == 0 {
+	if len(response.Results) == 0 {
 		fmt.Fprintf(w, "No responses found for batch %s\n", opts.BatchID)
 		return nil
 	}
 
-	for i, resp := range response.Responses {
+	for i, resp := range response.Results {
 		fmt.Fprintf(w, "Response %d:\n", i+1)
 		fmt.Fprintf(w, "  ID: %s\n", resp.ID)
+		fmt.Fprintf(w, "  Batch ID: %s\n", resp.BatchID)
 		fmt.Fprintf(w, "  Participant ID: %s\n", resp.ParticipantID)
 		fmt.Fprintf(w, "  Task ID: %s\n", resp.TaskID)
+		fmt.Fprintf(w, "  Correlation ID: %s\n", resp.CorrelationID)
+		fmt.Fprintf(w, "  Submission ID: %s\n", resp.SubmissionID)
+		fmt.Fprintf(w, "  Schema Version: %d\n", resp.SchemaVersion)
 		fmt.Fprintf(w, "  Created At: %s\n", resp.CreatedAt.Format("2006-01-02 15:04:05"))
+
+		if len(resp.Metadata) > 0 {
+			fmt.Fprintf(w, "  Metadata:\n")
+			// Sort keys to ensure deterministic output
+			keys := make([]string, 0, len(resp.Metadata))
+			for key := range resp.Metadata {
+				keys = append(keys, key)
+			}
+			sort.Strings(keys)
+			for _, key := range keys {
+				fmt.Fprintf(w, "    %s: %s\n", key, resp.Metadata[key])
+			}
+		}
+
 		fmt.Fprintf(w, "  Response:\n")
 		fmt.Fprintf(w, "    Instruction ID: %s\n", resp.Response.InstructionID)
-		fmt.Fprintf(w, "    Type: %s\n", resp.Response.Type)
-		fmt.Fprintf(w, "    Answer: %s\n", resp.Response.Answer)
+		fmt.Fprintf(w, "    Type: %s\n", string(resp.Response.Type))
 
-		if i < len(response.Responses)-1 {
+		// Handle different response types
+		switch resp.Response.Type {
+		case model.AITaskBuilderResponseTypeFreeText:
+			if resp.Response.Text != nil {
+				fmt.Fprintf(w, "    Text: %s\n", *resp.Response.Text)
+			} else {
+				fmt.Fprintf(w, "    Text: \n")
+			}
+		case model.AITaskBuilderResponseTypeMultipleChoice:
+			if len(resp.Response.Answer) > 0 {
+				fmt.Fprintf(w, "    Selected Options:\n")
+				for _, option := range resp.Response.Answer {
+					fmt.Fprintf(w, "      - %s\n", option.Value)
+				}
+			} else {
+				fmt.Fprintf(w, "    Selected Options: \n")
+			}
+		case model.AITaskBuilderResponseTypeMultipleChoiceWithFreeText:
+			if len(resp.Response.Answer) > 0 {
+				fmt.Fprintf(w, "    Selected Options:\n")
+				for _, option := range resp.Response.Answer {
+					fmt.Fprintf(w, "      - %s\n", option.Value)
+				}
+			} else {
+				fmt.Fprintf(w, "    Selected Options: \n")
+			}
+			if resp.Response.Text != nil {
+				fmt.Fprintf(w, "    Additional Text: %s\n", *resp.Response.Text)
+			} else {
+				fmt.Fprintf(w, "    Additional Text: \n")
+			}
+		}
+
+		if i < len(response.Results)-1 {
 			fmt.Fprintf(w, "\n")
 		}
 	}
