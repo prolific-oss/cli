@@ -44,32 +44,50 @@ func TestNewGetResponsesCommandCallsAPI(t *testing.T) {
 
 	createdAt := time.Date(2024, 1, 1, 12, 0, 0, 0, time.UTC)
 
+	textResponse := "test response"
 	response := client.GetAITaskBuilderResponsesResponse{
-		Responses: []model.AITaskBuilderResponse{
+		Results: []model.AITaskBuilderResponse{
 			{
 				ID:            "response-123",
-				CreatedAt:     createdAt,
 				BatchID:       batchID,
 				ParticipantID: "participant-456",
+				TaskID:        "task-456",
+				CorrelationID: "correlation-001",
+				SubmissionID:  "submission-001",
+				Metadata: map[string]string{
+					"key1": "value1",
+					"key2": "value2",
+				},
 				Response: model.AITaskBuilderResponseData{
 					InstructionID: "instruction-001",
-					Type:          "text",
-					Answer:        "test response",
+					Type:          model.AITaskBuilderResponseTypeFreeText,
+					Text:          &textResponse,
 				},
-				TaskID: "task-456",
+				CreatedAt:     createdAt,
+				SchemaVersion: 2,
 			},
 			{
 				ID:            "response-789",
-				CreatedAt:     createdAt,
 				BatchID:       batchID,
 				ParticipantID: "participant-789",
+				TaskID:        "task-101",
+				CorrelationID: "correlation-002",
+				SubmissionID:  "submission-002",
+				Metadata:      map[string]string{},
 				Response: model.AITaskBuilderResponseData{
 					InstructionID: "instruction-002",
-					Type:          "multiple-choice",
-					Answer:        "another response",
+					Type:          model.AITaskBuilderResponseTypeMultipleChoice,
+					Answer: []model.AITaskBuilderAnswerOption{
+						{Value: "option1"},
+						{Value: "option2"},
+					},
 				},
-				TaskID: "task-101",
+				CreatedAt:     createdAt,
+				SchemaVersion: 2,
 			},
+		},
+		Meta: client.ResponseMeta{
+			Count: 2,
 		},
 	}
 
@@ -94,23 +112,36 @@ Total Responses: 2
 
 Response 1:
   ID: response-123
+  Batch ID: 5cf3ea63-3980-4149-9ea9-bea243489cc8
   Participant ID: participant-456
   Task ID: task-456
+  Correlation ID: correlation-001
+  Submission ID: submission-001
+  Schema Version: 2
   Created At: 2024-01-01 12:00:00
+  Metadata:
+    key1: value1
+    key2: value2
   Response:
     Instruction ID: instruction-001
-    Type: text
-    Answer: test response
+    Type: free_text
+    Text: test response
 
 Response 2:
   ID: response-789
+  Batch ID: 5cf3ea63-3980-4149-9ea9-bea243489cc8
   Participant ID: participant-789
   Task ID: task-101
+  Correlation ID: correlation-002
+  Submission ID: submission-002
+  Schema Version: 2
   Created At: 2024-01-01 12:00:00
   Response:
     Instruction ID: instruction-002
-    Type: multiple-choice
-    Answer: another response
+    Type: multiple_choice
+    Selected Options:
+      - option1
+      - option2
 `
 	actual := b.String()
 	if actual != expected {
@@ -126,7 +157,10 @@ func TestNewGetResponsesCommandHandlesEmptyResults(t *testing.T) {
 	batchID := "5d883286-9480-463a-a738-9ddcfae65b8b"
 
 	response := client.GetAITaskBuilderResponsesResponse{
-		Responses: []model.AITaskBuilderResponse{},
+		Results: []model.AITaskBuilderResponse{},
+		Meta: client.ResponseMeta{
+			Count: 0,
+		},
 	}
 
 	c.
@@ -161,7 +195,7 @@ func TestNewGetResponsesCommandHandlesErrors(t *testing.T) {
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	batchID := "such-invalid-batch-id"
+	batchID := "big-invalid-batch-id"
 	errorMessage := aitaskbuilder.ErrBatchNotFound
 
 	c.
@@ -210,19 +244,26 @@ func TestNewGetResponsesCommandHandlesResponseWithEmptyAnswer(t *testing.T) {
 	createdAt := time.Date(2024, 1, 1, 12, 0, 0, 0, time.UTC)
 
 	response := client.GetAITaskBuilderResponsesResponse{
-		Responses: []model.AITaskBuilderResponse{
+		Results: []model.AITaskBuilderResponse{
 			{
 				ID:            "response-123",
-				CreatedAt:     createdAt,
 				BatchID:       batchID,
 				ParticipantID: "participant-456",
+				TaskID:        "task-456",
+				CorrelationID: "correlation-001",
+				SubmissionID:  "submission-001",
+				Metadata:      map[string]string{},
 				Response: model.AITaskBuilderResponseData{
 					InstructionID: "instruction-001",
-					Type:          "text",
-					Answer:        "", // empty answer
+					Type:          model.AITaskBuilderResponseTypeFreeText,
+					Text:          nil, // empty answer
 				},
-				TaskID: "task-456",
+				CreatedAt:     createdAt,
+				SchemaVersion: 2,
 			},
+		},
+		Meta: client.ResponseMeta{
+			Count: 1,
 		},
 	}
 
@@ -247,13 +288,17 @@ Total Responses: 1
 
 Response 1:
   ID: response-123
+  Batch ID: e0d498d3-09cc-4f11-b3ed-99b6753b0a2c
   Participant ID: participant-456
   Task ID: task-456
+  Correlation ID: correlation-001
+  Submission ID: submission-001
+  Schema Version: 2
   Created At: 2024-01-01 12:00:00
   Response:
     Instruction ID: instruction-001
-    Type: text
-    Answer: 
+    Type: free_text
+    Text: 
 `
 	actual := b.String()
 	if actual != expected {
