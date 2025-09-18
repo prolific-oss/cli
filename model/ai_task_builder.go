@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-// AITaskBuilderBatch represents an AI task builder batch.
+// AITaskBuilderBatch represents an AI Task Builder batch.
 type AITaskBuilderBatch struct {
 	ID                    string      `json:"id"`
 	CreatedAt             time.Time   `json:"created_at"`
@@ -20,7 +20,7 @@ type AITaskBuilderBatch struct {
 	TaskDetails           TaskDetails `json:"task_details"`
 }
 
-// AITaskBuilderBatchStatus represents the status of an AI task builder batch.
+// AITaskBuilderBatchStatus represents the status of an AI Task Builder batch.
 type AITaskBuilderBatchStatus struct {
 	Status AITaskBuilderBatchStatusEnum `json:"status"`
 }
@@ -36,6 +36,23 @@ type TaskDetails struct {
 	TaskName         string `json:"task_name"`
 	TaskIntroduction string `json:"task_introduction"`
 	TaskSteps        string `json:"task_steps"`
+}
+
+// AITaskBuilderResponse represents a response from an AI Task Builder batch task.
+type AITaskBuilderResponse struct {
+	ID            string                    `json:"id"`
+	CreatedAt     time.Time                 `json:"created_at"`
+	BatchID       string                    `json:"batch_id"`
+	ParticipantID string                    `json:"participant_id"`
+	Response      AITaskBuilderResponseData `json:"response"`
+	TaskID        string                    `json:"task_id"`
+}
+
+// AITaskBuilderResponseData represents the response data structure.
+type AITaskBuilderResponseData struct {
+	InstructionID string `json:"instruction_id"`
+	Type          string `json:"type"`
+	Answer        string `json:"answer"`
 }
 
 type AITaskBuilderBatchStatusEnum string

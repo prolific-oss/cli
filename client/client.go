@@ -65,6 +65,7 @@ type API interface {
 	GetAITaskBuilderBatch(batchID string) (*GetAITaskBuilderBatchResponse, error)
 	GetAITaskBuilderBatchStatus(batchID string) (*GetAITaskBuilderBatchStatusResponse, error)
 	GetAITaskBuilderBatches(workspaceID string) (*GetAITaskBuilderBatchesResponse, error)
+	GetAITaskBuilderResponses(batchID string) (*GetAITaskBuilderResponsesResponse, error)
 }
 
 // Client is responsible for interacting with the Prolific API.
@@ -593,7 +594,7 @@ func (c *Client) GetUnreadMessages() (*ListUnreadMessagesResponse, error) {
 	return &response, nil
 }
 
-// GetAITaskBuilderBatch will return details of an AI task builder batch.
+// GetAITaskBuilderBatch will return details of an AI Task Builder batch.
 func (c *Client) GetAITaskBuilderBatch(batchID string) (*GetAITaskBuilderBatchResponse, error) {
 	var response GetAITaskBuilderBatchResponse
 
@@ -606,7 +607,7 @@ func (c *Client) GetAITaskBuilderBatch(batchID string) (*GetAITaskBuilderBatchRe
 	return &response, nil
 }
 
-// GetAITaskBuilderBatchStatus will return the status of an AI task builder batch.
+// GetAITaskBuilderBatchStatus will return the status of an AI Task Builder batch.
 func (c *Client) GetAITaskBuilderBatchStatus(batchID string) (*GetAITaskBuilderBatchStatusResponse, error) {
 	var response GetAITaskBuilderBatchStatusResponse
 
@@ -623,6 +624,18 @@ func (c *Client) GetAITaskBuilderBatches(workspaceID string) (*GetAITaskBuilderB
 	var response GetAITaskBuilderBatchesResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/?workspace_id=%s", workspaceID)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+	return &response, nil
+}
+
+// GetAITaskBuilderResponses will return the responses for an AI Task Builder batch.
+func (c *Client) GetAITaskBuilderResponses(batchID string) (*GetAITaskBuilderResponsesResponse, error) {
+	var response GetAITaskBuilderResponsesResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/responses", batchID)
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)

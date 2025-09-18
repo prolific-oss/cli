@@ -24,7 +24,7 @@ func TestNewGetBatchCommand(t *testing.T) {
 	cmd := aitaskbuilder.NewGetBatchCommand(c, os.Stdout)
 
 	use := "getbatch"
-	short := "Get an AI task builder batch"
+	short := "Get an AI Task Builder batch"
 
 	if cmd.Use != use {
 		t.Fatalf("expected use: %s; got %s", use, cmd.Use)
@@ -168,8 +168,8 @@ func TestNewGetBatchCommandHandlesErrors(t *testing.T) {
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	batchID := "invalid-batch-id"
-	errorMessage := "batch not found"
+	batchID := aitaskbuilder.TestInvalidBatchID
+	errorMessage := aitaskbuilder.ErrBatchNotFound
 
 	c.
 		EXPECT().
@@ -201,7 +201,7 @@ func TestNewGetBatchCommandRequiresBatchID(t *testing.T) {
 	}
 
 	if !cmd.Flags().Changed("batch-id") {
-		expected := "batch ID is required"
+		expected := aitaskbuilder.ErrBatchIDRequired
 		if err.Error() != "error: "+expected {
 			t.Fatalf("expected error to contain '%s', got '%s'", expected, err.Error())
 		}

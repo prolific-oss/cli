@@ -19,13 +19,13 @@ func NewGetBatchCommand(client client.API, w io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "getbatch",
-		Short: "Get an AI task builder batch",
-		Long: `Get details about a specific AI task builder batch
+		Short: "Get an AI Task Builder batch",
+		Long: `Get details about a specific AI Task Builder batch
 
-This command allows you to retrieve details of a specific AI task builder batch by providing
+This command allows you to retrieve details of a specific AI Task Builder batch by providing
 the batch ID.`,
 		Example: `
-Get an AI task builder batch:
+Get an AI Task Builder batch:
 $ prolific aitaskbuilder get -b <batch_id>
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -48,10 +48,10 @@ $ prolific aitaskbuilder get -b <batch_id>
 	return cmd
 }
 
-// renderAITaskBuilderBatch will show details of a specific AI task builder batch
+// renderAITaskBuilderBatch will show details of a specific AI Task Builder batch
 func renderAITaskBuilderBatch(c client.API, opts BatchGetOptions, w io.Writer) error {
 	if opts.BatchID == "" {
-		return errors.New("batch ID is required")
+		return errors.New(ErrBatchIDRequired)
 	}
 
 	response, err := c.GetAITaskBuilderBatch(opts.BatchID)
