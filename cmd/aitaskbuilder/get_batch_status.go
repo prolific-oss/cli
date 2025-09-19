@@ -1,3 +1,4 @@
+//nolint:dupl // Similar patterns are expected for CLI commands
 package aitaskbuilder
 
 import (

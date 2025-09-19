@@ -208,6 +208,11 @@ type GetAITaskBuilderResponsesResponse struct {
 	Meta    ResponseMeta                  `json:"meta"`
 }
 
+// GetAITaskBuilderDatasetStatusResponse is the response for the get AI Task Builder dataset status endpoint.
+type GetAITaskBuilderDatasetStatusResponse struct {
+	Status string `json:"status"`
+}
+
 // ResponseMeta contains metadata about the response.
 type ResponseMeta struct {
 	Count int `json:"count"`
