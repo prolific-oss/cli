@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -14,10 +15,14 @@ import (
 	"github.com/prolific-oss/cli/mock_client"
 )
 
-func TestNewGetDatasetStatusCommand(t *testing.T) {
+func setupMockClient(t *testing.T) *mock_client.MockAPI {
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	c := mock_client.NewMockAPI(ctrl)
+	t.Cleanup(func() { ctrl.Finish() })
+	return mock_client.NewMockAPI(ctrl)
+}
+
+func TestNewGetDatasetStatusCommand(t *testing.T) {
+	c := setupMockClient(t)
 
 	cmd := aitaskbuilder.NewGetDatasetStatusCommand(c, os.Stdout)
 
@@ -34,153 +39,69 @@ func TestNewGetDatasetStatusCommand(t *testing.T) {
 }
 
 func TestNewGetDatasetStatusCommandCallsAPI(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	c := mock_client.NewMockAPI(ctrl)
-
-	datasetID := "01954894-65b3-779e-aaf6-348698e23612"
-
-	response := client.GetAITaskBuilderDatasetStatusResponse{
-		Status: "READY",
+	testCases := []struct {
+		name      string
+		datasetID string
+		status    string
+	}{
+		{
+			name:      "returns READY status",
+			datasetID: "01954894-65b3-779e-aaf6-348698e23612",
+			status:    "READY",
+		},
+		{
+			name:      "returns PROCESSING status",
+			datasetID: "01954894-65b3-779e-aaf6-348698e23613",
+			status:    "PROCESSING",
+		},
+		{
+			name:      "returns UNINITIALISED status",
+			datasetID: "01954894-65b3-779e-aaf6-348698e23614",
+			status:    "UNINITIALISED",
+		},
+		{
+			name:      "returns ERROR status",
+			datasetID: "01954894-65b3-779e-aaf6-348698e23615",
+			status:    "ERROR",
+		},
 	}
 
-	c.
-		EXPECT().
-		GetAITaskBuilderDatasetStatus(gomock.Eq(datasetID)).
-		Return(&response, nil).
-		AnyTimes()
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := setupMockClient(t)
 
-	var b bytes.Buffer
-	writer := bufio.NewWriter(&b)
+			response := client.GetAITaskBuilderDatasetStatusResponse{
+				Status: tc.status,
+			}
 
-	cmd := aitaskbuilder.NewGetDatasetStatusCommand(c, writer)
-	_ = cmd.Flags().Set("dataset-id", datasetID)
-	_ = cmd.RunE(cmd, nil)
+			c.
+				EXPECT().
+				GetAITaskBuilderDatasetStatus(gomock.Eq(tc.datasetID)).
+				Return(&response, nil).
+				AnyTimes()
 
-	writer.Flush()
+			var b bytes.Buffer
+			writer := bufio.NewWriter(&b)
+			cmd := aitaskbuilder.NewGetDatasetStatusCommand(c, writer)
 
-	expected := `AI Task Builder Dataset Status:
-Dataset ID: 01954894-65b3-779e-aaf6-348698e23612
-Status: READY
-`
-	actual := b.String()
-	if actual != expected {
-		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, actual)
-	}
-}
+			_ = cmd.Flags().Set("dataset-id", tc.datasetID)
+			_ = cmd.RunE(cmd, nil)
+			writer.Flush()
 
-func TestNewGetDatasetStatusCommandCallsAPIWithProcessingStatus(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	c := mock_client.NewMockAPI(ctrl)
-
-	datasetID := "01954894-65b3-779e-aaf6-348698e23613"
-
-	response := client.GetAITaskBuilderDatasetStatusResponse{
-		Status: "PROCESSING",
-	}
-
-	c.
-		EXPECT().
-		GetAITaskBuilderDatasetStatus(gomock.Eq(datasetID)).
-		Return(&response, nil).
-		AnyTimes()
-
-	var b bytes.Buffer
-	writer := bufio.NewWriter(&b)
-
-	cmd := aitaskbuilder.NewGetDatasetStatusCommand(c, writer)
-	_ = cmd.Flags().Set("dataset-id", datasetID)
-	_ = cmd.RunE(cmd, nil)
-
-	writer.Flush()
-
-	expected := `AI Task Builder Dataset Status:
-Dataset ID: 01954894-65b3-779e-aaf6-348698e23613
-Status: PROCESSING
-`
-	actual := b.String()
-	if actual != expected {
-		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, actual)
-	}
-}
-
-func TestNewGetDatasetStatusCommandCallsAPIWithUninitialisedStatus(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	c := mock_client.NewMockAPI(ctrl)
-
-	datasetID := "01954894-65b3-779e-aaf6-348698e23614"
-
-	response := client.GetAITaskBuilderDatasetStatusResponse{
-		Status: "UNINITIALISED",
-	}
-
-	c.
-		EXPECT().
-		GetAITaskBuilderDatasetStatus(gomock.Eq(datasetID)).
-		Return(&response, nil).
-		AnyTimes()
-
-	var b bytes.Buffer
-	writer := bufio.NewWriter(&b)
-
-	cmd := aitaskbuilder.NewGetDatasetStatusCommand(c, writer)
-	_ = cmd.Flags().Set("dataset-id", datasetID)
-	_ = cmd.RunE(cmd, nil)
-
-	writer.Flush()
-
-	expected := `AI Task Builder Dataset Status:
-Dataset ID: 01954894-65b3-779e-aaf6-348698e23614
-Status: UNINITIALISED
-`
-	actual := b.String()
-	if actual != expected {
-		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, actual)
-	}
-}
-
-func TestNewGetDatasetStatusCommandCallsAPIWithErrorStatus(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	c := mock_client.NewMockAPI(ctrl)
-
-	datasetID := "01954894-65b3-779e-aaf6-348698e23615"
-
-	response := client.GetAITaskBuilderDatasetStatusResponse{
-		Status: "ERROR",
-	}
-
-	c.
-		EXPECT().
-		GetAITaskBuilderDatasetStatus(gomock.Eq(datasetID)).
-		Return(&response, nil).
-		AnyTimes()
-
-	var b bytes.Buffer
-	writer := bufio.NewWriter(&b)
-
-	cmd := aitaskbuilder.NewGetDatasetStatusCommand(c, writer)
-	_ = cmd.Flags().Set("dataset-id", datasetID)
-	_ = cmd.RunE(cmd, nil)
-
-	writer.Flush()
-
-	expected := `AI Task Builder Dataset Status:
-Dataset ID: 01954894-65b3-779e-aaf6-348698e23615
-Status: ERROR
-`
-	actual := b.String()
-	if actual != expected {
-		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, actual)
+			expected := fmt.Sprintf(`AI Task Builder Dataset Status:
+Dataset ID: %s
+Status: %s
+`, tc.datasetID, tc.status)
+			actual := b.String()
+			if actual != expected {
+				t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, actual)
+			}
+		})
 	}
 }
 
 func TestNewGetDatasetStatusCommandHandlesErrors(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	c := mock_client.NewMockAPI(ctrl)
+	c := setupMockClient(t)
 
 	datasetID := "the-invalid-dataset-id"
 	errorMessage := "dataset not found"
@@ -203,9 +124,7 @@ func TestNewGetDatasetStatusCommandHandlesErrors(t *testing.T) {
 }
 
 func TestNewGetDatasetStatusCommandRequiresDatasetID(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	c := mock_client.NewMockAPI(ctrl)
+	c := setupMockClient(t)
 
 	cmd := aitaskbuilder.NewGetDatasetStatusCommand(c, os.Stdout)
 	err := cmd.RunE(cmd, nil)
@@ -223,42 +142,26 @@ func TestNewGetDatasetStatusCommandRequiresDatasetID(t *testing.T) {
 }
 
 func TestNewGetDatasetStatusCommandHelpText(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	c := mock_client.NewMockAPI(ctrl)
+	c := setupMockClient(t)
 
 	cmd := aitaskbuilder.NewGetDatasetStatusCommand(c, os.Stdout)
 
 	// Check that the long description contains status information
-	if !contains(cmd.Long, "UNINITIALISED") {
+	if !strings.Contains(cmd.Long, "UNINITIALISED") {
 		t.Fatal("expected long description to contain UNINITIALISED status")
 	}
-	if !contains(cmd.Long, "PROCESSING") {
+	if !strings.Contains(cmd.Long, "PROCESSING") {
 		t.Fatal("expected long description to contain PROCESSING status")
 	}
-	if !contains(cmd.Long, "READY") {
+	if !strings.Contains(cmd.Long, "READY") {
 		t.Fatal("expected long description to contain READY status")
 	}
-	if !contains(cmd.Long, "ERROR") {
+	if !strings.Contains(cmd.Long, "ERROR") {
 		t.Fatal("expected long description to contain ERROR status")
 	}
 
 	// Check example contains correct flag
-	if !contains(cmd.Example, "-d <dataset_id>") {
+	if !strings.Contains(cmd.Example, "-d <dataset_id>") {
 		t.Fatal("expected example to contain '-d <dataset_id>' flag usage")
 	}
-}
-
-// Helper function to check if a string contains a substring
-func contains(s, substr string) bool {
-	return len(s) >= len(substr) && (s == substr || len(substr) == 0 || (len(s) > len(substr) && (s[:len(substr)] == substr || s[len(s)-len(substr):] == substr || containsAt(s, substr))))
-}
-
-func containsAt(s, substr string) bool {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return true
-		}
-	}
-	return false
 }
