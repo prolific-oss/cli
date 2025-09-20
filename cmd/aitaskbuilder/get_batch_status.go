@@ -15,11 +15,11 @@ type BatchGetStatusOptions struct {
 	BatchID string
 }
 
-func NewGetBatchStatusCommand(client client.API, w io.Writer) *cobra.Command {
+func NewBatchStatusCommand(client client.API, w io.Writer) *cobra.Command {
 	var opts BatchGetStatusOptions
 
 	cmd := &cobra.Command{
-		Use:   "getbatchstatus",
+		Use:   "status",
 		Short: "Get an AI Task Builder batch status",
 		Long: `Get the status of a specific AI Task Builder batch
 
@@ -27,7 +27,7 @@ This command allows you to retrieve the status of a specific AI Task Builder bat
 the batch ID.`,
 		Example: `
 Get an AI Task Builder batch status:
-$ prolific aitaskbuilder getbatchstatus -b <batch_id>
+$ prolific aitaskbuilder batch status -b <batch_id>
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args

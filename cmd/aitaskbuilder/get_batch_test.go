@@ -16,14 +16,14 @@ import (
 	"github.com/prolific-oss/cli/model"
 )
 
-func TestNewGetBatchCommand(t *testing.T) {
+func TestNewBatchGetCommand(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	cmd := aitaskbuilder.NewGetBatchCommand(c, os.Stdout)
+	cmd := aitaskbuilder.NewBatchGetCommand(c, os.Stdout)
 
-	use := "getbatch"
+	use := "get"
 	short := "Get an AI Task Builder batch"
 
 	if cmd.Use != use {
@@ -35,7 +35,7 @@ func TestNewGetBatchCommand(t *testing.T) {
 	}
 }
 
-func TestNewGetBatchCommandCallsAPI(t *testing.T) {
+func TestNewBatchGetCommandCallsAPI(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
@@ -77,7 +77,7 @@ func TestNewGetBatchCommandCallsAPI(t *testing.T) {
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
 
-	cmd := aitaskbuilder.NewGetBatchCommand(c, writer)
+	cmd := aitaskbuilder.NewBatchGetCommand(c, writer)
 	_ = cmd.Flags().Set("batch-id", batchID)
 	_ = cmd.RunE(cmd, nil)
 
@@ -107,7 +107,7 @@ Task Details:
 	}
 }
 
-func TestNewGetBatchCommandCallsAPIWithoutOptionalFields(t *testing.T) {
+func TestNewBatchGetCommandCallsAPIWithoutOptionalFields(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
@@ -140,7 +140,7 @@ func TestNewGetBatchCommandCallsAPIWithoutOptionalFields(t *testing.T) {
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
 
-	cmd := aitaskbuilder.NewGetBatchCommand(c, writer)
+	cmd := aitaskbuilder.NewBatchGetCommand(c, writer)
 	_ = cmd.Flags().Set("batch-id", batchID)
 	_ = cmd.RunE(cmd, nil)
 
@@ -163,7 +163,7 @@ Schema Version: 1
 	}
 }
 
-func TestNewGetBatchCommandHandlesErrors(t *testing.T) {
+func TestNewBatchGetCommandHandlesErrors(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
@@ -177,7 +177,7 @@ func TestNewGetBatchCommandHandlesErrors(t *testing.T) {
 		Return(nil, errors.New(errorMessage)).
 		AnyTimes()
 
-	cmd := aitaskbuilder.NewGetBatchCommand(c, os.Stdout)
+	cmd := aitaskbuilder.NewBatchGetCommand(c, os.Stdout)
 	_ = cmd.Flags().Set("batch-id", batchID)
 	err := cmd.RunE(cmd, nil)
 
@@ -188,12 +188,12 @@ func TestNewGetBatchCommandHandlesErrors(t *testing.T) {
 	}
 }
 
-func TestNewGetBatchCommandRequiresBatchID(t *testing.T) {
+func TestNewBatchGetCommandRequiresBatchID(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	cmd := aitaskbuilder.NewGetBatchCommand(c, os.Stdout)
+	cmd := aitaskbuilder.NewBatchGetCommand(c, os.Stdout)
 	err := cmd.RunE(cmd, nil)
 
 	if err == nil {

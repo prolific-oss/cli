@@ -15,14 +15,14 @@ import (
 	"github.com/prolific-oss/cli/model"
 )
 
-func TestNewGetBatchStatusCommand(t *testing.T) {
+func TestNewBatchStatusCommand(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	cmd := aitaskbuilder.NewGetBatchStatusCommand(c, os.Stdout)
+	cmd := aitaskbuilder.NewBatchStatusCommand(c, os.Stdout)
 
-	use := "getbatchstatus"
+	use := "status"
 	short := "Get an AI Task Builder batch status"
 
 	if cmd.Use != use {
@@ -34,7 +34,7 @@ func TestNewGetBatchStatusCommand(t *testing.T) {
 	}
 }
 
-func TestNewGetBatchStatusCommandCallsAPI(t *testing.T) {
+func TestNewBatchStatusCommandCallsAPI(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
@@ -56,7 +56,7 @@ func TestNewGetBatchStatusCommandCallsAPI(t *testing.T) {
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
 
-	cmd := aitaskbuilder.NewGetBatchStatusCommand(c, writer)
+	cmd := aitaskbuilder.NewBatchStatusCommand(c, writer)
 	_ = cmd.Flags().Set("batch-id", batchID)
 	_ = cmd.RunE(cmd, nil)
 
@@ -72,7 +72,7 @@ Status: UNINITIALISED
 	}
 }
 
-func TestNewGetBatchStatusCommandHandlesErrors(t *testing.T) {
+func TestNewBatchStatusCommandHandlesErrors(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
@@ -86,7 +86,7 @@ func TestNewGetBatchStatusCommandHandlesErrors(t *testing.T) {
 		Return(nil, errors.New(errorMessage)).
 		AnyTimes()
 
-	cmd := aitaskbuilder.NewGetBatchStatusCommand(c, os.Stdout)
+	cmd := aitaskbuilder.NewBatchStatusCommand(c, os.Stdout)
 	_ = cmd.Flags().Set("batch-id", batchID)
 	err := cmd.RunE(cmd, nil)
 
@@ -97,12 +97,12 @@ func TestNewGetBatchStatusCommandHandlesErrors(t *testing.T) {
 	}
 }
 
-func TestNewGetBatchStatusCommandRequiresBatchID(t *testing.T) {
+func TestNewBatchStatusCommandRequiresBatchID(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	cmd := aitaskbuilder.NewGetBatchStatusCommand(c, os.Stdout)
+	cmd := aitaskbuilder.NewBatchStatusCommand(c, os.Stdout)
 	err := cmd.RunE(cmd, nil)
 
 	if err == nil {
