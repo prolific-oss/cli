@@ -208,6 +208,10 @@ type GetAITaskBuilderResponsesResponse struct {
 	Meta    ResponseMeta                  `json:"meta"`
 }
 
+// GetAITaskBuilderTasksResponse is the response for the get AI Task Builder tasks endpoint.
+// The API returns a simple array of task ID strings.
+type GetAITaskBuilderTasksResponse []string
+
 // CreateAITaskBuilderDatasetResponse is the response for creating an AI Task Builder dataset.
 type CreateAITaskBuilderDatasetResponse struct {
 	ID          string `json:"id"`

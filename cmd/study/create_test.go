@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -15,11 +16,16 @@ import (
 	"github.com/prolific-oss/cli/model"
 )
 
+// Helper function to create string pointers for tests
+func stringPtr(s string) *string {
+	return &s
+}
+
 var studyTemplate = model.CreateStudy{
 	Name:                    "My first standard sample",
 	InternalName:            "Standard sample",
 	Description:             "This is my first standard sample study on the Prolific system.",
-	ExternalStudyURL:        "https://eggs-experriment.com?participant={{%PROLIFIC_PID%}}",
+	ExternalStudyURL:        stringPtr("https://eggs-experriment.com?participant={{%PROLIFIC_PID%}}"),
 	ProlificIDOption:        "url_parameters",
 	CompletionCode:          "COMPLE01",
 	TotalAvailablePlaces:    10,
@@ -307,5 +313,107 @@ func TestCreateCommandCanHandleErrorsWhenPublishing(t *testing.T) {
 	expected := "error: could not publish"
 	if err.Error() != expected {
 		t.Fatalf("expected %s; got %v", expected, err.Error())
+	}
+}
+
+func TestValidateStudyConfiguration_ValidAITaskBuilder(t *testing.T) {
+	studyData := model.CreateStudy{
+		Name:                    "AI Task Builder Study",
+		InternalName:            "AI Study",
+		Description:             "Test AI Task Builder study",
+		DataCollectionMethod:    stringPtr("DC_TOOL"),
+		DataCollectionID:        stringPtr("batch-123"),
+		AccessDetails:           []model.AccessDetail{{ExternalURL: "https://example.com", TotalAllocation: 10}},
+		ProlificIDOption:        "not_required",
+		CompletionCode:          "COMP123",
+		TotalAvailablePlaces:    10,
+		EstimatedCompletionTime: 5,
+		MaximumAllowedTime:      10,
+		Reward:                  100,
+		DeviceCompatibility:     []string{"desktop"},
+		PeripheralRequirements:  []string{},
+	}
+
+	err := study.ValidateStudyConfiguration(studyData)
+	if err != nil {
+		t.Fatalf("expected no validation error for valid AI Task Builder study, got: %v", err)
+	}
+}
+
+func TestValidateStudyConfiguration_ValidTraditional(t *testing.T) {
+	studyData := model.CreateStudy{
+		Name:                    "Traditional Study",
+		InternalName:            "Traditional",
+		Description:             "Test traditional study",
+		ExternalStudyURL:        stringPtr("https://example.com/study"),
+		ProlificIDOption:        "url_parameters",
+		CompletionCode:          "COMP123",
+		CompletionOption:        "code",
+		TotalAvailablePlaces:    10,
+		EstimatedCompletionTime: 5,
+		MaximumAllowedTime:      10,
+		Reward:                  100,
+		DeviceCompatibility:     []string{"desktop"},
+		PeripheralRequirements:  []string{},
+	}
+
+	err := study.ValidateStudyConfiguration(studyData)
+	if err != nil {
+		t.Fatalf("expected no validation error for valid traditional study, got: %v", err)
+	}
+}
+
+func TestValidateStudyConfiguration_InvalidMixed(t *testing.T) {
+	studyData := model.CreateStudy{
+		Name:                    "Invalid Mixed Study",
+		InternalName:            "Mixed",
+		Description:             "Invalid study with both AI and traditional fields",
+		ExternalStudyURL:        stringPtr("https://example.com/study"),
+		DataCollectionMethod:    stringPtr("DC_TOOL"),
+		DataCollectionID:        stringPtr("batch-123"),
+		ProlificIDOption:        "url_parameters",
+		CompletionCode:          "COMP123",
+		TotalAvailablePlaces:    10,
+		EstimatedCompletionTime: 5,
+		MaximumAllowedTime:      10,
+		Reward:                  100,
+		DeviceCompatibility:     []string{"desktop"},
+		PeripheralRequirements:  []string{},
+	}
+
+	err := study.ValidateStudyConfiguration(studyData)
+	if err == nil {
+		t.Fatal("expected validation error for mixed study with both AI Task Builder and traditional fields")
+	}
+
+	expectedError := "study configuration error: cannot specify both AI Task Builder fields"
+	if !strings.Contains(err.Error(), expectedError) {
+		t.Fatalf("expected error message to contain '%s', got: %v", expectedError, err.Error())
+	}
+}
+
+func TestValidateStudyConfiguration_InvalidEmpty(t *testing.T) {
+	studyData := model.CreateStudy{
+		Name:                    "Invalid Empty Study",
+		InternalName:            "Empty",
+		Description:             "Invalid study with no required fields",
+		ProlificIDOption:        "not_required",
+		CompletionCode:          "COMP123",
+		TotalAvailablePlaces:    10,
+		EstimatedCompletionTime: 5,
+		MaximumAllowedTime:      10,
+		Reward:                  100,
+		DeviceCompatibility:     []string{"desktop"},
+		PeripheralRequirements:  []string{},
+	}
+
+	err := study.ValidateStudyConfiguration(studyData)
+	if err == nil {
+		t.Fatal("expected validation error for study with neither external_study_url nor AI Task Builder fields")
+	}
+
+	expectedError := "study configuration error: must specify either external_study_url"
+	if !strings.Contains(err.Error(), expectedError) {
+		t.Fatalf("expected error message to contain '%s', got: %v", expectedError, err.Error())
 	}
 }

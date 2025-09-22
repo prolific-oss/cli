@@ -17,6 +17,7 @@ func NewTaskCommand(client client.API, w io.Writer) *cobra.Command {
 
 	cmd.AddCommand(
 		NewGetResponsesCommand(client, w),
+		NewGetTasksCommand(client, w),
 	)
 
 	return cmd
