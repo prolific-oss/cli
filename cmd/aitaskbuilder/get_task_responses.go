@@ -28,7 +28,7 @@ This command allows you to retrieve all responses for a specific AI Task Builder
 the batch ID.`,
 		Example: `
 Get AI Task Builder batch responses:
-$ prolific aitaskbuilder getresponses -b <batch_id>
+$ prolific aitaskbuilder task getresponses -b <batch_id>
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
