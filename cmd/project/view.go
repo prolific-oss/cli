@@ -77,7 +77,6 @@ func renderProject(client client.API, opts ViewOptions, w io.Writer) error {
 
 	content += fmt.Sprintf("\nWorkspace:                 %v", project.Workspace)
 	content += fmt.Sprintf("\nOwner:                     %v", project.Owner)
-	content += fmt.Sprintf("\nNaivety distribution rate: %v", project.NaivetyDistributionRate)
 	content += "\n"
 
 	content += "\nUsers:"
