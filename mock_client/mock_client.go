@@ -45,7 +45,7 @@ func (m *MockAPI) CreateProject(workspaceID string, project model.Project) (*cli
 }
 
 // CreateProject indicates an expected call of CreateProject.
-func (mr *MockAPIMockRecorder) CreateProject(workspaceID, project interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) CreateProject(workspaceID, project any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateProject", reflect.TypeOf((*MockAPI)(nil).CreateProject), workspaceID, project)
 }
@@ -60,7 +60,7 @@ func (m *MockAPI) CreateStudy(arg0 model.CreateStudy) (*model.Study, error) {
 }
 
 // CreateStudy indicates an expected call of CreateStudy.
-func (mr *MockAPIMockRecorder) CreateStudy(arg0 interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) CreateStudy(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateStudy", reflect.TypeOf((*MockAPI)(nil).CreateStudy), arg0)
 }
@@ -75,7 +75,7 @@ func (m *MockAPI) CreateWorkspace(workspace model.Workspace) (*client.CreateWork
 }
 
 // CreateWorkspace indicates an expected call of CreateWorkspace.
-func (mr *MockAPIMockRecorder) CreateWorkspace(workspace interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) CreateWorkspace(workspace any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWorkspace", reflect.TypeOf((*MockAPI)(nil).CreateWorkspace), workspace)
 }
@@ -90,7 +90,7 @@ func (m *MockAPI) DuplicateStudy(ID string) (*model.Study, error) {
 }
 
 // DuplicateStudy indicates an expected call of DuplicateStudy.
-func (mr *MockAPIMockRecorder) DuplicateStudy(ID interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) DuplicateStudy(ID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DuplicateStudy", reflect.TypeOf((*MockAPI)(nil).DuplicateStudy), ID)
 }
@@ -105,7 +105,7 @@ func (m *MockAPI) GetAITaskBuilderBatch(batchID string) (*client.GetAITaskBuilde
 }
 
 // GetAITaskBuilderBatch indicates an expected call of GetAITaskBuilderBatch.
-func (mr *MockAPIMockRecorder) GetAITaskBuilderBatch(batchID interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) GetAITaskBuilderBatch(batchID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAITaskBuilderBatch", reflect.TypeOf((*MockAPI)(nil).GetAITaskBuilderBatch), batchID)
 }
@@ -120,7 +120,7 @@ func (m *MockAPI) GetAITaskBuilderBatchStatus(batchID string) (*client.GetAITask
 }
 
 // GetAITaskBuilderBatchStatus indicates an expected call of GetAITaskBuilderBatchStatus.
-func (mr *MockAPIMockRecorder) GetAITaskBuilderBatchStatus(batchID interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) GetAITaskBuilderBatchStatus(batchID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAITaskBuilderBatchStatus", reflect.TypeOf((*MockAPI)(nil).GetAITaskBuilderBatchStatus), batchID)
 }
@@ -135,7 +135,7 @@ func (m *MockAPI) GetAITaskBuilderBatches(workspaceID string) (*client.GetAITask
 }
 
 // GetAITaskBuilderBatches indicates an expected call of GetAITaskBuilderBatches.
-func (mr *MockAPIMockRecorder) GetAITaskBuilderBatches(workspaceID interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) GetAITaskBuilderBatches(workspaceID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAITaskBuilderBatches", reflect.TypeOf((*MockAPI)(nil).GetAITaskBuilderBatches), workspaceID)
 }
@@ -150,7 +150,7 @@ func (m *MockAPI) GetAITaskBuilderResponses(batchID string) (*client.GetAITaskBu
 }
 
 // GetAITaskBuilderResponses indicates an expected call of GetAITaskBuilderResponses.
-func (mr *MockAPIMockRecorder) GetAITaskBuilderResponses(batchID interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) GetAITaskBuilderResponses(batchID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAITaskBuilderResponses", reflect.TypeOf((*MockAPI)(nil).GetAITaskBuilderResponses), batchID)
 }
@@ -165,7 +165,7 @@ func (m *MockAPI) GetAITaskBuilderDatasetStatus(datasetID string) (*client.GetAI
 }
 
 // GetAITaskBuilderDatasetStatus indicates an expected call of GetAITaskBuilderDatasetStatus.
-func (mr *MockAPIMockRecorder) GetAITaskBuilderDatasetStatus(datasetID interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) GetAITaskBuilderDatasetStatus(datasetID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAITaskBuilderDatasetStatus", reflect.TypeOf((*MockAPI)(nil).GetAITaskBuilderDatasetStatus), datasetID)
 }
@@ -180,7 +180,7 @@ func (m *MockAPI) GetCampaigns(workspaceID string, limit, offset int) (*client.L
 }
 
 // GetCampaigns indicates an expected call of GetCampaigns.
-func (mr *MockAPIMockRecorder) GetCampaigns(workspaceID, limit, offset interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) GetCampaigns(workspaceID, limit, offset any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCampaigns", reflect.TypeOf((*MockAPI)(nil).GetCampaigns), workspaceID, limit, offset)
 }
@@ -210,7 +210,7 @@ func (m *MockAPI) GetEvents(subscriptionID string, limit, offset int) (*client.L
 }
 
 // GetEvents indicates an expected call of GetEvents.
-func (mr *MockAPIMockRecorder) GetEvents(subscriptionID, limit, offset interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) GetEvents(subscriptionID, limit, offset any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEvents", reflect.TypeOf((*MockAPI)(nil).GetEvents), subscriptionID, limit, offset)
 }
@@ -225,7 +225,7 @@ func (m *MockAPI) GetFilterSet(ID string) (*model.FilterSet, error) {
 }
 
 // GetFilterSet indicates an expected call of GetFilterSet.
-func (mr *MockAPIMockRecorder) GetFilterSet(ID interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) GetFilterSet(ID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFilterSet", reflect.TypeOf((*MockAPI)(nil).GetFilterSet), ID)
 }
@@ -240,7 +240,7 @@ func (m *MockAPI) GetFilterSets(workspaceID string, limit, offset int) (*client.
 }
 
 // GetFilterSets indicates an expected call of GetFilterSets.
-func (mr *MockAPIMockRecorder) GetFilterSets(workspaceID, limit, offset interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) GetFilterSets(workspaceID, limit, offset any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFilterSets", reflect.TypeOf((*MockAPI)(nil).GetFilterSets), workspaceID, limit, offset)
 }
@@ -285,7 +285,7 @@ func (m *MockAPI) GetHookSecrets(workspaceID string) (*client.ListSecretsRespons
 }
 
 // GetHookSecrets indicates an expected call of GetHookSecrets.
-func (mr *MockAPIMockRecorder) GetHookSecrets(workspaceID interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) GetHookSecrets(workspaceID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHookSecrets", reflect.TypeOf((*MockAPI)(nil).GetHookSecrets), workspaceID)
 }
@@ -300,7 +300,7 @@ func (m *MockAPI) GetHooks(workspaceID string, enabled bool, limit, offset int) 
 }
 
 // GetHooks indicates an expected call of GetHooks.
-func (mr *MockAPIMockRecorder) GetHooks(workspaceID, enabled, limit, offset interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) GetHooks(workspaceID, enabled, limit, offset any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHooks", reflect.TypeOf((*MockAPI)(nil).GetHooks), workspaceID, enabled, limit, offset)
 }
@@ -330,7 +330,7 @@ func (m *MockAPI) GetMessages(userID, createdAfter *string) (*client.ListMessage
 }
 
 // GetMessages indicates an expected call of GetMessages.
-func (mr *MockAPIMockRecorder) GetMessages(userID, createdAfter interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) GetMessages(userID, createdAfter any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMessages", reflect.TypeOf((*MockAPI)(nil).GetMessages), userID, createdAfter)
 }
@@ -345,7 +345,7 @@ func (m *MockAPI) GetParticipantGroup(groupID string) (*client.ViewParticipantGr
 }
 
 // GetParticipantGroup indicates an expected call of GetParticipantGroup.
-func (mr *MockAPIMockRecorder) GetParticipantGroup(groupID interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) GetParticipantGroup(groupID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetParticipantGroup", reflect.TypeOf((*MockAPI)(nil).GetParticipantGroup), groupID)
 }
@@ -360,7 +360,7 @@ func (m *MockAPI) GetParticipantGroups(projectID string, limit, offset int) (*cl
 }
 
 // GetParticipantGroups indicates an expected call of GetParticipantGroups.
-func (mr *MockAPIMockRecorder) GetParticipantGroups(projectID, limit, offset interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) GetParticipantGroups(projectID, limit, offset any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetParticipantGroups", reflect.TypeOf((*MockAPI)(nil).GetParticipantGroups), projectID, limit, offset)
 }
@@ -375,7 +375,7 @@ func (m *MockAPI) GetProject(ID string) (*model.Project, error) {
 }
 
 // GetProject indicates an expected call of GetProject.
-func (mr *MockAPIMockRecorder) GetProject(ID interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) GetProject(ID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProject", reflect.TypeOf((*MockAPI)(nil).GetProject), ID)
 }
@@ -390,7 +390,7 @@ func (m *MockAPI) GetProjects(workspaceID string, limit, offset int) (*client.Li
 }
 
 // GetProjects indicates an expected call of GetProjects.
-func (mr *MockAPIMockRecorder) GetProjects(workspaceID, limit, offset interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) GetProjects(workspaceID, limit, offset any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProjects", reflect.TypeOf((*MockAPI)(nil).GetProjects), workspaceID, limit, offset)
 }
@@ -405,7 +405,7 @@ func (m *MockAPI) GetStudies(status, projectID string) (*client.ListStudiesRespo
 }
 
 // GetStudies indicates an expected call of GetStudies.
-func (mr *MockAPIMockRecorder) GetStudies(status, projectID interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) GetStudies(status, projectID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStudies", reflect.TypeOf((*MockAPI)(nil).GetStudies), status, projectID)
 }
@@ -420,7 +420,7 @@ func (m *MockAPI) GetStudy(ID string) (*model.Study, error) {
 }
 
 // GetStudy indicates an expected call of GetStudy.
-func (mr *MockAPIMockRecorder) GetStudy(ID interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) GetStudy(ID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStudy", reflect.TypeOf((*MockAPI)(nil).GetStudy), ID)
 }
@@ -435,7 +435,7 @@ func (m *MockAPI) GetSubmissions(ID string, limit, offset int) (*client.ListSubm
 }
 
 // GetSubmissions indicates an expected call of GetSubmissions.
-func (mr *MockAPIMockRecorder) GetSubmissions(ID, limit, offset interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) GetSubmissions(ID, limit, offset any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubmissions", reflect.TypeOf((*MockAPI)(nil).GetSubmissions), ID, limit, offset)
 }
@@ -465,7 +465,7 @@ func (m *MockAPI) GetWorkspaces(limit, offset int) (*client.ListWorkspacesRespon
 }
 
 // GetWorkspaces indicates an expected call of GetWorkspaces.
-func (mr *MockAPIMockRecorder) GetWorkspaces(limit, offset interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) GetWorkspaces(limit, offset any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkspaces", reflect.TypeOf((*MockAPI)(nil).GetWorkspaces), limit, offset)
 }
@@ -479,7 +479,7 @@ func (m *MockAPI) SendMessage(body, recipientID, studyID string) error {
 }
 
 // SendMessage indicates an expected call of SendMessage.
-func (mr *MockAPIMockRecorder) SendMessage(body, recipientID, studyID interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) SendMessage(body, recipientID, studyID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendMessage", reflect.TypeOf((*MockAPI)(nil).SendMessage), body, recipientID, studyID)
 }
@@ -494,7 +494,7 @@ func (m *MockAPI) TransitionStudy(ID, action string) (*client.TransitionStudyRes
 }
 
 // TransitionStudy indicates an expected call of TransitionStudy.
-func (mr *MockAPIMockRecorder) TransitionStudy(ID, action interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) TransitionStudy(ID, action any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransitionStudy", reflect.TypeOf((*MockAPI)(nil).TransitionStudy), ID, action)
 }
@@ -509,7 +509,7 @@ func (m *MockAPI) UpdateStudy(ID string, study model.UpdateStudy) (*model.Study,
 }
 
 // UpdateStudy indicates an expected call of UpdateStudy.
-func (mr *MockAPIMockRecorder) UpdateStudy(ID, study interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) UpdateStudy(ID, study any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStudy", reflect.TypeOf((*MockAPI)(nil).UpdateStudy), ID, study)
 }

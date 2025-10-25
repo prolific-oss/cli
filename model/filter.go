@@ -9,8 +9,8 @@ type Filter struct {
 	Question          string            `json:"question" mapstructure:"question"`
 	Type              string            `json:"type" mapstructure:"type"`
 	DataType          string            `json:"data_type" mapstructure:"data_type"`
-	Min               interface{}       `json:"min,omitempty" mapstructure:"min"`
-	Max               interface{}       `json:"max,omitempty" mapstructure:"max"`
+	Min               any               `json:"min,omitempty" mapstructure:"min"`
+	Max               any               `json:"max,omitempty" mapstructure:"max"`
 	Choices           map[string]string `json:"choices,omitempty" mapstructure:"choices"`
 	SelectedValues    []string          `json:"selected_values,omitempty" mapstructure:"selected_values"`
 	SelectedRange     FilterRange       `json:"selected_range,omitempty" mapstructure:"selected_range"`
@@ -18,8 +18,8 @@ type Filter struct {
 
 // FilterRange holds the lower and upper bounds of a filter
 type FilterRange struct {
-	Lower interface{} `json:"lower,omitempty" mapstructure:"lower"`
-	Upper interface{} `json:"upper,omitempty" mapstructure:"upper"`
+	Lower any `json:"lower,omitempty" mapstructure:"lower"`
+	Upper any `json:"upper,omitempty" mapstructure:"upper"`
 }
 
 // FilterValue will help the bubbletea views run

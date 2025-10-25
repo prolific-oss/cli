@@ -92,7 +92,7 @@ func New() Client {
 }
 
 // Execute runs an HTTP request.
-func (c *Client) Execute(method, url string, body interface{}, response interface{}) (*http.Response, error) {
+func (c *Client) Execute(method, url string, body any, response any) (*http.Response, error) {
 	if c.Token == "" {
 		return nil, errors.New("PROLIFIC_TOKEN not set")
 	}
