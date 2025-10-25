@@ -13,7 +13,7 @@ type Requirement struct {
 	Query           RequirementQuestion    `json:"query,omitempty"`
 	Cls             string                 `json:"_cls"`
 	Category        string                 `json:"category"`
-	Subcategory     interface{}            `json:"subcategory"`
+	Subcategory     any                    `json:"subcategory"`
 	Order           int                    `json:"order"`
 	Recommended     bool                   `json:"recommended"`
 	DetailsDisplay  string                 `json:"details_display"`

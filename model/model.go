@@ -23,10 +23,10 @@ type Submission struct {
 		EthnicitySimplified string `json:"ethnicity (simplified)"`
 		Sex                 string `json:"sex"`
 	} `json:"strata"`
-	StudyCode     string        `json:"study_code"`
-	StarAwarded   bool          `json:"star_awarded"`
-	BonusPayments []interface{} `json:"bonus_payments"`
-	IP            string        `json:"ip"`
+	StudyCode     string `json:"study_code"`
+	StarAwarded   bool   `json:"star_awarded"`
+	BonusPayments []any  `json:"bonus_payments"`
+	IP            string `json:"ip"`
 }
 
 // Workspace represents the workspace model
@@ -64,11 +64,11 @@ type Secret struct {
 
 // Message represents the message model
 type Message struct {
-	DatetimeCreated time.Time              `json:"datetime_created"`
-	Body            string                 `json:"body"`
-	SenderID        string                 `json:"sender_id"`
-	StudyID         string                 `json:"study_id,omitempty"`
-	Data            map[string]interface{} `json:"data,omitempty"`
+	DatetimeCreated time.Time      `json:"datetime_created"`
+	Body            string         `json:"body"`
+	SenderID        string         `json:"sender_id"`
+	StudyID         string         `json:"study_id,omitempty"`
+	Data            map[string]any `json:"data,omitempty"`
 }
 
 // UnreadMessage represents the unread message model
