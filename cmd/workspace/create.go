@@ -12,9 +12,8 @@ import (
 
 // CreateOptions are the options to be able to create a workspace.
 type CreateOptions struct {
-	Args                    []string
-	Title                   string
-	NaivetyDistributionRate int32
+	Args  []string
+	Title string
 }
 
 // NewCreateCommand creates a new command for creating workspaces.
@@ -33,13 +32,6 @@ projects to organise your studies.
 		Example: `
 To create a workspace
 $ prolific workspace create -t "Research into AI"
-
-You can also configure if your studies should focus on speed, or participant
-naivety. By specifying 0, your study will become available to all eligible
-participants straight away. By specifying anything greater than 0, up to 1, you
-are delaying your study for participants who are rather active on the Prolific
-Platform. This can be overridden at the project level.
-$ prolific workspace create -t "Research into AI" -n 0
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
@@ -55,7 +47,6 @@ $ prolific workspace create -t "Research into AI" -n 0
 
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.Title, "title", "t", "", "The title of the workspace.")
-	flags.Int32VarP(&opts.NaivetyDistributionRate, "naivety", "n", 0, "The speed vs naivety value. 0 = speed, 1 = naive.")
 
 	return cmd
 }
@@ -67,8 +58,7 @@ func createWorkspace(client client.API, opts CreateOptions, w io.Writer) error {
 	}
 
 	workspace := model.Workspace{
-		Title:                   opts.Title,
-		NaivetyDistributionRate: float64(opts.NaivetyDistributionRate),
+		Title: opts.Title,
 	}
 
 	record, err := client.CreateWorkspace(workspace)

@@ -40,12 +40,11 @@ func TestNewViewCommandCallsAPI(t *testing.T) {
 
 	projectID := "991199"
 	response := model.Project{
-		ID:                      projectID,
-		Title:                   "Titan",
-		Description:             "Project about moons",
-		Workspace:               "777777",
-		Owner:                   "Dr. Who",
-		NaivetyDistributionRate: 0.6,
+		ID:          projectID,
+		Title:       "Titan",
+		Description: "Project about moons",
+		Workspace:   "777777",
+		Owner:       "Dr. Who",
 		Users: []model.User{
 			{
 				ID:    "123",
@@ -74,7 +73,6 @@ Project about moons
 
 Workspace:                 777777
 Owner:                     Dr. Who
-Naivety distribution rate: 0.6
 
 Users:
 ID  Name   Email
