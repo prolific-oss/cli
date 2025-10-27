@@ -68,16 +68,14 @@ func TestCreateCommandCreatesProject(t *testing.T) {
 
 	workspaceID := "8888"
 	record := model.Project{
-		ID:                      "123123",
-		Title:                   "Titan",
-		NaivetyDistributionRate: 0,
+		ID:    "123123",
+		Title: "Titan",
 	}
 
 	c.
 		EXPECT().
 		CreateProject(gomock.Eq(workspaceID), gomock.Eq(model.Project{
-			Title:                   record.Title,
-			NaivetyDistributionRate: record.NaivetyDistributionRate,
+			Title: record.Title,
 		})).
 		Return(&r, nil).
 		MaxTimes(1)
@@ -91,7 +89,6 @@ func TestCreateCommandCreatesProject(t *testing.T) {
 	_ = cmd.Flags().Set("title", record.Title)
 	_ = cmd.Flags().Set("workspace", workspaceID)
 	err := cmd.RunE(cmd, nil)
-
 	if err != nil {
 		t.Fatalf("was not expected error, got %v", err)
 	}
@@ -116,16 +113,14 @@ func TestCreateCommandReturnsErrorIfCreateProjectFails(t *testing.T) {
 
 	workspaceID := "workspace-id"
 	record := model.Project{
-		ID:                      "123123",
-		Title:                   "Titan",
-		NaivetyDistributionRate: 0,
+		ID:    "123123",
+		Title: "Titan",
 	}
 
 	c.
 		EXPECT().
 		CreateProject(gomock.Eq(workspaceID), gomock.Eq(model.Project{
-			Title:                   record.Title,
-			NaivetyDistributionRate: record.NaivetyDistributionRate,
+			Title: record.Title,
 		})).
 		Return(nil, errors.New(errorMessage)).
 		MaxTimes(1)
@@ -155,9 +150,8 @@ func TestCreateCommandHandlesErrorIfNoWorkspaceProvided(t *testing.T) {
 	r := client.CreateProjectResponse{}
 
 	model := model.Project{
-		ID:                      "123123",
-		Title:                   "Titan",
-		NaivetyDistributionRate: 0,
+		ID:    "123123",
+		Title: "Titan",
 	}
 	r.ID = model.ID
 

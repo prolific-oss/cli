@@ -12,10 +12,9 @@ import (
 
 // CreateOptions are the options to be able to create a project.
 type CreateOptions struct {
-	Args                    []string
-	Title                   string
-	Workspace               string
-	NaivetyDistributionRate int32
+	Args      []string
+	Title     string
+	Workspace string
 }
 
 // NewCreateCommand creates a new command for creating a project.
@@ -32,13 +31,7 @@ studies to your projects, to neatly organise your work.`,
 		Example: `
 To create a project inside a workspace
 $ prolific project create -t "Research into AI" -w 6261321e223a605c7a4f7564
-
-You can also configure if your studies should focus on speed, or participant
-naivety. By specifying 0, your study will become available to all eligible
-participants straight away. By specifying anything greater than 0, up to 1, you
-are delaying your study for participants who are rather active on the Prolific
-Platform.
-$ prolific project create -t "Research into AI" -w 6261321e223a605c7a4f7564 -n 0`,
+`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
 
@@ -54,7 +47,6 @@ $ prolific project create -t "Research into AI" -w 6261321e223a605c7a4f7564 -n 0
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.Title, "title", "t", "", "The title of the project.")
 	flags.StringVarP(&opts.Workspace, "workspace", "w", "", "The ID of the workspace to create the project in.")
-	flags.Int32VarP(&opts.NaivetyDistributionRate, "naivety", "n", 0, "The speed vs naivety value. 0 = speed, 1 = naive.")
 
 	return cmd
 }
@@ -70,8 +62,7 @@ func createProject(client client.API, opts CreateOptions, w io.Writer) error {
 	}
 
 	project := model.Project{
-		Title:                   opts.Title,
-		NaivetyDistributionRate: float64(opts.NaivetyDistributionRate),
+		Title: opts.Title,
 	}
 
 	record, err := client.CreateProject(opts.Workspace, project)

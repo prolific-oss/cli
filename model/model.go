@@ -31,22 +31,20 @@ type Submission struct {
 
 // Workspace represents the workspace model
 type Workspace struct {
-	ID                      string  `json:"id"`
-	Title                   string  `json:"title"`
-	Description             string  `json:"description"`
-	Users                   []User  `json:"users"`
-	NaivetyDistributionRate float64 `json:"naivety_distribution_rate"`
+	ID          string `json:"id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Users       []User `json:"users"`
 }
 
 // Project represents the project model
 type Project struct {
-	ID                      string  `json:"id"`
-	Title                   string  `json:"title"`
-	Description             string  `json:"description"`
-	Workspace               string  `json:"workspace"`
-	Owner                   string  `json:"owner"`
-	Users                   []User  `json:"users"`
-	NaivetyDistributionRate float64 `json:"naivety_distribution_rate"`
+	ID          string `json:"id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Workspace   string `json:"workspace"`
+	Owner       string `json:"owner"`
+	Users       []User `json:"users"`
 }
 
 // User represents a user in the system

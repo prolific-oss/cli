@@ -2,7 +2,8 @@
 
 ## release-next
 
-- Bump the project to Go 1.25
+- Bump the project to Go 1.25.
+- Remove the naivety distribution rate, which has been deprecated by Prolific.
 
 ## 0.0.55
 

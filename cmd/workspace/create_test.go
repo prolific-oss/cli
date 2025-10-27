@@ -67,9 +67,8 @@ func TestCreateCommandCreatesWorkspace(t *testing.T) {
 	r := client.CreateWorkspacesResponse{}
 
 	model := model.Workspace{
-		ID:                      "123123",
-		Title:                   "Titan",
-		NaivetyDistributionRate: 0,
+		ID:    "123123",
+		Title: "Titan",
 	}
 	r.ID = model.ID
 
@@ -85,7 +84,6 @@ func TestCreateCommandCreatesWorkspace(t *testing.T) {
 	cmd := workspace.NewCreateCommand("create", c, writer)
 	_ = cmd.Flags().Set("title", model.Title)
 	err := cmd.RunE(cmd, nil)
-
 	if err != nil {
 		t.Fatalf("was not expected error, got %v", err)
 	}
@@ -108,9 +106,8 @@ func TestCreateCommandHandlesFailureToCreateWorkspace(t *testing.T) {
 	r := client.CreateWorkspacesResponse{}
 
 	model := model.Workspace{
-		ID:                      "123123",
-		Title:                   "Titan",
-		NaivetyDistributionRate: 0,
+		ID:    "123123",
+		Title: "Titan",
 	}
 	r.ID = model.ID
 
