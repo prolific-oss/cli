@@ -139,6 +139,12 @@ func createStudy(client client.API, opts CreateOptions, w io.Writer) error {
 		log.Fatalf("unable to map %s to study model: %s", opts.TemplatePath, err)
 	}
 
+	// Validate study configuration before creating
+	err = ValidateStudyConfiguration(s)
+	if err != nil {
+		return err
+	}
+
 	study, err := client.CreateStudy(s)
 	if err != nil {
 		return err
@@ -158,6 +164,30 @@ func createStudy(client client.API, opts CreateOptions, w io.Writer) error {
 
 	if !opts.Silent {
 		fmt.Fprintln(w, studyui.RenderStudy(*study))
+	}
+
+	return nil
+}
+
+// ValidateStudyConfiguration validates that study configuration fields are consistent
+// AI Task Builder studies and traditional studies have mutually exclusive required fields
+func ValidateStudyConfiguration(study model.CreateStudy) error {
+	// Check if this is an AI Task Builder study (has any AI-specific fields)
+	isAITaskBuilder := (study.DataCollectionMethod != nil && *study.DataCollectionMethod != "") ||
+		(study.DataCollectionID != nil && *study.DataCollectionID != "") ||
+		len(study.AccessDetails) > 0
+
+	// Check if this is a traditional study (has external_study_url)
+	isTraditional := study.ExternalStudyURL != nil && *study.ExternalStudyURL != ""
+
+	// Both types cannot be set simultaneously
+	if isAITaskBuilder && isTraditional {
+		return fmt.Errorf("study configuration error: cannot specify both AI Task Builder fields (data_collection_method, data_collection_id, access_details) and external_study_url - these are mutually exclusive")
+	}
+
+	// If neither is set, that's also invalid (one must be specified)
+	if !isAITaskBuilder && !isTraditional {
+		return fmt.Errorf("study configuration error: must specify either external_study_url (for traditional studies) or AI Task Builder fields (data_collection_method, data_collection_id, access_details)")
 	}
 
 	return nil

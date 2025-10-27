@@ -21,12 +21,12 @@ func setupMockClient(t *testing.T) *mock_client.MockAPI {
 	return mock_client.NewMockAPI(ctrl)
 }
 
-func TestNewGetDatasetStatusCommand(t *testing.T) {
+func TestNewDatasetStatusCommand(t *testing.T) {
 	c := setupMockClient(t)
 
-	cmd := aitaskbuilder.NewGetDatasetStatusCommand(c, os.Stdout)
+	cmd := aitaskbuilder.NewDatasetStatusCommand(c, os.Stdout)
 
-	use := "getdatasetstatus"
+	use := "status"
 	short := "Get an AI Task Builder dataset status"
 
 	if cmd.Use != use {
@@ -38,7 +38,7 @@ func TestNewGetDatasetStatusCommand(t *testing.T) {
 	}
 }
 
-func TestNewGetDatasetStatusCommandCallsAPI(t *testing.T) {
+func TestNewDatasetStatusCommandCallsAPI(t *testing.T) {
 	testCases := []struct {
 		name      string
 		datasetID string
@@ -82,7 +82,7 @@ func TestNewGetDatasetStatusCommandCallsAPI(t *testing.T) {
 
 			var b bytes.Buffer
 			writer := bufio.NewWriter(&b)
-			cmd := aitaskbuilder.NewGetDatasetStatusCommand(c, writer)
+			cmd := aitaskbuilder.NewDatasetStatusCommand(c, writer)
 
 			_ = cmd.Flags().Set("dataset-id", tc.datasetID)
 			_ = cmd.RunE(cmd, nil)
@@ -100,7 +100,7 @@ Status: %s
 	}
 }
 
-func TestNewGetDatasetStatusCommandHandlesErrors(t *testing.T) {
+func TestNewDatasetStatusCommandHandlesErrors(t *testing.T) {
 	c := setupMockClient(t)
 
 	datasetID := "the-invalid-dataset-id"
@@ -112,7 +112,7 @@ func TestNewGetDatasetStatusCommandHandlesErrors(t *testing.T) {
 		Return(nil, errors.New(errorMessage)).
 		AnyTimes()
 
-	cmd := aitaskbuilder.NewGetDatasetStatusCommand(c, os.Stdout)
+	cmd := aitaskbuilder.NewDatasetStatusCommand(c, os.Stdout)
 	_ = cmd.Flags().Set("dataset-id", datasetID)
 	err := cmd.RunE(cmd, nil)
 
@@ -123,10 +123,10 @@ func TestNewGetDatasetStatusCommandHandlesErrors(t *testing.T) {
 	}
 }
 
-func TestNewGetDatasetStatusCommandRequiresDatasetID(t *testing.T) {
+func TestNewDatasetStatusCommandRequiresDatasetID(t *testing.T) {
 	c := setupMockClient(t)
 
-	cmd := aitaskbuilder.NewGetDatasetStatusCommand(c, os.Stdout)
+	cmd := aitaskbuilder.NewDatasetStatusCommand(c, os.Stdout)
 	err := cmd.RunE(cmd, nil)
 
 	if err == nil {
@@ -141,10 +141,10 @@ func TestNewGetDatasetStatusCommandRequiresDatasetID(t *testing.T) {
 	}
 }
 
-func TestNewGetDatasetStatusCommandHelpText(t *testing.T) {
+func TestNewDatasetStatusCommandHelpText(t *testing.T) {
 	c := setupMockClient(t)
 
-	cmd := aitaskbuilder.NewGetDatasetStatusCommand(c, os.Stdout)
+	cmd := aitaskbuilder.NewDatasetStatusCommand(c, os.Stdout)
 
 	// Check that the long description contains status information
 	if !strings.Contains(cmd.Long, "UNINITIALISED") {

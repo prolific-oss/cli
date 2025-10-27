@@ -16,14 +16,14 @@ import (
 	"github.com/prolific-oss/cli/model"
 )
 
-func TestNewGetBatchesCommand(t *testing.T) {
+func TestNewBatchListCommand(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	cmd := aitaskbuilder.NewGetBatchesCommand(c, os.Stdout)
+	cmd := aitaskbuilder.NewBatchListCommand(c, os.Stdout)
 
-	use := "getbatches"
+	use := "list"
 	short := "Get AI Task Builder batches"
 
 	if cmd.Use != use {
@@ -35,7 +35,7 @@ func TestNewGetBatchesCommand(t *testing.T) {
 	}
 }
 
-func TestNewGetBatchesCommandCallsAPI(t *testing.T) {
+func TestNewBatchListCommandCallsAPI(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
@@ -91,7 +91,7 @@ func TestNewGetBatchesCommandCallsAPI(t *testing.T) {
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
 
-	cmd := aitaskbuilder.NewGetBatchesCommand(c, writer)
+	cmd := aitaskbuilder.NewBatchListCommand(c, writer)
 	_ = cmd.Flags().Set("workspace-id", workspaceID)
 	_ = cmd.RunE(cmd, nil)
 
@@ -109,7 +109,7 @@ Batches: 2
 	}
 }
 
-func TestNewGetBatchesCommandHandlesErrors(t *testing.T) {
+func TestNewBatchListCommandHandlesErrors(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
@@ -123,7 +123,7 @@ func TestNewGetBatchesCommandHandlesErrors(t *testing.T) {
 		Return(nil, errors.New(errorMessage)).
 		AnyTimes()
 
-	cmd := aitaskbuilder.NewGetBatchesCommand(c, os.Stdout)
+	cmd := aitaskbuilder.NewBatchListCommand(c, os.Stdout)
 	_ = cmd.Flags().Set("workspace-id", workspaceID)
 	err := cmd.RunE(cmd, nil)
 
@@ -134,12 +134,12 @@ func TestNewGetBatchesCommandHandlesErrors(t *testing.T) {
 	}
 }
 
-func TestNewGetBatchesCommandRequiresWorkspaceID(t *testing.T) {
+func TestNewBatchListCommandRequiresWorkspaceID(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	cmd := aitaskbuilder.NewGetBatchesCommand(c, os.Stdout)
+	cmd := aitaskbuilder.NewBatchListCommand(c, os.Stdout)
 	err := cmd.RunE(cmd, nil)
 
 	if err == nil {
@@ -154,7 +154,7 @@ func TestNewGetBatchesCommandRequiresWorkspaceID(t *testing.T) {
 	}
 }
 
-func TestNewGetBatchesCommandWithNoBatches(t *testing.T) {
+func TestNewBatchListCommandWithNoBatches(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
@@ -174,7 +174,7 @@ func TestNewGetBatchesCommandWithNoBatches(t *testing.T) {
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
 
-	cmd := aitaskbuilder.NewGetBatchesCommand(c, writer)
+	cmd := aitaskbuilder.NewBatchListCommand(c, writer)
 	_ = cmd.Flags().Set("workspace-id", workspaceID)
 	_ = cmd.RunE(cmd, nil)
 
