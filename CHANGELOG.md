@@ -2,6 +2,8 @@
 
 ## release-next
 
+- Add `aitaskbuilder create-dataset` command to create new datasets.
+
 ## 0.0.56
 
 - Add Apache 2 License.

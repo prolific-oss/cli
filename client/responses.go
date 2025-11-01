@@ -213,6 +213,11 @@ type GetAITaskBuilderDatasetStatusResponse struct {
 	Status string `json:"status"`
 }
 
+// CreateAITaskBuilderDatasetResponse is the response for creating a dataset
+type CreateAITaskBuilderDatasetResponse struct {
+	Dataset model.Dataset `json:"dataset"`
+}
+
 // ResponseMeta contains metadata about the response.
 type ResponseMeta struct {
 	Count int `json:"count"`
