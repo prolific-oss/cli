@@ -23,8 +23,8 @@ func TestNewGetBatchCommand(t *testing.T) {
 
 	cmd := aitaskbuilder.NewGetBatchCommand(c, os.Stdout)
 
-	use := "getbatch"
-	short := "Get an AI Task Builder batch"
+	use := "view"
+	short := "Get batch details"
 
 	if cmd.Use != use {
 		t.Fatalf("expected use: %s; got %s", use, cmd.Use)

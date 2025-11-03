@@ -7,6 +7,11 @@ import (
 	"github.com/prolific-oss/cli/cmd/aitaskbuilder"
 )
 
+const (
+	checkCommandUse  = "check"
+	createCommandUse = "create"
+)
+
 func TestNewDatasetsCommand(t *testing.T) {
 	c := setupMockClient(t)
 
@@ -30,12 +35,12 @@ func TestNewDatasetsCommand(t *testing.T) {
 
 	// Verify specific subcommands exist
 	checkCmd := cmd.Commands()[0]
-	if checkCmd.Use != "check" {
-		t.Fatalf("expected first subcommand to be 'check', got '%s'", checkCmd.Use)
+	if checkCmd.Use != checkCommandUse {
+		t.Fatalf("expected first subcommand to be '%s', got '%s'", checkCommandUse, checkCmd.Use)
 	}
 
 	createCmd := cmd.Commands()[1]
-	if createCmd.Use != "create" {
-		t.Fatalf("expected second subcommand to be 'create', got '%s'", createCmd.Use)
+	if createCmd.Use != createCommandUse {
+		t.Fatalf("expected second subcommand to be '%s', got '%s'", createCommandUse, createCmd.Use)
 	}
 }

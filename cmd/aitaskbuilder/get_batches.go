@@ -39,19 +39,18 @@ func renderAITaskBuilderBatches(c client.API, opts BatchGetBatchesOptions, w io.
 	return nil
 }
 
-func NewGetBatchesCommand(client client.API, w io.Writer) *cobra.Command {
+func NewGetBatchesListCommand(client client.API, w io.Writer) *cobra.Command {
 	var opts BatchGetBatchesOptions
 
 	cmd := &cobra.Command{
-		Use:   "getbatches",
-		Short: "Get AI Task Builder batches",
-		Long: `Get the batches for a given workspace.
+		Use:   "list",
+		Short: "List batches in a workspace",
+		Long: `List the batches in a workspace.
 
-This command allows you to retrieve the batches for a given workspace by providing
-the workspace ID.`,
+This command lists all batches in a workspace by providing the workspace ID.`,
 		Example: `
 Get AI Task Builder batches:
-$ prolific aitaskbuilder getbatches -w <workspace_id>
+$ prolific aitaskbuilder batch list -w <workspace_id>
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args

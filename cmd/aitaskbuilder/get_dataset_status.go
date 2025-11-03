@@ -26,7 +26,7 @@ func NewGetDatasetStatusCommand(client client.API, w io.Writer) *cobra.Command {
 This command allows you to retrieve the status of a specific AI Task Builder dataset by providing
 the dataset ID.
 
-The status of a dataset can transition to one of the following:
+The status of a dataset can be one of the following:
 
 • UNINITIALISED - This means that the dataset has been created, but no data has been uploaded to it yet.
 • PROCESSING - This means that the dataset is being processed into datapoints to use in the task configuration process.

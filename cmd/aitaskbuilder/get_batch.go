@@ -18,15 +18,14 @@ func NewGetBatchCommand(client client.API, w io.Writer) *cobra.Command {
 	var opts BatchGetOptions
 
 	cmd := &cobra.Command{
-		Use:   "getbatch",
-		Short: "Get an AI Task Builder batch",
-		Long: `Get details about a specific AI Task Builder batch
+		Use:   "view",
+		Short: "Get batch details",
+		Long: `View details for a specific batch.
 
-This command allows you to retrieve details of a specific AI Task Builder batch by providing
-the batch ID.`,
+Retrieve details of a batch by id.`,
 		Example: `
 Get an AI Task Builder batch:
-$ prolific aitaskbuilder get -b <batch_id>
+$ prolific aitaskbuilder batch view -b <batch_id>
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
