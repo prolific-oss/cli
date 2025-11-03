@@ -19,8 +19,8 @@ func NewGetDatasetStatusCommand(client client.API, w io.Writer) *cobra.Command {
 	var opts DatasetGetStatusOptions
 
 	cmd := &cobra.Command{
-		Use:   "getdatasetstatus",
-		Short: "Get an AI Task Builder dataset status",
+		Use:   "check",
+		Short: "Check a Dataset status",
 		Long: `Get the status of a specific AI Task Builder dataset
 
 This command allows you to retrieve the status of a specific AI Task Builder dataset by providing
@@ -34,7 +34,7 @@ The status of a dataset can transition to one of the following:
 • ERROR - This means that something has gone wrong during processing and the data may not be usable.`,
 		Example: `
 Get an AI Task Builder dataset status:
-$ prolific aitaskbuilder getdatasetstatus -d <dataset_id>
+$ prolific aitaskbuilder dataset check -d <dataset_id>
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
