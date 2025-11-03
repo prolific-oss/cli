@@ -26,8 +26,8 @@ func TestNewGetDatasetStatusCommand(t *testing.T) {
 
 	cmd := aitaskbuilder.NewGetDatasetStatusCommand(c, os.Stdout)
 
-	use := "getdatasetstatus"
-	short := "Get an AI Task Builder dataset status"
+	use := "check"
+	short := "Check a Dataset status"
 
 	if cmd.Use != use {
 		t.Fatalf("expected use: %s; got %s", use, cmd.Use)

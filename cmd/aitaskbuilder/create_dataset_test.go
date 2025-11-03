@@ -22,8 +22,8 @@ func TestNewCreateDatasetCommand(t *testing.T) {
 
 	cmd := aitaskbuilder.NewCreateDatasetCommand(c, os.Stdout)
 
-	use := "create-dataset"
-	short := "Create an AI Task Builder dataset"
+	use := "create"
+	short := "Create a Dataset"
 
 	if cmd.Use != use {
 		t.Fatalf("expected use: %s; got %s", use, cmd.Use)

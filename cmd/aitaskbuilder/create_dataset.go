@@ -21,14 +21,14 @@ func NewCreateDatasetCommand(client client.API, w io.Writer) *cobra.Command {
 	var opts CreateDatasetOptions
 
 	cmd := &cobra.Command{
-		Use:   "create-dataset",
-		Short: "Create an AI Task Builder dataset",
+		Use:   "create",
+		Short: "Create a Dataset",
 		Long: `Create a new AI Task Builder dataset
 
 Provide a name and workspace ID to create a new dataset in your workspace.`,
 		Example: `
 Create a dataset:
-$ prolific aitaskbuilder create-dataset -n "test" -w <workspace_id>
+$ prolific aitaskbuilder dataset create -n "test" -w <workspace_id>
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args

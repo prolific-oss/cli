@@ -2,7 +2,9 @@
 
 ## release-next
 
-- Add `aitaskbuilder create-dataset` command to create new datasets.
+- Restructure `aitaskbuilder` dataset commands under `dataset` entity:
+  - `aitaskbuilder dataset create` - Create new datasets (previously `aitaskbuilder create-dataset`)
+  - `aitaskbuilder dataset check` - Check dataset status (previously `aitaskbuilder getdatasetstatus`)
 
 ## 0.0.56
 
