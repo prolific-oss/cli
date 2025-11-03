@@ -21,10 +21,10 @@ func TestNewGetBatchesCommand(t *testing.T) {
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	cmd := aitaskbuilder.NewGetBatchesCommand(c, os.Stdout)
+	cmd := aitaskbuilder.NewGetBatchesListCommand(c, os.Stdout)
 
-	use := "getbatches"
-	short := "Get AI Task Builder batches"
+	use := "list"
+	short := "List batches in a workspace"
 
 	if cmd.Use != use {
 		t.Fatalf("expected use: %s; got %s", use, cmd.Use)
@@ -91,7 +91,7 @@ func TestNewGetBatchesCommandCallsAPI(t *testing.T) {
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
 
-	cmd := aitaskbuilder.NewGetBatchesCommand(c, writer)
+	cmd := aitaskbuilder.NewGetBatchesListCommand(c, writer)
 	_ = cmd.Flags().Set("workspace-id", workspaceID)
 	_ = cmd.RunE(cmd, nil)
 
@@ -123,7 +123,7 @@ func TestNewGetBatchesCommandHandlesErrors(t *testing.T) {
 		Return(nil, errors.New(errorMessage)).
 		AnyTimes()
 
-	cmd := aitaskbuilder.NewGetBatchesCommand(c, os.Stdout)
+	cmd := aitaskbuilder.NewGetBatchesListCommand(c, os.Stdout)
 	_ = cmd.Flags().Set("workspace-id", workspaceID)
 	err := cmd.RunE(cmd, nil)
 
@@ -139,7 +139,7 @@ func TestNewGetBatchesCommandRequiresWorkspaceID(t *testing.T) {
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	cmd := aitaskbuilder.NewGetBatchesCommand(c, os.Stdout)
+	cmd := aitaskbuilder.NewGetBatchesListCommand(c, os.Stdout)
 	err := cmd.RunE(cmd, nil)
 
 	if err == nil {
@@ -174,7 +174,7 @@ func TestNewGetBatchesCommandWithNoBatches(t *testing.T) {
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
 
-	cmd := aitaskbuilder.NewGetBatchesCommand(c, writer)
+	cmd := aitaskbuilder.NewGetBatchesListCommand(c, writer)
 	_ = cmd.Flags().Set("workspace-id", workspaceID)
 	_ = cmd.RunE(cmd, nil)
 

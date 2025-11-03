@@ -20,15 +20,15 @@ func NewGetResponsesCommand(client client.API, w io.Writer) *cobra.Command {
 	var opts BatchGetResponsesOptions
 
 	cmd := &cobra.Command{
-		Use:   "getresponses",
-		Short: "Get AI Task Builder batch responses",
+		Use:   "responses",
+		Short: "List batch task responses",
 		Long: `Get the responses for a specific AI Task Builder batch
 
 This command allows you to retrieve all responses for a specific AI Task Builder batch by providing
 the batch ID.`,
 		Example: `
 Get AI Task Builder batch responses:
-$ prolific aitaskbuilder getresponses -b <batch_id>
+$ prolific aitaskbuilder batch responses -b <batch_id>
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
