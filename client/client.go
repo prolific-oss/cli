@@ -62,6 +62,7 @@ type API interface {
 	SendMessage(body, recipientID, studyID string) error
 	GetUnreadMessages() (*ListUnreadMessagesResponse, error)
 
+	CreateAITaskBuilderBatch(name, workspaceID, datasetID, taskName, taskIntroduction, taskSteps string) (*CreateAITaskBuilderBatchResponse, error)
 	CreateAITaskBuilderDataset(workspaceID string, payload CreateAITaskBuilderDatasetPayload) (*CreateAITaskBuilderDatasetResponse, error)
 	GetAITaskBuilderBatch(batchID string) (*GetAITaskBuilderBatchResponse, error)
 	GetAITaskBuilderBatchStatus(batchID string) (*GetAITaskBuilderBatchStatusResponse, error)
@@ -664,6 +665,29 @@ func (c *Client) GetAITaskBuilderDatasetUploadURL(datasetID, fileName string) (*
 
 	url := fmt.Sprintf("/api/v1/data-collection/datasets/%s/upload-url/%s.csv/", datasetID, fileName)
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+	return &response, nil
+}
+
+// CreateAITaskBuilderBatch will create an AI Task Builder batch.
+func (c *Client) CreateAITaskBuilderBatch(name, workspaceID, datasetID, taskName, taskIntroduction, taskSteps string) (*CreateAITaskBuilderBatchResponse, error) {
+	var response CreateAITaskBuilderBatchResponse
+
+	payload := CreateAITaskBuilderBatchPayload{
+		Name:        name,
+		WorkspaceID: workspaceID,
+		DatasetID:   datasetID,
+		TaskDetails: TaskDetails{
+			TaskName:         taskName,
+			TaskIntroduction: taskIntroduction,
+			TaskSteps:        taskSteps,
+		},
+	}
+
+	url := "/api/v1/data-collection/batches"
+	_, err := c.Execute(http.MethodPost, url, payload, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}

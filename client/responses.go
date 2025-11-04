@@ -226,6 +226,34 @@ type CreateAITaskBuilderDatasetResponse struct {
 	Dataset model.Dataset `json:"dataset"`
 }
 
+// CreateAITaskBuilderBatchResponse is the response for creating an AI Task Builder batch.
+type CreateAITaskBuilderBatchResponse struct {
+	ID                    string              `json:"id"`
+	CreatedAt             string              `json:"created_at"`
+	CreatedBy             string              `json:"created_by"`
+	Name                  string              `json:"name"`
+	Status                string              `json:"status"`
+	TotalTaskCount        int                 `json:"total_task_count"`
+	TotalInstructionCount int                 `json:"total_instruction_count"`
+	TotalTaskGroups       *int                `json:"total_task_groups,omitempty"`
+	WorkspaceID           string              `json:"workspace_id"`
+	Datasets              []DatasetReference  `json:"datasets"`
+	TaskDetails           TaskDetailsResponse `json:"task_details"`
+}
+
+// DatasetReference represents a dataset reference in the batch response
+type DatasetReference struct {
+	ID                  string `json:"id"`
+	TotalDatapointCount int    `json:"total_datapoint_count"`
+}
+
+// TaskDetailsResponse represents the task details in the batch response
+type TaskDetailsResponse struct {
+	TaskName         string `json:"task_name"`
+	TaskIntroduction string `json:"task_introduction"`
+	TaskSteps        string `json:"task_steps"`
+}
+
 // ResponseMeta contains metadata about the response.
 type ResponseMeta struct {
 	Count int `json:"count"`
