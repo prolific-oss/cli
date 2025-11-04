@@ -1,0 +1,22 @@
+{
+  "name": "AI Response Evaluation Study",
+  "internal_name": "AI Eval Task",
+  "description": "Evaluate AI model responses for quality and accuracy. Participants will review prompts and corresponding AI-generated responses, then provide structured feedback using our evaluation framework.",
+  "prolific_id_option": "not_required",
+  "completion_code": "AIEVAL01",
+  "total_available_places": 3,
+  "estimated_completion_time": 1,
+  "maximum_allowed_time": 100,
+  "reward": 100,
+  "device_compatibility": ["desktop"],
+  "peripheral_requirements": ["audio", "camera", "download", "microphone"],
+  "study_labels": [
+    "ai_annotation"
+  ],
+  "data_collection_method": "DC_TOOL",
+  "data_collection_id": "${BATCH_ID}",
+  "submissions_config": {
+    "max_submissions_per_participant": -1
+  },
+  "external_study_url": "https://www.prolific.com",
+}
