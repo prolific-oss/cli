@@ -63,6 +63,7 @@ type API interface {
 	GetUnreadMessages() (*ListUnreadMessagesResponse, error)
 
 	CreateAITaskBuilderBatch(name, workspaceID, datasetID, taskName, taskIntroduction, taskSteps string) (*CreateAITaskBuilderBatchResponse, error)
+	CreateAITaskBuilderInstructions(batchID string, instructions CreateAITaskBuilderInstructionsPayload) (*CreateAITaskBuilderInstructionsResponse, error)
 	CreateAITaskBuilderDataset(workspaceID string, payload CreateAITaskBuilderDatasetPayload) (*CreateAITaskBuilderDatasetResponse, error)
 	GetAITaskBuilderBatch(batchID string) (*GetAITaskBuilderBatchResponse, error)
 	GetAITaskBuilderBatchStatus(batchID string) (*GetAITaskBuilderBatchStatusResponse, error)
@@ -688,6 +689,18 @@ func (c *Client) CreateAITaskBuilderBatch(name, workspaceID, datasetID, taskName
 
 	url := "/api/v1/data-collection/batches"
 	_, err := c.Execute(http.MethodPost, url, payload, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+	return &response, nil
+}
+
+// CreateAITaskBuilderInstructions will create instructions for an AI Task Builder batch.
+func (c *Client) CreateAITaskBuilderInstructions(batchID string, instructions CreateAITaskBuilderInstructionsPayload) (*CreateAITaskBuilderInstructionsResponse, error) {
+	var response CreateAITaskBuilderInstructionsResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/instructions", batchID)
+	_, err := c.Execute(http.MethodPost, url, instructions, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}

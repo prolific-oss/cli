@@ -254,6 +254,11 @@ type TaskDetailsResponse struct {
 	TaskSteps        string `json:"task_steps"`
 }
 
+// CreateAITaskBuilderInstructionsResponse is the response for creating AI Task Builder instructions.
+type CreateAITaskBuilderInstructionsResponse struct {
+	Message string `json:"message"`
+}
+
 // ResponseMeta contains metadata about the response.
 type ResponseMeta struct {
 	Count int `json:"count"`

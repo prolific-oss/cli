@@ -8,6 +8,7 @@
   - `aitaskbuilder dataset upload` - Upload CSV files to datasets
 - Restructure `aitaskbuilder` batch commands under `batch` entity:
   - `aitaskbuilder batch create` - Create new batches with task details
+  - `aitaskbuilder batch instructions` - Add instructions to batches
   - `aitaskbuilder batch view` - View batch details (previously `aitaskbuilder getbatch`)
   - `aitaskbuilder batch list` - List batches in a workspace (previously `aitaskbuilder getbatches`)
   - `aitaskbuilder batch check` - Check batch status (previously `aitaskbuilder getbatchstatus`)

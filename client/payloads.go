@@ -26,3 +26,30 @@ type CreateAITaskBuilderBatchPayload struct {
 	DatasetID   string      `json:"dataset_id"`
 	TaskDetails TaskDetails `json:"task_details"`
 }
+
+// InstructionOption represents an option for multiple choice instructions
+type InstructionOption struct {
+	Label   string `json:"label"`
+	Value   string `json:"value"`
+	Heading string `json:"heading,omitempty"`
+}
+
+// AnswerLimit represents the answer limit for multiple choice with free text instructions
+type AnswerLimit struct {
+	Type        string `json:"type"`
+	Description string `json:"description"`
+}
+
+// Instruction represents a single instruction in the request payload
+type Instruction struct {
+	Type        string              `json:"type"`
+	CreatedBy   string              `json:"created_by"`
+	Description string              `json:"description"`
+	Options     []InstructionOption `json:"options,omitempty"`
+	AnswerLimit *AnswerLimit        `json:"answer_limit,omitempty"`
+}
+
+// CreateAITaskBuilderInstructionsPayload represents the JSON payload for creating AI Task Builder instructions
+type CreateAITaskBuilderInstructionsPayload struct {
+	Instructions []Instruction `json:"instructions"`
+}

@@ -65,6 +65,21 @@ func (mr *MockAPIMockRecorder) CreateAITaskBuilderDataset(workspaceID, payload i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAITaskBuilderDataset", reflect.TypeOf((*MockAPI)(nil).CreateAITaskBuilderDataset), workspaceID, payload)
 }
 
+// CreateAITaskBuilderInstructions mocks base method.
+func (m *MockAPI) CreateAITaskBuilderInstructions(batchID string, instructions client.CreateAITaskBuilderInstructionsPayload) (*client.CreateAITaskBuilderInstructionsResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateAITaskBuilderInstructions", batchID, instructions)
+	ret0, _ := ret[0].(*client.CreateAITaskBuilderInstructionsResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateAITaskBuilderInstructions indicates an expected call of CreateAITaskBuilderInstructions.
+func (mr *MockAPIMockRecorder) CreateAITaskBuilderInstructions(batchID, instructions interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAITaskBuilderInstructions", reflect.TypeOf((*MockAPI)(nil).CreateAITaskBuilderInstructions), batchID, instructions)
+}
+
 // CreateProject mocks base method.
 func (m *MockAPI) CreateProject(workspaceID string, project model.Project) (*client.CreateProjectResponse, error) {
 	m.ctrl.T.Helper()
