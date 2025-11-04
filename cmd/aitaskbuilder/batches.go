@@ -23,6 +23,7 @@ func NewBatchesCommand(client client.API, w io.Writer) *cobra.Command {
 		NewGetBatchStatusCommand(client, w),
 		NewGetBatchesListCommand(client, w),
 		NewGetResponsesCommand(client, w),
+		NewBatchTasksCommand(client, w),
 	)
 
 	return cmd
