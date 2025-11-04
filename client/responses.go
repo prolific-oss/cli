@@ -213,6 +213,14 @@ type GetAITaskBuilderDatasetStatusResponse struct {
 	Status string `json:"status"`
 }
 
+// GetAITaskBuilderDatasetUploadURLResponse is the response for getting an upload URL for an AI Task Builder dataset.
+type GetAITaskBuilderDatasetUploadURLResponse struct {
+	DatasetID  string `json:"dataset_id"`
+	ExpiresAt  string `json:"expires_at"`
+	HTTPMethod string `json:"http_method"`
+	UploadURL  string `json:"upload_url"`
+}
+
 // CreateAITaskBuilderDatasetResponse is the response for creating a dataset
 type CreateAITaskBuilderDatasetResponse struct {
 	Dataset model.Dataset `json:"dataset"`
