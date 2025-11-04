@@ -5,6 +5,12 @@
 - Restructure `aitaskbuilder` dataset commands under `dataset` entity:
   - `aitaskbuilder dataset create` - Create new datasets (previously `aitaskbuilder create-dataset`)
   - `aitaskbuilder dataset check` - Check dataset status (previously `aitaskbuilder getdatasetstatus`)
+  - `aitaskbuilder dataset upload` - Upload CSV files to datasets
+- Restructure `aitaskbuilder` batch commands under `batch` entity:
+  - `aitaskbuilder batch view` - View batch details (previously `aitaskbuilder getbatch`)
+  - `aitaskbuilder batch list` - List batches in a workspace (previously `aitaskbuilder getbatches`)
+  - `aitaskbuilder batch check` - Check batch status (previously `aitaskbuilder getbatchstatus`)
+  - `aitaskbuilder batch responses` - List batch task responses (previously `aitaskbuilder getresponses`)
 
 ## 0.0.56
 
