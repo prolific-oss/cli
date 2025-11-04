@@ -259,6 +259,12 @@ type CreateAITaskBuilderInstructionsResponse struct {
 	Message string `json:"message"`
 }
 
+// SetupAITaskBuilderBatchResponse is the response for setting up an AI Task Builder batch.
+// The API returns 202 Accepted with an empty response body.
+type SetupAITaskBuilderBatchResponse struct {
+	// Empty response body
+}
+
 // ResponseMeta contains metadata about the response.
 type ResponseMeta struct {
 	Count int `json:"count"`

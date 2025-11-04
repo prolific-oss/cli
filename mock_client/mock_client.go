@@ -544,6 +544,21 @@ func (mr *MockAPIMockRecorder) SendMessage(body, recipientID, studyID interface{
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendMessage", reflect.TypeOf((*MockAPI)(nil).SendMessage), body, recipientID, studyID)
 }
 
+// SetupAITaskBuilderBatch mocks base method.
+func (m *MockAPI) SetupAITaskBuilderBatch(batchID, datasetID string, tasksPerGroup int) (*client.SetupAITaskBuilderBatchResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetupAITaskBuilderBatch", batchID, datasetID, tasksPerGroup)
+	ret0, _ := ret[0].(*client.SetupAITaskBuilderBatchResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetupAITaskBuilderBatch indicates an expected call of SetupAITaskBuilderBatch.
+func (mr *MockAPIMockRecorder) SetupAITaskBuilderBatch(batchID, datasetID, tasksPerGroup interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetupAITaskBuilderBatch", reflect.TypeOf((*MockAPI)(nil).SetupAITaskBuilderBatch), batchID, datasetID, tasksPerGroup)
+}
+
 // TransitionStudy mocks base method.
 func (m *MockAPI) TransitionStudy(ID, action string) (*client.TransitionStudyResponse, error) {
 	m.ctrl.T.Helper()

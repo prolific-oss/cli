@@ -53,3 +53,9 @@ type Instruction struct {
 type CreateAITaskBuilderInstructionsPayload struct {
 	Instructions []Instruction `json:"instructions"`
 }
+
+// SetupAITaskBuilderBatchPayload represents the JSON payload for setting up an AI Task Builder batch
+type SetupAITaskBuilderBatchPayload struct {
+	DatasetID     string `json:"dataset_id"`
+	TasksPerGroup int    `json:"tasks_per_group"`
+}
