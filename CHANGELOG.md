@@ -14,6 +14,19 @@
   - `aitaskbuilder batch list` - List batches in a workspace (previously `aitaskbuilder getbatches`)
   - `aitaskbuilder batch check` - Check batch status (previously `aitaskbuilder getbatchstatus`)
   - `aitaskbuilder batch responses` - List batch task responses (previously `aitaskbuilder getresponses`)
+  - `aitaskbuilder batch tasks` - Retrieve all task IDs for a batch
+- Fix `aitaskbuilder dataset create` command:
+  - Corrected API endpoint from `/api/v1/data-collection/workspaces/{id}/datasets/` to `/api/v1/data-collection/datasets`
+  - Added `workspace_id` field to request payload
+  - Updated response handling to match API structure (fields at top level)
+  - Enhanced output to display all dataset details (ID, name, status, created_at, etc.)
+- Fix `aitaskbuilder batch instructions` command:
+  - Corrected response handling to expect array of instruction objects
+  - Enhanced output to display created instruction IDs and metadata
+- Fix `aitaskbuilder batch setup` command:
+  - Fixed handling of empty response body (202 Accepted)
+  - Improved error message parsing for AI Task Builder endpoints
+  - Added support for flat error format `{message, detail}`
 
 ## 0.0.56
 
