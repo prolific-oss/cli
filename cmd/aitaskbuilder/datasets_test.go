@@ -10,6 +10,7 @@ import (
 const (
 	checkCommandUse  = "check"
 	createCommandUse = "create"
+	uploadCommandUse = "upload"
 )
 
 func TestNewDatasetsCommand(t *testing.T) {
@@ -33,6 +34,11 @@ func TestNewDatasetsCommand(t *testing.T) {
 		t.Fatal("expected dataset command to have subcommands")
 	}
 
+	// Verify we have 3 subcommands
+	if len(cmd.Commands()) != 3 {
+		t.Fatalf("expected 3 subcommands, got %d", len(cmd.Commands()))
+	}
+
 	// Verify specific subcommands exist
 	checkCmd := cmd.Commands()[0]
 	if checkCmd.Use != checkCommandUse {
@@ -42,5 +48,10 @@ func TestNewDatasetsCommand(t *testing.T) {
 	createCmd := cmd.Commands()[1]
 	if createCmd.Use != createCommandUse {
 		t.Fatalf("expected second subcommand to be '%s', got '%s'", createCommandUse, createCmd.Use)
+	}
+
+	uploadCmd := cmd.Commands()[2]
+	if uploadCmd.Use != uploadCommandUse {
+		t.Fatalf("expected third subcommand to be '%s', got '%s'", uploadCommandUse, uploadCmd.Use)
 	}
 }

@@ -68,6 +68,7 @@ type API interface {
 	GetAITaskBuilderBatches(workspaceID string) (*GetAITaskBuilderBatchesResponse, error)
 	GetAITaskBuilderResponses(batchID string) (*GetAITaskBuilderResponsesResponse, error)
 	GetAITaskBuilderDatasetStatus(datasetID string) (*GetAITaskBuilderDatasetStatusResponse, error)
+	GetAITaskBuilderDatasetUploadURL(datasetID, fileName string) (*GetAITaskBuilderDatasetUploadURLResponse, error)
 }
 
 // Client is responsible for interacting with the Prolific API.
@@ -650,6 +651,18 @@ func (c *Client) GetAITaskBuilderDatasetStatus(datasetID string) (*GetAITaskBuil
 	var response GetAITaskBuilderDatasetStatusResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/datasets/%s/status", datasetID)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+	return &response, nil
+}
+
+// GetAITaskBuilderDatasetUploadURL will get an upload URL for an AI Task Builder dataset.
+func (c *Client) GetAITaskBuilderDatasetUploadURL(datasetID, fileName string) (*GetAITaskBuilderDatasetUploadURLResponse, error) {
+	var response GetAITaskBuilderDatasetUploadURLResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/datasets/%s/upload-url/%s.csv/", datasetID, fileName)
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)

@@ -18,6 +18,7 @@ func NewDatasetsCommand(client client.API, w io.Writer) *cobra.Command {
 	cmd.AddCommand(
 		NewGetDatasetStatusCommand(client, w),
 		NewCreateDatasetCommand(client, w),
+		NewDatasetUploadCommand(client, w),
 	)
 
 	return cmd
