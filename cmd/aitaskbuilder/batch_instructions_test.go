@@ -13,6 +13,7 @@ import (
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/aitaskbuilder"
 	"github.com/prolific-oss/cli/mock_client"
+	"github.com/prolific-oss/cli/model"
 )
 
 func TestNewBatchInstructionsCommand(t *testing.T) {
@@ -42,7 +43,14 @@ func TestNewBatchInstructionsCommandCallsAPI(t *testing.T) {
 	batchID := "01954894-65b3-779e-aaf6-348698e12345"
 
 	response := client.CreateAITaskBuilderInstructionsResponse{
-		Message: "Instructions created successfully",
+		model.Instruction{
+			ID:          "inst-123",
+			Type:        "free_text",
+			BatchID:     batchID,
+			CreatedBy:   "Sean",
+			CreatedAt:   "2024-09-18T07:50:15.055Z",
+			Description: "Please explain your decision.",
+		},
 	}
 
 	instructions := client.CreateAITaskBuilderInstructionsPayload{
@@ -76,14 +84,14 @@ func TestNewBatchInstructionsCommandCallsAPI(t *testing.T) {
 
 	writer.Flush()
 
-	expectedOutput := "Successfully added instructions to batch " + batchID
+	expectedOutput := "Successfully added 1 instruction(s) to batch " + batchID
 	if !strings.Contains(buf.String(), expectedOutput) {
 		t.Fatalf("expected output to contain '%s'; got %s", expectedOutput, buf.String())
 	}
 
-	expectedMessage := "Message: Instructions created successfully"
-	if !strings.Contains(buf.String(), expectedMessage) {
-		t.Fatalf("expected output to contain '%s'; got %s", expectedMessage, buf.String())
+	expectedID := "ID: inst-123"
+	if !strings.Contains(buf.String(), expectedID) {
+		t.Fatalf("expected output to contain '%s'; got %s", expectedID, buf.String())
 	}
 }
 
@@ -121,7 +129,18 @@ func TestNewBatchInstructionsCommandWithFile(t *testing.T) {
 	}
 
 	response := client.CreateAITaskBuilderInstructionsResponse{
-		Message: "Instructions created successfully",
+		model.Instruction{
+			ID:          "inst-456",
+			Type:        "multiple_choice",
+			BatchID:     batchID,
+			CreatedBy:   "Sean",
+			CreatedAt:   "2024-09-18T07:50:15.055Z",
+			Description: "Choose the LLM response which is more accurate.",
+			Options: []model.InstructionOption{
+				{Label: "Response 1", Value: "response1"},
+				{Label: "Response 2", Value: "response2"},
+			},
+		},
 	}
 
 	instructions := client.CreateAITaskBuilderInstructionsPayload{
@@ -157,7 +176,7 @@ func TestNewBatchInstructionsCommandWithFile(t *testing.T) {
 
 	writer.Flush()
 
-	expectedOutput := "Successfully added instructions to batch " + batchID
+	expectedOutput := "Successfully added 1 instruction(s) to batch " + batchID
 	if !strings.Contains(buf.String(), expectedOutput) {
 		t.Fatalf("expected output to contain '%s'; got %s", expectedOutput, buf.String())
 	}

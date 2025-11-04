@@ -144,9 +144,17 @@ func createBatchInstructions(c client.API, opts BatchInstructionsOptions, w io.W
 		return err
 	}
 
-	fmt.Fprintf(w, "Successfully added instructions to batch %s\n", opts.BatchID)
-	if response.Message != "" {
-		fmt.Fprintf(w, "Message: %s\n", response.Message)
+	// Output the created instructions
+	fmt.Fprintf(w, "Successfully added %d instruction(s) to batch %s\n", len(*response), opts.BatchID)
+	for i, instruction := range *response {
+		fmt.Fprintf(w, "\nInstruction %d:\n", i+1)
+		fmt.Fprintf(w, "  ID: %s\n", instruction.ID)
+		fmt.Fprintf(w, "  Type: %s\n", instruction.Type)
+		fmt.Fprintf(w, "  Description: %s\n", instruction.Description)
+		fmt.Fprintf(w, "  Created At: %s\n", instruction.CreatedAt)
+		if len(instruction.Options) > 0 {
+			fmt.Fprintf(w, "  Options: %d\n", len(instruction.Options))
+		}
 	}
 
 	return nil

@@ -43,6 +43,24 @@ type TaskDetails struct {
 	TaskSteps        string `json:"task_steps"`
 }
 
+// InstructionOption represents an option for multiple choice instructions.
+type InstructionOption struct {
+	Label   string `json:"label"`
+	Value   string `json:"value"`
+	Heading string `json:"heading,omitempty"`
+}
+
+// Instruction represents an instruction in a batch.
+type Instruction struct {
+	ID          string              `json:"id"`
+	Type        string              `json:"type"`
+	BatchID     string              `json:"batch_id"`
+	CreatedBy   string              `json:"created_by"`
+	CreatedAt   string              `json:"created_at"`
+	Description string              `json:"description"`
+	Options     []InstructionOption `json:"options,omitempty"`
+}
+
 // AITaskBuilderResponse represents a response from an AI Task Builder batch task.
 type AITaskBuilderResponse struct {
 	ID            string                    `json:"id"`

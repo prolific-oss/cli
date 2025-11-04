@@ -261,9 +261,7 @@ type TaskDetailsResponse struct {
 }
 
 // CreateAITaskBuilderInstructionsResponse is the response for creating AI Task Builder instructions.
-type CreateAITaskBuilderInstructionsResponse struct {
-	Message string `json:"message"`
-}
+type CreateAITaskBuilderInstructionsResponse []model.Instruction
 
 // SetupAITaskBuilderBatchResponse is the response for setting up an AI Task Builder batch.
 // The API returns 202 Accepted with an empty response body.
