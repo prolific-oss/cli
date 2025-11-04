@@ -140,12 +140,20 @@ func (c *Client) Execute(method, url string, body any, response any) (*http.Resp
 	}
 
 	if httpResponse.StatusCode >= 400 {
+		// Try the nested error format first
 		var apiError JSONAPIError
-		if err := json.NewDecoder(io.NopCloser(bytes.NewBuffer(responseBody))).Decode(&apiError); err != nil {
-			return nil, fmt.Errorf("decoding JSON response from %s failed: %v", request.URL, err)
+		if err := json.NewDecoder(io.NopCloser(bytes.NewBuffer(responseBody))).Decode(&apiError); err == nil && apiError.Error.Detail != nil {
+			return nil, fmt.Errorf("request failed: %v", apiError.Error.Detail)
 		}
 
-		return nil, fmt.Errorf("request failed: %v", apiError.Error.Detail)
+		// Try the simple error format
+		var simpleError SimpleAPIError
+		if err := json.NewDecoder(io.NopCloser(bytes.NewBuffer(responseBody))).Decode(&simpleError); err == nil && simpleError.Detail != "" {
+			return nil, fmt.Errorf("request failed: %s - %s", simpleError.Message, simpleError.Detail)
+		}
+
+		// If both fail, return generic error with status code
+		return nil, fmt.Errorf("request failed with status %d: %s", httpResponse.StatusCode, string(responseBody))
 	}
 
 	if response != nil {
@@ -718,10 +726,16 @@ func (c *Client) SetupAITaskBuilderBatch(batchID, datasetID string, tasksPerGrou
 	}
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/setup", batchID)
-	_, err := c.Execute(http.MethodPost, url, payload, &response)
+	httpResponse, err := c.Execute(http.MethodPost, url, payload, nil)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
+
+	// Check for 202 Accepted status
+	if httpResponse.StatusCode != http.StatusAccepted {
+		return nil, fmt.Errorf("unexpected status code: %d", httpResponse.StatusCode)
+	}
+
 	return &response, nil
 }
 

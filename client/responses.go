@@ -43,6 +43,12 @@ type JSONAPIError struct {
 	} `json:"error"`
 }
 
+// SimpleAPIError represents a simpler error format used by some endpoints
+type SimpleAPIError struct {
+	Message string `json:"message"`
+	Detail  string `json:"detail"`
+}
+
 // MeResponse is a struct that represents your account.
 type MeResponse struct {
 	ID               string `json:"id"`
