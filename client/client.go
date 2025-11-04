@@ -729,7 +729,7 @@ func (c *Client) SetupAITaskBuilderBatch(batchID, datasetID string, tasksPerGrou
 func (c *Client) CreateAITaskBuilderDataset(workspaceID string, payload CreateAITaskBuilderDatasetPayload) (*CreateAITaskBuilderDatasetResponse, error) {
 	var response CreateAITaskBuilderDatasetResponse
 
-	url := fmt.Sprintf("/api/v1/data-collection/workspaces/%s/datasets/", workspaceID)
+	url := "/api/v1/data-collection/datasets"
 	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)

@@ -64,7 +64,8 @@ func createAITaskBuilderDataset(c client.API, opts CreateDatasetOptions, w io.Wr
 
 	// Build payload from options
 	payload := client.CreateAITaskBuilderDatasetPayload{
-		Name: opts.Name,
+		Name:        opts.Name,
+		WorkspaceID: opts.WorkspaceID,
 	}
 
 	// Call API to create
@@ -73,9 +74,14 @@ func createAITaskBuilderDataset(c client.API, opts CreateDatasetOptions, w io.Wr
 		return err
 	}
 
-	// Output success with ID
-	fmt.Fprintf(w, "Created dataset: %s\n", response.Dataset.ID)
-	fmt.Fprintf(w, "Total datapoint count: %d\n", response.Dataset.TotalDatapointCount)
+	// Output full dataset details
+	fmt.Fprintf(w, "ID: %s\n", response.ID)
+	fmt.Fprintf(w, "Name: %s\n", response.Name)
+	fmt.Fprintf(w, "Created At: %s\n", response.CreatedAt)
+	fmt.Fprintf(w, "Created By: %s\n", response.CreatedBy)
+	fmt.Fprintf(w, "Status: %s\n", response.Status)
+	fmt.Fprintf(w, "Total Datapoint Count: %d\n", response.TotalDatapointCount)
+	fmt.Fprintf(w, "Workspace ID: %s\n", response.WorkspaceID)
 
 	return nil
 }

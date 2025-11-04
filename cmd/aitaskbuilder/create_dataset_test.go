@@ -12,7 +12,6 @@ import (
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/aitaskbuilder"
 	"github.com/prolific-oss/cli/mock_client"
-	"github.com/prolific-oss/cli/model"
 )
 
 func TestNewCreateDatasetCommand(t *testing.T) {
@@ -41,14 +40,18 @@ func TestNewCreateDatasetCommandCallsAPI(t *testing.T) {
 
 	workspaceID := "workspace-123"
 	payload := client.CreateAITaskBuilderDatasetPayload{
-		Name: "Test Dataset",
+		Name:        "Test Dataset",
+		WorkspaceID: workspaceID,
 	}
 
 	response := client.CreateAITaskBuilderDatasetResponse{
-		Dataset: model.Dataset{
-			ID:                  "dataset-456",
-			TotalDatapointCount: 0,
-		},
+		ID:                  "dataset-456",
+		Name:                "Test Dataset",
+		CreatedAt:           "2024-01-15T10:30:00Z",
+		CreatedBy:           "user-789",
+		Status:              "READY",
+		TotalDatapointCount: 0,
+		WorkspaceID:         "workspace-123",
 	}
 
 	c.
@@ -67,8 +70,13 @@ func TestNewCreateDatasetCommandCallsAPI(t *testing.T) {
 
 	writer.Flush()
 
-	expected := `Created dataset: dataset-456
-Total datapoint count: 0
+	expected := `ID: dataset-456
+Name: Test Dataset
+Created At: 2024-01-15T10:30:00Z
+Created By: user-789
+Status: READY
+Total Datapoint Count: 0
+Workspace ID: workspace-123
 `
 	actual := b.String()
 	if actual != expected {
@@ -83,7 +91,8 @@ func TestNewCreateDatasetCommandHandlesErrors(t *testing.T) {
 
 	workspaceID := "invalid-workspace"
 	payload := client.CreateAITaskBuilderDatasetPayload{
-		Name: "Test Dataset",
+		Name:        "Test Dataset",
+		WorkspaceID: workspaceID,
 	}
 
 	errorMessage := "workspace not found"

@@ -28,7 +28,12 @@ type AITaskBuilderBatchStatus struct {
 // Dataset represents a dataset in a batch.
 type Dataset struct {
 	ID                  string `json:"id"`
+	Name                string `json:"name"`
+	CreatedAt           string `json:"created_at"`
+	CreatedBy           string `json:"created_by"`
+	Status              string `json:"status"`
 	TotalDatapointCount int    `json:"total_datapoint_count"`
+	WorkspaceID         string `json:"workspace_id"`
 }
 
 // TaskDetails represents the task configuration details.

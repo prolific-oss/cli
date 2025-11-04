@@ -9,7 +9,8 @@ type SendMessagePayload struct {
 
 // CreateAITaskBuilderDatasetPayload represents the request for creating a dataset
 type CreateAITaskBuilderDatasetPayload struct {
-	Name string `json:"name"`
+	Name        string `json:"name"`
+	WorkspaceID string `json:"workspace_id"`
 }
 
 // TaskDetails represents the task configuration details for batch creation

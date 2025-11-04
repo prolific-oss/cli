@@ -223,7 +223,13 @@ type GetAITaskBuilderDatasetUploadURLResponse struct {
 
 // CreateAITaskBuilderDatasetResponse is the response for creating a dataset
 type CreateAITaskBuilderDatasetResponse struct {
-	Dataset model.Dataset `json:"dataset"`
+	ID                  string `json:"id"`
+	Name                string `json:"name"`
+	CreatedAt           string `json:"created_at"`
+	CreatedBy           string `json:"created_by"`
+	Status              string `json:"status"`
+	TotalDatapointCount int    `json:"total_datapoint_count"`
+	WorkspaceID         string `json:"workspace_id"`
 }
 
 // CreateAITaskBuilderBatchResponse is the response for creating an AI Task Builder batch.
