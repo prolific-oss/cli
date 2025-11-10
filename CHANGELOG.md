@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## release-next
+## next
 
 - Restructure `aitaskbuilder` dataset commands under `dataset` entity:
   - `aitaskbuilder dataset create` - Create new datasets (previously `aitaskbuilder create-dataset`)
@@ -27,6 +27,12 @@
   - Fixed handling of empty response body (202 Accepted)
   - Improved error message parsing for AI Task Builder endpoints
   - Added support for flat error format `{message, detail}`
+- Add JSON tags to `CreateBatchParams` struct for proper API serialization
+- Use type-safe enums for AI Task Builder types:
+  - `AITaskBuilderBatchStatusEnum` for batch statuses
+  - `DatasetStatus` for dataset statuses
+  - `InstructionType` for instruction types
+- Use `ErrWorkspaceIDRequired` constant for consistent error handling
 
 ## 0.0.56
 
