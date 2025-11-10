@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strings"
 
 	"github.com/prolific-oss/cli/client"
 	"github.com/spf13/cobra"
@@ -166,10 +165,10 @@ func validateInstructions(instructions client.CreateAITaskBuilderInstructionsPay
 		return errors.New("at least one instruction must be provided")
 	}
 
-	validTypes := map[string]bool{
-		"multiple_choice":                true,
-		"free_text":                      true,
-		"multiple_choice_with_free_text": true,
+	validTypes := map[client.InstructionType]bool{
+		client.InstructionTypeMultipleChoice:             true,
+		client.InstructionTypeFreeText:                   true,
+		client.InstructionTypeMultipleChoiceWithFreeText: true,
 	}
 
 	for i, instruction := range instructions.Instructions {
@@ -190,8 +189,10 @@ func validateInstructions(instructions client.CreateAITaskBuilderInstructionsPay
 		}
 
 		// Validate type-specific requirements
-		if strings.Contains(instruction.Type, "multiple_choice") && len(instruction.Options) == 0 {
-			return fmt.Errorf("instruction %d: options are required for type '%s'", i+1, instruction.Type)
+		if instruction.Type == client.InstructionTypeMultipleChoice || instruction.Type == client.InstructionTypeMultipleChoiceWithFreeText {
+			if len(instruction.Options) == 0 {
+				return fmt.Errorf("instruction %d: options are required for type '%s'", i+1, instruction.Type)
+			}
 		}
 
 		// Validate options if present
@@ -203,7 +204,7 @@ func validateInstructions(instructions client.CreateAITaskBuilderInstructionsPay
 				return fmt.Errorf("instruction %d, option %d: value is required", i+1, j+1)
 			}
 			// Heading is required for multiple_choice_with_free_text
-			if instruction.Type == "multiple_choice_with_free_text" && option.Heading == "" {
+			if instruction.Type == client.InstructionTypeMultipleChoiceWithFreeText && option.Heading == "" {
 				return fmt.Errorf("instruction %d, option %d: heading is required for type 'multiple_choice_with_free_text'", i+1, j+1)
 			}
 		}

@@ -28,6 +28,18 @@ type CreateAITaskBuilderBatchPayload struct {
 	TaskDetails TaskDetails `json:"task_details"`
 }
 
+// InstructionType represents the type of instruction.
+type InstructionType string
+
+const (
+	// InstructionTypeMultipleChoice represents a multiple choice instruction.
+	InstructionTypeMultipleChoice InstructionType = "multiple_choice"
+	// InstructionTypeFreeText represents a free text instruction.
+	InstructionTypeFreeText InstructionType = "free_text"
+	// InstructionTypeMultipleChoiceWithFreeText represents a multiple choice instruction with free text.
+	InstructionTypeMultipleChoiceWithFreeText InstructionType = "multiple_choice_with_free_text"
+)
+
 // InstructionOption represents an option for multiple choice instructions
 type InstructionOption struct {
 	Label   string `json:"label"`
@@ -43,7 +55,7 @@ type AnswerLimit struct {
 
 // Instruction represents a single instruction in the request payload
 type Instruction struct {
-	Type        string              `json:"type"`
+	Type        InstructionType     `json:"type"`
 	CreatedBy   string              `json:"created_by"`
 	Description string              `json:"description"`
 	Options     []InstructionOption `json:"options,omitempty"`
