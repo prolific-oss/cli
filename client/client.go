@@ -62,7 +62,7 @@ type API interface {
 	SendMessage(body, recipientID, studyID string) error
 	GetUnreadMessages() (*ListUnreadMessagesResponse, error)
 
-	CreateAITaskBuilderBatch(name, workspaceID, datasetID, taskName, taskIntroduction, taskSteps string) (*CreateAITaskBuilderBatchResponse, error)
+	CreateAITaskBuilderBatch(params CreateBatchParams) (*CreateAITaskBuilderBatchResponse, error)
 	CreateAITaskBuilderInstructions(batchID string, instructions CreateAITaskBuilderInstructionsPayload) (*CreateAITaskBuilderInstructionsResponse, error)
 	SetupAITaskBuilderBatch(batchID, datasetID string, tasksPerGroup int) (*SetupAITaskBuilderBatchResponse, error)
 	CreateAITaskBuilderDataset(workspaceID string, payload CreateAITaskBuilderDatasetPayload) (*CreateAITaskBuilderDatasetResponse, error)
@@ -695,17 +695,17 @@ func (c *Client) GetAITaskBuilderDatasetUploadURL(datasetID, fileName string) (*
 }
 
 // CreateAITaskBuilderBatch will create an AI Task Builder batch.
-func (c *Client) CreateAITaskBuilderBatch(name, workspaceID, datasetID, taskName, taskIntroduction, taskSteps string) (*CreateAITaskBuilderBatchResponse, error) {
+func (c *Client) CreateAITaskBuilderBatch(params CreateBatchParams) (*CreateAITaskBuilderBatchResponse, error) {
 	var response CreateAITaskBuilderBatchResponse
 
 	payload := CreateAITaskBuilderBatchPayload{
-		Name:        name,
-		WorkspaceID: workspaceID,
-		DatasetID:   datasetID,
+		Name:        params.Name,
+		WorkspaceID: params.WorkspaceID,
+		DatasetID:   params.DatasetID,
 		TaskDetails: TaskDetails{
-			TaskName:         taskName,
-			TaskIntroduction: taskIntroduction,
-			TaskSteps:        taskSteps,
+			TaskName:         params.TaskName,
+			TaskIntroduction: params.TaskIntroduction,
+			TaskSteps:        params.TaskSteps,
 		},
 	}
 

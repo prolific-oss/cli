@@ -68,7 +68,14 @@ func TestNewBatchCreateCommandCallsAPI(t *testing.T) {
 		},
 	}
 
-	c.EXPECT().CreateAITaskBuilderBatch(batchName, workspaceID, datasetID, taskName, taskIntroduction, taskSteps).Return(response, nil)
+	c.EXPECT().CreateAITaskBuilderBatch(client.CreateBatchParams{
+		Name:             batchName,
+		WorkspaceID:      workspaceID,
+		DatasetID:        datasetID,
+		TaskName:         taskName,
+		TaskIntroduction: taskIntroduction,
+		TaskSteps:        taskSteps,
+	}).Return(response, nil)
 
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
@@ -110,7 +117,14 @@ func TestNewBatchCreateCommandAPIError(t *testing.T) {
 	taskIntroduction := "This is a sample task for testing"
 	taskSteps := "1. Review the data\n2. Provide your response"
 
-	c.EXPECT().CreateAITaskBuilderBatch(batchName, workspaceID, datasetID, taskName, taskIntroduction, taskSteps).Return(nil, errors.New("API error"))
+	c.EXPECT().CreateAITaskBuilderBatch(client.CreateBatchParams{
+		Name:             batchName,
+		WorkspaceID:      workspaceID,
+		DatasetID:        datasetID,
+		TaskName:         taskName,
+		TaskIntroduction: taskIntroduction,
+		TaskSteps:        taskSteps,
+	}).Return(nil, errors.New("API error"))
 
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)

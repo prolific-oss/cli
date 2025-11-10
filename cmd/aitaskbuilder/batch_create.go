@@ -85,7 +85,16 @@ func createAITaskBuilderBatch(c client.API, opts BatchCreateOptions, w io.Writer
 		return errors.New("task steps is required")
 	}
 
-	response, err := c.CreateAITaskBuilderBatch(opts.Name, opts.WorkspaceID, opts.DatasetID, opts.TaskName, opts.TaskIntroduction, opts.TaskSteps)
+	params := client.CreateBatchParams{
+		Name:             opts.Name,
+		WorkspaceID:      opts.WorkspaceID,
+		DatasetID:        opts.DatasetID,
+		TaskName:         opts.TaskName,
+		TaskIntroduction: opts.TaskIntroduction,
+		TaskSteps:        opts.TaskSteps,
+	}
+
+	response, err := c.CreateAITaskBuilderBatch(params)
 	if err != nil {
 		return err
 	}
