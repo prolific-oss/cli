@@ -42,27 +42,27 @@ func TestNewGetDatasetStatusCommandCallsAPI(t *testing.T) {
 	testCases := []struct {
 		name      string
 		datasetID string
-		status    string
+		status    client.DatasetStatus
 	}{
 		{
 			name:      "returns READY status",
 			datasetID: "01954894-65b3-779e-aaf6-348698e23612",
-			status:    "READY",
+			status:    client.DatasetStatusReady,
 		},
 		{
 			name:      "returns PROCESSING status",
 			datasetID: "01954894-65b3-779e-aaf6-348698e23613",
-			status:    "PROCESSING",
+			status:    client.DatasetStatusProcessing,
 		},
 		{
 			name:      "returns UNINITIALISED status",
 			datasetID: "01954894-65b3-779e-aaf6-348698e23614",
-			status:    "UNINITIALISED",
+			status:    client.DatasetStatusUninitialised,
 		},
 		{
 			name:      "returns ERROR status",
 			datasetID: "01954894-65b3-779e-aaf6-348698e23615",
-			status:    "ERROR",
+			status:    client.DatasetStatusError,
 		},
 	}
 

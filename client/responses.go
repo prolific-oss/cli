@@ -186,6 +186,20 @@ type ListMessagesResponse struct {
 	*JSONAPIMeta
 }
 
+// DatasetStatus represents the status of an AI Task Builder dataset.
+type DatasetStatus string
+
+const (
+	// DatasetStatusUninitialised means the dataset has been created but no data has been uploaded.
+	DatasetStatusUninitialised DatasetStatus = "UNINITIALISED"
+	// DatasetStatusProcessing means the dataset is being processed into datapoints.
+	DatasetStatusProcessing DatasetStatus = "PROCESSING"
+	// DatasetStatusReady means the dataset is ready to be used within a batch.
+	DatasetStatusReady DatasetStatus = "READY"
+	// DatasetStatusError means something went wrong during processing.
+	DatasetStatusError DatasetStatus = "ERROR"
+)
+
 // ListUnreadMessagesResponse is the response for the unread messages endpoint.
 type ListUnreadMessagesResponse struct {
 	Results []model.UnreadMessage `json:"results"`
@@ -220,7 +234,7 @@ type GetAITaskBuilderTasksResponse []string
 
 // GetAITaskBuilderDatasetStatusResponse is the response for the get AI Task Builder dataset status endpoint.
 type GetAITaskBuilderDatasetStatusResponse struct {
-	Status string `json:"status"`
+	Status DatasetStatus `json:"status"`
 }
 
 // GetAITaskBuilderDatasetUploadURLResponse is the response for getting an upload URL for an AI Task Builder dataset.
@@ -233,13 +247,13 @@ type GetAITaskBuilderDatasetUploadURLResponse struct {
 
 // CreateAITaskBuilderDatasetResponse is the response for creating a dataset
 type CreateAITaskBuilderDatasetResponse struct {
-	ID                  string `json:"id"`
-	Name                string `json:"name"`
-	CreatedAt           string `json:"created_at"`
-	CreatedBy           string `json:"created_by"`
-	Status              string `json:"status"`
-	TotalDatapointCount int    `json:"total_datapoint_count"`
-	WorkspaceID         string `json:"workspace_id"`
+	ID                  string        `json:"id"`
+	Name                string        `json:"name"`
+	CreatedAt           string        `json:"created_at"`
+	CreatedBy           string        `json:"created_by"`
+	Status              DatasetStatus `json:"status"`
+	TotalDatapointCount int           `json:"total_datapoint_count"`
+	WorkspaceID         string        `json:"workspace_id"`
 }
 
 // CreateAITaskBuilderBatchResponse is the response for creating an AI Task Builder batch.
