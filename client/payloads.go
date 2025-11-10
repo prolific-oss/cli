@@ -15,12 +15,12 @@ type CreateAITaskBuilderDatasetPayload struct {
 
 // CreateBatchParams represents the parameters for creating an AI Task Builder batch.
 type CreateBatchParams struct {
-	Name             string
-	WorkspaceID      string
-	DatasetID        string
-	TaskName         string
-	TaskIntroduction string
-	TaskSteps        string
+	Name             string `json:"name"`
+	WorkspaceID      string `json:"workspace_id"`
+	DatasetID        string `json:"dataset_id"`
+	TaskName         string `json:"task_name"`
+	TaskIntroduction string `json:"task_introduction"`
+	TaskSteps        string `json:"task_steps"`
 }
 
 // TaskDetails represents the task configuration details for batch creation
