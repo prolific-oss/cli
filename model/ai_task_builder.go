@@ -6,18 +6,18 @@ import (
 
 // AITaskBuilderBatch represents an AI Task Builder batch.
 type AITaskBuilderBatch struct {
-	ID                    string      `json:"id"`
-	CreatedAt             time.Time   `json:"created_at"`
-	CreatedBy             string      `json:"created_by"`
-	Datasets              []Dataset   `json:"datasets"`
-	Name                  string      `json:"name"`
-	Status                string      `json:"status"`
-	TasksPerGroup         int         `json:"tasks_per_group"`
-	TotalTaskCount        int         `json:"total_task_count"`
-	TotalInstructionCount int         `json:"total_instruction_count"`
-	WorkspaceID           string      `json:"workspace_id"`
-	SchemaVersion         int         `json:"schema_version"`
-	TaskDetails           TaskDetails `json:"task_details"`
+	ID                    string                        `json:"id"`
+	CreatedAt             time.Time                     `json:"created_at"`
+	CreatedBy             string                        `json:"created_by"`
+	Datasets              []Dataset                     `json:"datasets"`
+	Name                  string                        `json:"name"`
+	Status                AITaskBuilderBatchStatusEnum  `json:"status"`
+	TasksPerGroup         int                           `json:"tasks_per_group"`
+	TotalTaskCount        int                           `json:"total_task_count"`
+	TotalInstructionCount int                           `json:"total_instruction_count"`
+	WorkspaceID           string                        `json:"workspace_id"`
+	SchemaVersion         int                           `json:"schema_version"`
+	TaskDetails           TaskDetails                   `json:"task_details"`
 }
 
 // AITaskBuilderBatchStatus represents the status of an AI Task Builder batch.
