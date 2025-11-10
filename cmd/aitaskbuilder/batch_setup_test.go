@@ -194,12 +194,12 @@ func TestNewBatchSetupCommandInvalidTasksPerGroup(t *testing.T) {
 		{
 			name:          "zero tasks per group",
 			tasksPerGroup: "0",
-			expectedErr:   "error: tasks per group must be at least 1",
+			expectedErr:   "error: " + aitaskbuilder.ErrTasksPerGroupMinimum,
 		},
 		{
 			name:          "negative tasks per group",
 			tasksPerGroup: "-1",
-			expectedErr:   "error: tasks per group must be at least 1",
+			expectedErr:   "error: " + aitaskbuilder.ErrTasksPerGroupMinimum,
 		},
 	}
 

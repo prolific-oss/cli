@@ -67,22 +67,22 @@ $ prolific aitaskbuilder batch create -n "My Data Collection Batch" -w 6278acb09
 // createAITaskBuilderBatch will create a new AI Task Builder batch
 func createAITaskBuilderBatch(c client.API, opts BatchCreateOptions, w io.Writer) error {
 	if opts.Name == "" {
-		return errors.New("batch name is required")
+		return errors.New(ErrNameRequired)
 	}
 	if opts.WorkspaceID == "" {
-		return errors.New("workspace ID is required")
+		return errors.New(ErrWorkspaceIDRequired)
 	}
 	if opts.DatasetID == "" {
-		return errors.New("dataset ID is required")
+		return errors.New(ErrDatasetIDRequired)
 	}
 	if opts.TaskName == "" {
-		return errors.New("task name is required")
+		return errors.New(ErrTaskNameRequired)
 	}
 	if opts.TaskIntroduction == "" {
-		return errors.New("task introduction is required")
+		return errors.New(ErrTaskIntroductionRequired)
 	}
 	if opts.TaskSteps == "" {
-		return errors.New("task steps is required")
+		return errors.New(ErrTaskStepsRequired)
 	}
 
 	params := client.CreateBatchParams{

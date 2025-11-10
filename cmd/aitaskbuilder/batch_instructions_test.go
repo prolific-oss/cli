@@ -270,7 +270,7 @@ func TestNewBatchInstructionsCommandMissingInstructions(t *testing.T) {
 		t.Fatal("expected an error; got nil")
 	}
 
-	if !strings.Contains(err.Error(), "either instructions file (-f) or JSON string (-j) must be provided") {
+	if !strings.Contains(err.Error(), aitaskbuilder.ErrInstructionInputRequired) {
 		t.Fatalf("expected error about missing instructions; got %s", err.Error())
 	}
 }
@@ -300,7 +300,7 @@ func TestNewBatchInstructionsCommandBothFileAndJSON(t *testing.T) {
 		t.Fatal("expected an error; got nil")
 	}
 
-	if !strings.Contains(err.Error(), "cannot specify both instructions file (-f) and JSON string (-j)") {
+	if !strings.Contains(err.Error(), aitaskbuilder.ErrBothInstructionInputsProvided) {
 		t.Fatalf("expected error about both file and JSON; got %s", err.Error())
 	}
 }

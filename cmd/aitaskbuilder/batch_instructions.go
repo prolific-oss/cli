@@ -92,16 +92,16 @@ Example instructions.json:
 // createBatchInstructions will create instructions for an AI Task Builder batch
 func createBatchInstructions(c client.API, opts BatchInstructionsOptions, w io.Writer) error {
 	if opts.BatchID == "" {
-		return errors.New("batch ID is required")
+		return errors.New(ErrBatchIDRequired)
 	}
 
 	// Validate that either file or json is provided, but not both
 	if opts.InstructionsFile == "" && opts.InstructionsJSON == "" {
-		return errors.New("either instructions file (-f) or JSON string (-j) must be provided")
+		return errors.New(ErrInstructionInputRequired)
 	}
 
 	if opts.InstructionsFile != "" && opts.InstructionsJSON != "" {
-		return errors.New("cannot specify both instructions file (-f) and JSON string (-j)")
+		return errors.New(ErrBothInstructionInputsProvided)
 	}
 
 	var instructionsData []byte
@@ -162,7 +162,7 @@ func createBatchInstructions(c client.API, opts BatchInstructionsOptions, w io.W
 // validateInstructions validates the instruction payload
 func validateInstructions(instructions client.CreateAITaskBuilderInstructionsPayload) error {
 	if len(instructions.Instructions) == 0 {
-		return errors.New("at least one instruction must be provided")
+		return errors.New(ErrAtLeastOneInstructionRequired)
 	}
 
 	validTypes := map[client.InstructionType]bool{

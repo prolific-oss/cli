@@ -753,8 +753,12 @@ func (c *Client) SetupAITaskBuilderBatch(batchID, datasetID string, tasksPerGrou
 }
 
 // CreateAITaskBuilderDataset will create a new AI Task Builder dataset.
+// The workspaceID parameter specifies which workspace the dataset belongs to.
 func (c *Client) CreateAITaskBuilderDataset(workspaceID string, payload CreateAITaskBuilderDatasetPayload) (*CreateAITaskBuilderDatasetResponse, error) {
 	var response CreateAITaskBuilderDatasetResponse
+
+	// Ensure workspace_id in payload matches the parameter
+	payload.WorkspaceID = workspaceID
 
 	url := "/api/v1/data-collection/datasets"
 	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)

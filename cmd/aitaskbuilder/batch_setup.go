@@ -58,13 +58,13 @@ $ prolific aitaskbuilder batch setup -b <batch_id> -d <dataset_id> --tasks-per-g
 // setupAITaskBuilderBatch will setup an AI Task Builder batch
 func setupAITaskBuilderBatch(c client.API, opts BatchSetupOptions, w io.Writer) error {
 	if opts.BatchID == "" {
-		return errors.New("batch ID is required")
+		return errors.New(ErrBatchIDRequired)
 	}
 	if opts.DatasetID == "" {
-		return errors.New("dataset ID is required")
+		return errors.New(ErrDatasetIDRequired)
 	}
 	if opts.TasksPerGroup < 1 {
-		return errors.New("tasks per group must be at least 1")
+		return errors.New(ErrTasksPerGroupMinimum)
 	}
 
 	_, err := c.SetupAITaskBuilderBatch(opts.BatchID, opts.DatasetID, opts.TasksPerGroup)

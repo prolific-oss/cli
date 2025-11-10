@@ -40,8 +40,7 @@ func TestNewCreateDatasetCommandCallsAPI(t *testing.T) {
 
 	workspaceID := "workspace-123"
 	payload := client.CreateAITaskBuilderDatasetPayload{
-		Name:        "Test Dataset",
-		WorkspaceID: workspaceID,
+		Name: "Test Dataset",
 	}
 
 	response := client.CreateAITaskBuilderDatasetResponse{
@@ -91,8 +90,7 @@ func TestNewCreateDatasetCommandHandlesErrors(t *testing.T) {
 
 	workspaceID := "invalid-workspace"
 	payload := client.CreateAITaskBuilderDatasetPayload{
-		Name:        "Test Dataset",
-		WorkspaceID: workspaceID,
+		Name: "Test Dataset",
 	}
 
 	errorMessage := "workspace not found"
