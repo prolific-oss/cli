@@ -50,7 +50,6 @@ $ prolific aitaskbuilder batch setup -b <batch_id> -d <dataset_id> --tasks-per-g
 
 	_ = cmd.MarkFlagRequired("batch-id")
 	_ = cmd.MarkFlagRequired("dataset-id")
-	_ = cmd.MarkFlagRequired("tasks-per-group")
 
 	return cmd
 }

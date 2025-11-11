@@ -35,8 +35,9 @@ func TestNewBatchSetupCommand(t *testing.T) {
 
 func TestNewBatchSetupCommandCallsAPI(t *testing.T) {
 	testCases := []struct {
-		name          string
-		tasksPerGroup int
+		name              string
+		tasksPerGroup     int
+		omitTasksPerGroup bool
 	}{
 		{
 			name:          "successful setup with 3 tasks per group",
@@ -49,6 +50,11 @@ func TestNewBatchSetupCommandCallsAPI(t *testing.T) {
 		{
 			name:          "successful setup with 1 task per group",
 			tasksPerGroup: 1,
+		},
+		{
+			name:              "successful setup with default tasks per group",
+			tasksPerGroup:     1,
+			omitTasksPerGroup: true,
 		},
 	}
 
@@ -71,11 +77,14 @@ func TestNewBatchSetupCommandCallsAPI(t *testing.T) {
 			writer := bufio.NewWriter(&b)
 
 			cmd := aitaskbuilder.NewBatchSetupCommand(c, writer)
-			cmd.SetArgs([]string{
+			args := []string{
 				"--batch-id", batchID,
 				"--dataset-id", datasetID,
-				"--tasks-per-group", fmt.Sprintf("%d", tc.tasksPerGroup),
-			})
+			}
+			if !tc.omitTasksPerGroup {
+				args = append(args, "--tasks-per-group", fmt.Sprintf("%d", tc.tasksPerGroup))
+			}
+			cmd.SetArgs(args)
 
 			err := cmd.Execute()
 			if err != nil {
@@ -150,14 +159,9 @@ func TestNewBatchSetupCommandMissingRequiredFlags(t *testing.T) {
 			expectedErr: `required flag(s) "dataset-id" not set`,
 		},
 		{
-			name:        "missing tasks-per-group flag",
-			args:        []string{"--batch-id", "01954894-65b3-779e-aaf6-348698e23634", "--dataset-id", "8c4c51f1-f6f3-43bc-b65d-7415e8ef22c0"},
-			expectedErr: `required flag(s) "tasks-per-group" not set`,
-		},
-		{
 			name:        "missing all flags",
 			args:        []string{},
-			expectedErr: `required flag(s) "batch-id", "dataset-id", "tasks-per-group" not set`,
+			expectedErr: `required flag(s) "batch-id", "dataset-id" not set`,
 		},
 	}
 
