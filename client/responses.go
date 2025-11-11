@@ -43,6 +43,12 @@ type JSONAPIError struct {
 	} `json:"error"`
 }
 
+// SimpleAPIError represents a simpler error format used by some endpoints
+type SimpleAPIError struct {
+	Message string `json:"message"`
+	Detail  string `json:"detail"`
+}
+
 // MeResponse is a struct that represents your account.
 type MeResponse struct {
 	ID               string `json:"id"`
@@ -208,9 +214,13 @@ type GetAITaskBuilderResponsesResponse struct {
 	Meta    ResponseMeta                  `json:"meta"`
 }
 
+// GetAITaskBuilderTasksResponse is the response for the get AI Task Builder tasks endpoint.
+// The API returns a simple array of task ID strings.
+type GetAITaskBuilderTasksResponse []string
+
 // GetAITaskBuilderDatasetStatusResponse is the response for the get AI Task Builder dataset status endpoint.
 type GetAITaskBuilderDatasetStatusResponse struct {
-	Status string `json:"status"`
+	Status model.DatasetStatus `json:"status"`
 }
 
 // GetAITaskBuilderDatasetUploadURLResponse is the response for getting an upload URL for an AI Task Builder dataset.
@@ -223,7 +233,50 @@ type GetAITaskBuilderDatasetUploadURLResponse struct {
 
 // CreateAITaskBuilderDatasetResponse is the response for creating a dataset
 type CreateAITaskBuilderDatasetResponse struct {
-	Dataset model.Dataset `json:"dataset"`
+	ID                  string              `json:"id"`
+	Name                string              `json:"name"`
+	CreatedAt           string              `json:"created_at"`
+	CreatedBy           string              `json:"created_by"`
+	Status              model.DatasetStatus `json:"status"`
+	TotalDatapointCount int                 `json:"total_datapoint_count"`
+	WorkspaceID         string              `json:"workspace_id"`
+}
+
+// CreateAITaskBuilderBatchResponse is the response for creating an AI Task Builder batch.
+type CreateAITaskBuilderBatchResponse struct {
+	ID                    string              `json:"id"`
+	CreatedAt             string              `json:"created_at"`
+	CreatedBy             string              `json:"created_by"`
+	Name                  string              `json:"name"`
+	Status                string              `json:"status"`
+	TotalTaskCount        int                 `json:"total_task_count"`
+	TotalInstructionCount int                 `json:"total_instruction_count"`
+	TotalTaskGroups       *int                `json:"total_task_groups,omitempty"`
+	WorkspaceID           string              `json:"workspace_id"`
+	Datasets              []DatasetReference  `json:"datasets"`
+	TaskDetails           TaskDetailsResponse `json:"task_details"`
+}
+
+// DatasetReference represents a dataset reference in the batch response
+type DatasetReference struct {
+	ID                  string `json:"id"`
+	TotalDatapointCount int    `json:"total_datapoint_count"`
+}
+
+// TaskDetailsResponse represents the task details in the batch response
+type TaskDetailsResponse struct {
+	TaskName         string `json:"task_name"`
+	TaskIntroduction string `json:"task_introduction"`
+	TaskSteps        string `json:"task_steps"`
+}
+
+// CreateAITaskBuilderInstructionsResponse is the response for creating AI Task Builder instructions.
+type CreateAITaskBuilderInstructionsResponse []model.Instruction
+
+// SetupAITaskBuilderBatchResponse is the response for setting up an AI Task Builder batch.
+// The API returns 202 Accepted with an empty response body.
+type SetupAITaskBuilderBatchResponse struct {
+	// Empty response body
 }
 
 // ResponseMeta contains metadata about the response.

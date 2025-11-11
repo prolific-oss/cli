@@ -17,7 +17,7 @@ type BatchGetBatchesOptions struct {
 
 func renderAITaskBuilderBatches(c client.API, opts BatchGetBatchesOptions, w io.Writer) error {
 	if opts.WorkspaceID == "" {
-		return errors.New("workspace ID is required")
+		return errors.New(ErrWorkspaceIDRequired)
 	}
 
 	response, err := c.GetAITaskBuilderBatches(opts.WorkspaceID)

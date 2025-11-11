@@ -25,7 +25,11 @@ func NewCreateDatasetCommand(client client.API, w io.Writer) *cobra.Command {
 		Short: "Create a Dataset",
 		Long: `Create a new AI Task Builder dataset
 
-Provide a name and workspace ID to create a new dataset in your workspace.`,
+A dataset contains the data that will be used for annotation tasks. You must provide:
+- A name for the dataset
+- The workspace ID where the dataset will be created
+
+The workspace ID determines which workspace owns and has access to this dataset.`,
 		Example: `
 Create a dataset:
 $ prolific aitaskbuilder dataset create -n "test" -w <workspace_id>
@@ -67,15 +71,20 @@ func createAITaskBuilderDataset(c client.API, opts CreateDatasetOptions, w io.Wr
 		Name: opts.Name,
 	}
 
-	// Call API to create
+	// Call API to create dataset in the specified workspace
 	response, err := c.CreateAITaskBuilderDataset(opts.WorkspaceID, payload)
 	if err != nil {
 		return err
 	}
 
-	// Output success with ID
-	fmt.Fprintf(w, "Created dataset: %s\n", response.Dataset.ID)
-	fmt.Fprintf(w, "Total datapoint count: %d\n", response.Dataset.TotalDatapointCount)
+	// Output full dataset details
+	fmt.Fprintf(w, "ID: %s\n", response.ID)
+	fmt.Fprintf(w, "Name: %s\n", response.Name)
+	fmt.Fprintf(w, "Created At: %s\n", response.CreatedAt)
+	fmt.Fprintf(w, "Created By: %s\n", response.CreatedBy)
+	fmt.Fprintf(w, "Status: %s\n", response.Status)
+	fmt.Fprintf(w, "Total Datapoint Count: %d\n", response.TotalDatapointCount)
+	fmt.Fprintf(w, "Workspace ID: %s\n", response.WorkspaceID)
 
 	return nil
 }

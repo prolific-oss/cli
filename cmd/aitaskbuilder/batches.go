@@ -16,10 +16,14 @@ func NewBatchesCommand(client client.API, w io.Writer) *cobra.Command {
 	}
 
 	cmd.AddCommand(
+		NewBatchCreateCommand(client, w),
+		NewBatchInstructionsCommand(client, w),
+		NewBatchSetupCommand(client, w),
 		NewGetBatchCommand(client, w),
 		NewGetBatchStatusCommand(client, w),
 		NewGetBatchesListCommand(client, w),
 		NewGetResponsesCommand(client, w),
+		NewBatchTasksCommand(client, w),
 	)
 
 	return cmd

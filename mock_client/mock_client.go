@@ -35,6 +35,21 @@ func (m *MockAPI) EXPECT() *MockAPIMockRecorder {
 	return m.recorder
 }
 
+// CreateAITaskBuilderBatch mocks base method.
+func (m *MockAPI) CreateAITaskBuilderBatch(params client.CreateBatchParams) (*client.CreateAITaskBuilderBatchResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateAITaskBuilderBatch", params)
+	ret0, _ := ret[0].(*client.CreateAITaskBuilderBatchResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateAITaskBuilderBatch indicates an expected call of CreateAITaskBuilderBatch.
+func (mr *MockAPIMockRecorder) CreateAITaskBuilderBatch(params interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAITaskBuilderBatch", reflect.TypeOf((*MockAPI)(nil).CreateAITaskBuilderBatch), params)
+}
+
 // CreateAITaskBuilderDataset mocks base method.
 func (m *MockAPI) CreateAITaskBuilderDataset(workspaceID string, payload client.CreateAITaskBuilderDatasetPayload) (*client.CreateAITaskBuilderDatasetResponse, error) {
 	m.ctrl.T.Helper()
@@ -48,6 +63,21 @@ func (m *MockAPI) CreateAITaskBuilderDataset(workspaceID string, payload client.
 func (mr *MockAPIMockRecorder) CreateAITaskBuilderDataset(workspaceID, payload interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAITaskBuilderDataset", reflect.TypeOf((*MockAPI)(nil).CreateAITaskBuilderDataset), workspaceID, payload)
+}
+
+// CreateAITaskBuilderInstructions mocks base method.
+func (m *MockAPI) CreateAITaskBuilderInstructions(batchID string, instructions client.CreateAITaskBuilderInstructionsPayload) (*client.CreateAITaskBuilderInstructionsResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateAITaskBuilderInstructions", batchID, instructions)
+	ret0, _ := ret[0].(*client.CreateAITaskBuilderInstructionsResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateAITaskBuilderInstructions indicates an expected call of CreateAITaskBuilderInstructions.
+func (mr *MockAPIMockRecorder) CreateAITaskBuilderInstructions(batchID, instructions interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAITaskBuilderInstructions", reflect.TypeOf((*MockAPI)(nil).CreateAITaskBuilderInstructions), batchID, instructions)
 }
 
 // CreateProject mocks base method.
@@ -198,6 +228,21 @@ func (m *MockAPI) GetAITaskBuilderResponses(batchID string) (*client.GetAITaskBu
 func (mr *MockAPIMockRecorder) GetAITaskBuilderResponses(batchID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAITaskBuilderResponses", reflect.TypeOf((*MockAPI)(nil).GetAITaskBuilderResponses), batchID)
+}
+
+// GetAITaskBuilderTasks mocks base method.
+func (m *MockAPI) GetAITaskBuilderTasks(batchID string) (*client.GetAITaskBuilderTasksResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAITaskBuilderTasks", batchID)
+	ret0, _ := ret[0].(*client.GetAITaskBuilderTasksResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAITaskBuilderTasks indicates an expected call of GetAITaskBuilderTasks.
+func (mr *MockAPIMockRecorder) GetAITaskBuilderTasks(batchID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAITaskBuilderTasks", reflect.TypeOf((*MockAPI)(nil).GetAITaskBuilderTasks), batchID)
 }
 
 // GetCampaigns mocks base method.
@@ -512,6 +557,21 @@ func (m *MockAPI) SendMessage(body, recipientID, studyID string) error {
 func (mr *MockAPIMockRecorder) SendMessage(body, recipientID, studyID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendMessage", reflect.TypeOf((*MockAPI)(nil).SendMessage), body, recipientID, studyID)
+}
+
+// SetupAITaskBuilderBatch mocks base method.
+func (m *MockAPI) SetupAITaskBuilderBatch(batchID, datasetID string, tasksPerGroup int) (*client.SetupAITaskBuilderBatchResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetupAITaskBuilderBatch", batchID, datasetID, tasksPerGroup)
+	ret0, _ := ret[0].(*client.SetupAITaskBuilderBatchResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetupAITaskBuilderBatch indicates an expected call of SetupAITaskBuilderBatch.
+func (mr *MockAPIMockRecorder) SetupAITaskBuilderBatch(batchID, datasetID, tasksPerGroup interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetupAITaskBuilderBatch", reflect.TypeOf((*MockAPI)(nil).SetupAITaskBuilderBatch), batchID, datasetID, tasksPerGroup)
 }
 
 // TransitionStudy mocks base method.

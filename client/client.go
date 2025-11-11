@@ -62,11 +62,15 @@ type API interface {
 	SendMessage(body, recipientID, studyID string) error
 	GetUnreadMessages() (*ListUnreadMessagesResponse, error)
 
+	CreateAITaskBuilderBatch(params CreateBatchParams) (*CreateAITaskBuilderBatchResponse, error)
+	CreateAITaskBuilderInstructions(batchID string, instructions CreateAITaskBuilderInstructionsPayload) (*CreateAITaskBuilderInstructionsResponse, error)
+	SetupAITaskBuilderBatch(batchID, datasetID string, tasksPerGroup int) (*SetupAITaskBuilderBatchResponse, error)
 	CreateAITaskBuilderDataset(workspaceID string, payload CreateAITaskBuilderDatasetPayload) (*CreateAITaskBuilderDatasetResponse, error)
 	GetAITaskBuilderBatch(batchID string) (*GetAITaskBuilderBatchResponse, error)
 	GetAITaskBuilderBatchStatus(batchID string) (*GetAITaskBuilderBatchStatusResponse, error)
 	GetAITaskBuilderBatches(workspaceID string) (*GetAITaskBuilderBatchesResponse, error)
 	GetAITaskBuilderResponses(batchID string) (*GetAITaskBuilderResponsesResponse, error)
+	GetAITaskBuilderTasks(batchID string) (*GetAITaskBuilderTasksResponse, error)
 	GetAITaskBuilderDatasetStatus(datasetID string) (*GetAITaskBuilderDatasetStatusResponse, error)
 	GetAITaskBuilderDatasetUploadURL(datasetID, fileName string) (*GetAITaskBuilderDatasetUploadURLResponse, error)
 }
@@ -137,12 +141,20 @@ func (c *Client) Execute(method, url string, body any, response any) (*http.Resp
 	}
 
 	if httpResponse.StatusCode >= 400 {
+		// Try the nested error format first
 		var apiError JSONAPIError
-		if err := json.NewDecoder(io.NopCloser(bytes.NewBuffer(responseBody))).Decode(&apiError); err != nil {
-			return nil, fmt.Errorf("decoding JSON response from %s failed: %v", request.URL, err)
+		if err := json.NewDecoder(io.NopCloser(bytes.NewBuffer(responseBody))).Decode(&apiError); err == nil && apiError.Error.Detail != nil {
+			return nil, fmt.Errorf("request failed: %v", apiError.Error.Detail)
 		}
 
-		return nil, fmt.Errorf("request failed: %v", apiError.Error.Detail)
+		// Try the simple error format
+		var simpleError SimpleAPIError
+		if err := json.NewDecoder(io.NopCloser(bytes.NewBuffer(responseBody))).Decode(&simpleError); err == nil && simpleError.Detail != "" {
+			return nil, fmt.Errorf("request failed: %s - %s", simpleError.Message, simpleError.Detail)
+		}
+
+		// If both fail, return generic error with status code
+		return nil, fmt.Errorf("request failed with status %d: %s", httpResponse.StatusCode, string(responseBody))
 	}
 
 	if response != nil {
@@ -407,9 +419,14 @@ func (c *Client) CreateWorkspace(workspace model.Workspace) (*CreateWorkspacesRe
 	var response CreateWorkspacesResponse
 
 	url := "/api/v1/workspaces/"
-	_, err := c.Execute(http.MethodPost, url, workspace, &response)
+	httpResponse, err := c.Execute(http.MethodPost, url, workspace, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unable to create workspace: %v", string(body))
 	}
 
 	return &response, nil
@@ -646,6 +663,18 @@ func (c *Client) GetAITaskBuilderResponses(batchID string) (*GetAITaskBuilderRes
 	return &response, nil
 }
 
+// GetAITaskBuilderTasks will return the tasks for an AI Task Builder batch.
+func (c *Client) GetAITaskBuilderTasks(batchID string) (*GetAITaskBuilderTasksResponse, error) {
+	var response GetAITaskBuilderTasksResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/tasks", batchID)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+	return &response, nil
+}
+
 // GetAITaskBuilderDatasetStatus will return the status of an AI Task Builder dataset.
 func (c *Client) GetAITaskBuilderDatasetStatus(datasetID string) (*GetAITaskBuilderDatasetStatusResponse, error) {
 	var response GetAITaskBuilderDatasetStatusResponse
@@ -670,11 +699,85 @@ func (c *Client) GetAITaskBuilderDatasetUploadURL(datasetID, fileName string) (*
 	return &response, nil
 }
 
+// CreateAITaskBuilderBatch will create an AI Task Builder batch.
+func (c *Client) CreateAITaskBuilderBatch(params CreateBatchParams) (*CreateAITaskBuilderBatchResponse, error) {
+	var response CreateAITaskBuilderBatchResponse
+
+	payload := CreateAITaskBuilderBatchPayload{
+		Name:        params.Name,
+		WorkspaceID: params.WorkspaceID,
+		DatasetID:   params.DatasetID,
+		TaskDetails: TaskDetails{
+			TaskName:         params.TaskName,
+			TaskIntroduction: params.TaskIntroduction,
+			TaskSteps:        params.TaskSteps,
+		},
+	}
+
+	url := "/api/v1/data-collection/batches"
+	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unable to create batch: %v", string(body))
+	}
+
+	return &response, nil
+}
+
+// CreateAITaskBuilderInstructions will create instructions for an AI Task Builder batch.
+func (c *Client) CreateAITaskBuilderInstructions(batchID string, instructions CreateAITaskBuilderInstructionsPayload) (*CreateAITaskBuilderInstructionsResponse, error) {
+	var response CreateAITaskBuilderInstructionsResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/instructions", batchID)
+	httpResponse, err := c.Execute(http.MethodPost, url, instructions, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unable to create instructions: %v", string(body))
+	}
+
+	return &response, nil
+}
+
+// SetupAITaskBuilderBatch will setup an AI Task Builder batch.
+func (c *Client) SetupAITaskBuilderBatch(batchID, datasetID string, tasksPerGroup int) (*SetupAITaskBuilderBatchResponse, error) {
+	var response SetupAITaskBuilderBatchResponse
+
+	payload := SetupAITaskBuilderBatchPayload{
+		DatasetID:     datasetID,
+		TasksPerGroup: tasksPerGroup,
+	}
+
+	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/setup", batchID)
+	httpResponse, err := c.Execute(http.MethodPost, url, payload, nil)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	// Check for 202 Accepted status
+	if httpResponse.StatusCode != http.StatusAccepted {
+		return nil, fmt.Errorf("unexpected status code: %d", httpResponse.StatusCode)
+	}
+
+	return &response, nil
+}
+
 // CreateAITaskBuilderDataset will create a new AI Task Builder dataset.
+// The workspaceID parameter specifies which workspace the dataset belongs to.
 func (c *Client) CreateAITaskBuilderDataset(workspaceID string, payload CreateAITaskBuilderDatasetPayload) (*CreateAITaskBuilderDatasetResponse, error) {
 	var response CreateAITaskBuilderDatasetResponse
 
-	url := fmt.Sprintf("/api/v1/data-collection/workspaces/%s/datasets/", workspaceID)
+	// Ensure workspace_id in payload matches the parameter
+	payload.WorkspaceID = workspaceID
+
+	url := "/api/v1/data-collection/datasets"
 	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)

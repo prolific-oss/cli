@@ -13,6 +13,7 @@ import (
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/aitaskbuilder"
 	"github.com/prolific-oss/cli/mock_client"
+	"github.com/prolific-oss/cli/model"
 )
 
 func setupMockClient(t *testing.T) *mock_client.MockAPI {
@@ -42,27 +43,27 @@ func TestNewGetDatasetStatusCommandCallsAPI(t *testing.T) {
 	testCases := []struct {
 		name      string
 		datasetID string
-		status    string
+		status    model.DatasetStatus
 	}{
 		{
 			name:      "returns READY status",
 			datasetID: "01954894-65b3-779e-aaf6-348698e23612",
-			status:    "READY",
+			status:    model.DatasetStatusReady,
 		},
 		{
 			name:      "returns PROCESSING status",
 			datasetID: "01954894-65b3-779e-aaf6-348698e23613",
-			status:    "PROCESSING",
+			status:    model.DatasetStatusProcessing,
 		},
 		{
 			name:      "returns UNINITIALISED status",
 			datasetID: "01954894-65b3-779e-aaf6-348698e23614",
-			status:    "UNINITIALISED",
+			status:    model.DatasetStatusUninitialised,
 		},
 		{
 			name:      "returns ERROR status",
 			datasetID: "01954894-65b3-779e-aaf6-348698e23615",
-			status:    "ERROR",
+			status:    model.DatasetStatusError,
 		},
 	}
 

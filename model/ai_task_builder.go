@@ -6,18 +6,18 @@ import (
 
 // AITaskBuilderBatch represents an AI Task Builder batch.
 type AITaskBuilderBatch struct {
-	ID                    string      `json:"id"`
-	CreatedAt             time.Time   `json:"created_at"`
-	CreatedBy             string      `json:"created_by"`
-	Datasets              []Dataset   `json:"datasets"`
-	Name                  string      `json:"name"`
-	Status                string      `json:"status"`
-	TasksPerGroup         int         `json:"tasks_per_group"`
-	TotalTaskCount        int         `json:"total_task_count"`
-	TotalInstructionCount int         `json:"total_instruction_count"`
-	WorkspaceID           string      `json:"workspace_id"`
-	SchemaVersion         int         `json:"schema_version"`
-	TaskDetails           TaskDetails `json:"task_details"`
+	ID                    string                       `json:"id"`
+	CreatedAt             time.Time                    `json:"created_at"`
+	CreatedBy             string                       `json:"created_by"`
+	Datasets              []Dataset                    `json:"datasets"`
+	Name                  string                       `json:"name"`
+	Status                AITaskBuilderBatchStatusEnum `json:"status"`
+	TasksPerGroup         int                          `json:"tasks_per_group"`
+	TotalTaskCount        int                          `json:"total_task_count"`
+	TotalInstructionCount int                          `json:"total_instruction_count"`
+	WorkspaceID           string                       `json:"workspace_id"`
+	SchemaVersion         int                          `json:"schema_version"`
+	TaskDetails           TaskDetails                  `json:"task_details"`
 }
 
 // AITaskBuilderBatchStatus represents the status of an AI Task Builder batch.
@@ -27,15 +27,52 @@ type AITaskBuilderBatchStatus struct {
 
 // Dataset represents a dataset in a batch.
 type Dataset struct {
-	ID                  string `json:"id"`
-	TotalDatapointCount int    `json:"total_datapoint_count"`
+	ID                  string        `json:"id"`
+	Name                string        `json:"name"`
+	CreatedAt           string        `json:"created_at"`
+	CreatedBy           string        `json:"created_by"`
+	Status              DatasetStatus `json:"status"`
+	TotalDatapointCount int           `json:"total_datapoint_count"`
+	WorkspaceID         string        `json:"workspace_id"`
 }
+
+// DatasetStatus represents the status of a dataset.
+type DatasetStatus string
+
+const (
+	// DatasetStatusUninitialised means the dataset has been created but no data has been uploaded.
+	DatasetStatusUninitialised DatasetStatus = "UNINITIALISED"
+	// DatasetStatusProcessing means the dataset is being processed into datapoints.
+	DatasetStatusProcessing DatasetStatus = "PROCESSING"
+	// DatasetStatusReady means the dataset is ready to be used within a batch.
+	DatasetStatusReady DatasetStatus = "READY"
+	// DatasetStatusError means something went wrong during processing.
+	DatasetStatusError DatasetStatus = "ERROR"
+)
 
 // TaskDetails represents the task configuration details.
 type TaskDetails struct {
 	TaskName         string `json:"task_name"`
 	TaskIntroduction string `json:"task_introduction"`
 	TaskSteps        string `json:"task_steps"`
+}
+
+// InstructionOption represents an option for multiple choice instructions.
+type InstructionOption struct {
+	Label   string `json:"label"`
+	Value   string `json:"value"`
+	Heading string `json:"heading,omitempty"`
+}
+
+// Instruction represents an instruction in a batch.
+type Instruction struct {
+	ID          string              `json:"id"`
+	Type        string              `json:"type"`
+	BatchID     string              `json:"batch_id"`
+	CreatedBy   string              `json:"created_by"`
+	CreatedAt   string              `json:"created_at"`
+	Description string              `json:"description"`
+	Options     []InstructionOption `json:"options,omitempty"`
 }
 
 // AITaskBuilderResponse represents a response from an AI Task Builder batch task.
