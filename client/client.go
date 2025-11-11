@@ -419,9 +419,14 @@ func (c *Client) CreateWorkspace(workspace model.Workspace) (*CreateWorkspacesRe
 	var response CreateWorkspacesResponse
 
 	url := "/api/v1/workspaces/"
-	_, err := c.Execute(http.MethodPost, url, workspace, &response)
+	httpResponse, err := c.Execute(http.MethodPost, url, workspace, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unable to create workspace: %v", string(body))
 	}
 
 	return &response, nil
