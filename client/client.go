@@ -715,10 +715,16 @@ func (c *Client) CreateAITaskBuilderBatch(params CreateBatchParams) (*CreateAITa
 	}
 
 	url := "/api/v1/data-collection/batches"
-	_, err := c.Execute(http.MethodPost, url, payload, &response)
+	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
+
+	if httpResponse.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unable to create batch: %v", string(body))
+	}
+
 	return &response, nil
 }
 
@@ -727,10 +733,16 @@ func (c *Client) CreateAITaskBuilderInstructions(batchID string, instructions Cr
 	var response CreateAITaskBuilderInstructionsResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/instructions", batchID)
-	_, err := c.Execute(http.MethodPost, url, instructions, &response)
+	httpResponse, err := c.Execute(http.MethodPost, url, instructions, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
+
+	if httpResponse.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unable to create instructions: %v", string(body))
+	}
+
 	return &response, nil
 }
 
