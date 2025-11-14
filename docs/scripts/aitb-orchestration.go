@@ -214,7 +214,7 @@ func uploadDataset(datasetID string) error {
 	return nil
 }
 
-// checkDataset executes the dataset check command
+// checkDataset executes the dataset check command and verifies it's READY
 func checkDataset(datasetID string) error {
 	cmd := exec.CommandContext(context.Background(), "./prolific", "aitaskbuilder", "dataset", "check",
 		"-d", datasetID)
@@ -225,6 +225,12 @@ func checkDataset(datasetID string) error {
 	}
 
 	fmt.Printf("Dataset status: %s\n", string(output))
+
+	// Check if status is READY
+	if !strings.Contains(string(output), "READY") {
+		return fmt.Errorf("dataset is not in READY status: %s", string(output))
+	}
+
 	return nil
 }
 
@@ -261,7 +267,7 @@ func createBatch(batchName, datasetID string) (string, error) {
 	return "", fmt.Errorf("could not find batch ID in output: %s", string(output))
 }
 
-// checkBatch executes the batch check command
+// checkBatch executes the batch check command and verifies it's READY
 func checkBatch(batchID string) error {
 	cmd := exec.CommandContext(context.Background(), "./prolific", "aitaskbuilder", "batch", "check",
 		"-b", batchID)
@@ -272,6 +278,12 @@ func checkBatch(batchID string) error {
 	}
 
 	fmt.Printf("Batch status: %s\n", string(output))
+
+	// Check if status is READY
+	if !strings.Contains(string(output), "READY") {
+		return fmt.Errorf("batch is not in READY status: %s", string(output))
+	}
+
 	return nil
 }
 
