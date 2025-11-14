@@ -2,6 +2,13 @@
 
 ## next
 
+- Add `study credentials-report` command to download CSV report of credential usage for a study:
+  - Returns participant IDs, submission IDs, usernames, and credential status (USED/UNUSED)
+  - Available only for studies with credentials configured
+  - Usage: `prolific study credentials-report <study-id> > report.csv`
+
+## 0.0.57
+
 - Restructure `aitaskbuilder` dataset commands under `dataset` entity:
   - `aitaskbuilder dataset create` - Create new datasets (previously `aitaskbuilder create-dataset`)
   - `aitaskbuilder dataset check` - Check dataset status (previously `aitaskbuilder getdatasetstatus`)
