@@ -2,6 +2,8 @@
 
 ## next
 
+## 0.0.57
+
 - Restructure `aitaskbuilder` dataset commands under `dataset` entity:
   - `aitaskbuilder dataset create` - Create new datasets (previously `aitaskbuilder create-dataset`)
   - `aitaskbuilder dataset check` - Check dataset status (previously `aitaskbuilder getdatasetstatus`)
