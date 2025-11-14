@@ -55,6 +55,7 @@ Main features include:
 - Ability to list submissions for a given study.
 - Ability to list studies and define which fields to do display in a table format.
 - Ability to render details about a study, and the submissions.
+- Ability to download credentials usage report for a study as CSV.
 - Ability to create a Study via a YAML/JSON configuration file.
 - Ability to publish a study whilst creating it (if you have sufficient funds).
 - Ability to silently create a study, meaning you [can script creating many studies in one go](https://github.com/prolific-oss/cli/wiki/Create-multiple-studies-via-a-bash-script).

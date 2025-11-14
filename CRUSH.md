@@ -9,6 +9,51 @@
 - **API Client**: Custom HTTP client in `client/client.go`
 - **License**: Apache 2.0
 
+## Prerequisites & Setup
+
+### Installing Go
+
+This project requires **Go 1.25 or later**.
+
+**macOS:**
+```bash
+brew install go
+```
+
+**Other platforms:**
+Download from https://go.dev/dl/
+
+### Setting up your PATH
+
+After installing Go, ensure `$GOPATH/bin` is in your PATH so tools like `mockgen` and `gosec` can be found:
+
+```bash
+# Add to ~/.zshrc (zsh) or ~/.bash_profile (bash)
+export PATH="$PATH:$(go env GOPATH)/bin"
+
+# Reload your shell
+source ~/.zshrc  # or source ~/.bash_profile
+```
+
+Verify setup:
+```bash
+go version           # Should show Go 1.25+
+go env GOPATH        # Should show your Go workspace (typically ~/go)
+echo $PATH | grep go # Should include your GOPATH/bin
+```
+
+### First Time Setup
+
+Once Go is installed and PATH is configured:
+
+```bash
+# Install dependencies and setup git hooks
+make install
+
+# Verify mockgen is available
+mockgen -version
+```
+
 ## Essential Commands
 
 ### Development Workflow

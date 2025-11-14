@@ -1,9 +1,12 @@
+vendor/
+build/
+
 prolific
 coverage.out
 profile.out
 trace.out
 debug.test
-vendor/
 debug
-build/
 notes.md
+
+.idea
