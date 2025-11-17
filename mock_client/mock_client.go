@@ -500,6 +500,21 @@ func (mr *MockAPIMockRecorder) GetStudy(ID interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStudy", reflect.TypeOf((*MockAPI)(nil).GetStudy), ID)
 }
 
+// GetStudyCredentialsUsageReportCSV mocks base method.
+func (m *MockAPI) GetStudyCredentialsUsageReportCSV(ID string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetStudyCredentialsUsageReportCSV", ID)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetStudyCredentialsUsageReportCSV indicates an expected call of GetStudyCredentialsUsageReportCSV.
+func (mr *MockAPIMockRecorder) GetStudyCredentialsUsageReportCSV(ID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStudyCredentialsUsageReportCSV", reflect.TypeOf((*MockAPI)(nil).GetStudyCredentialsUsageReportCSV), ID)
+}
+
 // GetSubmissions mocks base method.
 func (m *MockAPI) GetSubmissions(ID string, limit, offset int) (*client.ListSubmissionsResponse, error) {
 	m.ctrl.T.Helper()

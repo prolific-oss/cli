@@ -35,6 +35,7 @@ type API interface {
 	GetSubmissions(ID string, limit, offset int) (*ListSubmissionsResponse, error)
 	TransitionStudy(ID, action string) (*TransitionStudyResponse, error)
 	UpdateStudy(ID string, study model.UpdateStudy) (*model.Study, error)
+	GetStudyCredentialsUsageReportCSV(ID string) (string, error)
 
 	GetCampaigns(workspaceID string, limit, offset int) (*ListCampaignsResponse, error)
 
@@ -336,6 +337,22 @@ func (c *Client) UpdateStudy(ID string, study model.UpdateStudy) (*model.Study, 
 	}
 
 	return &response, nil
+}
+
+// GetStudyCredentialsUsageReportCSV will return the credentials usage report for a study as CSV.
+func (c *Client) GetStudyCredentialsUsageReportCSV(ID string) (string, error) {
+	endpointURL := fmt.Sprintf("/api/v1/studies/%s/credentials/report/", ID)
+	httpResponse, err := c.Execute(http.MethodGet, endpointURL, nil, nil)
+	if err != nil {
+		return "", err
+	}
+
+	responseBody, err := io.ReadAll(httpResponse.Body)
+	if err != nil {
+		return "", fmt.Errorf("unable to read response body: %w", err)
+	}
+
+	return string(responseBody), nil
 }
 
 // GetHooks will return the subscriptions to event types for current user.
