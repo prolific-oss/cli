@@ -283,3 +283,8 @@ type SetupAITaskBuilderBatchResponse struct {
 type ResponseMeta struct {
 	Count int `json:"count"`
 }
+
+// CreateCredentialPoolResponse is the response for creating a credential pool.
+type CreateCredentialPoolResponse struct {
+	CredentialPoolID string `json:"credentialPoolId"`
+}

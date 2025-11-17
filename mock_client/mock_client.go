@@ -80,6 +80,21 @@ func (mr *MockAPIMockRecorder) CreateAITaskBuilderInstructions(batchID, instruct
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAITaskBuilderInstructions", reflect.TypeOf((*MockAPI)(nil).CreateAITaskBuilderInstructions), batchID, instructions)
 }
 
+// CreateCredentialPool mocks base method.
+func (m *MockAPI) CreateCredentialPool(credentials string) (*client.CreateCredentialPoolResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateCredentialPool", credentials)
+	ret0, _ := ret[0].(*client.CreateCredentialPoolResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateCredentialPool indicates an expected call of CreateCredentialPool.
+func (mr *MockAPIMockRecorder) CreateCredentialPool(credentials interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCredentialPool", reflect.TypeOf((*MockAPI)(nil).CreateCredentialPool), credentials)
+}
+
 // CreateProject mocks base method.
 func (m *MockAPI) CreateProject(workspaceID string, project model.Project) (*client.CreateProjectResponse, error) {
 	m.ctrl.T.Helper()
