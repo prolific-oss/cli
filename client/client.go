@@ -84,57 +84,6 @@ type Client struct {
 	Debug   bool
 }
 
-// GetStudyCredentialsUsageReportCSV will return the credentials usage report for a study as CSV.
-func (c *Client) GetStudyCredentialsUsageReportCSV(ID string) (string, error) {
-	if c.Token == "" {
-		return "", errors.New("PROLIFIC_TOKEN not set")
-	}
-
-	endpointURL := fmt.Sprintf("%s/api/v1/studies/%s/credentials/report/", c.BaseURL, ID)
-
-	request, err := http.NewRequestWithContext(context.Background(), http.MethodGet, endpointURL, nil)
-	if err != nil {
-		return "", err
-	}
-
-	request.Header.Set("User-Agent", "prolific-oss/cli")
-	request.Header.Set("Authorization", fmt.Sprintf("Token %s", c.Token))
-
-	if c.Debug {
-		fmt.Println(request)
-	}
-
-	httpResponse, err := c.Client.Do(request)
-	if err != nil {
-		return "", err
-	}
-	defer httpResponse.Body.Close()
-
-	responseBody, err := io.ReadAll(httpResponse.Body)
-	if err != nil {
-		return "", fmt.Errorf("unable to read response body: %w", err)
-	}
-
-	if c.Debug {
-		fmt.Println(string(responseBody))
-	}
-
-	if httpResponse.StatusCode >= 400 {
-		var apiError JSONAPIError
-		if err := json.NewDecoder(bytes.NewBuffer(responseBody)).Decode(&apiError); err == nil && apiError.Error.Detail != nil {
-			return "", fmt.Errorf("request failed: %v", apiError.Error.Detail)
-		}
-		var simpleError SimpleAPIError
-		if err := json.NewDecoder(bytes.NewBuffer(responseBody)).Decode(&simpleError); err == nil && simpleError.Detail != "" {
-			return "", fmt.Errorf("request failed: %s - %s", simpleError.Message, simpleError.Detail)
-		}
-
-		return "", fmt.Errorf("request failed with status %d: %s", httpResponse.StatusCode, string(responseBody))
-	}
-
-	return string(responseBody), nil
-}
-
 // New will return a new Prolific client.
 func New() Client {
 	viper.SetDefault("PROLIFIC_URL", config.GetAPIURL())
@@ -388,6 +337,22 @@ func (c *Client) UpdateStudy(ID string, study model.UpdateStudy) (*model.Study, 
 	}
 
 	return &response, nil
+}
+
+// GetStudyCredentialsUsageReportCSV will return the credentials usage report for a study as CSV.
+func (c *Client) GetStudyCredentialsUsageReportCSV(ID string) (string, error) {
+	endpointURL := fmt.Sprintf("/api/v1/studies/%s/credentials/report/", ID)
+	httpResponse, err := c.Execute(http.MethodGet, endpointURL, nil, nil)
+	if err != nil {
+		return "", err
+	}
+
+	responseBody, err := io.ReadAll(httpResponse.Body)
+	if err != nil {
+		return "", fmt.Errorf("unable to read response body: %w", err)
+	}
+
+	return string(responseBody), nil
 }
 
 // GetHooks will return the subscriptions to event types for current user.
