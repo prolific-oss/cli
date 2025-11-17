@@ -82,3 +82,9 @@ type SetupAITaskBuilderBatchPayload struct {
 	DatasetID     string `json:"dataset_id"`
 	TasksPerGroup int    `json:"tasks_per_group"`
 }
+
+// CredentialPoolPayload represents the JSON payload for creating or updating a credential pool
+type CredentialPoolPayload struct {
+	Credentials string `json:"credentials"`
+	WorkspaceID string `json:"workspace_id"`
+}

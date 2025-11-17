@@ -35,18 +35,21 @@ func TestNewCreateCommand(t *testing.T) {
 func TestCreateCredentialPool(t *testing.T) {
 	credentialsString := "user1,pass1\nuser2,pass2\nuser3,pass3"
 	credentialPoolID := "pool123456"
+	workspaceID := "workspace123"
 
 	tests := []struct {
 		name           string
 		args           []string
+		workspaceID    string
 		mockReturn     *client.CreateCredentialPoolResponse
 		mockError      error
 		expectedOutput string
 		expectedError  string
 	}{
 		{
-			name: "successful creation with string argument",
-			args: []string{credentialsString},
+			name:        "successful creation with string argument",
+			workspaceID: workspaceID,
+			args:        []string{credentialsString},
 			mockReturn: &client.CreateCredentialPoolResponse{
 				CredentialPoolID: credentialPoolID,
 			},
@@ -59,14 +62,25 @@ Credential Pool ID: pool123456
 		{
 			name:           "credentials missing error",
 			args:           []string{},
+			workspaceID:    workspaceID,
 			mockReturn:     nil,
 			mockError:      nil,
 			expectedOutput: "",
 			expectedError:  "credentials must be provided either as an argument or via -f flag",
 		},
 		{
+			name:           "workspace ID missing error",
+			args:           []string{credentialsString},
+			workspaceID:    "",
+			mockReturn:     nil,
+			mockError:      nil,
+			expectedOutput: "",
+			expectedError:  "required flag(s) \"workspace-id\" not set",
+		},
+		{
 			name:           "service unavailable",
 			args:           []string{credentialsString},
+			workspaceID:    workspaceID,
 			mockReturn:     nil,
 			mockError:      errors.New("request failed with status 502: credentials service unavailable"),
 			expectedOutput: "",
@@ -75,6 +89,7 @@ Credential Pool ID: pool123456
 		{
 			name:           "bad request",
 			args:           []string{credentialsString},
+			workspaceID:    workspaceID,
 			mockReturn:     nil,
 			mockError:      errors.New("request failed: study does not have credentials"),
 			expectedOutput: "",
@@ -88,10 +103,10 @@ Credential Pool ID: pool123456
 			defer ctrl.Finish()
 			c := mock_client.NewMockAPI(ctrl)
 
-			// Only expect API call if we have mock data or if we expect a successful call with args
-			if len(tt.args) > 0 {
+			// Only expect API call if we have workspace ID and args
+			if len(tt.args) > 0 && tt.workspaceID != "" {
 				c.EXPECT().
-					CreateCredentialPool(gomock.Any()).
+					CreateCredentialPool(gomock.Any(), tt.workspaceID).
 					Return(tt.mockReturn, tt.mockError).
 					Times(1)
 			}
@@ -100,7 +115,18 @@ Credential Pool ID: pool123456
 			writer := bufio.NewWriter(&b)
 
 			cmd := credentials.NewCreateCommand(c, writer)
-			err := cmd.RunE(cmd, tt.args)
+			if tt.workspaceID != "" {
+				_ = cmd.Flags().Set("workspace-id", tt.workspaceID)
+			}
+
+			var err error
+			// For workspace ID missing test, need to use Execute() to trigger Cobra's flag validation
+			if tt.workspaceID == "" {
+				cmd.SetArgs(tt.args)
+				err = cmd.Execute()
+			} else {
+				err = cmd.RunE(cmd, tt.args)
+			}
 			writer.Flush()
 
 			if tt.expectedError != "" {
@@ -130,10 +156,11 @@ func TestCreateCredentialPoolFromFile(t *testing.T) {
 
 	credContent := "user1,pass1\nuser2,pass2"
 	credFile := createTempCredentialsFile(t, credContent)
+	workspaceID := "workspace789"
 
 	credentialPoolID := "pool789"
 	c.EXPECT().
-		CreateCredentialPool(credContent).
+		CreateCredentialPool(credContent, workspaceID).
 		Return(&client.CreateCredentialPoolResponse{
 			CredentialPoolID: credentialPoolID,
 		}, nil).
@@ -142,7 +169,7 @@ func TestCreateCredentialPoolFromFile(t *testing.T) {
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
 	cmd := credentials.NewCreateCommand(c, writer)
-	cmd.SetArgs([]string{"-f", credFile})
+	cmd.SetArgs([]string{"-w", workspaceID, "-f", credFile})
 	err := cmd.Execute()
 	writer.Flush()
 

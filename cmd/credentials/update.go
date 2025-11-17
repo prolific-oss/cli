@@ -13,6 +13,7 @@ import (
 type UpdateOptions struct {
 	FilePath    string
 	Credentials string
+	WorkspaceID string
 }
 
 // NewUpdateCommand creates a new `credentials update` command to update a credential pool
@@ -25,13 +26,18 @@ func NewUpdateCommand(client client.API, w io.Writer) *cobra.Command {
 		Long: `Update an existing credential pool with new comma-separated credentials
 
 Credentials should be provided as comma-separated values with newlines between entries.
-You can provide credentials directly as an argument or from a file.`,
+You can provide credentials directly as an argument or from a file.
+
+Required:
+- Credential Pool ID: The ID of the credential pool to update (positional argument)
+- Workspace ID (-w/--workspace-id): The workspace that owns the credential pool
+- Credentials: Either as an argument or via the -f flag`,
 		Example: `
 Update a credential pool from a string:
-$ prolific credentials update pool123 "user1,pass1\nuser2,pass2\nuser3,pass3"
+$ prolific credentials update -w <workspace_id> pool123 "user1,pass1\nuser2,pass2\nuser3,pass3"
 
 Update a credential pool from a file:
-$ prolific credentials update pool123 -f credentials.csv
+$ prolific credentials update -w <workspace_id> pool123 -f credentials.csv
 
 File format example (credentials.csv):
 user1,pass1
@@ -56,7 +62,7 @@ user3,pass3`,
 				return fmt.Errorf("credentials must be provided either as an argument or via -f flag")
 			}
 
-			response, err := client.UpdateCredentialPool(credentialPoolID, credentials)
+			response, err := client.UpdateCredentialPool(credentialPoolID, credentials, opts.WorkspaceID)
 			if err != nil {
 				return err
 			}
@@ -69,6 +75,8 @@ user3,pass3`,
 	}
 
 	cmd.Flags().StringVarP(&opts.FilePath, "file", "f", "", "Path to file containing credentials")
+	cmd.Flags().StringVarP(&opts.WorkspaceID, "workspace-id", "w", "", "Workspace ID (required)")
+	_ = cmd.MarkFlagRequired("workspace-id")
 
 	return cmd
 }

@@ -36,8 +36,8 @@ type API interface {
 	TransitionStudy(ID, action string) (*TransitionStudyResponse, error)
 	UpdateStudy(ID string, study model.UpdateStudy) (*model.Study, error)
 	GetStudyCredentialsUsageReportCSV(ID string) (string, error)
-	CreateCredentialPool(credentials string) (*CreateCredentialPoolResponse, error)
-	UpdateCredentialPool(credentialPoolID string, credentials string) (*CreateCredentialPoolResponse, error)
+	CreateCredentialPool(credentials string, workspaceID string) (*CreateCredentialPoolResponse, error)
+	UpdateCredentialPool(credentialPoolID string, credentials string, workspaceID string) (*CreateCredentialPoolResponse, error)
 
 	GetCampaigns(workspaceID string, limit, offset int) (*ListCampaignsResponse, error)
 
@@ -128,74 +128,6 @@ func (c *Client) Execute(method, url string, body any, response any) (*http.Resp
 
 	if c.Debug {
 		fmt.Println(request)
-	}
-
-	httpResponse, err := c.Client.Do(request)
-	if err != nil {
-		return nil, err
-	}
-	defer httpResponse.Body.Close()
-
-	responseBody, _ := io.ReadAll(httpResponse.Body)
-	httpResponse.Body = io.NopCloser(bytes.NewBuffer(responseBody))
-
-	if c.Debug {
-		fmt.Println(string(responseBody))
-	}
-
-	if httpResponse.StatusCode >= 400 {
-		// Try the nested error format first
-		var apiError JSONAPIError
-		if err := json.NewDecoder(io.NopCloser(bytes.NewBuffer(responseBody))).Decode(&apiError); err == nil && apiError.Error.Detail != nil {
-			return nil, fmt.Errorf("request failed: %v", apiError.Error.Detail)
-		}
-
-		// Try the simple error format
-		var simpleError SimpleAPIError
-		if err := json.NewDecoder(io.NopCloser(bytes.NewBuffer(responseBody))).Decode(&simpleError); err == nil && simpleError.Detail != "" {
-			return nil, fmt.Errorf("request failed: %s - %s", simpleError.Message, simpleError.Detail)
-		}
-
-		// If both fail, return generic error with status code
-		return nil, fmt.Errorf("request failed with status %d: %s", httpResponse.StatusCode, string(responseBody))
-	}
-
-	if response != nil {
-		if err := json.NewDecoder(io.NopCloser(bytes.NewBuffer(responseBody))).Decode(response); err != nil {
-			return nil, fmt.Errorf("decoding JSON response from %s failed: %v", request.URL, err)
-		}
-	}
-
-	return httpResponse, nil
-}
-
-// ExecuteWithTextBody runs an HTTP request with a plain text body (not JSON).
-// Used for credential pool operations that accept comma-separated strings.
-// Response is still decoded as JSON.
-func (c *Client) ExecuteWithTextBody(method, url string, textBody string, response any) (*http.Response, error) {
-	if c.Token == "" {
-		return nil, errors.New("PROLIFIC_TOKEN not set")
-	}
-
-	var body io.Reader
-	if textBody != "" {
-		body = strings.NewReader(textBody)
-	}
-
-	request, err := http.NewRequestWithContext(context.Background(), method, c.BaseURL+url, body)
-	if err != nil {
-		return nil, err
-	}
-
-	request.Header.Set("Content-Type", "text/plain")
-	request.Header.Set("User-Agent", "prolific-oss/cli")
-	request.Header.Set("Authorization", fmt.Sprintf("Token %s", c.Token))
-
-	if c.Debug {
-		fmt.Println(request)
-		if textBody != "" {
-			fmt.Println("Body:", textBody)
-		}
 	}
 
 	httpResponse, err := c.Client.Do(request)
@@ -880,11 +812,16 @@ func (c *Client) CreateAITaskBuilderDataset(workspaceID string, payload CreateAI
 
 // CreateCredentialPool creates a new credential pool with the provided credentials.
 // credentials should be a comma-separated string with newlines between entries.
-func (c *Client) CreateCredentialPool(credentials string) (*CreateCredentialPoolResponse, error) {
+func (c *Client) CreateCredentialPool(credentials string, workspaceID string) (*CreateCredentialPoolResponse, error) {
 	var response CreateCredentialPoolResponse
 
+	payload := CredentialPoolPayload{
+		Credentials: credentials,
+		WorkspaceID: workspaceID,
+	}
+
 	endpointURL := "/api/v1/credentials/"
-	httpResponse, err := c.ExecuteWithTextBody(http.MethodPost, endpointURL, credentials, &response)
+	httpResponse, err := c.Execute(http.MethodPost, endpointURL, payload, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -898,11 +835,16 @@ func (c *Client) CreateCredentialPool(credentials string) (*CreateCredentialPool
 
 // UpdateCredentialPool updates an existing credential pool with new credentials.
 // credentials should be a comma-separated string with newlines between entries.
-func (c *Client) UpdateCredentialPool(credentialPoolID string, credentials string) (*CreateCredentialPoolResponse, error) {
+func (c *Client) UpdateCredentialPool(credentialPoolID string, credentials string, workspaceID string) (*CreateCredentialPoolResponse, error) {
 	var response CreateCredentialPoolResponse
 
+	payload := CredentialPoolPayload{
+		Credentials: credentials,
+		WorkspaceID: workspaceID,
+	}
+
 	endpointURL := fmt.Sprintf("/api/v1/credentials/%s", credentialPoolID)
-	httpResponse, err := c.ExecuteWithTextBody(http.MethodPatch, endpointURL, credentials, &response)
+	httpResponse, err := c.Execute(http.MethodPatch, endpointURL, payload, &response)
 	if err != nil {
 		return nil, err
 	}

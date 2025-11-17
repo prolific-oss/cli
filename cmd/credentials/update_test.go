@@ -35,18 +35,21 @@ func TestNewUpdateCommand(t *testing.T) {
 func TestUpdateCredentialPool(t *testing.T) {
 	credentialsString := "user1,pass1\\nuser2,pass2\\nuser3,pass3"
 	credentialPoolID := "pool123456"
+	workspaceID := "workspace123"
 
 	tests := []struct {
 		name           string
 		args           []string
+		workspaceID    string
 		mockReturn     *client.CreateCredentialPoolResponse
 		mockError      error
 		expectedOutput string
 		expectedError  string
 	}{
 		{
-			name: "successful update with string argument",
-			args: []string{credentialPoolID, credentialsString},
+			name:        "successful update with string argument",
+			args:        []string{credentialPoolID, credentialsString},
+			workspaceID: workspaceID,
 			mockReturn: &client.CreateCredentialPoolResponse{
 				CredentialPoolID: credentialPoolID,
 			},
@@ -59,6 +62,7 @@ Credential Pool ID: pool123456
 		{
 			name:           "missing credentials error",
 			args:           []string{credentialPoolID},
+			workspaceID:    workspaceID,
 			mockReturn:     nil,
 			mockError:      nil,
 			expectedOutput: "",
@@ -67,14 +71,25 @@ Credential Pool ID: pool123456
 		{
 			name:           "missing credential pool ID",
 			args:           []string{},
+			workspaceID:    workspaceID,
 			mockReturn:     nil,
 			mockError:      nil,
 			expectedOutput: "",
 			expectedError:  "accepts between 1 and 2 arg(s), received 0",
 		},
 		{
+			name:           "workspace ID missing error",
+			args:           []string{credentialPoolID, credentialsString},
+			workspaceID:    "",
+			mockReturn:     nil,
+			mockError:      nil,
+			expectedOutput: "",
+			expectedError:  "required flag(s) \"workspace-id\" not set",
+		},
+		{
 			name:           "service unavailable",
 			args:           []string{credentialPoolID, credentialsString},
+			workspaceID:    workspaceID,
 			mockReturn:     nil,
 			mockError:      errors.New("request failed with status 502: credentials service unavailable"),
 			expectedOutput: "",
@@ -83,6 +98,7 @@ Credential Pool ID: pool123456
 		{
 			name:           "not found error",
 			args:           []string{credentialPoolID, credentialsString},
+			workspaceID:    workspaceID,
 			mockReturn:     nil,
 			mockError:      errors.New("request failed with status 404: credential pool not found"),
 			expectedOutput: "",
@@ -96,10 +112,10 @@ Credential Pool ID: pool123456
 			defer ctrl.Finish()
 			c := mock_client.NewMockAPI(ctrl)
 
-			// Only expect API call if we have enough args and credentials
-			if len(tt.args) > 1 {
+			// Only expect API call if we have enough args, credentials, and workspace ID
+			if len(tt.args) > 1 && tt.workspaceID != "" {
 				c.EXPECT().
-					UpdateCredentialPool(tt.args[0], gomock.Any()).
+					UpdateCredentialPool(tt.args[0], gomock.Any(), tt.workspaceID).
 					Return(tt.mockReturn, tt.mockError).
 					Times(1)
 			}
@@ -108,10 +124,13 @@ Credential Pool ID: pool123456
 			writer := bufio.NewWriter(&b)
 
 			cmd := credentials.NewUpdateCommand(c, writer)
+			if tt.workspaceID != "" {
+				_ = cmd.Flags().Set("workspace-id", tt.workspaceID)
+			}
 
 			var err error
-			// For missing args test, need to use Execute() to trigger Cobra's argument validation
-			if len(tt.args) == 0 {
+			// For missing args or workspace ID tests, need to use Execute() to trigger Cobra's validation
+			if len(tt.args) == 0 || tt.workspaceID == "" {
 				cmd.SetArgs(tt.args)
 				err = cmd.Execute()
 			} else {
@@ -146,10 +165,11 @@ func TestUpdateCredentialPoolFromFile(t *testing.T) {
 
 	credContent := "user1,pass1\\nuser2,pass2"
 	credFile := createTempCredentialsFile(t, credContent)
+	workspaceID := "workspace789"
 
 	credentialPoolID := "pool789"
 	c.EXPECT().
-		UpdateCredentialPool(credentialPoolID, credContent).
+		UpdateCredentialPool(credentialPoolID, credContent, workspaceID).
 		Return(&client.CreateCredentialPoolResponse{
 			CredentialPoolID: credentialPoolID,
 		}, nil).
@@ -158,7 +178,7 @@ func TestUpdateCredentialPoolFromFile(t *testing.T) {
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
 	cmd := credentials.NewUpdateCommand(c, writer)
-	cmd.SetArgs([]string{credentialPoolID, "-f", credFile})
+	cmd.SetArgs([]string{"-w", workspaceID, credentialPoolID, "-f", credFile})
 	err := cmd.Execute()
 	writer.Flush()
 
