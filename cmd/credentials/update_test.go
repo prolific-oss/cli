@@ -13,15 +13,15 @@ import (
 	"github.com/prolific-oss/cli/mock_client"
 )
 
-func TestNewCreateCommand(t *testing.T) {
+func TestNewUpdateCommand(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	cmd := credentials.NewCreateCommand(c, os.Stdout)
+	cmd := credentials.NewUpdateCommand(c, os.Stdout)
 
-	use := "create"
-	short := "Create a new credential pool"
+	use := "update <credential-pool-id> [credentials]"
+	short := "Update an existing credential pool"
 
 	if cmd.Use != use {
 		t.Fatalf("expected use: %s; got %s", use, cmd.Use)
@@ -32,8 +32,8 @@ func TestNewCreateCommand(t *testing.T) {
 	}
 }
 
-func TestCreateCredentialPool(t *testing.T) {
-	credentialsString := "user1,pass1\nuser2,pass2\nuser3,pass3"
+func TestUpdateCredentialPool(t *testing.T) {
+	credentialsString := "user1,pass1\\nuser2,pass2\\nuser3,pass3"
 	credentialPoolID := "pool123456"
 
 	tests := []struct {
@@ -45,40 +45,48 @@ func TestCreateCredentialPool(t *testing.T) {
 		expectedError  string
 	}{
 		{
-			name: "successful creation with string argument",
-			args: []string{credentialsString},
+			name: "successful update with string argument",
+			args: []string{credentialPoolID, credentialsString},
 			mockReturn: &client.CreateCredentialPoolResponse{
 				CredentialPoolID: credentialPoolID,
 			},
 			mockError: nil,
-			expectedOutput: `Credential pool created successfully
+			expectedOutput: `Credential pool updated successfully
 Credential Pool ID: pool123456
 `,
 			expectedError: "",
 		},
 		{
-			name:           "credentials missing error",
-			args:           []string{},
+			name:           "missing credentials error",
+			args:           []string{credentialPoolID},
 			mockReturn:     nil,
 			mockError:      nil,
 			expectedOutput: "",
 			expectedError:  "credentials must be provided either as an argument or via -f flag",
 		},
 		{
+			name:           "missing credential pool ID",
+			args:           []string{},
+			mockReturn:     nil,
+			mockError:      nil,
+			expectedOutput: "",
+			expectedError:  "accepts between 1 and 2 arg(s), received 0",
+		},
+		{
 			name:           "service unavailable",
-			args:           []string{credentialsString},
+			args:           []string{credentialPoolID, credentialsString},
 			mockReturn:     nil,
 			mockError:      errors.New("request failed with status 502: credentials service unavailable"),
 			expectedOutput: "",
 			expectedError:  "request failed with status 502: credentials service unavailable",
 		},
 		{
-			name:           "bad request",
-			args:           []string{credentialsString},
+			name:           "not found error",
+			args:           []string{credentialPoolID, credentialsString},
 			mockReturn:     nil,
-			mockError:      errors.New("request failed: study does not have credentials"),
+			mockError:      errors.New("request failed with status 404: credential pool not found"),
 			expectedOutput: "",
-			expectedError:  "request failed: study does not have credentials",
+			expectedError:  "request failed with status 404: credential pool not found",
 		},
 	}
 
@@ -88,10 +96,10 @@ Credential Pool ID: pool123456
 			defer ctrl.Finish()
 			c := mock_client.NewMockAPI(ctrl)
 
-			// Only expect API call if we have mock data or if we expect a successful call with args
-			if len(tt.args) > 0 {
+			// Only expect API call if we have enough args and credentials
+			if len(tt.args) > 1 {
 				c.EXPECT().
-					CreateCredentialPool(gomock.Any()).
+					UpdateCredentialPool(tt.args[0], gomock.Any()).
 					Return(tt.mockReturn, tt.mockError).
 					Times(1)
 			}
@@ -99,8 +107,16 @@ Credential Pool ID: pool123456
 			var b bytes.Buffer
 			writer := bufio.NewWriter(&b)
 
-			cmd := credentials.NewCreateCommand(c, writer)
-			err := cmd.RunE(cmd, tt.args)
+			cmd := credentials.NewUpdateCommand(c, writer)
+
+			var err error
+			// For missing args test, need to use Execute() to trigger Cobra's argument validation
+			if len(tt.args) == 0 {
+				cmd.SetArgs(tt.args)
+				err = cmd.Execute()
+			} else {
+				err = cmd.RunE(cmd, tt.args)
+			}
 			writer.Flush()
 
 			if tt.expectedError != "" {
@@ -118,22 +134,22 @@ Credential Pool ID: pool123456
 
 			actual := b.String()
 			if actual != tt.expectedOutput {
-				t.Fatalf("expected output:\n'%s'\n\ngot:\n'%s'", tt.expectedOutput, actual)
+				t.Fatalf("expected output:\\n'%s'\\n\\ngot:\\n'%s'", tt.expectedOutput, actual)
 			}
 		})
 	}
 }
 
-func TestCreateCredentialPoolFromFile(t *testing.T) {
+func TestUpdateCredentialPoolFromFile(t *testing.T) {
 	ctrl := setupMockController(t)
 	c := mock_client.NewMockAPI(ctrl)
 
-	credContent := "user1,pass1\nuser2,pass2"
+	credContent := "user1,pass1\\nuser2,pass2"
 	credFile := createTempCredentialsFile(t, credContent)
 
 	credentialPoolID := "pool789"
 	c.EXPECT().
-		CreateCredentialPool(credContent).
+		UpdateCredentialPool(credentialPoolID, credContent).
 		Return(&client.CreateCredentialPoolResponse{
 			CredentialPoolID: credentialPoolID,
 		}, nil).
@@ -141,8 +157,8 @@ func TestCreateCredentialPoolFromFile(t *testing.T) {
 
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
-	cmd := credentials.NewCreateCommand(c, writer)
-	cmd.SetArgs([]string{"-f", credFile})
+	cmd := credentials.NewUpdateCommand(c, writer)
+	cmd.SetArgs([]string{credentialPoolID, "-f", credFile})
 	err := cmd.Execute()
 	writer.Flush()
 
@@ -150,11 +166,11 @@ func TestCreateCredentialPoolFromFile(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	expectedOutput := `Credential pool created successfully
+	expectedOutput := `Credential pool updated successfully
 Credential Pool ID: pool789
 `
 	actual := b.String()
 	if actual != expectedOutput {
-		t.Fatalf("expected output:\n'%s'\n\ngot:\n'%s'", expectedOutput, actual)
+		t.Fatalf("expected output:\\n'%s'\\n\\ngot:\\n'%s'", expectedOutput, actual)
 	}
 }

@@ -37,6 +37,7 @@ type API interface {
 	UpdateStudy(ID string, study model.UpdateStudy) (*model.Study, error)
 	GetStudyCredentialsUsageReportCSV(ID string) (string, error)
 	CreateCredentialPool(credentials string) (*CreateCredentialPoolResponse, error)
+	UpdateCredentialPool(credentialPoolID string, credentials string) (*CreateCredentialPoolResponse, error)
 
 	GetCampaigns(workspaceID string, limit, offset int) (*ListCampaignsResponse, error)
 
@@ -890,6 +891,24 @@ func (c *Client) CreateCredentialPool(credentials string) (*CreateCredentialPool
 
 	if httpResponse.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("unexpected status code: expected 201, got %d", httpResponse.StatusCode)
+	}
+
+	return &response, nil
+}
+
+// UpdateCredentialPool updates an existing credential pool with new credentials.
+// credentials should be a comma-separated string with newlines between entries.
+func (c *Client) UpdateCredentialPool(credentialPoolID string, credentials string) (*CreateCredentialPoolResponse, error) {
+	var response CreateCredentialPoolResponse
+
+	endpointURL := fmt.Sprintf("/api/v1/credentials/%s", credentialPoolID)
+	httpResponse, err := c.ExecuteWithTextBody(http.MethodPatch, endpointURL, credentials, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: expected 200, got %d", httpResponse.StatusCode)
 	}
 
 	return &response, nil

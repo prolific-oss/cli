@@ -619,6 +619,21 @@ func (mr *MockAPIMockRecorder) TransitionStudy(ID, action interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransitionStudy", reflect.TypeOf((*MockAPI)(nil).TransitionStudy), ID, action)
 }
 
+// UpdateCredentialPool mocks base method.
+func (m *MockAPI) UpdateCredentialPool(credentialPoolID, credentials string) (*client.CreateCredentialPoolResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateCredentialPool", credentialPoolID, credentials)
+	ret0, _ := ret[0].(*client.CreateCredentialPoolResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateCredentialPool indicates an expected call of UpdateCredentialPool.
+func (mr *MockAPIMockRecorder) UpdateCredentialPool(credentialPoolID, credentials interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCredentialPool", reflect.TypeOf((*MockAPI)(nil).UpdateCredentialPool), credentialPoolID, credentials)
+}
+
 // UpdateStudy mocks base method.
 func (m *MockAPI) UpdateStudy(ID string, study model.UpdateStudy) (*model.Study, error) {
 	m.ctrl.T.Helper()
