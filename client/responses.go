@@ -284,7 +284,7 @@ type ResponseMeta struct {
 	Count int `json:"count"`
 }
 
-// CreateCredentialPoolResponse is the response for creating a credential pool.
-type CreateCredentialPoolResponse struct {
-	CredentialPoolID string `json:"credentialPoolId"`
+// CredentialPoolResponse is the response for creating or updating a credential pool.
+type CredentialPoolResponse struct {
+	CredentialPoolID string `json:"credential_pool_id"`
 }

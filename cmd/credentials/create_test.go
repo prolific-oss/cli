@@ -41,7 +41,7 @@ func TestCreateCredentialPool(t *testing.T) {
 		name           string
 		args           []string
 		workspaceID    string
-		mockReturn     *client.CreateCredentialPoolResponse
+		mockReturn     *client.CredentialPoolResponse
 		mockError      error
 		expectedOutput string
 		expectedError  string
@@ -50,7 +50,7 @@ func TestCreateCredentialPool(t *testing.T) {
 			name:        "successful creation with string argument",
 			workspaceID: workspaceID,
 			args:        []string{credentialsString},
-			mockReturn: &client.CreateCredentialPoolResponse{
+			mockReturn: &client.CredentialPoolResponse{
 				CredentialPoolID: credentialPoolID,
 			},
 			mockError: nil,
@@ -161,7 +161,7 @@ func TestCreateCredentialPoolFromFile(t *testing.T) {
 	credentialPoolID := "pool789"
 	c.EXPECT().
 		CreateCredentialPool(credContent, workspaceID).
-		Return(&client.CreateCredentialPoolResponse{
+		Return(&client.CredentialPoolResponse{
 			CredentialPoolID: credentialPoolID,
 		}, nil).
 		Times(1)

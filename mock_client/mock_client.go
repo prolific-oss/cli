@@ -81,10 +81,10 @@ func (mr *MockAPIMockRecorder) CreateAITaskBuilderInstructions(batchID, instruct
 }
 
 // CreateCredentialPool mocks base method.
-func (m *MockAPI) CreateCredentialPool(credentials, workspaceID string) (*client.CreateCredentialPoolResponse, error) {
+func (m *MockAPI) CreateCredentialPool(credentials, workspaceID string) (*client.CredentialPoolResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateCredentialPool", credentials, workspaceID)
-	ret0, _ := ret[0].(*client.CreateCredentialPoolResponse)
+	ret0, _ := ret[0].(*client.CredentialPoolResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -620,10 +620,10 @@ func (mr *MockAPIMockRecorder) TransitionStudy(ID, action interface{}) *gomock.C
 }
 
 // UpdateCredentialPool mocks base method.
-func (m *MockAPI) UpdateCredentialPool(credentialPoolID, credentials, workspaceID string) (*client.CreateCredentialPoolResponse, error) {
+func (m *MockAPI) UpdateCredentialPool(credentialPoolID, credentials, workspaceID string) (*client.CredentialPoolResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateCredentialPool", credentialPoolID, credentials, workspaceID)
-	ret0, _ := ret[0].(*client.CreateCredentialPoolResponse)
+	ret0, _ := ret[0].(*client.CredentialPoolResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

@@ -36,8 +36,8 @@ type API interface {
 	TransitionStudy(ID, action string) (*TransitionStudyResponse, error)
 	UpdateStudy(ID string, study model.UpdateStudy) (*model.Study, error)
 	GetStudyCredentialsUsageReportCSV(ID string) (string, error)
-	CreateCredentialPool(credentials string, workspaceID string) (*CreateCredentialPoolResponse, error)
-	UpdateCredentialPool(credentialPoolID string, credentials string, workspaceID string) (*CreateCredentialPoolResponse, error)
+	CreateCredentialPool(credentials string, workspaceID string) (*CredentialPoolResponse, error)
+	UpdateCredentialPool(credentialPoolID string, credentials string, workspaceID string) (*CredentialPoolResponse, error)
 
 	GetCampaigns(workspaceID string, limit, offset int) (*ListCampaignsResponse, error)
 
@@ -812,8 +812,8 @@ func (c *Client) CreateAITaskBuilderDataset(workspaceID string, payload CreateAI
 
 // CreateCredentialPool creates a new credential pool with the provided credentials.
 // credentials should be a comma-separated string with newlines between entries.
-func (c *Client) CreateCredentialPool(credentials string, workspaceID string) (*CreateCredentialPoolResponse, error) {
-	var response CreateCredentialPoolResponse
+func (c *Client) CreateCredentialPool(credentials string, workspaceID string) (*CredentialPoolResponse, error) {
+	var response CredentialPoolResponse
 
 	payload := CredentialPoolPayload{
 		Credentials: credentials,
@@ -835,15 +835,14 @@ func (c *Client) CreateCredentialPool(credentials string, workspaceID string) (*
 
 // UpdateCredentialPool updates an existing credential pool with new credentials.
 // credentials should be a comma-separated string with newlines between entries.
-func (c *Client) UpdateCredentialPool(credentialPoolID string, credentials string, workspaceID string) (*CreateCredentialPoolResponse, error) {
-	var response CreateCredentialPoolResponse
+func (c *Client) UpdateCredentialPool(credentialPoolID string, credentials string, workspaceID string) (*CredentialPoolResponse, error) {
+	var response CredentialPoolResponse
 
-	payload := CredentialPoolPayload{
+	payload := UpdateCredentialPoolPayload{
 		Credentials: credentials,
-		WorkspaceID: workspaceID,
 	}
 
-	endpointURL := fmt.Sprintf("/api/v1/credentials/%s", credentialPoolID)
+	endpointURL := fmt.Sprintf("/api/v1/credentials/%s/", credentialPoolID)
 	httpResponse, err := c.Execute(http.MethodPatch, endpointURL, payload, &response)
 	if err != nil {
 		return nil, err
