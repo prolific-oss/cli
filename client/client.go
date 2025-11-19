@@ -36,6 +36,8 @@ type API interface {
 	TransitionStudy(ID, action string) (*TransitionStudyResponse, error)
 	UpdateStudy(ID string, study model.UpdateStudy) (*model.Study, error)
 	GetStudyCredentialsUsageReportCSV(ID string) (string, error)
+	CreateCredentialPool(credentials string, workspaceID string) (*CredentialPoolResponse, error)
+	UpdateCredentialPool(credentialPoolID string, credentials string, workspaceID string) (*CredentialPoolResponse, error)
 
 	GetCampaigns(workspaceID string, limit, offset int) (*ListCampaignsResponse, error)
 
@@ -803,6 +805,51 @@ func (c *Client) CreateAITaskBuilderDataset(workspaceID string, payload CreateAI
 	if httpResponse.StatusCode != http.StatusCreated {
 		body, _ := io.ReadAll(httpResponse.Body)
 		return nil, fmt.Errorf("unable to create dataset: %v", string(body))
+	}
+
+	return &response, nil
+}
+
+// CreateCredentialPool creates a new credential pool with the provided credentials.
+// credentials should be a comma-separated string with newlines between entries.
+func (c *Client) CreateCredentialPool(credentials string, workspaceID string) (*CredentialPoolResponse, error) {
+	var response CredentialPoolResponse
+
+	payload := CredentialPoolPayload{
+		Credentials: credentials,
+		WorkspaceID: workspaceID,
+	}
+
+	endpointURL := "/api/v1/credentials/"
+	httpResponse, err := c.Execute(http.MethodPost, endpointURL, payload, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	if httpResponse.StatusCode != http.StatusCreated {
+		return nil, fmt.Errorf("unexpected status code: expected 201, got %d", httpResponse.StatusCode)
+	}
+
+	return &response, nil
+}
+
+// UpdateCredentialPool updates an existing credential pool with new credentials.
+// credentials should be a comma-separated string with newlines between entries.
+func (c *Client) UpdateCredentialPool(credentialPoolID string, credentials string, workspaceID string) (*CredentialPoolResponse, error) {
+	var response CredentialPoolResponse
+
+	payload := UpdateCredentialPoolPayload{
+		Credentials: credentials,
+	}
+
+	endpointURL := fmt.Sprintf("/api/v1/credentials/%s/", credentialPoolID)
+	httpResponse, err := c.Execute(http.MethodPatch, endpointURL, payload, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: expected 200, got %d", httpResponse.StatusCode)
 	}
 
 	return &response, nil

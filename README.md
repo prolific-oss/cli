@@ -24,6 +24,7 @@ Usage:
 Available Commands:
   campaign     Provide details about your campaigns
   completion   Generate the autocompletion script for the specified shell
+  credentials  Manage credential pools
   filter-sets  Manage and view your filter sets
   help         Help about any command
   hook         Manage and view your hook subscriptions
@@ -55,6 +56,7 @@ Main features include:
 - Ability to list submissions for a given study.
 - Ability to list studies and define which fields to do display in a table format.
 - Ability to render details about a study, and the submissions.
+- Ability to create and update credential pools for studies requiring authentication.
 - Ability to download credentials usage report for a study as CSV.
 - Ability to create a Study via a YAML/JSON configuration file.
 - Ability to publish a study whilst creating it (if you have sufficient funds).

@@ -80,6 +80,21 @@ func (mr *MockAPIMockRecorder) CreateAITaskBuilderInstructions(batchID, instruct
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAITaskBuilderInstructions", reflect.TypeOf((*MockAPI)(nil).CreateAITaskBuilderInstructions), batchID, instructions)
 }
 
+// CreateCredentialPool mocks base method.
+func (m *MockAPI) CreateCredentialPool(credentials, workspaceID string) (*client.CredentialPoolResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateCredentialPool", credentials, workspaceID)
+	ret0, _ := ret[0].(*client.CredentialPoolResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateCredentialPool indicates an expected call of CreateCredentialPool.
+func (mr *MockAPIMockRecorder) CreateCredentialPool(credentials, workspaceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCredentialPool", reflect.TypeOf((*MockAPI)(nil).CreateCredentialPool), credentials, workspaceID)
+}
+
 // CreateProject mocks base method.
 func (m *MockAPI) CreateProject(workspaceID string, project model.Project) (*client.CreateProjectResponse, error) {
 	m.ctrl.T.Helper()
@@ -602,6 +617,21 @@ func (m *MockAPI) TransitionStudy(ID, action string) (*client.TransitionStudyRes
 func (mr *MockAPIMockRecorder) TransitionStudy(ID, action interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransitionStudy", reflect.TypeOf((*MockAPI)(nil).TransitionStudy), ID, action)
+}
+
+// UpdateCredentialPool mocks base method.
+func (m *MockAPI) UpdateCredentialPool(credentialPoolID, credentials, workspaceID string) (*client.CredentialPoolResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateCredentialPool", credentialPoolID, credentials, workspaceID)
+	ret0, _ := ret[0].(*client.CredentialPoolResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateCredentialPool indicates an expected call of UpdateCredentialPool.
+func (mr *MockAPIMockRecorder) UpdateCredentialPool(credentialPoolID, credentials, workspaceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCredentialPool", reflect.TypeOf((*MockAPI)(nil).UpdateCredentialPool), credentialPoolID, credentials, workspaceID)
 }
 
 // UpdateStudy mocks base method.
