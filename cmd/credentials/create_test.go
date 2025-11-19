@@ -13,6 +13,11 @@ import (
 	"github.com/prolific-oss/cli/mock_client"
 )
 
+const (
+	testCredentials = "user1,pass1\nuser2,pass2"
+	testCredPoolID  = "pool789"
+)
+
 func TestNewCreateCommand(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -154,15 +159,48 @@ func TestCreateCredentialPoolFromFile(t *testing.T) {
 	ctrl := setupMockController(t)
 	c := mock_client.NewMockAPI(ctrl)
 
-	credContent := "user1,pass1\nuser2,pass2"
-	credFile := createTempCredentialsFile(t, credContent)
+	credFile := createTempCredentialsFile(t, testCredentials)
 	workspaceID := "workspace789"
 
-	credentialPoolID := "pool789"
 	c.EXPECT().
-		CreateCredentialPool(credContent, workspaceID).
+		CreateCredentialPool(testCredentials, workspaceID).
 		Return(&client.CredentialPoolResponse{
-			CredentialPoolID: credentialPoolID,
+			CredentialPoolID: testCredPoolID,
+		}, nil).
+		Times(1)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+	cmd := credentials.NewCreateCommand(c, writer)
+	cmd.SetArgs([]string{"-w", workspaceID, "-f", credFile})
+	err := cmd.Execute()
+	writer.Flush()
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	expectedOutput := `Credential pool created successfully
+Credential Pool ID: pool789
+`
+	actual := b.String()
+	if actual != expectedOutput {
+		t.Fatalf("expected output:\n'%s'\n\ngot:\n'%s'", expectedOutput, actual)
+	}
+}
+
+func TestCreateCredentialPoolFromFileWithTrailingNewline(t *testing.T) {
+	ctrl := setupMockController(t)
+	c := mock_client.NewMockAPI(ctrl)
+
+	// Simulate file content with trailing newline (as editors typically add)
+	credFile := createTempCredentialsFile(t, testCredentials+"\n")
+	workspaceID := "workspace789"
+
+	c.EXPECT().
+		CreateCredentialPool(testCredentials, workspaceID).
+		Return(&client.CredentialPoolResponse{
+			CredentialPoolID: testCredPoolID,
 		}, nil).
 		Times(1)
 
