@@ -3,7 +3,6 @@ package credentials
 import (
 	"fmt"
 	"io"
-	"os"
 
 	"github.com/prolific-oss/cli/client"
 	"github.com/spf13/cobra"
@@ -36,28 +35,19 @@ $ prolific credentials update pool123 "user1,pass1\nuser2,pass2\nuser3,pass3"
 
 Update a credential pool from a file:
 $ prolific credentials update pool123 -f credentials.csv
+$ prolific credentials update pool123 -f docs/examples/credentials.csv
 
 File format example (credentials.csv):
-user1,pass1
-user2,pass2
-user3,pass3`,
+user1@example.com,p4ssw0rd1
+user2@example.com,p4ssw0rd2
+user3@example.com,p4ssw0rd3`,
 		Args: cobra.RangeArgs(1, 2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			credentialPoolID := args[0]
-			var credentials string
 
-			if opts.FilePath != "" {
-				// Read from file
-				data, err := os.ReadFile(opts.FilePath)
-				if err != nil {
-					return fmt.Errorf("unable to read file: %w", err)
-				}
-				credentials = string(data)
-			} else if len(args) > 1 {
-				// Use provided argument
-				credentials = args[1]
-			} else {
-				return fmt.Errorf("credentials must be provided either as an argument or via -f flag")
+			credentials, err := getCredentials(opts.FilePath, args, 1)
+			if err != nil {
+				return err
 			}
 
 			response, err := client.UpdateCredentialPool(credentialPoolID, credentials, "")
