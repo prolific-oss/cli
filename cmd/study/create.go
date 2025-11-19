@@ -63,7 +63,8 @@ An example of a JSON study file, with an ethnicity screener
       "query": { "id": "5950c8413e9d730001924f2a" },
       "_cls": "web.eligibility.models.SelectAnswerEligibilityRequirement"
     }
-  ]
+  ],
+  "credential_pool_id": "64a1b2c3d4e5f6a7b8c9d0e1_12345678-1234-11e0-8000-0a1b2c3d4e5f"
 }
 
 An example of a YAML study file

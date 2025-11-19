@@ -108,6 +108,7 @@ type Study struct {
 	IsPilot                bool              `json:"is_pilot"`
 	IsUnderpaying          any               `json:"is_underpaying"`
 	SubmissionsConfig      SubmissionsConfig `json:"submissions_config"`
+	CredentialPoolID       string            `json:"credential_pool_id"`
 }
 
 // CreateStudy is responsible for capturing what fields we need to send
@@ -147,14 +148,16 @@ type CreateStudy struct {
 		} `json:"query" mapstructure:"query"`
 		Cls string `json:"_cls" mapstructure:"_cls"`
 	} `json:"eligibility_requirements" mapstructure:"eligibility_requirements"`
-	Filters []Filter `json:"filters" mapstructure:"filters"`
-	Project string   `json:"project,omitempty" mapstructure:"project"`
+	Filters          []Filter `json:"filters" mapstructure:"filters"`
+	Project          string   `json:"project,omitempty" mapstructure:"project"`
+	CredentialPoolID string   `json:"credential_pool_id,omitempty" mapstructure:"credential_pool_id"`
 }
 
 // UpdateStudy represents the model we will send back to Prolific to update
 // the study.
 type UpdateStudy struct {
-	TotalAvailablePlaces int `json:"total_available_places,omitempty"`
+	TotalAvailablePlaces int    `json:"total_available_places,omitempty"`
+	CredentialPoolID     string `json:"credential_pool_id,omitempty"`
 }
 
 // SubmissionsConfig represents configuration around submission gathering
