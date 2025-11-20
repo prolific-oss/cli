@@ -84,7 +84,8 @@ The fields you can use are
 - TotalCost
 - PublishAt
 - IsPilot
-- IsUnderpaying`,
+- IsUnderpaying
+- CredentialPoolID`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
 

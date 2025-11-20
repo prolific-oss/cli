@@ -20,6 +20,7 @@ func NewStudyCommand(client client.API, w io.Writer) *cobra.Command {
 		NewCreateCommand(client, w),
 		NewDuplicateCommand(client, w),
 		NewIncreasePlacesCommand(client, w),
+		NewSetCredentialPoolCommand(client, w),
 		NewTransitionCommand(client, w),
 		NewCredentialsReportCommand(client, w),
 	)

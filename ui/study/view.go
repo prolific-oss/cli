@@ -74,6 +74,9 @@ func RenderStudy(study model.Study) string {
 	content += fmt.Sprintf("Study URL:                 %s\n", study.ExternalStudyURL)
 	content += fmt.Sprintf("Places taken:              %d\n", study.PlacesTaken)
 	content += fmt.Sprintf("Available places:          %d\n", study.TotalAvailablePlaces)
+	if study.CredentialPoolID != "" {
+		content += fmt.Sprintf("Credential Pool ID:        %s\n", study.CredentialPoolID)
+	}
 
 	content += ui.RenderSectionMarker()
 
