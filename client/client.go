@@ -38,6 +38,7 @@ type API interface {
 	GetStudyCredentialsUsageReportCSV(ID string) (string, error)
 	CreateCredentialPool(credentials string, workspaceID string) (*CredentialPoolResponse, error)
 	UpdateCredentialPool(credentialPoolID string, credentials string, workspaceID string) (*CredentialPoolResponse, error)
+	ListCredentialPools(workspaceID string) (*ListCredentialPoolsResponse, error)
 
 	GetCampaigns(workspaceID string, limit, offset int) (*ListCampaignsResponse, error)
 
@@ -844,6 +845,23 @@ func (c *Client) UpdateCredentialPool(credentialPoolID string, credentials strin
 
 	endpointURL := fmt.Sprintf("/api/v1/credentials/%s/", credentialPoolID)
 	httpResponse, err := c.Execute(http.MethodPatch, endpointURL, payload, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: expected 200, got %d", httpResponse.StatusCode)
+	}
+
+	return &response, nil
+}
+
+// ListCredentialPools retrieves a list of credential pools for a specific workspace.
+func (c *Client) ListCredentialPools(workspaceID string) (*ListCredentialPoolsResponse, error) {
+	var response ListCredentialPoolsResponse
+
+	endpointURL := fmt.Sprintf("/api/v1/credentials/?workspace_id=%s", workspaceID)
+	httpResponse, err := c.Execute(http.MethodGet, endpointURL, nil, &response)
 	if err != nil {
 		return nil, err
 	}

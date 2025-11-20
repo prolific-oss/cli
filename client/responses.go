@@ -288,3 +288,16 @@ type ResponseMeta struct {
 type CredentialPoolResponse struct {
 	CredentialPoolID string `json:"credential_pool_id"`
 }
+
+// CredentialPoolSummary represents a summary of a credential pool.
+type CredentialPoolSummary struct {
+	CredentialPoolID     string `json:"credential_pool_id"`
+	TotalCredentials     int    `json:"total_credentials"`
+	AvailableCredentials int    `json:"available_credentials"`
+	WorkspaceID          string `json:"workspace_id"`
+}
+
+// ListCredentialPoolsResponse is the response for listing credential pools.
+type ListCredentialPoolsResponse struct {
+	CredentialPools []CredentialPoolSummary `json:"credential_pools"`
+}
