@@ -2,13 +2,20 @@
 
 ## next
 
+## 0.0.57
+
 - Add `study credentials-report` command to download CSV report of credential usage for a study:
   - Returns participant IDs, submission IDs, usernames, and credential status (USED/UNUSED)
   - Available only for studies with credentials configured
   - Usage: `prolific study credentials-report <study-id> > report.csv`
-
-## 0.0.57
-
+- Add `credentials` command to manage credential pools:
+  - `credentials create` - Create new credential pools with comma-separated credentials or from a file
+  - `credentials update` - Update existing credential pools with new credentials
+  - `credentials list` - List all credential pools in a workspace
+- Add `study set-credential-pool` command to set or update the credential pool on a draft study:
+  - Allows attaching a credential pool to a study created without one
+  - Allows changing the credential pool on an existing draft study
+  - Usage: `prolific study set-credential-pool <study-id> -c <credential-pool-id>`
 - Restructure `aitaskbuilder` dataset commands under `dataset` entity:
   - `aitaskbuilder dataset create` - Create new datasets (previously `aitaskbuilder create-dataset`)
   - `aitaskbuilder dataset check` - Check dataset status (previously `aitaskbuilder getdatasetstatus`)
