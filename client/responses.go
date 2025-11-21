@@ -294,7 +294,6 @@ type CredentialPoolSummary struct {
 	CredentialPoolID     string `json:"credential_pool_id"`
 	TotalCredentials     int    `json:"total_credentials"`
 	AvailableCredentials int    `json:"available_credentials"`
-	WorkspaceID          string `json:"workspace_id"`
 }
 
 // ListCredentialPoolsResponse is the response for listing credential pools.

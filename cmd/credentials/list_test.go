@@ -52,13 +52,11 @@ func TestListCredentialPools(t *testing.T) {
 						CredentialPoolID:     "cred_pool_12345",
 						TotalCredentials:     100,
 						AvailableCredentials: 75,
-						WorkspaceID:          workspaceID,
 					},
 					{
 						CredentialPoolID:     "cred_pool_67890",
 						TotalCredentials:     50,
 						AvailableCredentials: 50,
-						WorkspaceID:          workspaceID,
 					},
 				},
 			},
@@ -68,12 +66,10 @@ func TestListCredentialPools(t *testing.T) {
 Credential Pool ID: cred_pool_12345
   Total Credentials: 100
   Available Credentials: 75
-  Workspace ID: workspace123
 
 Credential Pool ID: cred_pool_67890
   Total Credentials: 50
   Available Credentials: 50
-  Workspace ID: workspace123
 
 `,
 			expectedError: "",
@@ -87,7 +83,6 @@ Credential Pool ID: cred_pool_67890
 						CredentialPoolID:     "cred_pool_12345",
 						TotalCredentials:     100,
 						AvailableCredentials: 75,
-						WorkspaceID:          workspaceID,
 					},
 				},
 			},
@@ -97,7 +92,6 @@ Credential Pool ID: cred_pool_67890
 Credential Pool ID: cred_pool_12345
   Total Credentials: 100
   Available Credentials: 75
-  Workspace ID: workspace123
 
 `,
 			expectedError: "",
