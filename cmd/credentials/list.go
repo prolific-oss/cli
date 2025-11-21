@@ -26,7 +26,6 @@ Each credential pool summary includes:
 - Credential Pool ID
 - Total number of credentials
 - Number of available (unredeemed) credentials
-- Workspace ID
 
 Required:
 - Workspace ID (-w/--workspace-id): The workspace to list credential pools for`,
@@ -49,8 +48,7 @@ $ prolific credentials list --workspace-id 507f1f77bcf86cd799439011`,
 			for _, pool := range response.CredentialPools {
 				fmt.Fprintf(w, "Credential Pool ID: %s\n", pool.CredentialPoolID)
 				fmt.Fprintf(w, "  Total Credentials: %d\n", pool.TotalCredentials)
-				fmt.Fprintf(w, "  Available Credentials: %d\n", pool.AvailableCredentials)
-				fmt.Fprintf(w, "  Workspace ID: %s\n\n", pool.WorkspaceID)
+				fmt.Fprintf(w, "  Available Credentials: %d\n\n", pool.AvailableCredentials)
 			}
 
 			return nil
