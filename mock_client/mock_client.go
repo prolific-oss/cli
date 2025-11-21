@@ -575,6 +575,21 @@ func (mr *MockAPIMockRecorder) GetWorkspaces(limit, offset interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkspaces", reflect.TypeOf((*MockAPI)(nil).GetWorkspaces), limit, offset)
 }
 
+// ListCredentialPools mocks base method.
+func (m *MockAPI) ListCredentialPools(workspaceID string) (*client.ListCredentialPoolsResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListCredentialPools", workspaceID)
+	ret0, _ := ret[0].(*client.ListCredentialPoolsResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListCredentialPools indicates an expected call of ListCredentialPools.
+func (mr *MockAPIMockRecorder) ListCredentialPools(workspaceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCredentialPools", reflect.TypeOf((*MockAPI)(nil).ListCredentialPools), workspaceID)
+}
+
 // SendMessage mocks base method.
 func (m *MockAPI) SendMessage(body, recipientID, studyID string) error {
 	m.ctrl.T.Helper()

@@ -43,6 +43,7 @@ func NewCredentialsCommand(client client.API, w io.Writer) *cobra.Command {
 	cmd.AddCommand(
 		NewCreateCommand(client, w),
 		NewUpdateCommand(client, w),
+		NewListCommand(client, w),
 	)
 
 	return cmd
