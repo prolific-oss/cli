@@ -224,21 +224,36 @@ func (c *Client) GetStudies(status, projectID string) (*ListStudiesResponse, err
 	var response ListStudiesResponse
 	var url string
 
-	if projectID != "" {
-		url = fmt.Sprintf("/api/v1/projects/%s/studies/", projectID)
-	} else {
+	// Validate status if it's not "all" or empty
+	if status != "" && status != model.StatusAll {
 		if !slices.Contains(model.StudyListStatus, status) {
 			return nil, fmt.Errorf("%s is not a valid status: %s", status, strings.Join(model.StudyListStatus, ", "))
 		}
+	}
 
-		statusFragment := ""
+	// Build status fragment if status filtering is needed
+	statusFragment := ""
+	if status != "" && status != model.StatusAll {
 		if status == model.StatusUnpublished {
 			statusFragment = "published=0"
 		} else {
 			statusFragment = fmt.Sprintf("%s=1", status)
 		}
+	}
 
-		url = fmt.Sprintf("/api/v1/studies/?%s", statusFragment)
+	// Build URL based on whether projectID is provided
+	if projectID != "" {
+		if statusFragment != "" {
+			url = fmt.Sprintf("/api/v1/projects/%s/studies/?%s", projectID, statusFragment)
+		} else {
+			url = fmt.Sprintf("/api/v1/projects/%s/studies/", projectID)
+		}
+	} else {
+		if statusFragment != "" {
+			url = fmt.Sprintf("/api/v1/studies/?%s", statusFragment)
+		} else {
+			url = "/api/v1/studies/"
+		}
 	}
 
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
