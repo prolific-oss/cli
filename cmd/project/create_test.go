@@ -34,7 +34,7 @@ func TestNewCreateCommand(t *testing.T) {
 	}
 }
 
-func TestCreateCommandErrorsIfNoTitle(t *testing.T) {
+func TestCreateCommandErrorsIfNoDescription(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
@@ -48,11 +48,13 @@ func TestCreateCommandErrorsIfNoTitle(t *testing.T) {
 	writer := bufio.NewWriter(&b)
 
 	cmd := project.NewCreateCommand("create", c, writer)
+	_ = cmd.Flags().Set("title", "Test Project")
+	_ = cmd.Flags().Set("workspace", "workspace-id")
 	err := cmd.RunE(cmd, nil)
 
 	writer.Flush()
 
-	expected := "error: title is required"
+	expected := "error: description is required"
 
 	if err.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())
@@ -65,8 +67,10 @@ func TestCreateCommandCreatesProject(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	r := client.CreateProjectResponse{}
+	userID := "user-123"
 
 	workspaceID := "8888"
+	description := "A test project"
 	record := model.Project{
 		ID:    "123123",
 		Title: "Titan",
@@ -74,8 +78,16 @@ func TestCreateCommandCreatesProject(t *testing.T) {
 
 	c.
 		EXPECT().
+		GetMe().
+		Return(&client.MeResponse{ID: userID}, nil).
+		MaxTimes(1)
+
+	c.
+		EXPECT().
 		CreateProject(gomock.Eq(workspaceID), gomock.Eq(model.Project{
-			Title: record.Title,
+			Title:       record.Title,
+			Description: description,
+			Owner:       userID,
 		})).
 		Return(&r, nil).
 		MaxTimes(1)
@@ -88,6 +100,7 @@ func TestCreateCommandCreatesProject(t *testing.T) {
 	cmd := project.NewCreateCommand("create", c, writer)
 	_ = cmd.Flags().Set("title", record.Title)
 	_ = cmd.Flags().Set("workspace", workspaceID)
+	_ = cmd.Flags().Set("description", description)
 	err := cmd.RunE(cmd, nil)
 	if err != nil {
 		t.Fatalf("was not expected error, got %v", err)
@@ -110,8 +123,10 @@ func TestCreateCommandReturnsErrorIfCreateProjectFails(t *testing.T) {
 
 	errorMessage := "Unable to create project, because the flim flam is broken"
 	r := client.CreateProjectResponse{}
+	userID := "user-123"
 
 	workspaceID := "workspace-id"
+	description := "A test project"
 	record := model.Project{
 		ID:    "123123",
 		Title: "Titan",
@@ -119,8 +134,16 @@ func TestCreateCommandReturnsErrorIfCreateProjectFails(t *testing.T) {
 
 	c.
 		EXPECT().
+		GetMe().
+		Return(&client.MeResponse{ID: userID}, nil).
+		MaxTimes(1)
+
+	c.
+		EXPECT().
 		CreateProject(gomock.Eq(workspaceID), gomock.Eq(model.Project{
-			Title: record.Title,
+			Title:       record.Title,
+			Description: description,
+			Owner:       userID,
 		})).
 		Return(nil, errors.New(errorMessage)).
 		MaxTimes(1)
@@ -133,6 +156,7 @@ func TestCreateCommandReturnsErrorIfCreateProjectFails(t *testing.T) {
 	cmd := project.NewCreateCommand("create", c, writer)
 	_ = cmd.Flags().Set("title", record.Title)
 	_ = cmd.Flags().Set("workspace", workspaceID)
+	_ = cmd.Flags().Set("description", description)
 	err := cmd.RunE(cmd, nil)
 
 	expected := fmt.Sprintf("error: %s", errorMessage)
