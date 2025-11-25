@@ -12,9 +12,11 @@ import (
 
 // CreateOptions are the options to be able to create a project.
 type CreateOptions struct {
-	Args      []string
-	Title     string
-	Workspace string
+	Args        []string
+	Title       string
+	Workspace   string
+	Description string
+	Owner       string
 }
 
 // NewCreateCommand creates a new command for creating a project.
@@ -30,7 +32,7 @@ As a user, you can have many projects inside your workspace. You can then assign
 studies to your projects, to neatly organise your work.`,
 		Example: `
 To create a project inside a workspace
-$ prolific project create -t "Research into AI" -w 6261321e223a605c7a4f7564
+$ prolific project create -t "Research into AI" -w 6261321e223a605c7a4f7564 -d "Description of AI research project"
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
@@ -47,6 +49,7 @@ $ prolific project create -t "Research into AI" -w 6261321e223a605c7a4f7564
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.Title, "title", "t", "", "The title of the project.")
 	flags.StringVarP(&opts.Workspace, "workspace", "w", "", "The ID of the workspace to create the project in.")
+	flags.StringVarP(&opts.Description, "description", "d", "", "The description of the project.")
 
 	return cmd
 }
@@ -61,8 +64,20 @@ func createProject(client client.API, opts CreateOptions, w io.Writer) error {
 		return errors.New("workspace is required")
 	}
 
+	if opts.Description == "" {
+		return errors.New("description is required")
+	}
+
+	// Get the current user's ID to set as the owner
+	me, err := client.GetMe()
+	if err != nil {
+		return fmt.Errorf("unable to get current user: %s", err.Error())
+	}
+
 	project := model.Project{
-		Title: opts.Title,
+		Title:       opts.Title,
+		Description: opts.Description,
+		Owner:       me.ID,
 	}
 
 	record, err := client.CreateProject(opts.Workspace, project)
