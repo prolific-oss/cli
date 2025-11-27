@@ -34,7 +34,7 @@ func NewTransitionCommand(client client.API, w io.Writer) *cobra.Command {
 
 			err := transitionStudy(client, opts, w)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			return nil

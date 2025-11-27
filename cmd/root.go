@@ -21,6 +21,7 @@ import (
 	"github.com/prolific-oss/cli/cmd/submission"
 	"github.com/prolific-oss/cli/cmd/user"
 	"github.com/prolific-oss/cli/cmd/workspace"
+	"github.com/prolific-oss/cli/ui"
 	"github.com/prolific-oss/cli/version"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -30,6 +31,20 @@ var cfgFile string
 
 // ApplicationName is the name of the cli binary
 const ApplicationName = "prolific"
+
+// Banner is the ASCII art displayed in the CLI header
+const Banner = `
+                                 %%%%%%%%%%%%                        #%%   %%%%%   %%%%%%%%
+       %   #%%%   #              %%%#    %%%%                       %%%    #%#   %%#  #%%#
+     #%%%   %%#  %%%%%           #%%#     %%%%                      #%%          %%%
+      %%%%  %%%  %%%%            #%%#     %%%# %%%#%%%% %%%%#%%%#   #%%    %%%  %%%%%%%%%%%    #%%%%%#%
+ %%%%  %%%# #%% %%%#  #%%        #%%#%%%%%%%#  %%%%%%%##%%%   %%%%  #%%    %%%    %%#   #%%  %%%   %%%%
+ %%%%%%  %%#%%%%%#  %%%%%#       #%%%%%#%      %%%    %%%%     %%%% #%%    %%%    %%#   #%%  %%%    #%#
+    %%%%% %%%%#%%%%%%%#          #%%#          %%%    %%%%     %%%% #%%    %%%    %%#   #%%  %%%
+%%%### %%%%%% %%%%%  #%#%%%      %%%%          %%%     %%%#   %%%%  #%%    %%%    %%#   %%%  #%%%##%%%%
+%%%%%%%%%%%%   %%%%%%%%%%%%     #%%%%%        %%%%%      %%%%%%%#  %%%%%  %%%%%  %%%%# %%%%%   %%%%%%#
+
+`
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once
@@ -43,7 +58,7 @@ func Execute() {
 
 	// Execute the application
 	if err := cmd.Execute(); err != nil {
-		fmt.Println(err)
+		ui.WriteError(err.Error())
 		os.Exit(1)
 	}
 }
@@ -54,6 +69,7 @@ func NewRootCommand() *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:     ApplicationName,
 		Short:   "CLI application for retrieving data from the Prolific Platform",
+		Long:    ui.RenderBanner(Banner) + "\nCLI application for retrieving data from the Prolific Platform",
 		Version: version.GITCOMMIT,
 	}
 
@@ -81,7 +97,71 @@ func NewRootCommand() *cobra.Command {
 		workspace.NewWorkspaceCommand(&client, w),
 	)
 
+	// Apply custom templates to all commands recursively (including root)
+	applyTemplateToAllCommands(cmd)
+
 	return cmd
+}
+
+// applyTemplateToAllCommands recursively applies custom help templates to all commands
+func applyTemplateToAllCommands(cmd *cobra.Command) {
+	cmd.SetHelpTemplate(getHelpTemplate())
+	cmd.SetUsageTemplate(getUsageTemplate())
+
+	for _, subCmd := range cmd.Commands() {
+		applyTemplateToAllCommands(subCmd)
+	}
+}
+
+// getHelpTemplate returns a custom help template with colors
+func getHelpTemplate() string {
+	return `{{with (or .Long .Short)}}{{. | trimTrailingWhitespaces}}
+
+{{end}}{{if or .Runnable .HasSubCommands}}{{.UsageString}}{{end}}`
+}
+
+// getUsageTemplate returns a custom usage template with colors
+func getUsageTemplate() string {
+	return `{{bold "Usage:"}}{{if .Runnable}}
+  {{.UseLine}}{{end}}{{if .HasAvailableSubCommands}}
+  {{.CommandPath}} [command]{{end}}{{if gt (len .Aliases) 0}}
+
+{{bold "Aliases:"}}
+  {{.NameAndAliases}}{{end}}{{if .HasExample}}
+
+{{bold "Examples:"}}
+{{.Example}}{{end}}{{if .HasAvailableSubCommands}}{{$cmds := .Commands}}{{if eq (len .Groups) 0}}
+
+{{bold "Available Commands:"}}{{range $cmds}}{{if (or .IsAvailableCommand (eq .Name "help"))}}
+  {{highlight (rpad .Name .NamePadding)}}  {{.Short}}{{end}}{{end}}{{else}}{{range $group := .Groups}}
+
+{{.Title}}{{range $cmds}}{{if (and (eq .GroupID $group.ID) (or .IsAvailableCommand (eq .Name "help")))}}
+  {{highlight (rpad .Name .NamePadding)}}  {{.Short}}{{end}}{{end}}{{end}}{{if not .AllChildCommandsHaveGroup}}
+
+Additional Commands:{{range $cmds}}{{if (and (eq .GroupID "") (or .IsAvailableCommand (eq .Name "help")))}}
+  {{highlight (rpad .Name .NamePadding)}}  {{.Short}}{{end}}{{end}}{{end}}{{end}}{{end}}{{if .HasAvailableLocalFlags}}
+
+{{bold "Flags:"}}
+{{.LocalFlags.FlagUsagesWrapped 100 | trimTrailingWhitespaces}}{{end}}{{if .HasAvailableInheritedFlags}}
+
+{{bold "Global Flags:"}}
+{{.InheritedFlags.FlagUsagesWrapped 100 | trimTrailingWhitespaces}}{{end}}{{if .HasHelpSubCommands}}
+
+Additional help topics:{{range .Commands}}{{if .IsAdditionalHelpTopicCommand}}
+  {{highlight (rpad .CommandPath .CommandPathPadding)}}  {{.Short}}{{end}}{{end}}{{end}}{{if .HasAvailableSubCommands}}
+
+{{dim (print "Use \"" .CommandPath " [command] --help\" for more information about a command.")}}{{end}}
+`
+}
+
+// Propagate custom templates to all subcommands
+func init() {
+	cobra.AddTemplateFunc("trimTrailingWhitespaces", func(s string) string {
+		return strings.TrimRight(s, " \t")
+	})
+	cobra.AddTemplateFunc("bold", ui.Bold)
+	cobra.AddTemplateFunc("highlight", ui.Highlight)
+	cobra.AddTemplateFunc("dim", ui.Dim)
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -93,7 +173,7 @@ func initConfig() {
 		// Find home directory.
 		home, err := homedir.Dir()
 		if err != nil {
-			fmt.Println(err)
+			ui.WriteError(err.Error())
 			os.Exit(1)
 		}
 

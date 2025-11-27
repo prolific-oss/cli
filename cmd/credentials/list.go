@@ -5,6 +5,7 @@ import (
 	"io"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -40,15 +41,16 @@ $ prolific credentials list --workspace-id 507f1f77bcf86cd799439011`,
 			}
 
 			if len(response.CredentialPools) == 0 {
-				fmt.Fprintf(w, "No credential pools found for workspace %s\n", opts.WorkspaceID)
+				msg := fmt.Sprintf("No credential pools found for workspace %s", ui.Dim(opts.WorkspaceID))
+				ui.WriteInfo(w, msg)
 				return nil
 			}
 
-			fmt.Fprintf(w, "Credential Pools for workspace %s:\n\n", opts.WorkspaceID)
+			fmt.Fprintf(w, "%s\n\n", ui.Bold(fmt.Sprintf("Credential Pools for workspace %s", opts.WorkspaceID)))
 			for _, pool := range response.CredentialPools {
-				fmt.Fprintf(w, "Credential Pool ID: %s\n", pool.CredentialPoolID)
-				fmt.Fprintf(w, "  Total Credentials: %d\n", pool.TotalCredentials)
-				fmt.Fprintf(w, "  Available Credentials: %d\n\n", pool.AvailableCredentials)
+				fmt.Fprintf(w, "%s %s\n", ui.Info("Credential Pool ID:"), ui.Highlight(pool.CredentialPoolID))
+				fmt.Fprintf(w, "  Total Credentials: %s\n", ui.Bold(fmt.Sprintf("%d", pool.TotalCredentials)))
+				fmt.Fprintf(w, "  Available Credentials: %s\n\n", ui.Bold(fmt.Sprintf("%d", pool.AvailableCredentials)))
 			}
 
 			return nil

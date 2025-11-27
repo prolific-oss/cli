@@ -39,7 +39,7 @@ $ prolific aitaskbuilder batch create -n "My Data Collection Batch" -w 6278acb09
 
 			err := createAITaskBuilderBatch(client, opts, w)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			return nil

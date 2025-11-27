@@ -41,7 +41,7 @@ $ prolific filters list -w 6261321e223a605c7a4f7623
 
 			err := render(c, opts, w)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			return nil
