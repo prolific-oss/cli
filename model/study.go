@@ -48,6 +48,13 @@ const (
 	TransitionStudyStop = "STOP"
 )
 
+const (
+	// DataCollectionMethodDCTool represents the DC_TOOL data collection method
+	DataCollectionMethodDCTool = "DC_TOOL"
+	// DataCollectionMethodAITaskBuilder represents the AI_TASK_BUILDER data collection method
+	DataCollectionMethodAITaskBuilder = "AI_TASK_BUILDER"
+)
+
 // TransitionList is the list of transitions we can use on a Study.
 var TransitionList = []string{
 	TransitionStudyPublish,
@@ -111,6 +118,12 @@ type Study struct {
 	CredentialPoolID       string            `json:"credential_pool_id"`
 }
 
+// DataCollectionMetadata represents configuration details for data collection
+type DataCollectionMetadata struct {
+	// AnnotatorsPerTask specifies how many annotators should work on each task
+	AnnotatorsPerTask int `json:"annotators_per_task,omitempty" mapstructure:"annotators_per_task,omitempty"`
+}
+
 // CreateStudy is responsible for capturing what fields we need to send
 // to Prolific to create a study. The `mapstructure` is so we can take a viper
 // configuration file.
@@ -151,6 +164,10 @@ type CreateStudy struct {
 	Filters          []Filter `json:"filters" mapstructure:"filters"`
 	Project          string   `json:"project,omitempty" mapstructure:"project"`
 	CredentialPoolID string   `json:"credential_pool_id,omitempty" mapstructure:"credential_pool_id"`
+	// Enum: "DC_TOOL", "AI_TASK_BUILDER", or null
+	DataCollectionMethod   *string                 `json:"data_collection_method,omitempty" mapstructure:"data_collection_method,omitempty"`
+	DataCollectionMetadata *DataCollectionMetadata `json:"data_collection_metadata,omitempty" mapstructure:"data_collection_metadata,omitempty"`
+	DataCollectionID       string                  `json:"data_collection_id,omitempty" mapstructure:"data_collection_id,omitempty"`
 }
 
 // UpdateStudy represents the model we will send back to Prolific to update
