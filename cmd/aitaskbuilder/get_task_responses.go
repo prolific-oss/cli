@@ -35,7 +35,7 @@ $ prolific aitaskbuilder batch responses -b <batch_id>
 
 			err := renderAITaskBuilderResponses(client, opts, w)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			return nil

@@ -41,7 +41,7 @@ Please make sure you quote the message with "" for the -b flag.
 
 			err := createMessage(client, opts, w)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			return nil

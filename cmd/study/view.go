@@ -38,7 +38,7 @@ $ prolific study view 64395e9c2332b8a59a65d51e`,
 
 			study, err := client.GetStudy(args[0])
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			fmt.Fprintln(w, studyui.RenderStudy(*study))

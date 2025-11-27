@@ -18,7 +18,7 @@ func NewMeCommand(client client.API, w io.Writer) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			err := RenderMe(client, w)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			return nil
@@ -37,8 +37,8 @@ func RenderMe(client client.API, w io.Writer) error {
 
 	content := ui.RenderHeading(fmt.Sprintf("%s %s", me.FirstName, me.LastName))
 	content += fmt.Sprintln()
-	content += fmt.Sprintf("ID:                %s\n", me.ID)
-	content += fmt.Sprintf("Email:             %s\n", me.Email)
+	content += fmt.Sprintf("ID:                %s\n", ui.Dim(me.ID))
+	content += fmt.Sprintf("Email:             %s\n", ui.Highlight(me.Email))
 	// content += fmt.Sprintf("Available balance: %s\n", ui.RenderMoney((float64(me.AvailableBalance)/100), me.CurrencyCode))
 	// content += fmt.Sprintf("Balance:           %s\n", ui.RenderMoney((float64(me.Balance)/100), me.CurrencyCode))
 

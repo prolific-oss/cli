@@ -45,7 +45,7 @@ $ prolific workspace list -l 1 -o 2
 
 			err := renderWorkspaces(c, opts, w)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			return nil
@@ -67,14 +67,14 @@ func renderWorkspaces(c client.API, opts WorkspaceListOptions, w io.Writer) erro
 	}
 
 	tw := tabwriter.NewWriter(w, 0, 1, 1, ' ', 0)
-	fmt.Fprintf(tw, "%s\t%s\t%s\n", "ID", "Title", "Description")
+	fmt.Fprintf(tw, "%s\t%s\t%s\n", ui.Bold("ID"), ui.Bold("Title"), ui.Bold("Description"))
 	for _, workspace := range workspaces.Results {
-		fmt.Fprintf(tw, "%s\t%s\t%v\n", workspace.ID, workspace.Title, workspace.Description)
+		fmt.Fprintf(tw, "%s\t%s\t%v\n", ui.Dim(workspace.ID), workspace.Title, workspace.Description)
 	}
 
 	_ = tw.Flush()
 
-	fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(workspaces.Results), workspaces.Meta.Count))
+	fmt.Fprintf(w, "\n%s\n", ui.Dim(ui.RenderRecordCounter(len(workspaces.Results), workspaces.Meta.Count)))
 
 	return nil
 }

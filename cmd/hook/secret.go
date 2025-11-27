@@ -28,7 +28,7 @@ func NewListSecretCommand(commandName string, client client.API, w io.Writer) *c
 			opts.Args = args
 			err := renderSecrets(client, opts, w)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			return nil

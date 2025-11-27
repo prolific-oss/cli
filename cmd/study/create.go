@@ -106,12 +106,12 @@ peripheral_requirements:
 			opts.Args = args
 
 			if opts.TemplatePath == "" {
-				return fmt.Errorf("error: Can only create via a template YAML file at the moment")
+				return fmt.Errorf("Can only create via a template YAML file at the moment")
 			}
 
 			err := createStudy(client, opts, w)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			return nil

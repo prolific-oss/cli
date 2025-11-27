@@ -72,7 +72,7 @@ Example instructions.json:
 
 			err := createBatchInstructions(client, opts, w)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			return nil
