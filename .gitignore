@@ -1,7 +1,7 @@
 vendor/
 build/
 
-prolific
+/prolific
 coverage.out
 profile.out
 trace.out

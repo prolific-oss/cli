@@ -22,22 +22,29 @@ explain:
 	#
 	### Installation
 	#
-	# $$ make all
+	# $$ make all                      # Build and test locally
+	# $$ make install-binary           # Install to $$GOPATH/bin
+	# $$ go install ./cmd/prolific     # Alternative: install directly
 	#
 	### Targets
 	@cat Makefile* | grep -E '^[a-zA-Z_-]+:.*?## .*$$' | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 .PHONY: clean
-clean: ## Clean the local dependencies
+clean: ## Clean build artifacts and dependencies
 	rm -fr vendor
 	rm -fr $(BUILD_DIR) && mkdir -p $(BUILD_DIR)
+	rm -f $(NAME)
 
 .PHONY: install
-install: ## Install the local dependencies
+install: install-binary ## Install dependencies and the prolific binary
 	cp scripts/hooks/pre-commit .git/hooks/pre-commit
 	go install github.com/golang/mock/mockgen@master
 	go install github.com/securego/gosec/v2/cmd/gosec@latest
 	go get ./...
+
+.PHONY: install-binary
+install-binary: ## Install the prolific binary to $GOPATH/bin
+	go install ./cmd/prolific
 
 .PHONY: lint
 lint: ## Vet the code
@@ -49,20 +56,20 @@ lint-dockerfile: ## Lint the dockerfile
 
 .PHONY: build
 build: ## Build the application
-	go build -o $(NAME) .
+	go build -o $(NAME) ./cmd/prolific
 
 .PHONY: static
 static: ## Build the application
 	CGO_ENABLED=0 go build \
 		-ldflags "-extldflags -static -X github.com/$(GIT_ORG)/$(NAME)/version.GITCOMMIT=$(GIT_RELEASE)" \
-		-o $(NAME) .
+		-o $(NAME) ./cmd/prolific
 
 .PHONY: static-named
 static-named: ## Build the application with named outputs
 	GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 \
 		go build \
 		-ldflags "-extldflags -static -X github.com/$(GIT_ORG)/$(NAME)/version.GITCOMMIT=$(GIT_RELEASE)" \
-		-o $(OUT_PATH) .
+		-o $(OUT_PATH) ./cmd/prolific
 
 	md5sum $(OUT_PATH) > $(OUT_PATH).md5 || md5 $(OUT_PATH) > $(OUT_PATH).md5
 	sha256sum $(OUT_PATH) > $(OUT_PATH).sha256 || shasum $(OUT_PATH) > $(OUT_PATH).sha256
