@@ -9,12 +9,16 @@
   "maximum_allowed_time": 100,
   "reward": 100,
   "device_compatibility": ["desktop"],
-  "peripheral_requirements": ["audio", "camera", "download", "microphone"],
+  "peripheral_requirements": [],
   "study_labels": [
     "ai_annotation"
   ],
-  "data_collection_method": "DC_TOOL",
+  "data_collection_method": "AI_TASK_BUILDER",
+  "data_collection_metadata": {
+    "annotators_per_task": 3
+  },
   "data_collection_id": "${BATCH_ID}",
+  "project": "your-project-id",
   "submissions_config": {
     "max_submissions_per_participant": -1
   }

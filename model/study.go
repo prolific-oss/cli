@@ -131,7 +131,7 @@ type CreateStudy struct {
 	Name             string `json:"name" mapstructure:"name"`
 	InternalName     string `json:"internal_name" mapstructure:"internal_name"`
 	Description      string `json:"description" mapstructure:"description"`
-	ExternalStudyURL string `json:"external_study_url" mapstructure:"external_study_url"`
+	ExternalStudyURL string `json:"external_study_url,omitempty" mapstructure:"external_study_url,omitempty"`
 	// Enum "question", "url_parameters" (Recommended), "not_required"
 	ProlificIDOption string `json:"prolific_id_option" mapstructure:"prolific_id_option"`
 	CompletionCode   string `json:"completion_code" mapstructure:"completion_code"`
