@@ -58,7 +58,8 @@ Example instructions.json:
         "label": "Response 2",
         "value": "response2"
       }
-    ]
+    ],
+    "answer_limit": 1
   },
   {
     "type": "free_text",

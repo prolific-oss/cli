@@ -66,6 +66,9 @@ func RenderStudy(study model.Study) string {
 	content += fmt.Sprintf("ID:                        %s\n", study.ID)
 	content += fmt.Sprintf("Status:                    %s\n", study.Status)
 	content += fmt.Sprintf("Type:                      %s\n", study.StudyType)
+	if study.DataCollectionMethod != nil {
+		content += fmt.Sprintf("Data collection method:    %s\n", *study.DataCollectionMethod)
+	}
 	content += fmt.Sprintf("Total cost:                %s\n", ui.RenderMoney((study.TotalCost/100), study.GetCurrencyCode()))
 	content += fmt.Sprintf("Reward:                    %s\n", ui.RenderMoney((study.Reward/100), study.GetCurrencyCode()))
 	content += fmt.Sprintf("Hourly rate:               %s\n", ui.RenderMoney((study.AverageRewardPerHour/100), study.GetCurrencyCode()))
