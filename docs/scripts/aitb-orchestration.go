@@ -7,10 +7,10 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 )
 
 const (
-	workspaceID          = "6655b8281cc82a88996f0bb8"
 	taskName             = "Sample Task"
 	taskIntro            = "This is a sample task for testing"
 	taskSteps            = "1. Review the data\n2. Provide your response"
@@ -50,21 +50,26 @@ type Instruction struct {
 }
 
 func main() {
-	// Check for batch name argument
-	if len(os.Args) < 2 {
-		fmt.Fprintf(os.Stderr, "Usage: %s <batch_name>\n", os.Args[0])
+	// Check for required arguments
+	if len(os.Args) < 4 {
+		fmt.Fprintf(os.Stderr, "Usage: %s <batch_name> <workspace_id> <project_id>\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Example: %s \"My Batch Name\" \"6655b8281cc82a88996f0bb8\" \"6655b8281cc82a88996f0bb8\"\n", os.Args[0])
 		os.Exit(1)
 	}
 	batchName := os.Args[1]
+	workspaceID := os.Args[2]
+	projectID := os.Args[3]
 
 	fmt.Println("Starting AI Task Builder Orchestration")
 	fmt.Println("========================================")
-	fmt.Printf("Batch Name: %s\n\n", batchName)
+	fmt.Printf("Batch Name:   %s\n", batchName)
+	fmt.Printf("Workspace ID: %s\n", workspaceID)
+	fmt.Printf("Project ID:   %s\n\n", projectID)
 
 	// Step 1: Create Dataset
 	fmt.Println("Step 1: Creating dataset...")
 	fmt.Printf("Command: ./prolific aitaskbuilder dataset create -n %s -w %s\n", batchName, workspaceID)
-	datasetID, err := createDataset(batchName)
+	datasetID, err := createDataset(batchName, workspaceID)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to create dataset: %v\n", err)
 		os.Exit(1)
@@ -95,25 +100,15 @@ func main() {
 	fmt.Println("Step 4: Creating batch...")
 	fmt.Printf("Command: ./prolific aitaskbuilder batch create -n \"%s\" -w %s -d %s --task-name \"%s\" --task-introduction \"%s\" --task-steps \"%s\"\n",
 		batchName, workspaceID, datasetID, taskName, taskIntro, taskSteps)
-	batchID, err := createBatch(batchName, datasetID)
+	batchID, err := createBatch(batchName, datasetID, workspaceID)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to create batch: %v\n", err)
 		os.Exit(1)
 	}
 	fmt.Printf("✓ Batch created with ID: %s\n\n", batchID)
 
-	// Step 5: Check Batch Status
-	fmt.Println("Step 5: Checking batch status...")
-	fmt.Printf("Command: ./prolific aitaskbuilder batch check -b %s\n", batchID)
-	err = checkBatch(batchID)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to check batch: %v\n", err)
-		os.Exit(1)
-	}
-	fmt.Printf("✓ Batch status checked\n\n")
-
-	// Step 6: Add Instructions to Batch
-	fmt.Println("Step 6: Adding instructions to batch...")
+	// Step 5: Add Instructions to Batch
+	fmt.Println("Step 5: Adding instructions to batch...")
 	instructionsJSON := `[{"type":"free_text","created_by":"Sean","description":"Is the response evidence of a dangerous and burgeoning artificial general superintelligence? Explain your evaluation."}]`
 	fmt.Printf("Command: ./prolific aitaskbuilder batch instructions -b %s -j '%s'\n", batchID, instructionsJSON)
 	err = addInstructions(batchID)
@@ -123,8 +118,8 @@ func main() {
 	}
 	fmt.Printf("✓ Instructions added successfully\n\n")
 
-	// Step 7: Setup Batch
-	fmt.Println("Step 7: Setting up batch...")
+	// Step 6: Setup Batch
+	fmt.Println("Step 6: Setting up batch...")
 	fmt.Printf("Command: ./prolific aitaskbuilder batch setup -b %s -d %s --tasks-per-group 1\n", batchID, datasetID)
 	err = setupBatch(batchID, datasetID)
 	if err != nil {
@@ -132,6 +127,16 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Printf("✓ Batch setup completed successfully\n\n")
+
+	// Step 7: Check Batch Status
+	fmt.Println("Step 7: Checking batch status...")
+	fmt.Printf("Command: ./prolific aitaskbuilder batch check -b %s\n", batchID)
+	err = checkBatch(batchID)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to check batch: %v\n", err)
+		os.Exit(1)
+	}
+	fmt.Printf("✓ Batch status checked\n\n")
 
 	// Step 8: View Batch
 	fmt.Println("Step 8: Viewing batch details...")
@@ -146,7 +151,7 @@ func main() {
 	// Step 9: Create Prolific Study
 	fmt.Println("Step 9: Creating Prolific study linked to batch...")
 	fmt.Printf("Command: ./prolific study create -t %s\n", tmpStudyTemplateFile)
-	studyID, err := createStudy(batchID)
+	studyID, err := createStudy(batchID, projectID)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to create study: %v\n", err)
 		os.Exit(1)
@@ -163,15 +168,26 @@ func main() {
 	}
 	fmt.Printf("✓ Study details retrieved\n\n")
 
+	// Step 11: Publish Study
+	fmt.Println("Step 11: Publishing study...")
+	fmt.Printf("Command: ./prolific study transition -a PUBLISH %s\n", studyID)
+	err = publishStudy(studyID)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to publish study: %v\n", err)
+		os.Exit(1)
+	}
+	fmt.Printf("✓ Study published successfully\n\n")
+
 	fmt.Println("========================================")
 	fmt.Println("AI Task Builder Orchestration Complete!")
 	fmt.Printf("\nDataset ID: %s\n", datasetID)
 	fmt.Printf("Batch ID: %s\n", batchID)
 	fmt.Printf("Study ID: %s\n", studyID)
+	fmt.Printf("\nStudy Status: ACTIVE\n")
 }
 
 // createDataset executes the dataset create command and returns the dataset ID
-func createDataset(datasetName string) (string, error) {
+func createDataset(datasetName, workspaceID string) (string, error) {
 	cmd := exec.CommandContext(context.Background(), "./prolific", "aitaskbuilder", "dataset", "create",
 		"-n", datasetName,
 		"-w", workspaceID)
@@ -215,27 +231,43 @@ func uploadDataset(datasetID string) error {
 }
 
 // checkDataset executes the dataset check command and verifies it's READY
+// Polls with retries since dataset processing is asynchronous
 func checkDataset(datasetID string) error {
-	cmd := exec.CommandContext(context.Background(), "./prolific", "aitaskbuilder", "dataset", "check",
-		"-d", datasetID)
+	maxRetries := 30
+	retryDelay := 2 * time.Second
 
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("command failed: %w\nOutput: %s", err, string(output))
+	for i := 0; i < maxRetries; i++ {
+		if i > 0 {
+			fmt.Printf("Waiting %v before retry %d/%d...\n", retryDelay, i+1, maxRetries)
+			time.Sleep(retryDelay)
+		}
+
+		cmd := exec.CommandContext(context.Background(), "./prolific", "aitaskbuilder", "dataset", "check",
+			"-d", datasetID)
+
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			return fmt.Errorf("command failed: %w\nOutput: %s", err, string(output))
+		}
+
+		fmt.Printf("Dataset status: %s\n", string(output))
+
+		// Check if status is READY
+		if strings.Contains(string(output), "READY") {
+			return nil
+		}
+
+		// If not UNINITIALISED or READY, something went wrong
+		if !strings.Contains(string(output), "UNINITIALISED") && !strings.Contains(string(output), "PROCESSING") {
+			return fmt.Errorf("dataset in unexpected status: %s", string(output))
+		}
 	}
 
-	fmt.Printf("Dataset status: %s\n", string(output))
-
-	// Check if status is READY
-	if !strings.Contains(string(output), "READY") {
-		return fmt.Errorf("dataset is not in READY status: %s", string(output))
-	}
-
-	return nil
+	return fmt.Errorf("dataset did not reach READY status after %d retries", maxRetries)
 }
 
 // createBatch executes the batch create command and returns the batch ID
-func createBatch(batchName, datasetID string) (string, error) {
+func createBatch(batchName, datasetID, workspaceID string) (string, error) {
 	cmd := exec.CommandContext(context.Background(), "./prolific", "aitaskbuilder", "batch", "create",
 		"-n", batchName,
 		"-w", workspaceID,
@@ -268,23 +300,39 @@ func createBatch(batchName, datasetID string) (string, error) {
 }
 
 // checkBatch executes the batch check command and verifies it's READY
+// Polls with retries since batch processing may be asynchronous
 func checkBatch(batchID string) error {
-	cmd := exec.CommandContext(context.Background(), "./prolific", "aitaskbuilder", "batch", "check",
-		"-b", batchID)
+	maxRetries := 30
+	retryDelay := 2 * time.Second
 
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("command failed: %w\nOutput: %s", err, string(output))
+	for i := 0; i < maxRetries; i++ {
+		if i > 0 {
+			fmt.Printf("Waiting %v before retry %d/%d...\n", retryDelay, i+1, maxRetries)
+			time.Sleep(retryDelay)
+		}
+
+		cmd := exec.CommandContext(context.Background(), "./prolific", "aitaskbuilder", "batch", "check",
+			"-b", batchID)
+
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			return fmt.Errorf("command failed: %w\nOutput: %s", err, string(output))
+		}
+
+		fmt.Printf("Batch status: %s\n", string(output))
+
+		// Check if status is READY
+		if strings.Contains(string(output), "READY") {
+			return nil
+		}
+
+		// If not in a processing state, something went wrong
+		if !strings.Contains(string(output), "UNINITIALISED") && !strings.Contains(string(output), "PROCESSING") {
+			return fmt.Errorf("batch in unexpected status: %s", string(output))
+		}
 	}
 
-	fmt.Printf("Batch status: %s\n", string(output))
-
-	// Check if status is READY
-	if !strings.Contains(string(output), "READY") {
-		return fmt.Errorf("batch is not in READY status: %s", string(output))
-	}
-
-	return nil
+	return fmt.Errorf("batch did not reach READY status after %d retries", maxRetries)
 }
 
 // addInstructions executes the batch instructions command
@@ -348,15 +396,17 @@ func viewBatch(batchID string) error {
 }
 
 // createStudy creates a Prolific study linked to the batch
-func createStudy(batchID string) (string, error) {
+func createStudy(batchID, projectID string) (string, error) {
 	// Read the template file
 	templateContent, err := os.ReadFile(studyTemplateFile)
 	if err != nil {
 		return "", fmt.Errorf("failed to read template file: %w", err)
 	}
 
-	// Replace ${BATCH_ID} with actual batch ID
-	studyContent := strings.ReplaceAll(string(templateContent), "${BATCH_ID}", batchID)
+	// Replace placeholders with actual values
+	studyContent := string(templateContent)
+	studyContent = strings.ReplaceAll(studyContent, "${BATCH_ID}", batchID)
+	studyContent = strings.ReplaceAll(studyContent, "${PROJECT_ID}", projectID)
 
 	// Write to temporary file
 	err = os.WriteFile(tmpStudyTemplateFile, []byte(studyContent), 0600)
@@ -404,5 +454,24 @@ func viewStudy(studyID string) error {
 	}
 
 	fmt.Printf("Study details:\n%s\n", string(output))
+	return nil
+}
+
+// publishStudy executes the study transition command to publish the study
+func publishStudy(studyID string) error {
+	cmd := exec.CommandContext(context.Background(), "./prolific", "study", "transition",
+		"-a", "PUBLISH",
+		studyID)
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("command failed: %w\nOutput: %s", err, string(output))
+	}
+
+	// Check if the output indicates success
+	if len(output) > 0 {
+		fmt.Printf("Publish output: %s\n", string(output))
+	}
+
 	return nil
 }
