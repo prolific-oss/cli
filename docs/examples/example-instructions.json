@@ -1,0 +1,24 @@
+[
+    {
+        "type": "multiple_choice",
+        "created_by": "Researcher",
+        "description": "Choose the LLM response which is more accurate.",
+        "options": [
+            {
+                "label": "Response 1",
+                "value": "response1"
+            },
+            {
+                "label": "Response 2",
+                "value": "response2"
+            }
+        ],
+        "answer_limit": 1
+    },
+    {
+        "type": "free_text",
+        "created_by": "Researcher",
+        "description": "Please share the reasons for your choice.",
+        "answer_limit": 1
+    }
+]
