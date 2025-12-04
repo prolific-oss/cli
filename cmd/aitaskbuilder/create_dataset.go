@@ -39,7 +39,7 @@ $ prolific aitaskbuilder dataset create -n "test" -w <workspace_id>
 
 			err := createAITaskBuilderDataset(client, opts, w)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			return nil

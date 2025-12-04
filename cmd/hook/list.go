@@ -50,7 +50,7 @@ $ prolific hook list -w 3461321e223a605c7a4f7612 -e
 
 			err := renderHooks(c, opts, w)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			return nil

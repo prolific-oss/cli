@@ -49,7 +49,7 @@ $ prolific campaign list -w <workspace_id> -l 1 -o 2
 
 			err := renderCampaigns(c, opts, w)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			return nil
@@ -75,14 +75,14 @@ func renderCampaigns(c client.API, opts CampaignListOptions, w io.Writer) error 
 	}
 
 	tw := tabwriter.NewWriter(w, 0, 1, 1, ' ', 0)
-	fmt.Fprintf(tw, "%s\t%s\t%s\n", "ID", "Name", "Link")
+	fmt.Fprintf(tw, "%s\t%s\t%s\n", ui.Bold("ID"), ui.Bold("Name"), ui.Bold("Link"))
 	for _, campaign := range campaigns.Results {
-		fmt.Fprintf(tw, "%s\t%s\t%v\n", campaign.ID, campaign.Name, campaign.SignupLink)
+		fmt.Fprintf(tw, "%s\t%s\t%v\n", ui.Dim(campaign.ID), campaign.Name, ui.Highlight(campaign.SignupLink))
 	}
 
 	_ = tw.Flush()
 
-	fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(campaigns.Results), campaigns.Meta.Count))
+	fmt.Fprintf(w, "\n%s\n", ui.Dim(ui.RenderRecordCounter(len(campaigns.Results), campaigns.Meta.Count)))
 
 	return nil
 }

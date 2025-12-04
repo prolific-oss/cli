@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -86,7 +85,7 @@ func TestNewViewCommandReturnsErrorIfParticipantGroupNotDefined(t *testing.T) {
 	cmd := participantgroup.NewViewCommand("view", c, os.Stdout)
 	err := cmd.RunE(cmd, nil)
 
-	expected := "error: please provide a participant group ID"
+	expected := "please provide a participant group ID"
 	if err.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())
 	}
@@ -113,7 +112,7 @@ func TestNewViewCommandHandlesAnAPIError(t *testing.T) {
 	cmd := participantgroup.NewViewCommand("view", c, writer)
 	err := cmd.RunE(cmd, []string{groupID})
 
-	expected := fmt.Sprintf("error: %s", errorMessage)
+	expected := errorMessage
 	if err.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())
 	}

@@ -44,7 +44,7 @@ $ prolific project view 6261321e223a605c7a4f7678
 
 			err := renderProject(client, opts, w)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			return nil
