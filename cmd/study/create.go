@@ -197,6 +197,11 @@ func createStudy(client client.API, opts CreateOptions, w io.Writer) error {
 		log.Fatalf("unable to map %s to study model: %s", opts.TemplatePath, err)
 	}
 
+	// Validate that data_collection_method and external_study_url are mutually exclusive
+	if s.ExternalStudyURL != "" && s.DataCollectionMethod != nil && *s.DataCollectionMethod != "" {
+		return fmt.Errorf("data_collection_method and external_study_url are mutually exclusive: only one can be set")
+	}
+
 	study, err := client.CreateStudy(s)
 	if err != nil {
 		return err

@@ -309,3 +309,104 @@ func TestCreateCommandCanHandleErrorsWhenPublishing(t *testing.T) {
 		t.Fatalf("expected %s; got %v", expected, err.Error())
 	}
 }
+
+func TestCreateCommandRejectsBothDataCollectionMethodAndExternalStudyURL(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	// Create a temporary test file with both fields set
+	tmpFile, err := os.CreateTemp("", "test-study-*.json")
+	if err != nil {
+		t.Fatalf("failed to create temp file: %v", err)
+	}
+	defer os.Remove(tmpFile.Name())
+
+	dataCollectionMethod := "AI_TASK_BUILDER"
+	testContent := fmt.Sprintf(`{
+		"name": "Test Study",
+		"internal_name": "Test Study",
+		"description": "Test",
+		"external_study_url": "https://example.com",
+		"data_collection_method": "%s",
+		"prolific_id_option": "question",
+		"completion_code": "TEST01",
+		"total_available_places": 10,
+		"estimated_completion_time": 10,
+		"reward": 400
+	}`, dataCollectionMethod)
+
+	if _, err := tmpFile.Write([]byte(testContent)); err != nil {
+		t.Fatalf("failed to write temp file: %v", err)
+	}
+	tmpFile.Close()
+
+	// CreateStudy should never be called because validation should fail first
+	c.
+		EXPECT().
+		CreateStudy(gomock.Any()).
+		Times(0)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := study.NewCreateCommand(c, writer)
+	_ = cmd.Flags().Set("template-path", tmpFile.Name())
+	err = cmd.RunE(cmd, nil)
+	writer.Flush()
+
+	expected := "error: data_collection_method and external_study_url are mutually exclusive: only one can be set"
+	if err.Error() != expected {
+		t.Fatalf("expected error %q, got %q", expected, err.Error())
+	}
+}
+
+func TestCreateCommandAcceptsOnlyExternalStudyURL(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	// This should work - using the existing standard-sample.json which only has external_study_url
+	c.
+		EXPECT().
+		CreateStudy(gomock.Any()).
+		Return(&actualStudy, nil).
+		Times(1)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := study.NewCreateCommand(c, writer)
+	_ = cmd.Flags().Set("template-path", "../../docs/examples/standard-sample.json")
+	err := cmd.RunE(cmd, nil)
+	writer.Flush()
+
+	if err != nil {
+		t.Fatalf("expected no error when only external_study_url is set, got %v", err)
+	}
+}
+
+func TestCreateCommandAcceptsOnlyDataCollectionMethod(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	// This should work - using the existing AITB example which only has data_collection_method
+	c.
+		EXPECT().
+		CreateStudy(gomock.Any()).
+		Return(&actualStudy, nil).
+		Times(1)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := study.NewCreateCommand(c, writer)
+	_ = cmd.Flags().Set("template-path", "../../docs/examples/standard-sample-aitaskbuilder.json")
+	err := cmd.RunE(cmd, nil)
+	writer.Flush()
+
+	if err != nil {
+		t.Fatalf("expected no error when only data_collection_method is set, got %v", err)
+	}
+}
