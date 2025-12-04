@@ -52,7 +52,7 @@ func TestNewListCommandHandlesErrors(t *testing.T) {
 	cmd := message.NewListCommand("list", c, os.Stdout)
 	err := cmd.RunE(cmd, nil)
 
-	expected := fmt.Sprintf("error: %s", errorMessage)
+	expected := errorMessage
 
 	if err.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())
@@ -179,7 +179,7 @@ func TestNewListCommandWithUnreadFlagAndOtherFlagsReturnsError(t *testing.T) {
 	_ = cmd.Flags().Set("user", "user-id") // Set another flag along with 'unread'
 	err := cmd.RunE(cmd, nil)
 
-	expectedError := `error: 'unread' cannot be used with any other flags`
+	expectedError := `'unread' cannot be used with any other flags`
 	if err == nil || err.Error() != expectedError {
 		t.Fatalf("expected error: '%s'; got error: '%v'", expectedError, err)
 	}

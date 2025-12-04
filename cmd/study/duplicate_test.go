@@ -94,7 +94,7 @@ func TestDuplicateStudyHandlesApiErrors(t *testing.T) {
 	err := cmd.RunE(cmd, []string{studyID})
 	writer.Flush()
 
-	expected := "error: No no no"
+	expected := "No no no"
 	if err.Error() != expected {
 		t.Fatalf("expected %s, got %s", expected, err.Error())
 	}

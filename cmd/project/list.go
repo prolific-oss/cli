@@ -47,7 +47,7 @@ $ prolific project list -w 61a65c06b084910b3f0c00d5 -l 1 -o 2
 
 			err := renderProjects(c, opts, w)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			return nil
@@ -79,14 +79,14 @@ func renderProjects(client client.API, opts ListOptions, w io.Writer) error {
 	}
 
 	tw := tabwriter.NewWriter(w, 0, 1, 1, ' ', 0)
-	fmt.Fprintf(tw, "%s\t%s\t%s\n", "ID", "Title", "Description")
+	fmt.Fprintf(tw, "%s\t%s\t%s\n", ui.Bold("ID"), ui.Bold("Title"), ui.Bold("Description"))
 	for _, project := range projects.Results {
-		fmt.Fprintf(tw, "%s\t%s\t%v\n", project.ID, project.Title, project.Description)
+		fmt.Fprintf(tw, "%s\t%s\t%v\n", ui.Dim(project.ID), project.Title, project.Description)
 	}
 
 	_ = tw.Flush()
 
-	fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(projects.Results), count))
+	fmt.Fprintf(w, "\n%s\n", ui.Dim(ui.RenderRecordCounter(len(projects.Results), count)))
 
 	return nil
 }

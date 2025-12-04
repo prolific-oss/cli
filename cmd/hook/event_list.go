@@ -49,7 +49,7 @@ $ prolific hook events -s 637e081185389c0ca5595915 -l 10 -o 10
 
 			err := renderEvents(c, opts, w)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			return nil

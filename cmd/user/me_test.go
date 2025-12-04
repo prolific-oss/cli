@@ -104,7 +104,7 @@ func TestRenderMeHandlesFailure(t *testing.T) {
 	cmd := user.NewMeCommand(c, writer)
 	err := cmd.RunE(cmd, nil)
 
-	if err.Error() != "error: Failure to look within" {
+	if err.Error() != "Failure to look within" {
 		t.Fatalf("expected a specific error, got %v", err)
 	}
 

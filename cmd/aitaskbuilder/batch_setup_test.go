@@ -129,7 +129,7 @@ func TestNewBatchSetupCommandAPIError(t *testing.T) {
 		t.Fatal("expected error; got nil")
 	}
 
-	expectedError := "error: API error"
+	expectedError := "API error"
 	if err.Error() != expectedError {
 		t.Fatalf("expected error: %s; got %s", expectedError, err.Error())
 	}
@@ -198,12 +198,12 @@ func TestNewBatchSetupCommandInvalidTasksPerGroup(t *testing.T) {
 		{
 			name:          "zero tasks per group",
 			tasksPerGroup: "0",
-			expectedErr:   "error: " + aitaskbuilder.ErrTasksPerGroupMinimum,
+			expectedErr:   "" + aitaskbuilder.ErrTasksPerGroupMinimum,
 		},
 		{
 			name:          "negative tasks per group",
 			tasksPerGroup: "-1",
-			expectedErr:   "error: " + aitaskbuilder.ErrTasksPerGroupMinimum,
+			expectedErr:   "" + aitaskbuilder.ErrTasksPerGroupMinimum,
 		},
 	}
 

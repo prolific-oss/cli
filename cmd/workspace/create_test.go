@@ -52,7 +52,7 @@ func TestCreateCommandErrorsIfNoTitle(t *testing.T) {
 
 	writer.Flush()
 
-	expected := "error: title is required"
+	expected := "title is required"
 
 	if err.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, b.String())
@@ -91,7 +91,7 @@ func TestCreateCommandCreatesWorkspace(t *testing.T) {
 	writer.Flush()
 	actual := b.String()
 
-	expected := fmt.Sprintf("Created workspace: %v\n", model.ID)
+	expected := fmt.Sprintf("[ok] Created workspace: %v\n", model.ID)
 
 	if actual != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, b.String())
@@ -124,7 +124,7 @@ func TestCreateCommandHandlesFailureToCreateWorkspace(t *testing.T) {
 	_ = cmd.Flags().Set("title", model.Title)
 	err := cmd.RunE(cmd, nil)
 
-	expected := "error: unable to create workspace"
+	expected := "unable to create workspace"
 
 	if err.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())

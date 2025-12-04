@@ -32,7 +32,7 @@ There are two types of filters:
 		RunE: func(cmd *cobra.Command, args []string) error {
 			err := renderList(client)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			return nil

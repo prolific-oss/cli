@@ -58,7 +58,8 @@ Example instructions.json:
         "label": "Response 2",
         "value": "response2"
       }
-    ]
+    ],
+    "answer_limit": 1
   },
   {
     "type": "free_text",
@@ -72,7 +73,7 @@ Example instructions.json:
 
 			err := createBatchInstructions(client, opts, w)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			return nil

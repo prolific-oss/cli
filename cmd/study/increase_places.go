@@ -38,7 +38,7 @@ $ prolific study increase-places 64395e9c2332b8a59a65d51e --places 5000`,
 
 			study, err := client.GetStudy(args[0])
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			if study.TotalAvailablePlaces > opts.Places {

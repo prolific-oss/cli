@@ -57,19 +57,13 @@ type InstructionOption struct {
 	Heading string `json:"heading,omitempty"`
 }
 
-// AnswerLimit represents the answer limit for multiple choice with free text instructions
-type AnswerLimit struct {
-	Type        string `json:"type"`
-	Description string `json:"description"`
-}
-
 // Instruction represents a single instruction in the request payload
 type Instruction struct {
 	Type        InstructionType     `json:"type"`
 	CreatedBy   string              `json:"created_by"`
 	Description string              `json:"description"`
 	Options     []InstructionOption `json:"options,omitempty"`
-	AnswerLimit *AnswerLimit        `json:"answer_limit,omitempty"`
+	AnswerLimit *int                `json:"answer_limit,omitempty"`
 }
 
 // CreateAITaskBuilderInstructionsPayload represents the JSON payload for creating AI Task Builder instructions

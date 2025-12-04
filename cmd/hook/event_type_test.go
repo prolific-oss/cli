@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"fmt"
 	"os"
 	"testing"
 
@@ -88,7 +87,7 @@ func TestNewEventTypeCommandHandlesErrors(t *testing.T) {
 	cmd := hook.NewEventTypeCommand("event-types", c, os.Stdout)
 	err := cmd.RunE(cmd, nil)
 
-	expected := fmt.Sprintf("error: %s", errorMessage)
+	expected := errorMessage
 
 	if err.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())

@@ -117,7 +117,7 @@ func TestNewGetDatasetStatusCommandHandlesErrors(t *testing.T) {
 	_ = cmd.Flags().Set("dataset-id", datasetID)
 	err := cmd.RunE(cmd, nil)
 
-	expected := fmt.Sprintf("error: %s", errorMessage)
+	expected := errorMessage
 
 	if err.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())
@@ -136,7 +136,7 @@ func TestNewGetDatasetStatusCommandRequiresDatasetID(t *testing.T) {
 
 	if !cmd.Flags().Changed("dataset-id") {
 		expected := aitaskbuilder.ErrDatasetIDRequired
-		if err.Error() != "error: "+expected {
+		if err.Error() != ""+expected {
 			t.Fatalf("expected error to contain '%s', got '%s'", expected, err.Error())
 		}
 	}

@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"fmt"
 	"os"
 	"testing"
 
@@ -107,7 +106,7 @@ func TestNewListCommandHandlesErrors(t *testing.T) {
 	_ = cmd.Flags().Set("workspace", "991199")
 	err := cmd.RunE(cmd, nil)
 
-	expected := fmt.Sprintf("error: %s", errorMessage)
+	expected := errorMessage
 
 	if err.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())

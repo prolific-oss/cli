@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -101,7 +100,7 @@ func TestNewEventListCommandProvidesErrorIfSubmissionNotPassedIn(t *testing.T) {
 	cmd := hook.NewEventListCommand("events", c, os.Stdout)
 	error := cmd.RunE(cmd, nil)
 
-	expected := `error: please provide a subscription ID`
+	expected := `please provide a subscription ID`
 
 	if error.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, error.Error())
@@ -127,7 +126,7 @@ func TestNewEventListCommandSetsDefaultsForLimitOffset(t *testing.T) {
 	_ = cmd.Flags().Set("subscription", subscriptionID)
 	error := cmd.RunE(cmd, nil)
 
-	expected := fmt.Sprintf("error: %s", failureMessage)
+	expected := failureMessage
 
 	if error.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, error.Error())

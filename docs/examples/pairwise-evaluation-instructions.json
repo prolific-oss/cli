@@ -1,0 +1,72 @@
+[
+    {
+        "type": "multiple_choice",
+        "created_by": "Researcher",
+        "description": "Which response is better overall?",
+        "options": [
+            {
+                "label": "Response 1",
+                "value": "response1"
+            },
+            {
+                "label": "Response 2",
+                "value": "response2"
+            },
+            {
+                "label": "Both equally good",
+                "value": "equal"
+            },
+            {
+                "label": "Both equally bad",
+                "value": "neither"
+            }
+        ],
+        "answer_limit": 1
+    },
+    {
+        "type": "multiple_choice",
+        "created_by": "Researcher",
+        "description": "Is Response 1 factually accurate? You may use the internet to look for factuality references.",
+        "options": [
+            {
+                "label": "Yes",
+                "value": "yes"
+            },
+            {
+                "label": "No",
+                "value": "no"
+            },
+            {
+                "label": "Unsure",
+                "value": "unsure"
+            }
+        ],
+        "answer_limit": 1
+    },
+    {
+        "type": "multiple_choice",
+        "created_by": "Researcher",
+        "description": "Is Response 2 factually accurate? You may use the internet to look for factuality references.",
+        "options": [
+            {
+                "label": "Yes",
+                "value": "yes"
+            },
+            {
+                "label": "No",
+                "value": "no"
+            },
+            {
+                "label": "Unsure",
+                "value": "unsure"
+            }
+        ],
+        "answer_limit": 1
+    },
+    {
+        "type": "free_text",
+        "created_by": "Researcher",
+        "description": "Please explain your evaluation. What makes your chosen response better? Consider factors like accuracy, completeness, clarity, and helpfulness.",
+        "answer_limit": 1
+    }
+]

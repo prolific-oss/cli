@@ -41,7 +41,7 @@ $ prolific aitaskbuilder dataset upload -d <dataset_id> -f docs/examples/aitb-mo
 
 			err := uploadDatasetFile(client, opts, w)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			return nil

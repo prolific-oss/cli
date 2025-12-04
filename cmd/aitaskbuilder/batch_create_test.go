@@ -144,7 +144,7 @@ func TestNewBatchCreateCommandAPIError(t *testing.T) {
 		t.Fatal("expected error; got nil")
 	}
 
-	expectedError := "error: API error"
+	expectedError := "API error"
 	if err.Error() != expectedError {
 		t.Fatalf("expected error: %s; got %s", expectedError, err.Error())
 	}

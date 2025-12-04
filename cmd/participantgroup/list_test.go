@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"fmt"
 	"os"
 	"testing"
 
@@ -98,7 +97,7 @@ func TestNewListCommandReturnsErrorIfProjectNotDefined(t *testing.T) {
 	cmd := participantgroup.NewListCommand("list", c, os.Stdout)
 	err := cmd.RunE(cmd, nil)
 
-	expected := "error: please provide a project ID"
+	expected := "please provide a project ID"
 	if err.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())
 	}
@@ -126,7 +125,7 @@ func TestNewListCommandHandlesAnAPIError(t *testing.T) {
 	_ = cmd.Flags().Set("project", projectID)
 	err := cmd.RunE(cmd, nil)
 
-	expected := fmt.Sprintf("error: %s", errorMessage)
+	expected := errorMessage
 	if err.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())
 	}

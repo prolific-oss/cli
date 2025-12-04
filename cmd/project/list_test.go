@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"fmt"
 	"os"
 	"testing"
 
@@ -100,7 +99,7 @@ func TestNewListCommandHandlesErrorsFromTheCliParams(t *testing.T) {
 	cmd := project.NewListCommand("list", c, os.Stdout)
 	err := cmd.RunE(cmd, nil)
 
-	expected := fmt.Sprintf("error: %s", errorMessage)
+	expected := errorMessage
 
 	if err.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())
@@ -125,7 +124,7 @@ func TestNewListCommandHandlesErrorsFromTheAPI(t *testing.T) {
 	_ = cmd.Flags().Set("workspace", workspaceID)
 	err := cmd.RunE(cmd, nil)
 
-	expected := fmt.Sprintf("error: %s", errorMessage)
+	expected := errorMessage
 
 	if err.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())

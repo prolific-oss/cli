@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"fmt"
 	"os"
 	"testing"
 
@@ -98,7 +97,7 @@ func TestNewViewCommandHandlesErrorsFromTheCliParams(t *testing.T) {
 	cmd := project.NewViewCommand("view", c, os.Stdout)
 	err := cmd.RunE(cmd, nil)
 
-	expected := fmt.Sprintf("error: %s", errorMessage)
+	expected := errorMessage
 
 	if err.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())
@@ -122,7 +121,7 @@ func TestNewViewCommandHandlesErrorsFromTheAPI(t *testing.T) {
 	cmd := project.NewViewCommand("view", c, os.Stdout)
 	err := cmd.RunE(cmd, []string{projectID})
 
-	expected := fmt.Sprintf("error: %s", errorMessage)
+	expected := errorMessage
 
 	if err.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())

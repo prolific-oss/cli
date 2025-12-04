@@ -94,7 +94,7 @@ func TestNewIncreasePlacesCommandHandlesGetStudyFailure(t *testing.T) {
 	_ = cmd.Flags().Set("places", "9")
 	err := cmd.RunE(cmd, []string{studyID})
 
-	expected := "error: failed to get study"
+	expected := "failed to get study"
 	if err.Error() != expected {
 		t.Fatalf("expected %s, got %s", expected, err.Error())
 	}

@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"fmt"
 	"os"
 	"testing"
 
@@ -130,7 +129,7 @@ func TestNewBatchTasksCommandHandlesErrors(t *testing.T) {
 	_ = cmd.Flags().Set("batch-id", batchID)
 	err := cmd.RunE(cmd, nil)
 
-	expected := fmt.Sprintf("error: %s", errorMessage)
+	expected := errorMessage
 
 	if err.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())
@@ -151,7 +150,7 @@ func TestNewBatchTasksCommandRequiresBatchID(t *testing.T) {
 
 	if !cmd.Flags().Changed("batch-id") {
 		expected := aitaskbuilder.ErrBatchIDRequired
-		if err.Error() != "error: "+expected {
+		if err.Error() != ""+expected {
 			t.Fatalf("expected error to contain '%s', got '%s'", expected, err.Error())
 		}
 	}
