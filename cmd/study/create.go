@@ -53,7 +53,7 @@ An example of a JSON study file, with an ethnicity screener
   "completion_option": "code",
   "total_available_places": 10,
   "estimated_completion_time": 10,
-  "maximum_allowed_time": 10,
+  "maximum_allowed_time": 30,
   "reward": 400,
   "device_compatibility": ["desktop", "tablet", "mobile"],
   "peripheral_requirements": ["audio", "camera", "download", "microphone"],
@@ -64,7 +64,35 @@ An example of a JSON study file, with an ethnicity screener
       "_cls": "web.eligibility.models.SelectAnswerEligibilityRequirement"
     }
   ],
+  "project": "your-project-id",
   "credential_pool_id": "64a1b2c3d4e5f6a7b8c9d0e1_12345678-1234-11e0-8000-0a1b2c3d4e5f"
+}
+
+An example using AI Task Builder (AITB) for data collection
+Note: data_collection_method is mutually exclusive with external_study_url
+
+{
+  "name": "AITB Data Collection Study",
+  "internal_name": "AI Task Builder Study",
+  "description": "Study using AI Task Builder for data annotation tasks",
+  "prolific_id_option": "url_parameters",
+  "completion_code": "COMPLE01",
+  "completion_option": "code",
+  "total_available_places": 10,
+  "estimated_completion_time": 10,
+  "maximum_allowed_time": 30,
+  "reward": 400,
+  "device_compatibility": ["desktop"],
+  "peripheral_requirements": [],
+  "submissions_config": {
+    "max_submissions_per_participant": 1
+  },
+  "data_collection_method": "AI_TASK_BUILDER",
+  "data_collection_metadata": {
+    "annotators_per_task": 3
+  },
+  "data_collection_id": "your-data-collection-id",
+  "project": "your-project-id"
 }
 
 An example of a YAML study file
@@ -87,7 +115,7 @@ estimated_completion_time: 10
 # Optional fields
 ###
 # In minutes
-maximum_allowed_time: 10
+maximum_allowed_time: 30
 # In cents
 reward: 400
 # Enum: "desktop", "tablet", "mobile"
@@ -101,17 +129,46 @@ peripheral_requirements:
   - camera
   - download
   - microphone
+# Optional: Specify which project to associate the study with
+# If not specified, uses the default project for your API token
+# project: your-project-id
+
+An example using AI Task Builder in YAML
+Note: data_collection_method is mutually exclusive with external_study_url
+
+---
+name: AITB Data Collection Study
+internal_name: AI Task Builder Study
+description: Study using AI Task Builder for data annotation tasks
+prolific_id_option: url_parameters
+completion_code: COMPLE01
+completion_option: code
+total_available_places: 10
+estimated_completion_time: 10
+maximum_allowed_time: 30
+reward: 400
+device_compatibility:
+  - desktop
+peripheral_requirements: []
+submissions_config:
+  max_submissions_per_participant: 1
+data_collection_method: AI_TASK_BUILDER
+data_collection_metadata:
+  annotators_per_task: 3
+data_collection_id: your-data-collection-id
+# Optional: Specify which project to associate the study with
+# project: your-project-id
 ---`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
 
 			if opts.TemplatePath == "" {
-				return fmt.Errorf("error: Can only create via a template YAML file at the moment")
+				return fmt.Errorf("can only create via a template YAML file at the moment")
 			}
 
 			err := createStudy(client, opts, w)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			return nil
