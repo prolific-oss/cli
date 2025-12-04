@@ -9,7 +9,7 @@ require (
 	github.com/charmbracelet/lipgloss v1.1.0 // MIT
 	github.com/golang/mock v1.6.0 // Apache 2.0
 	github.com/mitchellh/go-homedir v1.1.0 // MIT
-	github.com/spf13/cobra v1.10.1 // Apache 2.0
+	github.com/spf13/cobra v1.10.2 // Apache 2.0
 	github.com/spf13/viper v1.21.0 // MIT
 	golang.org/x/exp v0.0.0-20250819193227-8b4c13bb791b // BSD-3-Clause
 	golang.org/x/text v0.31.0 // BSD-3-Clause
