@@ -51,7 +51,7 @@ func TestNewListCommandHandlesErrors(t *testing.T) {
 	cmd := hook.NewListCommand("list", c, os.Stdout)
 	err := cmd.RunE(cmd, nil)
 
-	expected := fmt.Sprintf("error: %s", errorMessage)
+	expected := errorMessage
 
 	if err.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())
@@ -75,7 +75,7 @@ func TestNewListCommandCanAskForDisabledHooks(t *testing.T) {
 	_ = cmd.Flags().Set("disabled", "true")
 	err := cmd.RunE(cmd, nil)
 
-	expected := fmt.Sprintf("error: %s", errorMessage)
+	expected := errorMessage
 
 	if err.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())

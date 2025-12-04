@@ -7,6 +7,7 @@ import (
 
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/model"
+	"github.com/prolific-oss/cli/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -39,7 +40,7 @@ $ prolific project create -t "Research into AI" -w 6261321e223a605c7a4f7564 -d "
 
 			err := createProject(client, opts, w)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			return nil
@@ -85,7 +86,8 @@ func createProject(client client.API, opts CreateOptions, w io.Writer) error {
 		return err
 	}
 
-	fmt.Fprintf(w, "Created project: %s\n", record.ID)
+	msg := fmt.Sprintf("Created project: %s", ui.Dim(record.ID))
+	ui.WriteSuccess(w, msg)
 
 	return nil
 }

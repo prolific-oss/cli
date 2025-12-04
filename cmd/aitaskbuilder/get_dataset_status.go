@@ -41,7 +41,7 @@ $ prolific aitaskbuilder dataset check -d <dataset_id>
 
 			err := renderAITaskBuilderDatasetStatus(client, opts, w)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			return nil

@@ -36,7 +36,7 @@ $ prolific aitaskbuilder batch setup -b <batch_id> -d <dataset_id> --tasks-per-g
 
 			err := setupAITaskBuilderBatch(client, opts, w)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			return nil

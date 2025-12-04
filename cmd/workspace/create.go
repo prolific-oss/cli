@@ -7,6 +7,7 @@ import (
 
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/model"
+	"github.com/prolific-oss/cli/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -38,7 +39,7 @@ $ prolific workspace create -t "Research into AI"
 
 			err := createWorkspace(client, opts, w)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			return nil
@@ -66,7 +67,8 @@ func createWorkspace(client client.API, opts CreateOptions, w io.Writer) error {
 		return err
 	}
 
-	fmt.Fprintf(w, "Created workspace: %s\n", record.ID)
+	msg := fmt.Sprintf("Created workspace: %s", ui.Dim(record.ID))
+	ui.WriteSuccess(w, msg)
 
 	return nil
 }
