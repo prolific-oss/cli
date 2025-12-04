@@ -217,3 +217,85 @@ View study in the application: %s/researcher/studies/11223344
 		t.Fatalf("expected \n'%s'\ngot\n'%s'", expected, actual)
 	}
 }
+
+func TestViewStudyRendersUnderpaying(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	studyID := "11223344"
+
+	actualStudy := model.Study{
+		ID:                      studyID,
+		Name:                    "My first standard sample",
+		InternalName:            "Standard sample",
+		Desc:                    "This is my first standard sample study on the Prolific system.",
+		ExternalStudyURL:        "https://eggs-experriment.com?participant=",
+		TotalAvailablePlaces:    10,
+		EstimatedCompletionTime: 10,
+		MaximumAllowedTime:      10,
+		Reward:                  400,
+		DeviceCompatibility:     []string{"desktop", "tablet", "mobile"},
+		Filters: []model.Filter{
+			{
+				FilterID:       "handedness",
+				SelectedValues: []string{"left"},
+			},
+		},
+		IsUnderpaying: true,
+	}
+
+	c.
+		EXPECT().
+		GetStudy(gomock.Eq(studyID)).
+		Return(&actualStudy, nil).
+		AnyTimes()
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := study.NewViewCommand(c, writer)
+	_ = cmd.RunE(cmd, []string{studyID})
+	writer.Flush()
+
+	expected := fmt.Sprintf(`My first standard sample
+This is my first standard sample study on the Prolific system.
+
+ID:                        11223344
+Status:
+Type:
+Total cost:                £0.00
+Reward:                    £4.00(Underpaying)
+Hourly rate:               £0.00
+Estimated completion time: 10
+Maximum allowed time:      10
+Study URL:                 https://eggs-experriment.com?participant=
+Places taken:              0
+Available places:          10
+
+---
+
+Submissions configuration
+Maxsubmissionsperparticipant: 0
+Maxconcurrentsubmissions:     0
+
+---
+
+Filters
+
+handedness
+-left
+
+---
+
+View study in the application: %s/researcher/studies/11223344
+`, config.GetApplicationURL())
+
+	actual := stripansi.Strip(b.String())
+	actual = strings.ReplaceAll(actual, " ", "")
+	expected = strings.ReplaceAll(expected, " ", "")
+
+	if actual != expected {
+		t.Fatalf("expected \n'%s'\ngot\n'%s'", expected, actual)
+	}
+}

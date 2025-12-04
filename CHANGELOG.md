@@ -2,6 +2,8 @@
 
 ## next
 
+- Make it clear if a study is underpaying in the `study view` command.
+
 ## 0.0.57
 
 - Add `study credentials-report` command to download CSV report of credential usage for a study:
