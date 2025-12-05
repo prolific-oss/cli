@@ -60,3 +60,7 @@ func RenderApplicationLink(entity, slug string) string {
 
 	return content
 }
+
+func RenderHighlightedText(text string) string {
+	return lipgloss.NewStyle().Bold(true).Background(lipgloss.Color("#FFA500")).Foreground(lipgloss.Color("#000000")).Render(text)
+}
