@@ -48,6 +48,11 @@ const (
 	TransitionStudyStop = "STOP"
 )
 
+const (
+	// DataCollectionMethodAITaskBuilder represents the AI_TASK_BUILDER data collection method
+	DataCollectionMethodAITaskBuilder = "AI_TASK_BUILDER"
+)
+
 // TransitionList is the list of transitions we can use on a Study.
 var TransitionList = []string{
 	TransitionStudyPublish,
@@ -109,6 +114,14 @@ type Study struct {
 	IsUnderpaying          any               `json:"is_underpaying"`
 	SubmissionsConfig      SubmissionsConfig `json:"submissions_config"`
 	CredentialPoolID       string            `json:"credential_pool_id"`
+	DataCollectionMethod   *string           `json:"data_collection_method,omitempty"`
+	DataCollectionID       string            `json:"data_collection_id,omitempty"`
+}
+
+// DataCollectionMetadata represents configuration details for data collection
+type DataCollectionMetadata struct {
+	// AnnotatorsPerTask specifies how many annotators should work on each task
+	AnnotatorsPerTask int `json:"annotators_per_task,omitempty" mapstructure:"annotators_per_task,omitempty"`
 }
 
 // CreateStudy is responsible for capturing what fields we need to send
@@ -118,7 +131,7 @@ type CreateStudy struct {
 	Name             string `json:"name" mapstructure:"name"`
 	InternalName     string `json:"internal_name" mapstructure:"internal_name"`
 	Description      string `json:"description" mapstructure:"description"`
-	ExternalStudyURL string `json:"external_study_url" mapstructure:"external_study_url"`
+	ExternalStudyURL string `json:"external_study_url,omitempty" mapstructure:"external_study_url,omitempty"`
 	// Enum "question", "url_parameters" (Recommended), "not_required"
 	ProlificIDOption string `json:"prolific_id_option" mapstructure:"prolific_id_option"`
 	CompletionCode   string `json:"completion_code" mapstructure:"completion_code"`
@@ -151,6 +164,10 @@ type CreateStudy struct {
 	Filters          []Filter `json:"filters" mapstructure:"filters"`
 	Project          string   `json:"project,omitempty" mapstructure:"project"`
 	CredentialPoolID string   `json:"credential_pool_id,omitempty" mapstructure:"credential_pool_id"`
+	// Enum: "AI_TASK_BUILDER", or null
+	DataCollectionMethod   *string                 `json:"data_collection_method,omitempty" mapstructure:"data_collection_method,omitempty"`
+	DataCollectionMetadata *DataCollectionMetadata `json:"data_collection_metadata,omitempty" mapstructure:"data_collection_metadata,omitempty"`
+	DataCollectionID       string                  `json:"data_collection_id,omitempty" mapstructure:"data_collection_id,omitempty"`
 }
 
 // UpdateStudy represents the model we will send back to Prolific to update
