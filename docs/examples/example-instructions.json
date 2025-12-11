@@ -18,7 +18,6 @@
     {
         "type": "free_text",
         "created_by": "Researcher",
-        "description": "Please share the reasons for your choice.",
-        "answer_limit": 1
+        "description": "Please share the reasons for your choice."
     }
 ]

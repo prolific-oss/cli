@@ -5,7 +5,6 @@
   "prolific_id_option": "not_required",
   "completion_code": "AIEVAL01",
   "completion_option": "code",
-  "total_available_places": 10,
   "estimated_completion_time": 10,
   "maximum_allowed_time": 30,
   "reward": 100,
