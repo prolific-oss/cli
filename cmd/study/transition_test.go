@@ -105,7 +105,7 @@ func TestTransitionStudyHandlesApiErrors(t *testing.T) {
 	err := cmd.RunE(cmd, []string{studyID})
 	writer.Flush()
 
-	expected := "error: No no no"
+	expected := "No no no"
 	if err.Error() != expected {
 		t.Fatalf("expected %s, got %s", expected, err.Error())
 	}
@@ -125,7 +125,7 @@ func TestTransitionStudyHandlesNoActionSpecified(t *testing.T) {
 	err := cmd.RunE(cmd, []string{studyID})
 	writer.Flush()
 
-	expected := "error: you must provide an action to transition the study to"
+	expected := "you must provide an action to transition the study to"
 	if err.Error() != expected {
 		t.Fatalf("expected %s, got %s", expected, err.Error())
 	}

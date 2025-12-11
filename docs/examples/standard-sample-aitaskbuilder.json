@@ -4,18 +4,24 @@
   "description": "Evaluate AI model responses for quality and accuracy. Participants will review prompts and corresponding AI-generated responses, then provide structured feedback using our evaluation framework.",
   "prolific_id_option": "not_required",
   "completion_code": "AIEVAL01",
-  "total_available_places": 3,
-  "estimated_completion_time": 1,
-  "maximum_allowed_time": 100,
+  "completion_option": "code",
+  "total_available_places": 10,
+  "estimated_completion_time": 10,
+  "maximum_allowed_time": 30,
   "reward": 100,
   "device_compatibility": ["desktop"],
-  "peripheral_requirements": ["audio", "camera", "download", "microphone"],
+  "peripheral_requirements": [],
   "study_labels": [
     "ai_annotation"
   ],
+  "data_collection_metadata": {
+    "annotators_per_task": 3
+  },
   "data_collection_method": "DC_TOOL",
   "data_collection_id": "${BATCH_ID}",
+  "project": "${PROJECT_ID}",
   "submissions_config": {
-    "max_submissions_per_participant": -1
+    "max_submissions_per_participant": 10,
+    "max_concurrent_submissions": 3
   }
 }

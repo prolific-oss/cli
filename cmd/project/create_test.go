@@ -54,7 +54,7 @@ func TestCreateCommandErrorsIfNoDescription(t *testing.T) {
 
 	writer.Flush()
 
-	expected := "error: description is required"
+	expected := "description is required"
 
 	if err.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())
@@ -109,7 +109,7 @@ func TestCreateCommandCreatesProject(t *testing.T) {
 	writer.Flush()
 	actual := b.String()
 
-	expected := fmt.Sprintf("Created project: %v\n", record.ID)
+	expected := fmt.Sprintf("[ok] Created project: %v\n", record.ID)
 
 	if actual != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, b.String())
@@ -159,7 +159,7 @@ func TestCreateCommandReturnsErrorIfCreateProjectFails(t *testing.T) {
 	_ = cmd.Flags().Set("description", description)
 	err := cmd.RunE(cmd, nil)
 
-	expected := fmt.Sprintf("error: %s", errorMessage)
+	expected := errorMessage
 
 	if err.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())
@@ -192,7 +192,7 @@ func TestCreateCommandHandlesErrorIfNoWorkspaceProvided(t *testing.T) {
 	_ = cmd.Flags().Set("title", model.Title)
 	err := cmd.RunE(cmd, nil)
 
-	expected := "error: workspace is required"
+	expected := "workspace is required"
 
 	if err.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())

@@ -38,7 +38,7 @@ $ prolific participant view 6429b0ea05b2a24cac83c3a4
 
 			err := renderGroup(client, opts, w)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			return nil

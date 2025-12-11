@@ -26,7 +26,7 @@ $ prolific study duplicate 64395e9c2332b8a59a65d51e`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			study, err := client.DuplicateStudy(args[0])
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			fmt.Fprintln(w, study.ID)

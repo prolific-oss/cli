@@ -104,7 +104,7 @@ The fields you can use are
 			}, w)
 
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			return nil

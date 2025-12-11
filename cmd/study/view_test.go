@@ -137,7 +137,7 @@ func TestViewStudyHandlesApiErrors(t *testing.T) {
 	err := cmd.RunE(cmd, []string{studyID})
 	writer.Flush()
 
-	expected := "error: unable to get study"
+	expected := "unable to get study"
 	if err.Error() != expected {
 		t.Fatalf("expected %s, got %s", expected, err.Error())
 	}

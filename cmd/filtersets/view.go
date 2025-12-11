@@ -39,7 +39,7 @@ $ prolific filter-sets view 64efb93c7788944088864cec
 
 			err := renderProject(client, opts, w)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			return nil

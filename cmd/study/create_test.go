@@ -96,7 +96,7 @@ func TestCreateCommandHandlesFailureToReadConfig(t *testing.T) {
 	err := cmd.RunE(cmd, nil)
 	writer.Flush()
 
-	expected := "error: open broken-path.json: no such file or directory"
+	expected := "open broken-path.json: no such file or directory"
 	if err.Error() != expected {
 		t.Fatalf("expected %s, got %s", expected, err.Error())
 	}
@@ -185,7 +185,7 @@ func TestCommandFailsIfNoPathSpecified(t *testing.T) {
 	_ = cmd.Flags().Set("publish", "true")
 	err := cmd.RunE(cmd, nil)
 
-	if err.Error() != "error: Can only create via a template YAML file at the moment" {
+	if err.Error() != "can only create via a template YAML file at the moment" {
 		t.Fatalf("Expected a specific error.")
 	}
 
@@ -211,7 +211,7 @@ func TestCreateCommandHandlesAnErrorFromTheAPI(t *testing.T) {
 	_ = cmd.Flags().Set("publish", "true")
 	err := cmd.RunE(cmd, nil)
 
-	if err.Error() != "error: Whoopsie daisy" {
+	if err.Error() != "Whoopsie daisy" {
 		t.Fatalf("Expected a specific error, got %v", err)
 	}
 	writer.Flush()
@@ -258,7 +258,7 @@ func TestCreateCommandCanHandleErrorsWhenGettingStudy(t *testing.T) {
 	err := cmd.RunE(cmd, nil)
 	writer.Flush()
 
-	expected := "error: could not get study"
+	expected := "could not get study"
 	if err.Error() != expected {
 		t.Fatalf("expected %s; got %v", expected, err.Error())
 	}
@@ -304,7 +304,7 @@ func TestCreateCommandCanHandleErrorsWhenPublishing(t *testing.T) {
 	err := cmd.RunE(cmd, nil)
 	writer.Flush()
 
-	expected := "error: could not publish"
+	expected := "could not publish"
 	if err.Error() != expected {
 		t.Fatalf("expected %s; got %v", expected, err.Error())
 	}
