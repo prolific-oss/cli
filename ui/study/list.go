@@ -26,7 +26,7 @@ type ListUsedOptions struct {
 
 // ListStrategy defines an interface to allow different strategies to render the list view.
 type ListStrategy interface {
-	Render(client client.API, opts ListUsedOptions, w io.Writer) error
+	Render(client client.API, studies client.ListStudiesResponse, opts ListUsedOptions, w io.Writer) error
 }
 
 // ListRenderer defines an interface to allow different strategies to render the list view.
@@ -40,8 +40,8 @@ func (r *ListRenderer) SetStrategy(s ListStrategy) {
 }
 
 // Render will use the render strategy to render the studies.
-func (r *ListRenderer) Render(client client.API, opts ListUsedOptions, w io.Writer) error {
-	return r.strategy.Render(client, opts, w)
+func (r *ListRenderer) Render(client client.API, studies client.ListStudiesResponse, opts ListUsedOptions, w io.Writer) error {
+	return r.strategy.Render(client, studies, opts, w)
 }
 
 // InteractiveRenderer runs the bubbles UI framework to provide a rich
@@ -49,15 +49,9 @@ func (r *ListRenderer) Render(client client.API, opts ListUsedOptions, w io.Writ
 type InteractiveRenderer struct{}
 
 // Render will render the list in an interactive manner.
-func (r *InteractiveRenderer) Render(client client.API, opts ListUsedOptions, w io.Writer) error {
-	studies, err := client.GetStudies(opts.Status, opts.ProjectID)
-
-	if err != nil {
-		return err
-	}
-
+func (r *InteractiveRenderer) Render(client client.API, studies client.ListStudiesResponse, opts ListUsedOptions, w io.Writer) error {
 	var items []list.Item
-	var studyMap = make(map[string]model.Study)
+	studyMap := make(map[string]model.Study)
 
 	for _, study := range studies.Results {
 		items = append(items, study)
@@ -83,12 +77,7 @@ func (r *InteractiveRenderer) Render(client client.API, opts ListUsedOptions, w 
 type NonInteractiveRenderer struct{}
 
 // Render will just display the results in a table.
-func (r *NonInteractiveRenderer) Render(client client.API, opts ListUsedOptions, w io.Writer) error {
-	studies, err := client.GetStudies(opts.Status, opts.ProjectID)
-	if err != nil {
-		return err
-	}
-
+func (r *NonInteractiveRenderer) Render(client client.API, studies client.ListStudiesResponse, opts ListUsedOptions, w io.Writer) error {
 	if len(opts.Fields) == 0 {
 		opts.Fields = DefaultListFields
 	}
@@ -116,12 +105,7 @@ func (r *NonInteractiveRenderer) Render(client client.API, opts ListUsedOptions,
 type CsvRenderer struct{}
 
 // Render will render the studies in the CSV format.
-func (r *CsvRenderer) Render(client client.API, opts ListUsedOptions, w io.Writer) error {
-	studies, err := client.GetStudies(opts.Status, opts.ProjectID)
-	if err != nil {
-		return err
-	}
-
+func (r *CsvRenderer) Render(client client.API, studies client.ListStudiesResponse, opts ListUsedOptions, w io.Writer) error {
 	if len(opts.Fields) == 0 {
 		opts.Fields = DefaultListFields
 	}
