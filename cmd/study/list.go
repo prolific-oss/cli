@@ -99,10 +99,14 @@ The fields you can use are
 				renderer.SetStrategy(&study.InteractiveRenderer{})
 			}
 
-			err := renderer.Render(client, study.ListUsedOptions{
+			studies, err := client.GetStudies(opts.Status, opts.ProjectID)
+			if err != nil {
+				return err
+			}
+
+			err = renderer.Render(client, *studies, study.ListUsedOptions{
 				Status: opts.Status, NonInteractive: opts.NonInteractive, Fields: opts.Fields, ProjectID: opts.ProjectID,
 			}, w)
-
 			if err != nil {
 				return fmt.Errorf("error: %s", err.Error())
 			}

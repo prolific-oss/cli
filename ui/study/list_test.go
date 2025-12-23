@@ -3,7 +3,6 @@ package study_test
 import (
 	"bufio"
 	"bytes"
-	"errors"
 	"strings"
 	"testing"
 
@@ -44,18 +43,11 @@ func TestCsvRendererRendersInCsvFormat(t *testing.T) {
 		Results: []model.Study{actualStudy},
 	}
 
-	c.
-		EXPECT().
-		GetStudies(gomock.Eq(opts.Status), gomock.Eq(opts.ProjectID)).
-		Return(&studyResponse, nil).
-		MaxTimes(1)
-
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
 
 	renderer := study.CsvRenderer{}
-	err := renderer.Render(c, opts, writer)
-
+	err := renderer.Render(c, studyResponse, opts, writer)
 	if err != nil {
 		t.Fatalf("did not expect error, got %v", err)
 	}
@@ -69,37 +61,6 @@ func TestCsvRendererRendersInCsvFormat(t *testing.T) {
 	if b.String() != expected {
 		t.Fatalf("expected '%v', got '%v'", expected, b.String())
 	}
-}
-
-func TestCsvRendererRendersReturnsErrorIfCannotGetStudies(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	c := mock_client.NewMockAPI(ctrl)
-
-	opts := study.ListUsedOptions{
-		Status:    model.StatusActive,
-		ProjectID: "",
-	}
-
-	expected := errors.New("What in the blazes!!!")
-
-	c.
-		EXPECT().
-		GetStudies(gomock.Eq(opts.Status), gomock.Eq(opts.ProjectID)).
-		Return(nil, expected).
-		MaxTimes(1)
-
-	var b bytes.Buffer
-	writer := bufio.NewWriter(&b)
-
-	renderer := study.CsvRenderer{}
-	err := renderer.Render(c, opts, writer)
-
-	if err != expected {
-		t.Fatalf("Expected \n%v\n, got \n%v\n", expected, err)
-	}
-
-	writer.Flush()
 }
 
 func TestCsvRendererRendersInCsvFormatRespectingFieldOrder(t *testing.T) {
@@ -130,18 +91,11 @@ func TestCsvRendererRendersInCsvFormatRespectingFieldOrder(t *testing.T) {
 		Results: []model.Study{actualStudy},
 	}
 
-	c.
-		EXPECT().
-		GetStudies(gomock.Eq(opts.Status), gomock.Eq(opts.ProjectID)).
-		Return(&studyResponse, nil).
-		MaxTimes(1)
-
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
 
 	renderer := study.CsvRenderer{}
-	err := renderer.Render(c, opts, writer)
-
+	err := renderer.Render(c, studyResponse, opts, writer)
 	if err != nil {
 		t.Fatalf("did not expect error, got %v", err)
 	}
@@ -186,18 +140,11 @@ func TestCsvRendererRendersCredentialPoolID(t *testing.T) {
 		Results: []model.Study{actualStudy},
 	}
 
-	c.
-		EXPECT().
-		GetStudies(gomock.Eq(opts.Status), gomock.Eq(opts.ProjectID)).
-		Return(&studyResponse, nil).
-		MaxTimes(1)
-
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
 
 	renderer := study.CsvRenderer{}
-	err := renderer.Render(c, opts, writer)
-
+	err := renderer.Render(c, studyResponse, opts, writer)
 	if err != nil {
 		t.Fatalf("did not expect error, got %v", err)
 	}
@@ -242,18 +189,11 @@ func TestNonInteractiveRendererRendersCredentialPoolID(t *testing.T) {
 		Results: []model.Study{actualStudy},
 	}
 
-	c.
-		EXPECT().
-		GetStudies(gomock.Eq(opts.Status), gomock.Eq(opts.ProjectID)).
-		Return(&studyResponse, nil).
-		MaxTimes(1)
-
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
 
 	renderer := study.NonInteractiveRenderer{}
-	err := renderer.Render(c, opts, writer)
-
+	err := renderer.Render(c, studyResponse, opts, writer)
 	if err != nil {
 		t.Fatalf("did not expect error, got %v", err)
 	}
