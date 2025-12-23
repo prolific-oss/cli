@@ -19,6 +19,7 @@ type ListOptions struct {
 	NonInteractive bool
 	ProjectID      string
 	Status         string
+	Underpaying    bool
 }
 
 // NewListCommand creates a new `study list` command to give you details about
@@ -104,6 +105,10 @@ The fields you can use are
 				return err
 			}
 
+			if opts.Underpaying {
+				studies = filterByUnderpaying(*studies)
+			}
+
 			err = renderer.Render(client, *studies, study.ListUsedOptions{
 				Status: opts.Status, NonInteractive: opts.NonInteractive, Fields: opts.Fields, ProjectID: opts.ProjectID,
 			}, w)
@@ -119,8 +124,21 @@ The fields you can use are
 	flags.StringVarP(&opts.Status, "status", "s", model.StatusAll, fmt.Sprintf("The status you want to filter on: %s.", strings.Join(model.StudyListStatus, ", ")))
 	flags.BoolVarP(&opts.NonInteractive, "non-interactive", "n", false, "Render the list details straight to the terminal.")
 	flags.BoolVarP(&opts.Csv, "csv", "c", false, "Render the list details in a CSV format.")
+	flags.BoolVarP(&opts.Underpaying, "underpaying", "u", false, "Filter by underpaying studies.")
 	flags.StringVarP(&opts.Fields, "fields", "f", "", "Comma separated list of fields you want to display in non-interactive/csv mode.")
 	flags.StringVarP(&opts.ProjectID, "project", "p", "", "Get studies for a given project ID.")
 
 	return cmd
+}
+
+func filterByUnderpaying(studies client.ListStudiesResponse) *client.ListStudiesResponse {
+	var filtered []model.Study
+	for _, study := range studies.Results {
+		if study.IsUnderpaying == true {
+			filtered = append(filtered, study)
+		}
+	}
+
+	studies.Results = filtered
+	return &studies
 }
