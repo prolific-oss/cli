@@ -3,6 +3,7 @@
 ## next
 
 - Make it clear if a study is underpaying in the `study view` command.
+- Provide an `--underpaying` flag for the `study list` command to filter down to only underpaying studies.
 
 ## 0.0.57
 
