@@ -21,7 +21,7 @@ func TestNewBatchCreateCommand(t *testing.T) {
 
 	cmd := aitaskbuilder.NewBatchCreateCommand(c, os.Stdout)
 
-	use := "create"
+	use := createCommandUse
 	short := "Create a batch"
 
 	if cmd.Use != use {

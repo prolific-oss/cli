@@ -1,0 +1,32 @@
+{
+  "workspace_id": "67890abcdef12345678901234",
+  "name": "example-collection",
+  "items": [
+    {
+      "order": 0,
+      "items": [
+        {
+          "order": 0,
+          "type": "free_text",
+          "description": "How was your experience completing this task?"
+        },
+        {
+          "order": 1,
+          "type": "multiple_choice",
+          "description": "Which option do you prefer?",
+          "options": [
+            {
+              "label": "Response 1",
+              "value": "response1"
+            },
+            {
+              "label": "Response 2",
+              "value": "response2"
+            }
+          ],
+          "answer_limit": -1
+        }
+      ]
+    }
+  ]
+}
