@@ -300,3 +300,9 @@ type CredentialPoolSummary struct {
 type ListCredentialPoolsResponse struct {
 	CredentialPools []CredentialPoolSummary `json:"credential_pools"`
 }
+
+// ListCollectionsResponse is the response for the collections API.
+type ListCollectionsResponse struct {
+	Results []model.Collection `json:"results"`
+	*JSONAPIMeta
+}

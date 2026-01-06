@@ -42,6 +42,8 @@ type API interface {
 
 	GetCampaigns(workspaceID string, limit, offset int) (*ListCampaignsResponse, error)
 
+	GetCollections(workspaceID string, limit, offset int) (*ListCollectionsResponse, error)
+
 	GetHooks(workspaceID string, enabled bool, limit, offset int) (*ListHooksResponse, error)
 	GetHookEventTypes() (*ListHookEventTypesResponse, error)
 	GetHookSecrets(workspaceID string) (*ListSecretsResponse, error)
@@ -332,6 +334,19 @@ func (c *Client) GetCampaigns(workspaceID string, limit, offset int) (*ListCampa
 	var response ListCampaignsResponse
 
 	url := fmt.Sprintf("/api/v1/campaigns/?workspace_id=%s&limit=%v&offset=%v", workspaceID, limit, offset)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// GetCollections will return a list of Collection objects for a workspace.
+func (c *Client) GetCollections(workspaceID string, limit, offset int) (*ListCollectionsResponse, error) {
+	var response ListCollectionsResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/collections?workspace_id=%s&limit=%v&offset=%v", workspaceID, limit, offset)
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
