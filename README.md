@@ -135,3 +135,36 @@ You can download the binaries from the [release pages](https://github.com/prolif
 Once downloaded, be sure to put the binary in a folder that is referenced in your `$PATH`.
 
 </details>
+
+<details>
+<summary>Installation via Go Install</summary>
+
+```shell
+go install github.com/prolific-oss/cli/cmd/prolific@latest
+```
+
+</details>
+
+## Release Process
+
+Releases are managed via GitHub Releases and automated CI/CD.
+
+### 1. Update CHANGELOG.md
+
+Add your changes to the `CHANGELOG.md` file under a new version section (e.g., `## 0.0.58`).
+
+### 2. Create a GitHub Release
+
+1. Go to [Releases](https://github.com/prolific-oss/cli/releases)
+2. Click "Draft a new release"
+3. Create a new tag matching the version (e.g., `v0.0.58`)
+4. Title the release with the version number
+5. Publish the release
+
+### 3. Automated Build
+
+The release workflow automatically:
+- Builds binaries for multiple platforms (darwin, linux, windows, freebsd)
+- Uploads binaries to the GitHub Release as assets
+
+Users can then download binaries from the release page or use `go install`.
