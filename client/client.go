@@ -62,6 +62,8 @@ type API interface {
 	GetFilterSets(workspaceID string, limit, offset int) (*ListFilterSetsResponse, error)
 	GetFilterSet(ID string) (*model.FilterSet, error)
 
+	UpdateCollection(ID string, collection model.UpdateCollection) (*model.Collection, error)
+
 	GetMessages(userID *string, createdAfter *string) (*ListMessagesResponse, error)
 	SendMessage(body, recipientID, studyID string) error
 	GetUnreadMessages() (*ListUnreadMessagesResponse, error)
@@ -573,6 +575,23 @@ func (c *Client) GetFilterSet(ID string) (*model.FilterSet, error) {
 
 	if httpResponse.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("status code was %v, so therefore unable to get filter set: %v", httpResponse.StatusCode, ID)
+	}
+
+	return &response, nil
+}
+
+// UpdateCollection will update a collection with the given ID
+func (c *Client) UpdateCollection(ID string, collection model.UpdateCollection) (*model.Collection, error) {
+	var response model.Collection
+
+	url := fmt.Sprintf("/api/v1/collections/%s/", ID)
+	httpResponse, err := c.Execute(http.MethodPatch, url, collection, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to update collection: %v", err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unable to update collection: unexpected status %d", httpResponse.StatusCode)
 	}
 
 	return &response, nil
