@@ -600,7 +600,7 @@ func (c *Client) UpdateCollection(ID string, collection model.UpdateCollection) 
 	var response model.Collection
 
 	url := fmt.Sprintf("/api/v1/collections/%s/", ID)
-	httpResponse, err := c.Execute(http.MethodPatch, url, collection, &response)
+	httpResponse, err := c.Execute(http.MethodPut, url, collection, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to update collection: %v", err)
 	}
