@@ -1,10 +1,5 @@
 # CHANGELOG
 
-## next
-
-- Make it clear if a study is underpaying in the `study view` command.
-- Provide an `--underpaying` flag for the `study list` command to filter down to only underpaying studies.
-
 ## 0.0.57
 
 - Add `study credentials-report` command to download CSV report of credential usage for a study:
@@ -50,6 +45,11 @@
   - `DatasetStatus` for dataset statuses
   - `InstructionType` for instruction types
 - Use `ErrWorkspaceIDRequired` constant for consistent error handling
+- Make it clear if a study is underpaying in the `study view` command.
+- Provide an `--underpaying` flag for the `study list` command to filter down to only underpaying studies.
+- Add support for `go install github.com/prolific-oss/cli/cmd/prolific@latest`.
+- Add `owner` and `description` fields to `project create` command.
+- Fix study list filtering to allow project and status filters to be used together.
 
 ## 0.0.56
 

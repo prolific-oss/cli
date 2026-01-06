@@ -67,6 +67,7 @@ func NewRootCommand() *cobra.Command {
 	cmd.AddCommand(
 		aitaskbuilder.NewAITaskBuilderCommand(&client, w),
 		campaign.NewListCommand("campaign", &client, w),
+		collection.NewCollectionCommand(&client, w),
 		credentials.NewCredentialsCommand(&client, w),
 		collection.NewCollectionCommand(&client, w),
 		filters.NewListCommand(&client, w),
