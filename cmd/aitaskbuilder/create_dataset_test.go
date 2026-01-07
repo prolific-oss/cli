@@ -93,12 +93,10 @@ func TestNewCreateDatasetCommandHandlesErrors(t *testing.T) {
 		Name: "Test Dataset",
 	}
 
-	errorMessage := "workspace not found"
-
 	c.
 		EXPECT().
 		CreateAITaskBuilderDataset(gomock.Eq(workspaceID), gomock.Eq(payload)).
-		Return(nil, errors.New(errorMessage)).
+		Return(nil, errors.New(workspaceNotFoundError)).
 		AnyTimes()
 
 	cmd := aitaskbuilder.NewCreateDatasetCommand(c, os.Stdout)
@@ -106,7 +104,7 @@ func TestNewCreateDatasetCommandHandlesErrors(t *testing.T) {
 	_ = cmd.Flags().Set("workspace-id", "invalid-workspace")
 	err := cmd.RunE(cmd, nil)
 
-	expected := fmt.Sprintf("error: %s", errorMessage)
+	expected := fmt.Sprintf("error: %s", workspaceNotFoundError)
 
 	if err.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())

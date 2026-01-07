@@ -116,3 +116,8 @@ docker-push: ## Push the docker image
 .PHONY: docker-scout
 docker-scout: ## Check the Docker image for vulnerabilities
 	docker scout cves $(DOCKER_PREFIX)/$(NAME):$(DOCKER_RELEASE)
+
+.PHONY: format-changed
+format-changed: ## Format only changed Go files
+	@git diff --name-only HEAD | grep '\.go$$' | xargs -r gofmt -w
+	@git diff --name-only HEAD | grep '\.go$$' | xargs -r goimports -w

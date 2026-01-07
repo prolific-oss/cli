@@ -50,6 +50,21 @@ func (mr *MockAPIMockRecorder) CreateAITaskBuilderBatch(params interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAITaskBuilderBatch", reflect.TypeOf((*MockAPI)(nil).CreateAITaskBuilderBatch), params)
 }
 
+// CreateAITaskBuilderCollection mocks base method.
+func (m *MockAPI) CreateAITaskBuilderCollection(payload model.CreateAITaskBuilderCollection) (*client.CreateAITaskBuilderCollectionResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateAITaskBuilderCollection", payload)
+	ret0, _ := ret[0].(*client.CreateAITaskBuilderCollectionResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateAITaskBuilderCollection indicates an expected call of CreateAITaskBuilderCollection.
+func (mr *MockAPIMockRecorder) CreateAITaskBuilderCollection(payload interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAITaskBuilderCollection", reflect.TypeOf((*MockAPI)(nil).CreateAITaskBuilderCollection), payload)
+}
+
 // CreateAITaskBuilderDataset mocks base method.
 func (m *MockAPI) CreateAITaskBuilderDataset(workspaceID string, payload client.CreateAITaskBuilderDatasetPayload) (*client.CreateAITaskBuilderDatasetResponse, error) {
 	m.ctrl.T.Helper()
@@ -273,6 +288,21 @@ func (m *MockAPI) GetCampaigns(workspaceID string, limit, offset int) (*client.L
 func (mr *MockAPIMockRecorder) GetCampaigns(workspaceID, limit, offset interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCampaigns", reflect.TypeOf((*MockAPI)(nil).GetCampaigns), workspaceID, limit, offset)
+}
+
+// GetCollection mocks base method.
+func (m *MockAPI) GetCollection(ID string) (*model.Collection, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCollection", ID)
+	ret0, _ := ret[0].(*model.Collection)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCollection indicates an expected call of GetCollection.
+func (mr *MockAPIMockRecorder) GetCollection(ID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCollection", reflect.TypeOf((*MockAPI)(nil).GetCollection), ID)
 }
 
 // GetCollections mocks base method.

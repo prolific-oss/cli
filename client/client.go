@@ -43,6 +43,7 @@ type API interface {
 	GetCampaigns(workspaceID string, limit, offset int) (*ListCampaignsResponse, error)
 
 	GetCollections(workspaceID string, limit, offset int) (*ListCollectionsResponse, error)
+	GetCollection(ID string) (*model.Collection, error)
 
 	GetHooks(workspaceID string, enabled bool, limit, offset int) (*ListHooksResponse, error)
 	GetHookEventTypes() (*ListHookEventTypesResponse, error)
@@ -74,6 +75,7 @@ type API interface {
 	CreateAITaskBuilderInstructions(batchID string, instructions CreateAITaskBuilderInstructionsPayload) (*CreateAITaskBuilderInstructionsResponse, error)
 	SetupAITaskBuilderBatch(batchID, datasetID string, tasksPerGroup int) (*SetupAITaskBuilderBatchResponse, error)
 	CreateAITaskBuilderDataset(workspaceID string, payload CreateAITaskBuilderDatasetPayload) (*CreateAITaskBuilderDatasetResponse, error)
+	CreateAITaskBuilderCollection(payload model.CreateAITaskBuilderCollection) (*CreateAITaskBuilderCollectionResponse, error)
 	GetAITaskBuilderBatch(batchID string) (*GetAITaskBuilderBatchResponse, error)
 	GetAITaskBuilderBatchStatus(batchID string) (*GetAITaskBuilderBatchStatusResponse, error)
 	GetAITaskBuilderBatches(workspaceID string) (*GetAITaskBuilderBatchesResponse, error)
@@ -352,6 +354,24 @@ func (c *Client) GetCollections(workspaceID string, limit, offset int) (*ListCol
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// GetCollection will return a single Collection by ID.
+func (c *Client) GetCollection(ID string) (*model.Collection, error) {
+	var response model.Collection
+
+	url := fmt.Sprintf("/api/v1/data-collection/collections/%s", ID)
+	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unable to get collection: %v", string(body))
 	}
 
 	return &response, nil
@@ -855,6 +875,24 @@ func (c *Client) CreateAITaskBuilderDataset(workspaceID string, payload CreateAI
 	if httpResponse.StatusCode != http.StatusCreated {
 		body, _ := io.ReadAll(httpResponse.Body)
 		return nil, fmt.Errorf("unable to create dataset: %v", string(body))
+	}
+
+	return &response, nil
+}
+
+// CreateAITaskBuilderCollection creates a new AI Task Builder collection.
+func (c *Client) CreateAITaskBuilderCollection(payload model.CreateAITaskBuilderCollection) (*CreateAITaskBuilderCollectionResponse, error) {
+	var response CreateAITaskBuilderCollectionResponse
+
+	url := "/api/v1/data-collection/collections"
+	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unable to create collection: %v", string(body))
 	}
 
 	return &response, nil
