@@ -24,10 +24,10 @@ func NewUpdateCommand(client client.API, w io.Writer) *cobra.Command {
 		Long:  "Update a collection with new values from a YAML or JSON config file",
 		Example: `
 Update a collection using a YAML config file:
-$ prolific collection update 64395e9c2332b8a59a65d51e -t collection.yaml
+$ prolific collection update collec12345 -t collection.yaml
 
 Update a collection using a JSON config file:
-$ prolific collection update 64395e9c2332b8a59a65d51e -t collection.json
+$ prolific collection update collec12345 -t collection.json
 
 Example YAML config file:
 ---

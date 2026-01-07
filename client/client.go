@@ -599,7 +599,7 @@ func (c *Client) GetFilterSet(ID string) (*model.FilterSet, error) {
 func (c *Client) UpdateCollection(ID string, collection model.UpdateCollection) (*model.Collection, error) {
 	var response model.Collection
 
-	url := fmt.Sprintf("/api/v1/collections/%s/", ID)
+	url := fmt.Sprintf("/api/v1/data-collection/collections/%s/", ID)
 	httpResponse, err := c.Execute(http.MethodPut, url, collection, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to update collection: %v", err)
