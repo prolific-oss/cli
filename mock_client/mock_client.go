@@ -290,6 +290,21 @@ func (mr *MockAPIMockRecorder) GetCampaigns(workspaceID, limit, offset interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCampaigns", reflect.TypeOf((*MockAPI)(nil).GetCampaigns), workspaceID, limit, offset)
 }
 
+// GetCollection mocks base method.
+func (m *MockAPI) GetCollection(ID string) (*model.Collection, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCollection", ID)
+	ret0, _ := ret[0].(*model.Collection)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCollection indicates an expected call of GetCollection.
+func (mr *MockAPIMockRecorder) GetCollection(ID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCollection", reflect.TypeOf((*MockAPI)(nil).GetCollection), ID)
+}
+
 // GetCollections mocks base method.
 func (m *MockAPI) GetCollections(workspaceID string, limit, offset int) (*client.ListCollectionsResponse, error) {
 	m.ctrl.T.Helper()
