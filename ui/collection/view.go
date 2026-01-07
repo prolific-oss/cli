@@ -2,6 +2,7 @@ package collection
 
 import (
 	"fmt"
+	"io"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -53,13 +54,25 @@ func (lv ListView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // View will render the view.
 func (lv ListView) View() string {
 	if lv.Collection != nil {
-		return RenderCollection(*lv.Collection)
+		return renderCollectionString(*lv.Collection)
 	}
 	return lv.List.View()
 }
 
-// RenderCollection will produce a detailed view of the selected collection.
-func RenderCollection(collection model.Collection) string {
+// RenderCollection will write a detailed view of the selected collection to the provided writer.
+func RenderCollection(collection *model.Collection, w io.Writer) error {
+	content := fmt.Sprintln(ui.RenderHeading(collection.Name))
+	content += fmt.Sprintf("ID:         %s\n", collection.ID)
+	content += fmt.Sprintf("Created by: %s\n", collection.CreatedBy)
+	content += fmt.Sprintf("Created at: %s\n", collection.CreatedAt.Format("2006-01-02 15:04:05"))
+	content += fmt.Sprintf("Item count: %d\n", collection.ItemCount)
+
+	_, err := fmt.Fprint(w, content)
+	return err
+}
+
+// renderCollectionString will produce a detailed view of the selected collection as a string.
+func renderCollectionString(collection model.Collection) string {
 	content := fmt.Sprintln(ui.RenderHeading(collection.Name))
 	content += fmt.Sprintf("ID:         %s\n", collection.ID)
 	content += fmt.Sprintf("Created by: %s\n", collection.CreatedBy)

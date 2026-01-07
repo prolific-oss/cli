@@ -43,6 +43,7 @@ type API interface {
 	GetCampaigns(workspaceID string, limit, offset int) (*ListCampaignsResponse, error)
 
 	GetCollections(workspaceID string, limit, offset int) (*ListCollectionsResponse, error)
+	GetCollection(ID string) (*model.Collection, error)
 
 	GetHooks(workspaceID string, enabled bool, limit, offset int) (*ListHooksResponse, error)
 	GetHookEventTypes() (*ListHookEventTypesResponse, error)
@@ -350,6 +351,24 @@ func (c *Client) GetCollections(workspaceID string, limit, offset int) (*ListCol
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// GetCollection will return a single Collection by ID.
+func (c *Client) GetCollection(ID string) (*model.Collection, error) {
+	var response model.Collection
+
+	url := fmt.Sprintf("/api/v1/data-collection/collections/%s", ID)
+	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unable to get collection: %v", string(body))
 	}
 
 	return &response, nil
