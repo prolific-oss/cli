@@ -27,12 +27,12 @@ func (c Collection) Description() string {
 
 // BaseEntity contains common fields for all collection entities
 type BaseEntity struct {
-	ID             string     `json:"id,omitempty" mapstructure:"id"`
-	CreatedBy      string     `json:"created_by,omitempty" mapstructure:"created_by"`
-	CreatedAt      *time.Time `json:"created_at,omitempty" mapstructure:"created_at"`
-	SchemaVersion  int        `json:"schema_version,omitempty" mapstructure:"schema_version"`
-	LastModifiedAt *time.Time `json:"last_modified_at,omitempty" mapstructure:"last_modified_at"`
-	LastModifiedBy string     `json:"last_modified_by,omitempty" mapstructure:"last_modified_by"`
+	ID             string     `json:"id,omitempty" yaml:"id,omitempty" mapstructure:"id"`
+	CreatedBy      string     `json:"created_by,omitempty" yaml:"created_by,omitempty" mapstructure:"created_by"`
+	CreatedAt      *time.Time `json:"created_at,omitempty" yaml:"created_at,omitempty" mapstructure:"created_at"`
+	SchemaVersion  int        `json:"schema_version,omitempty" yaml:"schema_version,omitempty" mapstructure:"schema_version"`
+	LastModifiedAt *time.Time `json:"last_modified_at,omitempty" yaml:"last_modified_at,omitempty" mapstructure:"last_modified_at"`
+	LastModifiedBy string     `json:"last_modified_by,omitempty" yaml:"last_modified_by,omitempty" mapstructure:"last_modified_by"`
 }
 
 // InstructionType represents the type of instruction
@@ -46,36 +46,36 @@ const (
 
 // MultipleChoiceOption represents an option for multiple choice instructions
 type MultipleChoiceOption struct {
-	Label   string `json:"label" mapstructure:"label"`
-	Value   string `json:"value" mapstructure:"value"`
-	Heading string `json:"heading,omitempty" mapstructure:"heading"` // Required for multiple_choice_with_free_text
+	Label   string `json:"label" yaml:"label" mapstructure:"label"`
+	Value   string `json:"value" yaml:"value" mapstructure:"value"`
+	Heading string `json:"heading,omitempty" yaml:"heading,omitempty" mapstructure:"heading"` // Required for multiple_choice_with_free_text
 }
 
 type PageInstruction struct {
-	BaseEntity `mapstructure:",squash"`
+	BaseEntity `yaml:",inline" mapstructure:",squash"`
 
 	// Required fields
-	Type        InstructionType `json:"type" mapstructure:"type"`
-	Description string          `json:"description" mapstructure:"description"`
-	Order       int             `json:"order" mapstructure:"order"`
+	Type        InstructionType `json:"type" yaml:"type" mapstructure:"type"`
+	Description string          `json:"description" yaml:"description" mapstructure:"description"`
+	Order       int             `json:"order" yaml:"order" mapstructure:"order"`
 
 	// Optional - for free_text type
-	PlaceholderTextInput string `json:"placeholder_text_input,omitempty" mapstructure:"placeholder_text_input"`
+	PlaceholderTextInput string `json:"placeholder_text_input,omitempty" yaml:"placeholder_text_input,omitempty" mapstructure:"placeholder_text_input"`
 
 	// Optional - for multiple_choice and multiple_choice_with_free_text types
-	AnswerLimit int                    `json:"answer_limit,omitempty" mapstructure:"answer_limit"`
-	Options     []MultipleChoiceOption `json:"options,omitempty" mapstructure:"options"`
+	AnswerLimit int                    `json:"answer_limit,omitempty" yaml:"answer_limit,omitempty" mapstructure:"answer_limit"`
+	Options     []MultipleChoiceOption `json:"options,omitempty" yaml:"options,omitempty" mapstructure:"options"`
 }
 
 type Page struct {
-	BaseEntity `mapstructure:",squash"`
-	Order      int               `json:"order" mapstructure:"order"`
-	Items      []PageInstruction `json:"items" mapstructure:"items"`
+	BaseEntity `yaml:",inline" mapstructure:",squash"`
+	Order      int               `json:"order" yaml:"order" mapstructure:"order"`
+	Items      []PageInstruction `json:"items" yaml:"items" mapstructure:"items"`
 }
 
 type UpdateCollection struct {
-	BaseEntity  `mapstructure:",squash"`
-	Name        string `json:"name" mapstructure:"name"`
-	WorkspaceID string `json:"workspace_id" mapstructure:"workspace_id"`
-	Items       []Page `json:"items" mapstructure:"items"`
+	BaseEntity  `yaml:",inline" mapstructure:",squash"`
+	Name        string `json:"name" yaml:"name" mapstructure:"name"`
+	WorkspaceID string `json:"workspace_id,omitempty" yaml:"workspace_id,omitempty" mapstructure:"workspace_id"`
+	Items       []Page `json:"items" yaml:"items" mapstructure:"items"`
 }

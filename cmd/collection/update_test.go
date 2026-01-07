@@ -151,6 +151,30 @@ Name: JSON Updated Collection
 			skipMock:       true,
 		},
 		{
+			name:      "missing name in config",
+			args:      []string{collectionID},
+			configExt: ".yaml",
+			configContent: `items: []
+`,
+			mockReturn:     nil,
+			mockError:      nil,
+			expectedOutput: "",
+			expectedError:  "name is required",
+			skipMock:       true,
+		},
+		{
+			name:      "missing items in config",
+			args:      []string{collectionID},
+			configExt: ".yaml",
+			configContent: `name: Test Collection
+`,
+			mockReturn:     nil,
+			mockError:      nil,
+			expectedOutput: "",
+			expectedError:  "at least one item must be provided",
+			skipMock:       true,
+		},
+		{
 			name:      "api error - not found",
 			args:      []string{collectionID},
 			configExt: ".yaml",
@@ -173,6 +197,48 @@ items: []
 			mockError:      errors.New("request failed with status 502: service unavailable"),
 			expectedOutput: "",
 			expectedError:  "request failed with status 502: service unavailable",
+		},
+		{
+			name:      "unknown field in YAML config",
+			args:      []string{collectionID},
+			configExt: ".yaml",
+			configContent: `name: Test Collection
+items: []
+unknown_field: "should cause error"
+`,
+			mockReturn:     nil,
+			mockError:      nil,
+			expectedOutput: "",
+			expectedError:  "unable to parse YAML config file: yaml: unmarshal errors:\n  line 3: field unknown_field not found in type model.UpdateCollection",
+			skipMock:       true,
+		},
+		{
+			name:      "unknown field in JSON config",
+			args:      []string{collectionID},
+			configExt: ".json",
+			configContent: `{
+  "name": "Test Collection",
+  "items": [],
+  "unknown_field": "should cause error"
+}`,
+			mockReturn:     nil,
+			mockError:      nil,
+			expectedOutput: "",
+			expectedError:  `unable to parse JSON config file: json: unknown field "unknown_field"`,
+			skipMock:       true,
+		},
+		{
+			name:      "unsupported config file format",
+			args:      []string{collectionID},
+			configExt: ".txt",
+			configContent: `name: Test Collection
+items: []
+`,
+			mockReturn:     nil,
+			mockError:      nil,
+			expectedOutput: "",
+			expectedError:  "unsupported config file format '.txt': use .json, .yaml, or .yml",
+			skipMock:       true,
 		},
 	}
 
@@ -205,7 +271,7 @@ items: []
 				cmd.SetArgs(tt.args)
 				err = cmd.Execute()
 			} else {
-				cmd.SetArgs(append(tt.args, "-t", configFile))
+				cmd.SetArgs(append(tt.args, "-c", configFile))
 				err = cmd.Execute()
 			}
 			writer.Flush()
@@ -244,7 +310,7 @@ func TestUpdateCollectionMissingConfigFlag(t *testing.T) {
 	err := cmd.Execute()
 	writer.Flush()
 
-	expectedError := "config file is required, use -t to specify a YAML or JSON file"
+	expectedError := "config file is required, use -c to specify a YAML or JSON file"
 	if err == nil {
 		t.Fatalf("expected error '%s', got nil", expectedError)
 	}
@@ -262,12 +328,113 @@ func TestUpdateCollectionInvalidConfigFile(t *testing.T) {
 	writer := bufio.NewWriter(&b)
 
 	cmd := collection.NewUpdateCommand(c, writer)
-	cmd.SetArgs([]string{"collection-id-123", "-t", "/nonexistent/path/config.yaml"})
+	cmd.SetArgs([]string{"collection-id-123", "-c", "/nonexistent/path/config.yaml"})
 	err := cmd.Execute()
 	writer.Flush()
 
 	if err == nil {
 		t.Fatal("expected error for nonexistent config file, got nil")
+	}
+}
+
+func TestUpdateCollectionExactPayload(t *testing.T) {
+	collectionID := "550e8400-e29b-41d4-a716-446655440000"
+	pageID := "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	configContent := `{
+  "name": "Exact Payload Test",
+  "items": [
+    {
+      "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+      "order": 0,
+      "items": [
+        {
+          "type": "free_text",
+          "description": "Enter your feedback",
+          "order": 0,
+          "placeholder_text_input": "Type here..."
+        },
+        {
+          "type": "multiple_choice",
+          "description": "Rate your experience",
+          "order": 1,
+          "answer_limit": 1,
+          "options": [
+            {"label": "Good", "value": "good"},
+            {"label": "Bad", "value": "bad"}
+          ]
+        }
+      ]
+    }
+  ]
+}`
+
+	expectedPayload := model.UpdateCollection{
+		Name: "Exact Payload Test",
+		Items: []model.Page{
+			{
+				BaseEntity: model.BaseEntity{
+					ID: pageID,
+				},
+				Order: 0,
+				Items: []model.PageInstruction{
+					{
+						Type:                 model.InstructionTypeFreeText,
+						Description:          "Enter your feedback",
+						Order:                0,
+						PlaceholderTextInput: "Type here...",
+					},
+					{
+						Type:        model.InstructionTypeMultipleChoice,
+						Description: "Rate your experience",
+						Order:       1,
+						AnswerLimit: 1,
+						Options: []model.MultipleChoiceOption{
+							{Label: "Good", Value: "good"},
+							{Label: "Bad", Value: "bad"},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	c.EXPECT().
+		UpdateCollection(collectionID, gomock.Eq(expectedPayload)).
+		Return(&model.Collection{
+			ID:        collectionID,
+			Name:      "Exact Payload Test",
+			CreatedAt: time.Now(),
+			CreatedBy: "user123",
+			ItemCount: 1,
+		}, nil).
+		Times(1)
+
+	configFile := createTempConfigFile(t, configContent, ".json")
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := collection.NewUpdateCommand(c, writer)
+	cmd.SetArgs([]string{collectionID, "-c", configFile})
+	err := cmd.Execute()
+	writer.Flush()
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	expectedOutput := `Collection updated successfully
+ID: 550e8400-e29b-41d4-a716-446655440000
+Name: Exact Payload Test
+`
+	actual := b.String()
+	if actual != expectedOutput {
+		t.Fatalf("expected output:\n'%s'\n\ngot:\n'%s'", expectedOutput, actual)
 	}
 }
 
