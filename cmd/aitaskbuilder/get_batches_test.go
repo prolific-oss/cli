@@ -115,19 +115,18 @@ func TestNewGetBatchesCommandHandlesErrors(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	workspaceID := "invalid-workspace-id"
-	errorMessage := "workspace not found"
 
 	c.
 		EXPECT().
 		GetAITaskBuilderBatches(gomock.Eq(workspaceID)).
-		Return(nil, errors.New(errorMessage)).
+		Return(nil, errors.New(workspaceNotFoundError)).
 		AnyTimes()
 
 	cmd := aitaskbuilder.NewGetBatchesListCommand(c, os.Stdout)
 	_ = cmd.Flags().Set("workspace-id", workspaceID)
 	err := cmd.RunE(cmd, nil)
 
-	expected := fmt.Sprintf("error: %s", errorMessage)
+	expected := fmt.Sprintf("error: %s", workspaceNotFoundError)
 
 	if err.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())

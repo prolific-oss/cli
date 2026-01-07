@@ -124,3 +124,25 @@ const (
 	// ERROR: The batch has encountered an error and the data may not be usable.
 	AITaskBuilderBatchStatusError AITaskBuilderBatchStatusEnum = "ERROR"
 )
+
+// CreateAITaskBuilderCollection represents the payload for creating a collection.
+type CreateAITaskBuilderCollection struct {
+	WorkspaceID string           `json:"workspace_id" mapstructure:"workspace_id"`
+	Name        string           `json:"name" mapstructure:"name"`
+	Items       []CollectionPage `json:"items" mapstructure:"items"`
+}
+
+// CollectionPage represents a page in a collection containing instructions.
+type CollectionPage struct {
+	Order int                     `json:"order" mapstructure:"order"`
+	Items []CollectionInstruction `json:"items" mapstructure:"items"`
+}
+
+// CollectionInstruction represents an instruction item within a collection page.
+type CollectionInstruction struct {
+	Order       int                 `json:"order" mapstructure:"order"`
+	Type        string              `json:"type" mapstructure:"type"`
+	Description string              `json:"description" mapstructure:"description"`
+	Options     []InstructionOption `json:"options,omitempty" mapstructure:"options"`
+	AnswerLimit *int                `json:"answer_limit,omitempty" mapstructure:"answer_limit"`
+}

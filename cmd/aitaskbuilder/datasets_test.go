@@ -8,9 +8,10 @@ import (
 )
 
 const (
-	checkCommandUse  = "check"
-	createCommandUse = "create"
-	uploadCommandUse = "upload"
+	checkCommandUse        = "check"
+	createCommandUse       = "create"
+	uploadCommandUse       = "upload"
+	workspaceNotFoundError = "workspace not found"
 )
 
 func TestNewDatasetsCommand(t *testing.T) {
