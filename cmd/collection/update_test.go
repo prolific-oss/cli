@@ -48,16 +48,18 @@ func TestUpdateCollection(t *testing.T) {
 		skipMock       bool
 	}{
 		{
-			name:          "successful update with name only",
-			args:          []string{collectionID},
-			configExt:     ".yaml",
-			configContent: `name: Updated Collection Name`,
+			name:      "successful update with name and empty items",
+			args:      []string{collectionID},
+			configExt: ".yaml",
+			configContent: `name: Updated Collection Name
+items: []
+`,
 			mockReturn: &model.Collection{
 				ID:        collectionID,
 				Name:      "Updated Collection Name",
 				CreatedAt: time.Now(),
 				CreatedBy: "user123",
-				ItemCount: 5,
+				ItemCount: 0,
 			},
 			mockError: nil,
 			expectedOutput: `Collection updated successfully
@@ -67,19 +69,32 @@ Name: Updated Collection Name
 			expectedError: "",
 		},
 		{
-			name:      "successful update with items",
+			name:      "successful update with pages and instructions",
 			args:      []string{collectionID},
 			configExt: ".yaml",
-			configContent: `name: Collection With Items
+			configContent: `name: Collection With Pages
 items:
   - id: "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
     order: 0
-  - id: "6ba7b811-9dad-11d1-80b4-00c04fd430c8"
-    order: 1
+    items:
+      - type: free_text
+        description: "What is your name?"
+        order: 0
+  - order: 1
+    items:
+      - type: multiple_choice
+        description: "How satisfied are you?"
+        order: 0
+        answer_limit: 1
+        options:
+          - label: Very Satisfied
+            value: "5"
+          - label: Satisfied
+            value: "4"
 `,
 			mockReturn: &model.Collection{
 				ID:        collectionID,
-				Name:      "Collection With Items",
+				Name:      "Collection With Pages",
 				CreatedAt: time.Now(),
 				CreatedBy: "user123",
 				ItemCount: 2,
@@ -87,7 +102,7 @@ items:
 			mockError: nil,
 			expectedOutput: `Collection updated successfully
 ID: 550e8400-e29b-41d4-a716-446655440000
-Name: Collection With Items
+Name: Collection With Pages
 `,
 			expectedError: "",
 		},
@@ -98,7 +113,17 @@ Name: Collection With Items
 			configContent: `{
   "name": "JSON Updated Collection",
   "items": [
-    {"id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8", "order": 0}
+    {
+      "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+      "order": 0,
+      "items": [
+        {
+          "type": "free_text",
+          "description": "Enter your feedback",
+          "order": 0
+        }
+      ]
+    }
   ]
 }`,
 			mockReturn: &model.Collection{
@@ -126,20 +151,24 @@ Name: JSON Updated Collection
 			skipMock:       true,
 		},
 		{
-			name:           "api error - not found",
-			args:           []string{collectionID},
-			configExt:      ".yaml",
-			configContent:  `name: Test Collection`,
+			name:      "api error - not found",
+			args:      []string{collectionID},
+			configExt: ".yaml",
+			configContent: `name: Test Collection
+items: []
+`,
 			mockReturn:     nil,
 			mockError:      errors.New("request failed with status 404: collection not found"),
 			expectedOutput: "",
 			expectedError:  "request failed with status 404: collection not found",
 		},
 		{
-			name:           "api error - service unavailable",
-			args:           []string{collectionID},
-			configExt:      ".yaml",
-			configContent:  `name: Test Collection`,
+			name:      "api error - service unavailable",
+			args:      []string{collectionID},
+			configExt: ".yaml",
+			configContent: `name: Test Collection
+items: []
+`,
 			mockReturn:     nil,
 			mockError:      errors.New("request failed with status 502: service unavailable"),
 			expectedOutput: "",
