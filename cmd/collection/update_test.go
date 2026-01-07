@@ -271,7 +271,7 @@ items: []
 				cmd.SetArgs(tt.args)
 				err = cmd.Execute()
 			} else {
-				cmd.SetArgs(append(tt.args, "-c", configFile))
+				cmd.SetArgs(append(tt.args, "-t", configFile))
 				err = cmd.Execute()
 			}
 			writer.Flush()
@@ -328,7 +328,7 @@ func TestUpdateCollectionInvalidConfigFile(t *testing.T) {
 	writer := bufio.NewWriter(&b)
 
 	cmd := collection.NewUpdateCommand(c, writer)
-	cmd.SetArgs([]string{"collection-id-123", "-c", "/nonexistent/path/config.yaml"})
+	cmd.SetArgs([]string{"collection-id-123", "-t", "/nonexistent/path/config.yaml"})
 	err := cmd.Execute()
 	writer.Flush()
 
@@ -420,7 +420,7 @@ func TestUpdateCollectionExactPayload(t *testing.T) {
 	writer := bufio.NewWriter(&b)
 
 	cmd := collection.NewUpdateCommand(c, writer)
-	cmd.SetArgs([]string{collectionID, "-c", configFile})
+	cmd.SetArgs([]string{collectionID, "-t", configFile})
 	err := cmd.Execute()
 	writer.Flush()
 
@@ -438,7 +438,6 @@ Name: Exact Payload Test
 	}
 }
 
-// createTempConfigFile creates a temporary config file for testing
 func createTempConfigFile(t *testing.T, content string, ext string) string {
 	t.Helper()
 
