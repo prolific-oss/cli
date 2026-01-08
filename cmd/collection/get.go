@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/ui"
 	"github.com/prolific-oss/cli/ui/collection"
 	"github.com/spf13/cobra"
@@ -43,7 +44,7 @@ $ prolific collection get 123456789
 
 			coll, err := c.GetCollection(opts.Args[0])
 			if err != nil {
-				if isFeatureNotEnabledError(err) {
+				if shared.IsFeatureNotEnabledError(err) {
 					ui.RenderFeatureAccessMessage(FeatureNameDCP2152AITBCollection, FeatureContactEmailDCP2152AITBCollection)
 					return nil
 				}

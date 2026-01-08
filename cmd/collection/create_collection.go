@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/model"
 	"github.com/prolific-oss/cli/ui"
 	"github.com/spf13/cobra"
@@ -97,7 +98,7 @@ items:
 
 			err := createCollection(c, opts, w)
 			if err != nil {
-				if isFeatureNotEnabledError(err) {
+				if shared.IsFeatureNotEnabledError(err) {
 					ui.RenderFeatureAccessMessage(FeatureNameDCP2152AITBCollection, FeatureContactEmailDCP2152AITBCollection)
 					return nil
 				}
