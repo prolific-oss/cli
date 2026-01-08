@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/prolific-oss/cli/config"
@@ -63,4 +64,31 @@ func RenderApplicationLink(entity, slug string) string {
 
 func RenderHighlightedText(text string) string {
 	return lipgloss.NewStyle().Bold(true).Background(lipgloss.Color("#FFA500")).Foreground(lipgloss.Color("#000000")).Render(text)
+}
+
+// RenderFeatureAccessMessage renders a styled early-access feature message to stderr.
+// This is used when a feature is gated behind a feature flag and returns 404 feature not enabled errors.
+// Output goes to stderr so it doesn't interfere with JSON/CSV output piping.
+func RenderFeatureAccessMessage(featureName, contactEmail string) {
+	warningStyle := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(lipgloss.Color("#FFA500"))
+
+	emailStyle := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(lipgloss.Color("#00BFFF"))
+
+	betaStyle := lipgloss.NewStyle().
+		Italic(true).
+		Foreground(lipgloss.Color(DarkGrey))
+
+	fmt.Fprintln(os.Stderr)
+	fmt.Fprintln(os.Stderr, warningStyle.Render("EARLY ACCESS"))
+	fmt.Fprintln(os.Stderr)
+	fmt.Fprintf(os.Stderr, "%s is an early-access feature that may be enabled on your workspace upon request.", featureName)
+	fmt.Fprintln(os.Stderr)
+	fmt.Fprintf(os.Stderr, "If you're interested in helping to refine and feed into the development roadmap of this feature, and would be willing to provide feedback on your experience of using it, then get in touch at %s and your activation request will be reviewed by our team.", emailStyle.Render(contactEmail))
+	fmt.Fprintln(os.Stderr)
+	fmt.Fprintln(os.Stderr, betaStyle.Render("Note: This feature is under active development and you may encounter bugs."))
+	fmt.Fprintln(os.Stderr)
 }

@@ -1,6 +1,8 @@
 package ui_test
 
 import (
+	"bytes"
+	"os"
 	"testing"
 
 	"github.com/prolific-oss/cli/ui"
@@ -64,6 +66,40 @@ func TestRenderRecordCounter(t *testing.T) {
 
 		if tc.expected != actual {
 			t.Fatalf("expected '%v' got '%v'", tc.expected, actual)
+		}
+	}
+}
+
+func TestRenderFeatureAccessMessage(t *testing.T) {
+	// Capture stderr output
+	oldStderr := os.Stderr
+	r, w, _ := os.Pipe()
+	os.Stderr = w
+
+	featureName := "AI Task Builder Collections"
+	contactEmail := "support@prolific.com"
+
+	ui.RenderFeatureAccessMessage(featureName, contactEmail)
+
+	// Restore stderr and read captured output
+	w.Close()
+	os.Stderr = oldStderr
+
+	var buf bytes.Buffer
+	_, _ = buf.ReadFrom(r)
+	output := buf.String()
+
+	// Verify output contains expected elements
+	expectedStrings := []string{
+		"EARLY ACCESS",
+		featureName + " is an early-access feature that may be enabled on your workspace upon request.",
+		"If you're interested in helping to refine and feed into the development roadmap of this feature, and would be willing to provide feedback on your experience of using it, then get in touch at " + contactEmail + " and your activation request will be reviewed by our team.",
+		"Note: This feature is under active development and you may encounter bugs.",
+	}
+
+	for _, expected := range expectedStrings {
+		if !bytes.Contains([]byte(output), []byte(expected)) {
+			t.Errorf("expected output to contain '%s', got:\n%s", expected, output)
 		}
 	}
 }

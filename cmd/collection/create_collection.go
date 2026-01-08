@@ -7,6 +7,7 @@ import (
 
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/model"
+	"github.com/prolific-oss/cli/ui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -96,6 +97,10 @@ items:
 
 			err := createCollection(c, opts, w)
 			if err != nil {
+				if isFeatureNotEnabledError(err) {
+					ui.RenderFeatureAccessMessage(FeatureNameDCP2152AITBCollection, FeatureContactEmailDCP2152AITBCollection)
+					return nil
+				}
 				return fmt.Errorf("error: %s", err.Error())
 			}
 

@@ -6,4 +6,9 @@ const (
 	ErrWorkspaceIDRequired     = "workspace ID is required"
 	ErrNameRequired            = "name is required"
 	ErrWorkspaceNotFound       = "workspace not found"
+
+	// Feature access constants
+	FeatureNameDCP2152AITBCollection         = "AI Task Builder Collections"
+	FeatureContactEmailDCP2152AITBCollection = "support@prolific.com"
+	FeatureNotEnabledErrorFragment           = "you do not currently have permission to access to this feature."
 )
