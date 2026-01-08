@@ -51,6 +51,7 @@ type MultipleChoiceOption struct {
 	Heading string `json:"heading,omitempty" yaml:"heading,omitempty" mapstructure:"heading"` // Required for multiple_choice_with_free_text
 }
 
+// PageInstruction represents a single instruction item within a collection page.
 type PageInstruction struct {
 	BaseEntity `yaml:",inline" mapstructure:",squash"`
 
@@ -67,12 +68,14 @@ type PageInstruction struct {
 	Options     []MultipleChoiceOption `json:"options,omitempty" yaml:"options,omitempty" mapstructure:"options"`
 }
 
+// Page represents a single page within a collection.
 type Page struct {
 	BaseEntity `yaml:",inline" mapstructure:",squash"`
 	Order      int               `json:"order" yaml:"order" mapstructure:"order"`
 	Items      []PageInstruction `json:"items" yaml:"items" mapstructure:"items"`
 }
 
+// UpdateCollection represents the payload for updating a collection.
 type UpdateCollection struct {
 	BaseEntity  `yaml:",inline" mapstructure:",squash"`
 	Name        string `json:"name" yaml:"name" mapstructure:"name"`
