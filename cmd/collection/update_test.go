@@ -385,7 +385,7 @@ func TestUpdateCollectionMissingConfigFlag(t *testing.T) {
 	err := cmd.Execute()
 	writer.Flush()
 
-	expectedError := "template path is required, use -t to specify a YAML or JSON file"
+	expectedError := `required flag(s) "template-path" not set`
 	if err == nil {
 		t.Fatalf("expected error '%s', got nil", expectedError)
 	}

@@ -49,10 +49,6 @@ Example JSON config file:
 		RunE: func(cmd *cobra.Command, args []string) error {
 			collectionID := args[0]
 
-			if opts.TemplatePath == "" {
-				return fmt.Errorf("template path is required, use -t to specify a YAML or JSON file")
-			}
-
 			updatePayload, err := validateTemplate(opts)
 			if err != nil {
 				return fmt.Errorf("error: %s", err.Error())
@@ -72,6 +68,7 @@ Example JSON config file:
 	}
 
 	cmd.Flags().StringVarP(&opts.TemplatePath, "template-path", "t", "", "Path to a YAML or JSON file containing your collection updates")
+	_ = cmd.MarkFlagRequired("template-path")
 
 	return cmd
 }
