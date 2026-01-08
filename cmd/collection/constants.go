@@ -10,5 +10,4 @@ const (
 	// Feature access constants
 	FeatureNameDCP2152AITBCollection         = "AI Task Builder Collections"
 	FeatureContactEmailDCP2152AITBCollection = "support@prolific.com"
-	FeatureNotEnabledErrorFragment           = "you do not currently have permission to access to this feature."
 )

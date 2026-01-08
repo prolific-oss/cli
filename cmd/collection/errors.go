@@ -1,6 +1,10 @@
 package collection
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/prolific-oss/cli/ui"
+)
 
 // isFeatureNotEnabledError checks if the error indicates that the Collections feature
 // is not enabled for the user. The backend converts 403 (feature flag off) → 404 for
@@ -13,7 +17,7 @@ func isFeatureNotEnabledError(err error) bool {
 	errMsg := strings.ToLower(err.Error())
 
 	// Check for HTTP 404 status code patterns from API responses
-	if strings.Contains(errMsg, "status 404") && strings.Contains(errMsg, FeatureNotEnabledErrorFragment) {
+	if strings.Contains(errMsg, "status 404") && strings.Contains(errMsg, ui.FeatureNotEnabledErrorFragment) {
 		return true
 	}
 

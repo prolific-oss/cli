@@ -3,6 +3,8 @@ package collection
 import (
 	"fmt"
 	"testing"
+
+	"github.com/prolific-oss/cli/ui"
 )
 
 func TestIsFeatureNotEnabledError(t *testing.T) {
@@ -18,7 +20,7 @@ func TestIsFeatureNotEnabledError(t *testing.T) {
 		},
 		{
 			name:     "feature not enabled error with 404 and feature not enabled fragment returns true",
-			err:      fmt.Errorf("request failed with status 404: %s", FeatureNotEnabledErrorFragment),
+			err:      fmt.Errorf("request failed with status 404: %s", ui.FeatureNotEnabledErrorFragment),
 			expected: true,
 		},
 		{
