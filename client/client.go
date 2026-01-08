@@ -44,6 +44,7 @@ type API interface {
 
 	GetCollections(workspaceID string, limit, offset int) (*ListCollectionsResponse, error)
 	GetCollection(ID string) (*model.Collection, error)
+	UpdateCollection(ID string, collection model.UpdateCollection) (*model.Collection, error)
 
 	GetHooks(workspaceID string, enabled bool, limit, offset int) (*ListHooksResponse, error)
 	GetHookEventTypes() (*ListHookEventTypesResponse, error)
@@ -64,8 +65,6 @@ type API interface {
 
 	GetFilterSets(workspaceID string, limit, offset int) (*ListFilterSetsResponse, error)
 	GetFilterSet(ID string) (*model.FilterSet, error)
-
-	UpdateCollection(ID string, collection model.UpdateCollection) (*model.Collection, error)
 
 	GetMessages(userID *string, createdAfter *string) (*ListMessagesResponse, error)
 	SendMessage(body, recipientID, studyID string) error
@@ -620,13 +619,9 @@ func (c *Client) UpdateCollection(ID string, collection model.UpdateCollection) 
 	var response model.Collection
 
 	url := fmt.Sprintf("/api/v1/data-collection/collections/%s/", ID)
-	httpResponse, err := c.Execute(http.MethodPut, url, collection, &response)
+	_, err := c.Execute(http.MethodPut, url, collection, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to update collection: %v", err)
-	}
-
-	if httpResponse.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unable to update collection: unexpected status %d", httpResponse.StatusCode)
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
 
 	return &response, nil

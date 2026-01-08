@@ -1,22 +1,18 @@
 package collection
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"os"
-	"path/filepath"
-	"strings"
 
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/model"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v3"
+	"github.com/spf13/viper"
 )
 
 type UpdateOptions struct {
-	Config string
+	TemplatePath string
 }
 
 // NewUpdateCommand creates a new `collection update` command to update a collection
@@ -53,41 +49,13 @@ Example JSON config file:
 		RunE: func(cmd *cobra.Command, args []string) error {
 			collectionID := args[0]
 
-			if opts.Config == "" {
-				return fmt.Errorf("config file is required, use -c to specify a YAML or JSON file")
+			if opts.TemplatePath == "" {
+				return fmt.Errorf("template path is required, use -t to specify a YAML or JSON file")
 			}
 
-			file, err := os.Open(opts.Config)
+			updatePayload, err := validateTemplate(opts)
 			if err != nil {
-				return fmt.Errorf("unable to open config file: %s", err)
-			}
-			defer file.Close()
-
-			var updatePayload model.UpdateCollection
-			ext := strings.ToLower(filepath.Ext(opts.Config))
-
-			switch ext {
-			case ".json":
-				decoder := json.NewDecoder(file)
-				decoder.DisallowUnknownFields()
-				if err := decoder.Decode(&updatePayload); err != nil {
-					return fmt.Errorf("unable to parse JSON config file: %s", err)
-				}
-			case ".yaml", ".yml":
-				decoder := yaml.NewDecoder(file)
-				decoder.KnownFields(true)
-				if err := decoder.Decode(&updatePayload); err != nil {
-					return fmt.Errorf("unable to parse YAML config file: %s", err)
-				}
-			default:
-				return fmt.Errorf("unsupported config file format '%s': use .json, .yaml, or .yml", ext)
-			}
-
-			if updatePayload.Name == "" {
-				return errors.New(ErrNameRequired)
-			}
-			if updatePayload.Items == nil {
-				return errors.New(ErrCollectionItemsRequired)
+				return fmt.Errorf("error: %s", err.Error())
 			}
 
 			collection, err := client.UpdateCollection(collectionID, updatePayload)
@@ -103,7 +71,33 @@ Example JSON config file:
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.Config, "template-path", "t", "", "Path to a YAML or JSON file containing your collection updates")
+	cmd.Flags().StringVarP(&opts.TemplatePath, "template-path", "t", "", "Path to a YAML or JSON file containing your collection updates")
 
 	return cmd
+}
+
+func validateTemplate(opts UpdateOptions) (model.UpdateCollection, error) {
+	var updatePayload model.UpdateCollection
+
+	v := viper.New()
+	v.SetConfigFile(opts.TemplatePath)
+	err := v.ReadInConfig()
+
+	if err != nil {
+		return updatePayload, fmt.Errorf("unable to read config file: %s", err)
+	}
+
+	err = v.UnmarshalExact(&updatePayload)
+	if err != nil {
+		return updatePayload, fmt.Errorf("unable to unmarshal config file: %s", err)
+	}
+
+	if updatePayload.Name == "" {
+		return updatePayload, errors.New(ErrNameRequired)
+	}
+	if updatePayload.Items == nil {
+		return updatePayload, errors.New(ErrCollectionItemsRequired)
+	}
+
+	return updatePayload, nil
 }

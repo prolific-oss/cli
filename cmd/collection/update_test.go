@@ -35,17 +35,19 @@ func TestNewUpdateCommand(t *testing.T) {
 
 func TestUpdateCollection(t *testing.T) {
 	collectionID := "550e8400-e29b-41d4-a716-446655440000"
+	pageID := "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
 
 	tests := []struct {
-		name           string
-		args           []string
-		configContent  string
-		configExt      string
-		mockReturn     *model.Collection
-		mockError      error
-		expectedOutput string
-		expectedError  string
-		skipMock       bool
+		name            string
+		args            []string
+		configContent   string
+		configExt       string
+		expectedPayload model.UpdateCollection
+		mockReturn      *model.Collection
+		mockError       error
+		expectedOutput  string
+		expectedError   string
+		skipMock        bool
 	}{
 		{
 			name:      "successful update with name and empty items",
@@ -54,6 +56,10 @@ func TestUpdateCollection(t *testing.T) {
 			configContent: `name: Updated Collection Name
 items: []
 `,
+			expectedPayload: model.UpdateCollection{
+				Name:  "Updated Collection Name",
+				Items: []model.Page{},
+			},
 			mockReturn: &model.Collection{
 				ID:        collectionID,
 				Name:      "Updated Collection Name",
@@ -92,6 +98,37 @@ items:
           - label: Satisfied
             value: "4"
 `,
+			expectedPayload: model.UpdateCollection{
+				Name: "Collection With Pages",
+				Items: []model.Page{
+					{
+						BaseEntity: model.BaseEntity{ID: pageID},
+						Order:      0,
+						Items: []model.PageInstruction{
+							{
+								Type:        model.InstructionTypeFreeText,
+								Description: "What is your name?",
+								Order:       0,
+							},
+						},
+					},
+					{
+						Order: 1,
+						Items: []model.PageInstruction{
+							{
+								Type:        model.InstructionTypeMultipleChoice,
+								Description: "How satisfied are you?",
+								Order:       0,
+								AnswerLimit: 1,
+								Options: []model.MultipleChoiceOption{
+									{Label: "Very Satisfied", Value: "5"},
+									{Label: "Satisfied", Value: "4"},
+								},
+							},
+						},
+					},
+				},
+			},
 			mockReturn: &model.Collection{
 				ID:        collectionID,
 				Name:      "Collection With Pages",
@@ -126,6 +163,22 @@ Name: Collection With Pages
     }
   ]
 }`,
+			expectedPayload: model.UpdateCollection{
+				Name: "JSON Updated Collection",
+				Items: []model.Page{
+					{
+						BaseEntity: model.BaseEntity{ID: pageID},
+						Order:      0,
+						Items: []model.PageInstruction{
+							{
+								Type:        model.InstructionTypeFreeText,
+								Description: "Enter your feedback",
+								Order:       0,
+							},
+						},
+					},
+				},
+			},
 			mockReturn: &model.Collection{
 				ID:        collectionID,
 				Name:      "JSON Updated Collection",
@@ -159,7 +212,7 @@ Name: JSON Updated Collection
 			mockReturn:     nil,
 			mockError:      nil,
 			expectedOutput: "",
-			expectedError:  "name is required",
+			expectedError:  "error: name is required",
 			skipMock:       true,
 		},
 		{
@@ -171,7 +224,18 @@ Name: JSON Updated Collection
 			mockReturn:     nil,
 			mockError:      nil,
 			expectedOutput: "",
-			expectedError:  "at least one item must be provided",
+			expectedError:  "error: at least one item must be provided",
+			skipMock:       true,
+		},
+		{
+			name:           "empty config file",
+			args:           []string{collectionID},
+			configExt:      ".yaml",
+			configContent:  ``,
+			mockReturn:     nil,
+			mockError:      nil,
+			expectedOutput: "",
+			expectedError:  "error: name is required",
 			skipMock:       true,
 		},
 		{
@@ -181,6 +245,10 @@ Name: JSON Updated Collection
 			configContent: `name: Test Collection
 items: []
 `,
+			expectedPayload: model.UpdateCollection{
+				Name:  "Test Collection",
+				Items: []model.Page{},
+			},
 			mockReturn:     nil,
 			mockError:      errors.New("request failed with status 404: collection not found"),
 			expectedOutput: "",
@@ -193,6 +261,10 @@ items: []
 			configContent: `name: Test Collection
 items: []
 `,
+			expectedPayload: model.UpdateCollection{
+				Name:  "Test Collection",
+				Items: []model.Page{},
+			},
 			mockReturn:     nil,
 			mockError:      errors.New("request failed with status 502: service unavailable"),
 			expectedOutput: "",
@@ -209,7 +281,7 @@ unknown_field: "should cause error"
 			mockReturn:     nil,
 			mockError:      nil,
 			expectedOutput: "",
-			expectedError:  "unable to parse YAML config file: yaml: unmarshal errors:\n  line 3: field unknown_field not found in type model.UpdateCollection",
+			expectedError:  "error: unable to unmarshal config file: decoding failed due to the following error(s):\n\n'' has invalid keys: unknown_field",
 			skipMock:       true,
 		},
 		{
@@ -224,7 +296,7 @@ unknown_field: "should cause error"
 			mockReturn:     nil,
 			mockError:      nil,
 			expectedOutput: "",
-			expectedError:  `unable to parse JSON config file: json: unknown field "unknown_field"`,
+			expectedError:  "error: unable to unmarshal config file: decoding failed due to the following error(s):\n\n'' has invalid keys: unknown_field",
 			skipMock:       true,
 		},
 		{
@@ -237,7 +309,7 @@ items: []
 			mockReturn:     nil,
 			mockError:      nil,
 			expectedOutput: "",
-			expectedError:  "unsupported config file format '.txt': use .json, .yaml, or .yml",
+			expectedError:  `error: unable to read config file: Unsupported Config Type "txt"`,
 			skipMock:       true,
 		},
 	}
@@ -249,14 +321,14 @@ items: []
 			c := mock_client.NewMockAPI(ctrl)
 
 			var configFile string
-			if tt.configContent != "" {
+			if tt.configExt != "" {
 				configFile = createTempConfigFile(t, tt.configContent, tt.configExt)
 			}
 
 			// Only expect API call if we have valid args and config
-			if !tt.skipMock && len(tt.args) > 0 && tt.configContent != "" {
+			if !tt.skipMock && len(tt.args) > 0 && tt.configExt != "" {
 				c.EXPECT().
-					UpdateCollection(tt.args[0], gomock.Any()).
+					UpdateCollection(tt.args[0], gomock.Eq(tt.expectedPayload)).
 					Return(tt.mockReturn, tt.mockError).
 					Times(1)
 			}
@@ -270,8 +342,11 @@ items: []
 			if len(tt.args) == 0 {
 				cmd.SetArgs(tt.args)
 				err = cmd.Execute()
-			} else {
+			} else if tt.configExt != "" {
 				cmd.SetArgs(append(tt.args, "-t", configFile))
+				err = cmd.Execute()
+			} else {
+				cmd.SetArgs(tt.args)
 				err = cmd.Execute()
 			}
 			writer.Flush()
@@ -310,7 +385,7 @@ func TestUpdateCollectionMissingConfigFlag(t *testing.T) {
 	err := cmd.Execute()
 	writer.Flush()
 
-	expectedError := "config file is required, use -c to specify a YAML or JSON file"
+	expectedError := "template path is required, use -t to specify a YAML or JSON file"
 	if err == nil {
 		t.Fatalf("expected error '%s', got nil", expectedError)
 	}
