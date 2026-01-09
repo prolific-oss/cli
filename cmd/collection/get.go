@@ -45,7 +45,7 @@ $ prolific collection get 123456789
 			coll, err := c.GetCollection(opts.Args[0])
 			if err != nil {
 				if shared.IsFeatureNotEnabledError(err) {
-					ui.RenderFeatureAccessMessage(FeatureNameDCP2152AITBCollection, FeatureContactEmailDCP2152AITBCollection)
+					ui.RenderFeatureAccessMessage(FeatureNameAITBCollection, FeatureContactEmailAITBCollection)
 					return nil
 				}
 				return fmt.Errorf("error: %s", err.Error())
