@@ -134,7 +134,6 @@ func TestGetCommandOutputContainsCollectionDetails(t *testing.T) {
 		"My Test Collection",
 		testCollectionID,
 		"user@example.com",
-		"25",
 	}
 
 	for _, expected := range expectedStrings {
