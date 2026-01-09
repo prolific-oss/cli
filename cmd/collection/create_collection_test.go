@@ -17,10 +17,10 @@ import (
 	"github.com/prolific-oss/cli/model"
 )
 
-const items = `[
+const collectionItems = `[
     {
       "order": 0,
-      "items": [
+      "page_items": [
         {
           "order": 0,
           "type": "free_text",
@@ -76,8 +76,8 @@ func TestNewCreateCollectionCommandCallsAPIWithJSON(t *testing.T) {
 	templateContent := fmt.Sprintf(`{
   "workspace_id": "6716028cd934ced9bac18658",
   "name": "test-collection",
-	"items": %s
-}`, items)
+	"collection_items": %s
+}`, collectionItems)
 
 	err := os.WriteFile(templateFile, []byte(templateContent), 0600)
 	if err != nil {
@@ -155,9 +155,9 @@ func TestNewCreateCollectionCommandCallsAPIWithYAML(t *testing.T) {
 	templateFile := filepath.Join(tmpDir, "collection.yaml")
 	templateContent := `workspace_id: 6716028cd934ced9bac18658
 name: yaml-test-collection
-items:
+collection_items:
   - order: 0
-    items:
+    page_items:
       - order: 0
         type: free_text
         description: YAML test description
@@ -210,8 +210,8 @@ func TestNewCreateCollectionCommandHandlesAPIError(t *testing.T) {
 	templateContent := fmt.Sprintf(`{
   "workspace_id": "6716028cd934ced9bac18658",
   "name": "test-collection",
-  "items": %s
-}`, items)
+  "collection_items": %s
+}`, collectionItems)
 
 	err := os.WriteFile(templateFile, []byte(templateContent), 0600)
 	if err != nil {
@@ -262,8 +262,8 @@ func TestNewCreateCollectionCommandRequiresName(t *testing.T) {
 	templateFile := filepath.Join(tmpDir, "collection.json")
 	templateContent := fmt.Sprintf(`{
   "workspace_id": "6716028cd934ced9bac18658",
-  "items": %s
-}`, items)
+  "collection_items": %s
+}`, collectionItems)
 
 	err := os.WriteFile(templateFile, []byte(templateContent), 0600)
 	if err != nil {
@@ -293,8 +293,8 @@ func TestNewCreateCollectionCommandRequiresWorkspaceID(t *testing.T) {
 	templateFile := filepath.Join(tmpDir, "collection.json")
 	templateContent := fmt.Sprintf(`{
   "name": "test-collection",
-  "items": %s
-}`, items)
+  "collection_items": %s
+}`, collectionItems)
 
 	err := os.WriteFile(templateFile, []byte(templateContent), 0600)
 	if err != nil {
@@ -325,7 +325,7 @@ func TestNewCreateCollectionCommandRequiresItems(t *testing.T) {
 	templateContent := `{
   "name": "test-collection",
 	"workspace_id": "6716028cd934ced9bac18658",
-  "items": []
+  "collection_items": []
 }`
 
 	err := os.WriteFile(templateFile, []byte(templateContent), 0600)

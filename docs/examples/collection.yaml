@@ -1,8 +1,8 @@
 workspace_id: 67890abcdef12345678901234
 name: example-collection
-items:
+collection_items:
   - order: 0
-    items:
+    page_items:
       - order: 0
         type: free_text
         description: How was your experience completing this task?

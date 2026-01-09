@@ -129,13 +129,13 @@ const (
 type CreateAITaskBuilderCollection struct {
 	WorkspaceID string           `json:"workspace_id" mapstructure:"workspace_id"`
 	Name        string           `json:"name" mapstructure:"name"`
-	Items       []CollectionPage `json:"items" mapstructure:"items"`
+	Items       []CollectionPage `json:"collection_items" mapstructure:"collection_items"`
 }
 
 // CollectionPage represents a page in a collection containing instructions.
 type CollectionPage struct {
 	Order int                     `json:"order" mapstructure:"order"`
-	Items []CollectionInstruction `json:"items" mapstructure:"items"`
+	Items []CollectionInstruction `json:"page_items" mapstructure:"page_items"`
 }
 
 // CollectionInstruction represents an instruction item within a collection page.
