@@ -38,10 +38,10 @@ An example of a JSON collection file:
 {
   "workspace_id": "67890abcdef12345678901234",
   "name": "example-collection",
-  "items": [
+  "collection_items": [
     {
       "order": 0,
-      "items": [
+      "page_items": [
         {
           "order": 0,
           "type": "free_text",
@@ -73,9 +73,9 @@ An example of a YAML collection file:
 ---
 workspace_id: 67890abcdef12345678901234
 name: example-collection
-items:
+collection_items:
   - order: 0
-    items:
+    page_items:
       - order: 0
         type: free_text
         description: How was your experience completing this task?
