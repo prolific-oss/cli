@@ -5,6 +5,8 @@ import (
 	"io"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/cmd/shared"
+	"github.com/prolific-oss/cli/ui"
 	"github.com/prolific-oss/cli/ui/collection"
 	"github.com/spf13/cobra"
 )
@@ -86,6 +88,10 @@ The fields you can use are:
 			}, w)
 
 			if err != nil {
+				if shared.IsFeatureNotEnabledError(err) {
+					ui.RenderFeatureAccessMessage(FeatureNameAITBCollection, FeatureContactEmailAITBCollection)
+					return nil
+				}
 				return fmt.Errorf("error: %s", err.Error())
 			}
 
