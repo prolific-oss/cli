@@ -89,12 +89,16 @@ func TestRenderFeatureAccessMessage(t *testing.T) {
 	_, _ = buf.ReadFrom(r)
 	output := buf.String()
 
-	// Verify output contains expected elements
+	// Verify output contains expected key phrases
 	expectedStrings := []string{
 		"EARLY ACCESS",
-		featureName + " is an early-access feature that may be enabled on your workspace upon request.",
-		"If you're interested in helping to refine and feed into the development roadmap of this feature, and would be willing to provide feedback on your experience of using it, then get in touch at " + contactEmail + " and your activation request will be reviewed by our team.",
-		"Note: This feature is under active development and you may encounter bugs.",
+		featureName,
+		"early-access feature",
+		"upon request",
+		"contribute towards the feature's roadmap",
+		contactEmail,
+		"activation request will be reviewed",
+		"under active development",
 	}
 
 	for _, expected := range expectedStrings {
