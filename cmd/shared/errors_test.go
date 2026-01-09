@@ -23,7 +23,7 @@ func TestIsFeatureNotEnabledError(t *testing.T) {
 		},
 		{
 			name:     "feature not enabled error with mixed case returns true",
-			err:      fmt.Errorf("request failed with status 404: You do not currently have permission to access to this feature."),
+			err:      fmt.Errorf("request failed with status 404: You do not currently have permission to access this feature."),
 			expected: true,
 		},
 		{
