@@ -118,25 +118,35 @@ type CreateStudy struct {
 	Name             string `json:"name" mapstructure:"name"`
 	InternalName     string `json:"internal_name" mapstructure:"internal_name"`
 	Description      string `json:"description" mapstructure:"description"`
-	ExternalStudyURL string `json:"external_study_url" mapstructure:"external_study_url"`
+	ExternalStudyURL string `json:"external_study_url,omitempty" mapstructure:"external_study_url"`
 	// Enum "question", "url_parameters" (Recommended), "not_required"
 	ProlificIDOption string `json:"prolific_id_option" mapstructure:"prolific_id_option"`
 	CompletionCode   string `json:"completion_code" mapstructure:"completion_code"`
 	// Enum: "url", "code"
-	CompletionOption     string `json:"completion_option" mapstructure:"completion_option"`
+	CompletionOption     string `json:"completion_option,omitempty" mapstructure:"completion_option"`
 	TotalAvailablePlaces int    `json:"total_available_places" mapstructure:"total_available_places"`
 	// Minutes
 	EstimatedCompletionTime int     `json:"estimated_completion_time" mapstructure:"estimated_completion_time"`
-	MaximumAllowedTime      int     `json:"maximum_allowed_time" mapstructure:"maximum_allowed_time"`
+	MaximumAllowedTime      int     `json:"maximum_allowed_time,omitempty" mapstructure:"maximum_allowed_time"`
 	Reward                  float64 `json:"reward" mapstructure:"reward"`
 	// Enum: "desktop", "tablet", "mobile"
 	DeviceCompatibility []string `json:"device_compatibility" mapstructure:"device_compatibility"`
 	// Enum: "audio", "camera", "download", "microphone"
-	PeripheralRequirements []string `json:"peripheral_requirements" mapstructure:"peripheral_requirements"`
+	PeripheralRequirements []string `json:"peripheral_requirements,omitempty" mapstructure:"peripheral_requirements"`
+	// Study labels for categorization (e.g., "ai_annotation")
+	StudyLabels []string `json:"study_labels,omitempty" mapstructure:"study_labels"`
+	// Access details collection ID: ID of the collection to attach to the study (for Taskflow studies)
+	AccessDetailsCollectionID string `json:"access_details_collection_id,omitempty" mapstructure:"access_details_collection_id"`
+	// Data collection method: "AI_TASK_BUILDER", "DC_TOOL", or "HUMAN_SIGNAL"
+	DataCollectionMethod string `json:"data_collection_method,omitempty" mapstructure:"data_collection_method"`
+	// Data collection ID: Project/collection/batch ID for data collection
+	DataCollectionID string `json:"data_collection_id,omitempty" mapstructure:"data_collection_id"`
+	// Data collection metadata: Configuration parameters (optional dict)
+	DataCollectionMetadata map[string]interface{} `json:"data_collection_metadata,omitempty" mapstructure:"data_collection_metadata"`
 	SubmissionsConfig      struct {
-		MaxSubmissionsPerParticipant int `json:"max_submissions_per_participant" mapstructure:"max_submissions_per_participant"`
-		MaxConcurrentSubmissions     int `json:"max_concurrent_submissions" mapstructure:"max_concurrent_submissions"`
-	} `json:"submissions_config" mapstructure:"submissions_config"`
+		MaxSubmissionsPerParticipant int `json:"max_submissions_per_participant,omitempty" mapstructure:"max_submissions_per_participant"`
+		MaxConcurrentSubmissions     int `json:"max_concurrent_submissions,omitempty" mapstructure:"max_concurrent_submissions"`
+	} `json:"submissions_config,omitempty" mapstructure:"submissions_config"`
 	EligibilityRequirements []struct {
 		Attributes []struct {
 			ID    string `json:"id" mapstructure:"id"`
@@ -147,8 +157,8 @@ type CreateStudy struct {
 			ID string `json:"id" mapstructure:"id"`
 		} `json:"query" mapstructure:"query"`
 		Cls string `json:"_cls" mapstructure:"_cls"`
-	} `json:"eligibility_requirements" mapstructure:"eligibility_requirements"`
-	Filters          []Filter `json:"filters" mapstructure:"filters"`
+	} `json:"eligibility_requirements,omitempty" mapstructure:"eligibility_requirements"`
+	Filters          []Filter `json:"filters,omitempty" mapstructure:"filters"`
 	Project          string   `json:"project,omitempty" mapstructure:"project"`
 	CredentialPoolID string   `json:"credential_pool_id,omitempty" mapstructure:"credential_pool_id"`
 }

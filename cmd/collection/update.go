@@ -33,9 +33,9 @@ $ prolific collection update collec12345 -t collection.json
 Example YAML config file:
 ---
 name: My Updated Collection
-items:
+collection_items:
   - order: 0
-    items:
+    page_items:
       - type: free_text
         description: "What is your feedback?"
         order: 0
@@ -43,7 +43,7 @@ items:
 Example JSON config file:
 {
   "name": "My Updated Collection",
-  "items": []
+  "collection_items": []
 }`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -92,7 +92,7 @@ func validateTemplate(opts UpdateOptions) (model.UpdateCollection, error) {
 	if updatePayload.Name == "" {
 		return updatePayload, errors.New(ErrNameRequired)
 	}
-	if updatePayload.Items == nil {
+	if updatePayload.CollectionItems == nil {
 		return updatePayload, errors.New(ErrCollectionItemsRequired)
 	}
 

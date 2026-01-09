@@ -54,11 +54,11 @@ func TestUpdateCollection(t *testing.T) {
 			args:      []string{collectionID},
 			configExt: ".yaml",
 			configContent: `name: Updated Collection Name
-items: []
+collection_items: []
 `,
 			expectedPayload: model.UpdateCollection{
-				Name:  "Updated Collection Name",
-				Items: []model.Page{},
+				Name:            "Updated Collection Name",
+				CollectionItems: []model.Page{},
 			},
 			mockReturn: &model.Collection{
 				ID:        collectionID,
@@ -79,15 +79,15 @@ Name: Updated Collection Name
 			args:      []string{collectionID},
 			configExt: ".yaml",
 			configContent: `name: Collection With Pages
-items:
+collection_items:
   - id: "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
     order: 0
-    items:
+    page_items:
       - type: free_text
         description: "What is your name?"
         order: 0
   - order: 1
-    items:
+    page_items:
       - type: multiple_choice
         description: "How satisfied are you?"
         order: 0
@@ -100,11 +100,11 @@ items:
 `,
 			expectedPayload: model.UpdateCollection{
 				Name: "Collection With Pages",
-				Items: []model.Page{
+				CollectionItems: []model.Page{
 					{
 						BaseEntity: model.BaseEntity{ID: pageID},
 						Order:      0,
-						Items: []model.PageInstruction{
+						PageItems: []model.PageInstruction{
 							{
 								Type:        model.InstructionTypeFreeText,
 								Description: "What is your name?",
@@ -114,7 +114,7 @@ items:
 					},
 					{
 						Order: 1,
-						Items: []model.PageInstruction{
+						PageItems: []model.PageInstruction{
 							{
 								Type:        model.InstructionTypeMultipleChoice,
 								Description: "How satisfied are you?",
@@ -149,11 +149,11 @@ Name: Collection With Pages
 			configExt: ".json",
 			configContent: `{
   "name": "JSON Updated Collection",
-  "items": [
+  "collection_items": [
     {
       "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
       "order": 0,
-      "items": [
+      "page_items": [
         {
           "type": "free_text",
           "description": "Enter your feedback",
@@ -165,11 +165,11 @@ Name: Collection With Pages
 }`,
 			expectedPayload: model.UpdateCollection{
 				Name: "JSON Updated Collection",
-				Items: []model.Page{
+				CollectionItems: []model.Page{
 					{
 						BaseEntity: model.BaseEntity{ID: pageID},
 						Order:      0,
-						Items: []model.PageInstruction{
+						PageItems: []model.PageInstruction{
 							{
 								Type:        model.InstructionTypeFreeText,
 								Description: "Enter your feedback",
@@ -207,7 +207,7 @@ Name: JSON Updated Collection
 			name:      "missing name in config",
 			args:      []string{collectionID},
 			configExt: ".yaml",
-			configContent: `items: []
+			configContent: `collection_items: []
 `,
 			mockReturn:     nil,
 			mockError:      nil,
@@ -243,11 +243,11 @@ Name: JSON Updated Collection
 			args:      []string{collectionID},
 			configExt: ".yaml",
 			configContent: `name: Test Collection
-items: []
+collection_items: []
 `,
 			expectedPayload: model.UpdateCollection{
-				Name:  "Test Collection",
-				Items: []model.Page{},
+				Name:            "Test Collection",
+				CollectionItems: []model.Page{},
 			},
 			mockReturn:     nil,
 			mockError:      errors.New("request failed with status 404: collection not found"),
@@ -259,11 +259,11 @@ items: []
 			args:      []string{collectionID},
 			configExt: ".yaml",
 			configContent: `name: Test Collection
-items: []
+collection_items: []
 `,
 			expectedPayload: model.UpdateCollection{
-				Name:  "Test Collection",
-				Items: []model.Page{},
+				Name:            "Test Collection",
+				CollectionItems: []model.Page{},
 			},
 			mockReturn:     nil,
 			mockError:      errors.New("request failed with status 502: service unavailable"),
@@ -275,7 +275,7 @@ items: []
 			args:      []string{collectionID},
 			configExt: ".yaml",
 			configContent: `name: Test Collection
-items: []
+collection_items: []
 unknown_field: "should cause error"
 `,
 			mockReturn:     nil,
@@ -290,7 +290,7 @@ unknown_field: "should cause error"
 			configExt: ".json",
 			configContent: `{
   "name": "Test Collection",
-  "items": [],
+  "collection_items": [],
   "unknown_field": "should cause error"
 }`,
 			mockReturn:     nil,
@@ -304,7 +304,7 @@ unknown_field: "should cause error"
 			args:      []string{collectionID},
 			configExt: ".txt",
 			configContent: `name: Test Collection
-items: []
+collection_items: []
 `,
 			mockReturn:     nil,
 			mockError:      nil,
@@ -422,11 +422,11 @@ func TestUpdateCollectionExactPayload(t *testing.T) {
 
 	configContent := `{
   "name": "Exact Payload Test",
-  "items": [
+  "collection_items": [
     {
       "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
       "order": 0,
-      "items": [
+      "page_items": [
         {
           "type": "free_text",
           "description": "Enter your feedback",
@@ -450,13 +450,13 @@ func TestUpdateCollectionExactPayload(t *testing.T) {
 
 	expectedPayload := model.UpdateCollection{
 		Name: "Exact Payload Test",
-		Items: []model.Page{
+		CollectionItems: []model.Page{
 			{
 				BaseEntity: model.BaseEntity{
 					ID: pageID,
 				},
 				Order: 0,
-				Items: []model.PageInstruction{
+				PageItems: []model.PageInstruction{
 					{
 						Type:                 model.InstructionTypeFreeText,
 						Description:          "Enter your feedback",

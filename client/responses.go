@@ -275,12 +275,12 @@ type CreateAITaskBuilderInstructionsResponse []model.Instruction
 
 // CreateAITaskBuilderCollectionResponse is the response for creating an AI Task Builder collection.
 type CreateAITaskBuilderCollectionResponse struct {
-	ID            string                 `json:"id"`
-	Name          string                 `json:"name"`
-	WorkspaceID   string                 `json:"workspace_id"`
-	SchemaVersion int                    `json:"schema_version"`
-	CreatedBy     string                 `json:"created_by"`
-	Items         []model.CollectionPage `json:"items"`
+	ID              string                 `json:"id"`
+	Name            string                 `json:"name"`
+	WorkspaceID     string                 `json:"workspace_id"`
+	SchemaVersion   int                    `json:"schema_version"`
+	CreatedBy       string                 `json:"created_by"`
+	CollectionItems []model.CollectionPage `json:"collection_items"`
 }
 
 // SetupAITaskBuilderBatchResponse is the response for setting up an AI Task Builder batch.

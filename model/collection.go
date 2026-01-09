@@ -72,13 +72,13 @@ type PageInstruction struct {
 type Page struct {
 	BaseEntity `yaml:",inline" mapstructure:",squash"`
 	Order      int               `json:"order" yaml:"order" mapstructure:"order"`
-	Items      []PageInstruction `json:"items" yaml:"items" mapstructure:"items"`
+	PageItems  []PageInstruction `json:"page_items" yaml:"page_items" mapstructure:"page_items"`
 }
 
 // UpdateCollection represents the payload for updating a collection.
 type UpdateCollection struct {
-	BaseEntity  `yaml:",inline" mapstructure:",squash"`
-	Name        string `json:"name" yaml:"name" mapstructure:"name"`
-	WorkspaceID string `json:"workspace_id,omitempty" yaml:"workspace_id,omitempty" mapstructure:"workspace_id"`
-	Items       []Page `json:"items" yaml:"items" mapstructure:"items"`
+	BaseEntity      `yaml:",inline" mapstructure:",squash"`
+	Name            string `json:"name" yaml:"name" mapstructure:"name"`
+	WorkspaceID     string `json:"workspace_id,omitempty" yaml:"workspace_id,omitempty" mapstructure:"workspace_id"`
+	CollectionItems []Page `json:"collection_items" yaml:"collection_items" mapstructure:"collection_items"`
 }

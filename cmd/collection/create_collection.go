@@ -36,10 +36,10 @@ An example of a JSON collection file:
 {
   "workspace_id": "67890abcdef12345678901234",
   "name": "example-collection",
-  "items": [
+  "collection_items": [
     {
       "order": 0,
-      "items": [
+      "page_items": [
         {
           "order": 0,
           "type": "free_text",
@@ -71,9 +71,9 @@ An example of a YAML collection file:
 ---
 workspace_id: 67890abcdef12345678901234
 name: example-collection
-items:
+collection_items:
   - order: 0
-    items:
+    page_items:
       - order: 0
         type: free_text
         description: How was your experience completing this task?
@@ -120,7 +120,7 @@ func validatePayload(payload model.CreateAITaskBuilderCollection) error {
 		return errors.New(ErrWorkspaceIDRequired)
 	}
 
-	if len(payload.Items) == 0 {
+	if len(payload.CollectionItems) == 0 {
 		return errors.New(ErrCollectionItemsRequired)
 	}
 
@@ -157,7 +157,7 @@ func createCollection(c client.API, opts CreateCollectionOptions, w io.Writer) e
 	fmt.Fprintf(w, "Workspace ID:    %s\n", collection.WorkspaceID)
 	fmt.Fprintf(w, "Schema Version:  %d\n", collection.SchemaVersion)
 	fmt.Fprintf(w, "Created By:      %s\n", collection.CreatedBy)
-	fmt.Fprintf(w, "Pages:           %d\n", len(collection.Items))
+	fmt.Fprintf(w, "Pages:           %d\n", len(collection.CollectionItems))
 
 	return nil
 }
