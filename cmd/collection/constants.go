@@ -9,6 +9,6 @@ const (
 	ErrWorkspaceNotFound       = "workspace not found"
 
 	// Feature access constants for AI Task Builder Collections (see DCP-2152)
-	FeatureNameAITBCollection         = "AI Task Builder Collections"
-	FeatureContactEmailAITBCollection = "support@prolific.com"
+	FeatureNameAITBCollection       = "AI Task Builder Collections"
+	FeatureContactURLAITBCollection = "https://researcher-help.prolific.com/en/"
 )

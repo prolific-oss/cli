@@ -69,12 +69,12 @@ func RenderHighlightedText(text string) string {
 // RenderFeatureAccessMessage renders a styled early-access feature message to stderr.
 // This is used when a feature is gated behind a feature flag and returns 404 feature not enabled errors.
 // Output goes to stderr so it doesn't interfere with JSON/CSV output piping.
-func RenderFeatureAccessMessage(featureName, contactEmail string) {
+func RenderFeatureAccessMessage(featureName, contactURL string) {
 	warningStyle := lipgloss.NewStyle().
 		Bold(true).
 		Foreground(lipgloss.Color("#FFA500"))
 
-	emailStyle := lipgloss.NewStyle().
+	urlStyle := lipgloss.NewStyle().
 		Bold(true).
 		Foreground(lipgloss.Color("#00BFFF"))
 
@@ -87,7 +87,7 @@ func RenderFeatureAccessMessage(featureName, contactEmail string) {
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintf(os.Stderr, "%s is an early-access feature that may be enabled on your workspace upon request.\n", featureName)
 	fmt.Fprintln(os.Stderr)
-	fmt.Fprintf(os.Stderr, "To request access or contribute towards the feature's roadmap, get in touch at %s.\n", emailStyle.Render(contactEmail))
+	fmt.Fprintf(os.Stderr, "To request access or contribute towards the feature's roadmap, visit our help center at %s and drop us a message in the chat.\n", urlStyle.Render(contactURL))
 	fmt.Fprintln(os.Stderr, "Your activation request will be reviewed by our team.")
 	fmt.Fprintln(os.Stderr)
 	fmt.Fprintln(os.Stderr, betaStyle.Render("Note: This feature is under active development and you may encounter bugs."))

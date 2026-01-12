@@ -99,7 +99,7 @@ collection_items:
 			err := createCollection(c, opts, w)
 			if err != nil {
 				if shared.IsFeatureNotEnabledError(err) {
-					ui.RenderFeatureAccessMessage(FeatureNameAITBCollection, FeatureContactEmailAITBCollection)
+					ui.RenderFeatureAccessMessage(FeatureNameAITBCollection, FeatureContactURLAITBCollection)
 					return nil
 				}
 				return fmt.Errorf("error: %s", err.Error())
