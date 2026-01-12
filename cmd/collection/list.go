@@ -89,7 +89,7 @@ The fields you can use are:
 
 			if err != nil {
 				if shared.IsFeatureNotEnabledError(err) {
-					ui.RenderFeatureAccessMessage(FeatureNameAITBCollection, FeatureContactEmailAITBCollection)
+					ui.RenderFeatureAccessMessage(FeatureNameAITBCollection, FeatureContactURLAITBCollection)
 					return nil
 				}
 				return fmt.Errorf("error: %s", err.Error())
