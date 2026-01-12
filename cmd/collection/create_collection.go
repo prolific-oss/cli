@@ -126,7 +126,7 @@ func validatePayload(payload model.CreateAITaskBuilderCollection) error {
 		return errors.New(ErrWorkspaceIDRequired)
 	}
 
-	if len(payload.Items) == 0 {
+	if len(payload.CollectionItems) == 0 {
 		return errors.New(ErrCollectionItemsRequired)
 	}
 
@@ -163,7 +163,7 @@ func createCollection(c client.API, opts CreateCollectionOptions, w io.Writer) e
 	fmt.Fprintf(w, "Workspace ID:    %s\n", collection.WorkspaceID)
 	fmt.Fprintf(w, "Schema Version:  %d\n", collection.SchemaVersion)
 	fmt.Fprintf(w, "Created By:      %s\n", collection.CreatedBy)
-	fmt.Fprintf(w, "Pages:           %d\n", len(collection.Items))
+	fmt.Fprintf(w, "Pages:           %d\n", len(collection.CollectionItems))
 
 	return nil
 }

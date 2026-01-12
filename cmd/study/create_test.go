@@ -29,8 +29,8 @@ var studyTemplate = model.CreateStudy{
 	DeviceCompatibility:     []string{"desktop", "tablet", "mobile"},
 	PeripheralRequirements:  []string{"audio", "camera", "download", "microphone"},
 	SubmissionsConfig: struct {
-		MaxSubmissionsPerParticipant int `json:"max_submissions_per_participant" mapstructure:"max_submissions_per_participant"`
-		MaxConcurrentSubmissions     int `json:"max_concurrent_submissions" mapstructure:"max_concurrent_submissions"`
+		MaxSubmissionsPerParticipant int `json:"max_submissions_per_participant,omitempty" mapstructure:"max_submissions_per_participant"`
+		MaxConcurrentSubmissions     int `json:"max_concurrent_submissions,omitempty" mapstructure:"max_concurrent_submissions"`
 	}{
 		MaxSubmissionsPerParticipant: -1,
 		MaxConcurrentSubmissions:     0,

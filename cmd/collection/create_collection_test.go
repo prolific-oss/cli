@@ -91,10 +91,10 @@ func TestNewCreateCollectionCommandCallsAPIWithJSON(t *testing.T) {
 		WorkspaceID:   "6716028cd934ced9bac18658",
 		SchemaVersion: 1,
 		CreatedBy:     "user-456",
-		Items: []model.CollectionPage{
+		CollectionItems: []model.CollectionPage{
 			{
 				Order: 0,
-				Items: []model.CollectionInstruction{
+				PageItems: []model.CollectionInstruction{
 					{
 						Order:       0,
 						Type:        "free_text",
@@ -170,12 +170,12 @@ collection_items:
 
 	// Expected response
 	response := client.CreateAITaskBuilderCollectionResponse{
-		ID:            "collection-yaml-123",
-		Name:          "yaml-test-collection",
-		WorkspaceID:   "6716028cd934ced9bac18658",
-		SchemaVersion: 1,
-		CreatedBy:     "user-789",
-		Items:         []model.CollectionPage{},
+		ID:              "collection-yaml-123",
+		Name:            "yaml-test-collection",
+		WorkspaceID:     "6716028cd934ced9bac18658",
+		SchemaVersion:   1,
+		CreatedBy:       "user-789",
+		CollectionItems: []model.CollectionPage{},
 	}
 
 	c.EXPECT().

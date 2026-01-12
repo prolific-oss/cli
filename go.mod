@@ -15,7 +15,10 @@ require (
 	golang.org/x/text v0.32.0 // BSD-3-Clause
 )
 
-require github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
+require (
+	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
+	gopkg.in/yaml.v3 v3.0.1
+)
 
 require (
 	github.com/atotto/clipboard v0.1.4 // indirect

@@ -40,11 +40,23 @@ install: install-binary ## Install dependencies and the prolific binary
 	cp scripts/hooks/pre-commit .git/hooks/pre-commit
 	go install github.com/golang/mock/mockgen@master
 	go install github.com/securego/gosec/v2/cmd/gosec@latest
+	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
+	go install golang.org/x/tools/cmd/goimports@latest
 	go get ./...
 
 .PHONY: install-binary
 install-binary: ## Install the prolific binary to $GOPATH/bin
 	go install ./cmd/prolific
+
+.PHONY: format
+format: ## Format all Go code
+	gofmt -w .
+	goimports -w .
+
+.PHONY: format-changed
+format-changed: ## Format only changed Go files
+	@git diff --name-only HEAD | grep '\.go$$' | xargs -r gofmt -w
+	@git diff --name-only HEAD | grep '\.go$$' | xargs -r goimports -w
 
 .PHONY: lint
 lint: ## Vet the code
@@ -104,8 +116,3 @@ docker-push: ## Push the docker image
 .PHONY: docker-scout
 docker-scout: ## Check the Docker image for vulnerabilities
 	docker scout cves $(DOCKER_PREFIX)/$(NAME):$(DOCKER_RELEASE)
-
-.PHONY: format-changed
-format-changed: ## Format only changed Go files
-	@git diff --name-only HEAD | grep '\.go$$' | xargs -r gofmt -w
-	@git diff --name-only HEAD | grep '\.go$$' | xargs -r goimports -w

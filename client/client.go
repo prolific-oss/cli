@@ -44,6 +44,7 @@ type API interface {
 
 	GetCollections(workspaceID string, limit, offset int) (*ListCollectionsResponse, error)
 	GetCollection(ID string) (*model.Collection, error)
+	UpdateCollection(ID string, collection model.UpdateCollection) (*model.Collection, error)
 
 	GetHooks(workspaceID string, enabled bool, limit, offset int) (*ListHooksResponse, error)
 	GetHookEventTypes() (*ListHookEventTypesResponse, error)
@@ -608,6 +609,19 @@ func (c *Client) GetFilterSet(ID string) (*model.FilterSet, error) {
 
 	if httpResponse.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("status code was %v, so therefore unable to get filter set: %v", httpResponse.StatusCode, ID)
+	}
+
+	return &response, nil
+}
+
+// UpdateCollection will update a collection with the given ID
+func (c *Client) UpdateCollection(ID string, collection model.UpdateCollection) (*model.Collection, error) {
+	var response model.Collection
+
+	url := fmt.Sprintf("/api/v1/data-collection/collections/%s/", ID)
+	_, err := c.Execute(http.MethodPut, url, collection, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
 
 	return &response, nil
