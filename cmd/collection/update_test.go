@@ -50,29 +50,17 @@ func TestUpdateCollection(t *testing.T) {
 		skipMock        bool
 	}{
 		{
-			name:      "successful update with name and empty items",
+			name:      "empty collection_items array should fail",
 			args:      []string{collectionID},
 			configExt: ".yaml",
 			configContent: `name: Updated Collection Name
 collection_items: []
 `,
-			expectedPayload: model.UpdateCollection{
-				Name:            "Updated Collection Name",
-				CollectionItems: []model.Page{},
-			},
-			mockReturn: &model.Collection{
-				ID:        collectionID,
-				Name:      "Updated Collection Name",
-				CreatedAt: time.Now(),
-				CreatedBy: "user123",
-				ItemCount: 0,
-			},
-			mockError: nil,
-			expectedOutput: `Collection updated successfully
-ID: 550e8400-e29b-41d4-a716-446655440000
-Name: Updated Collection Name
-`,
-			expectedError: "",
+			mockReturn:     nil,
+			mockError:      nil,
+			expectedOutput: "",
+			expectedError:  "at least one collection item must be provided",
+			skipMock:       true,
 		},
 		{
 			name:      "successful update with pages and instructions",
@@ -212,7 +200,7 @@ Name: JSON Updated Collection
 			mockReturn:     nil,
 			mockError:      nil,
 			expectedOutput: "",
-			expectedError:  "error: name is required",
+			expectedError:  "name is required",
 			skipMock:       true,
 		},
 		{
@@ -224,7 +212,51 @@ Name: JSON Updated Collection
 			mockReturn:     nil,
 			mockError:      nil,
 			expectedOutput: "",
-			expectedError:  "error: at least one item must be provided",
+			expectedError:  "at least one collection item must be provided",
+			skipMock:       true,
+		},
+		{
+			name:      "page with empty page_items array",
+			args:      []string{collectionID},
+			configExt: ".yaml",
+			configContent: `name: Test Collection
+collection_items:
+  - order: 0
+    page_items: []
+`,
+			mockReturn:     nil,
+			mockError:      nil,
+			expectedOutput: "",
+			expectedError:  "page at index 0: each page must have at least one item in page_items",
+			skipMock:       true,
+		},
+		{
+			name:      "multiple pages with second page having empty page_items",
+			args:      []string{collectionID},
+			configExt: ".json",
+			configContent: `{
+  "name": "Test Collection",
+  "collection_items": [
+    {
+      "order": 0,
+      "page_items": [
+        {
+          "type": "free_text",
+          "description": "Valid page",
+          "order": 0
+        }
+      ]
+    },
+    {
+      "order": 1,
+      "page_items": []
+    }
+  ]
+}`,
+			mockReturn:     nil,
+			mockError:      nil,
+			expectedOutput: "",
+			expectedError:  "page at index 1: each page must have at least one item in page_items",
 			skipMock:       true,
 		},
 		{
@@ -235,7 +267,7 @@ Name: JSON Updated Collection
 			mockReturn:     nil,
 			mockError:      nil,
 			expectedOutput: "",
-			expectedError:  "error: name is required",
+			expectedError:  "name is required",
 			skipMock:       true,
 		},
 		{
@@ -243,11 +275,27 @@ Name: JSON Updated Collection
 			args:      []string{collectionID},
 			configExt: ".yaml",
 			configContent: `name: Test Collection
-collection_items: []
+collection_items:
+  - order: 0
+    page_items:
+      - type: free_text
+        description: "Valid page"
+        order: 0
 `,
 			expectedPayload: model.UpdateCollection{
-				Name:            "Test Collection",
-				CollectionItems: []model.Page{},
+				Name: "Test Collection",
+				CollectionItems: []model.Page{
+					{
+						Order: 0,
+						PageItems: []model.PageInstruction{
+							{
+								Type:        model.InstructionTypeFreeText,
+								Description: "Valid page",
+								Order:       0,
+							},
+						},
+					},
+				},
 			},
 			mockReturn:     nil,
 			mockError:      errors.New("request failed with status 404: collection not found"),
@@ -259,11 +307,27 @@ collection_items: []
 			args:      []string{collectionID},
 			configExt: ".yaml",
 			configContent: `name: Test Collection
-collection_items: []
+collection_items:
+  - order: 0
+    page_items:
+      - type: free_text
+        description: "Valid page"
+        order: 0
 `,
 			expectedPayload: model.UpdateCollection{
-				Name:            "Test Collection",
-				CollectionItems: []model.Page{},
+				Name: "Test Collection",
+				CollectionItems: []model.Page{
+					{
+						Order: 0,
+						PageItems: []model.PageInstruction{
+							{
+								Type:        model.InstructionTypeFreeText,
+								Description: "Valid page",
+								Order:       0,
+							},
+						},
+					},
+				},
 			},
 			mockReturn:     nil,
 			mockError:      errors.New("request failed with status 502: service unavailable"),
@@ -275,13 +339,18 @@ collection_items: []
 			args:      []string{collectionID},
 			configExt: ".yaml",
 			configContent: `name: Test Collection
-collection_items: []
+collection_items:
+  - order: 0
+    page_items:
+      - type: free_text
+        description: "Valid page"
+        order: 0
 unknown_field: "should cause error"
 `,
 			mockReturn:     nil,
 			mockError:      nil,
 			expectedOutput: "",
-			expectedError:  "error: unable to unmarshal config file: decoding failed due to the following error(s):\n\n'' has invalid keys: unknown_field",
+			expectedError:  "unable to unmarshal config file: decoding failed due to the following error(s):\n\n'' has invalid keys: unknown_field",
 			skipMock:       true,
 		},
 		{
@@ -290,13 +359,24 @@ unknown_field: "should cause error"
 			configExt: ".json",
 			configContent: `{
   "name": "Test Collection",
-  "collection_items": [],
+  "collection_items": [
+    {
+      "order": 0,
+      "page_items": [
+        {
+          "type": "free_text",
+          "description": "Valid page",
+          "order": 0
+        }
+      ]
+    }
+  ],
   "unknown_field": "should cause error"
 }`,
 			mockReturn:     nil,
 			mockError:      nil,
 			expectedOutput: "",
-			expectedError:  "error: unable to unmarshal config file: decoding failed due to the following error(s):\n\n'' has invalid keys: unknown_field",
+			expectedError:  "unable to unmarshal config file: decoding failed due to the following error(s):\n\n'' has invalid keys: unknown_field",
 			skipMock:       true,
 		},
 		{
@@ -304,12 +384,17 @@ unknown_field: "should cause error"
 			args:      []string{collectionID},
 			configExt: ".txt",
 			configContent: `name: Test Collection
-collection_items: []
+collection_items:
+  - order: 0
+    page_items:
+      - type: free_text
+        description: "Valid page"
+        order: 0
 `,
 			mockReturn:     nil,
 			mockError:      nil,
 			expectedOutput: "",
-			expectedError:  `error: unable to read config file: Unsupported Config Type "txt"`,
+			expectedError:  `unable to read config file: Unsupported Config Type "txt"`,
 			skipMock:       true,
 		},
 	}

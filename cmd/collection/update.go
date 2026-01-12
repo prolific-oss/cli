@@ -51,7 +51,7 @@ Example JSON config file:
 
 			updatePayload, err := validateTemplate(opts)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			collection, err := client.UpdateCollection(collectionID, updatePayload)
@@ -92,8 +92,17 @@ func validateTemplate(opts UpdateOptions) (model.UpdateCollection, error) {
 	if updatePayload.Name == "" {
 		return updatePayload, errors.New(ErrNameRequired)
 	}
-	if updatePayload.CollectionItems == nil {
+
+	// Validate that collection_items array has at least 1 page
+	if len(updatePayload.CollectionItems) == 0 {
 		return updatePayload, errors.New(ErrCollectionItemsRequired)
+	}
+
+	// Validate that all pages have at least 1 item in page_items
+	for i, page := range updatePayload.CollectionItems {
+		if len(page.PageItems) == 0 {
+			return updatePayload, fmt.Errorf("page at index %d: %s", i, ErrPageItemsRequired)
+		}
 	}
 
 	return updatePayload, nil
