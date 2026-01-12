@@ -43,7 +43,11 @@ collection_items:
 Example JSON config file:
 {
   "name": "My Updated Collection",
-  "collection_items": []
+  "collection_items": [{
+  	"type": "free_text",
+    "description": "What is your feedback?",
+    "order": 0
+  }]
 }`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
