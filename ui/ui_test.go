@@ -1,6 +1,8 @@
 package ui_test
 
 import (
+	"bytes"
+	"os"
 	"testing"
 
 	"github.com/prolific-oss/cli/ui"
@@ -64,6 +66,44 @@ func TestRenderRecordCounter(t *testing.T) {
 
 		if tc.expected != actual {
 			t.Fatalf("expected '%v' got '%v'", tc.expected, actual)
+		}
+	}
+}
+
+func TestRenderFeatureAccessMessage(t *testing.T) {
+	// Capture stderr output
+	oldStderr := os.Stderr
+	r, w, _ := os.Pipe()
+	os.Stderr = w
+
+	featureName := "AI Task Builder Collections"
+	contactEmail := "support@prolific.com"
+
+	ui.RenderFeatureAccessMessage(featureName, contactEmail)
+
+	// Restore stderr and read captured output
+	w.Close()
+	os.Stderr = oldStderr
+
+	var buf bytes.Buffer
+	_, _ = buf.ReadFrom(r)
+	output := buf.String()
+
+	// Verify output contains expected key phrases
+	expectedStrings := []string{
+		"EARLY ACCESS",
+		featureName,
+		"early-access feature",
+		"upon request",
+		"contribute towards the feature's roadmap",
+		contactEmail,
+		"activation request will be reviewed",
+		"under active development",
+	}
+
+	for _, expected := range expectedStrings {
+		if !bytes.Contains([]byte(output), []byte(expected)) {
+			t.Errorf("expected output to contain '%s', got:\n%s", expected, output)
 		}
 	}
 }

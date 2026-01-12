@@ -65,7 +65,6 @@ func RenderCollection(collection *model.Collection, w io.Writer) error {
 	content += fmt.Sprintf("ID:         %s\n", collection.ID)
 	content += fmt.Sprintf("Created by: %s\n", collection.CreatedBy)
 	content += fmt.Sprintf("Created at: %s\n", collection.CreatedAt.Format("2006-01-02 15:04:05"))
-	content += fmt.Sprintf("Item count: %d\n", collection.ItemCount)
 
 	_, err := fmt.Fprint(w, content)
 	return err
@@ -77,7 +76,6 @@ func renderCollectionString(collection model.Collection) string {
 	content += fmt.Sprintf("ID:         %s\n", collection.ID)
 	content += fmt.Sprintf("Created by: %s\n", collection.CreatedBy)
 	content += fmt.Sprintf("Created at: %s\n", collection.CreatedAt.Format("2006-01-02 15:04:05"))
-	content += fmt.Sprintf("Item count: %d\n", collection.ItemCount)
 
 	return content
 }
