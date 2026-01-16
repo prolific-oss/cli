@@ -1,3 +1,7 @@
+// Package client provides an HTTP client for interacting with the Prolific API.
+// It handles authentication, request execution, and response parsing for all
+// supported Prolific resources including studies, workspaces, projects, hooks,
+// messages, and AI Task Builder operations.
 package client
 
 import (
@@ -649,7 +653,6 @@ func (c *Client) GetMessages(userID *string, createdAfter *string) (*ListMessage
 	url := baseURL + "?" + params.Encode()
 
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
-
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
@@ -675,7 +678,6 @@ func (c *Client) SendMessage(body string, recipientID string, studyID string) er
 
 	url := "/api/v1/messages/"
 	_, err := c.Execute(http.MethodPost, url, payload, nil)
-
 	if err != nil {
 		return fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
@@ -690,7 +692,6 @@ func (c *Client) GetUnreadMessages() (*ListUnreadMessagesResponse, error) {
 	url := "/api/v1/messages/unread/"
 
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
-
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
