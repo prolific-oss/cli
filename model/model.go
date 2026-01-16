@@ -1,3 +1,7 @@
+// Package model defines the data structures representing Prolific domain
+// entities such as studies, submissions, workspaces, projects, and users.
+// These types are used for JSON serialization when communicating with the
+// Prolific API.
 package model
 
 import (

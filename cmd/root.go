@@ -1,3 +1,6 @@
+// Package cmd implements the root command and CLI initialization for the
+// Prolific CLI application. It configures the command hierarchy, loads
+// configuration, and registers all subcommands.
 package cmd
 
 import (
