@@ -39,19 +39,19 @@ func TestNewListCommandCallsAPI(t *testing.T) {
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	projectID := "777111999"
+	workspaceID := "777111999"
 
 	response := client.ListParticipantGroupsResponse{
 		Results: []model.ParticipantGroup{
 			{
 				ID:        "1122",
 				Name:      "R.E.M. fans",
-				ProjectID: projectID,
+				ProjectID: workspaceID,
 			},
 			{
 				ID:        "3344",
 				Name:      "Radiohead fans",
-				ProjectID: projectID,
+				ProjectID: workspaceID,
 			},
 		},
 		JSONAPIMeta: &client.JSONAPIMeta{
@@ -65,7 +65,7 @@ func TestNewListCommandCallsAPI(t *testing.T) {
 
 	c.
 		EXPECT().
-		GetParticipantGroups(gomock.Eq(projectID), client.DefaultRecordLimit, client.DefaultRecordOffset).
+		GetParticipantGroups(gomock.Eq(workspaceID), client.DefaultRecordLimit, client.DefaultRecordOffset).
 		Return(&response, nil).
 		AnyTimes()
 
@@ -73,7 +73,7 @@ func TestNewListCommandCallsAPI(t *testing.T) {
 	writer := bufio.NewWriter(&b)
 
 	cmd := participantgroup.NewListCommand("list", c, writer)
-	_ = cmd.Flags().Set("project", projectID)
+	_ = cmd.Flags().Set("workspace", workspaceID)
 	_ = cmd.RunE(cmd, nil)
 
 	writer.Flush()
@@ -98,7 +98,7 @@ func TestNewListCommandReturnsErrorIfProjectNotDefined(t *testing.T) {
 	cmd := participantgroup.NewListCommand("list", c, os.Stdout)
 	err := cmd.RunE(cmd, nil)
 
-	expected := "error: please provide a project ID"
+	expected := "error: please provide a workspace ID"
 	if err.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())
 	}
@@ -109,13 +109,13 @@ func TestNewListCommandHandlesAnAPIError(t *testing.T) {
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	projectID := "777111999"
+	workspaceID := "777111999"
 
 	errorMessage := "Rocket man burning out his fuse up here alone"
 
 	c.
 		EXPECT().
-		GetParticipantGroups(gomock.Eq(projectID), client.DefaultRecordLimit, client.DefaultRecordOffset).
+		GetParticipantGroups(gomock.Eq(workspaceID), client.DefaultRecordLimit, client.DefaultRecordOffset).
 		Return(nil, errors.New(errorMessage)).
 		AnyTimes()
 
@@ -123,7 +123,7 @@ func TestNewListCommandHandlesAnAPIError(t *testing.T) {
 	writer := bufio.NewWriter(&b)
 
 	cmd := participantgroup.NewListCommand("list", c, writer)
-	_ = cmd.Flags().Set("project", projectID)
+	_ = cmd.Flags().Set("workspace", workspaceID)
 	err := cmd.RunE(cmd, nil)
 
 	expected := fmt.Sprintf("error: %s", errorMessage)

@@ -62,7 +62,7 @@ type API interface {
 	CreateProject(workspaceID string, project model.Project) (*CreateProjectResponse, error)
 	GetProject(ID string) (*model.Project, error)
 
-	GetParticipantGroups(projectID string, limit, offset int) (*ListParticipantGroupsResponse, error)
+	GetParticipantGroups(workspaceID string, limit, offset int) (*ListParticipantGroupsResponse, error)
 	GetParticipantGroup(groupID string) (*ViewParticipantGroupResponse, error)
 
 	GetFilters() (*ListFiltersResponse, error)
@@ -550,11 +550,11 @@ func (c *Client) CreateProject(workspaceID string, project model.Project) (*Crea
 	return &response, nil
 }
 
-// GetParticipantGroups will return all the participant groups you have access to for a given ProjectID
-func (c *Client) GetParticipantGroups(projectID string, limit, offset int) (*ListParticipantGroupsResponse, error) {
+// GetParticipantGroups will return all the participant groups you have access to for a given WorkspaceID
+func (c *Client) GetParticipantGroups(workspaceID string, limit, offset int) (*ListParticipantGroupsResponse, error) {
 	var response ListParticipantGroupsResponse
 
-	url := fmt.Sprintf("/api/v1/participant-groups/?project_id=%s&limit=%v&offset=%v", projectID, limit, offset)
+	url := fmt.Sprintf("/api/v1/participant-groups/?workspace_id=%s&limit=%v&offset=%v", workspaceID, limit, offset)
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
