@@ -13,10 +13,10 @@ import (
 
 // ListOptions is the options for the listing participant groups command.
 type ListOptions struct {
-	Args      []string
-	ProjectID string
-	Limit     int
-	Offset    int
+	Args        []string
+	WorkspaceID string
+	Limit       int
+	Offset      int
 }
 
 // NewListCommand creates a new command to deal with participant groups
@@ -28,12 +28,12 @@ func NewListCommand(commandName string, c client.API, w io.Writer) *cobra.Comman
 		Short: "Provide details about your participant groups",
 		Long: `List your participant groups
 
-Participant groups are assigned to a project within your workspace.
+Participant groups are assigned to a workspace.
 `,
 		Example: `
-List the participant groups you have defined in a given project
+List the participant groups you have defined in a given workspace
 
-$ prolific participant list -p 6261321e223a605c7a4f7623
+$ prolific participant list -w 6261321e223a605c7a4f7623
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
@@ -48,7 +48,7 @@ $ prolific participant list -p 6261321e223a605c7a4f7623
 	}
 
 	flags := cmd.Flags()
-	flags.StringVarP(&opts.ProjectID, "project", "p", "", "Filter participant groups by project.")
+	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", "", "Filter participant groups by workspace.")
 	flags.IntVarP(&opts.Limit, "limit", "l", client.DefaultRecordLimit, "Limit the number of participant groups returned")
 	flags.IntVarP(&opts.Offset, "offset", "o", client.DefaultRecordOffset, "The number of participant groups to offset")
 
@@ -57,11 +57,11 @@ $ prolific participant list -p 6261321e223a605c7a4f7623
 
 // render will list your participant groups
 func render(client client.API, opts ListOptions, w io.Writer) error {
-	if opts.ProjectID == "" {
-		return errors.New("please provide a project ID")
+	if opts.WorkspaceID == "" {
+		return errors.New("please provide a workspace ID")
 	}
 
-	groups, err := client.GetParticipantGroups(opts.ProjectID, opts.Limit, opts.Offset)
+	groups, err := client.GetParticipantGroups(opts.WorkspaceID, opts.Limit, opts.Offset)
 	if err != nil {
 		return err
 	}
