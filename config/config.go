@@ -1,3 +1,5 @@
+// Package config provides default configuration values for the Prolific CLI,
+// including base URLs for the Prolific application and API.
 package config
 
 // GetApplicationURL will return the Application URL. This could be updated

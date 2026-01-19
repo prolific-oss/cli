@@ -1,3 +1,6 @@
+// Package ui provides functions for rendering styled terminal output,
+// including headings, section markers, formatted currency, record counters,
+// and application links.
 package ui
 
 import (
