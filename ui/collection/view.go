@@ -67,7 +67,7 @@ func RenderCollection(collection *model.Collection, w io.Writer) error {
 	content += fmt.Sprintf("Created at: %s\n", collection.CreatedAt.Format("2006-01-02 15:04:05"))
 
 	if collection.TaskDetails != nil {
-		content += fmt.Sprintf("\nTask Details:\n")
+		content += "\nTask Details:\n"
 		content += fmt.Sprintf("  Task Name:         %s\n", collection.TaskDetails.TaskName)
 		content += fmt.Sprintf("  Task Introduction: %s\n", collection.TaskDetails.TaskIntroduction)
 		content += fmt.Sprintf("  Task Steps:        %s\n", collection.TaskDetails.TaskSteps)
