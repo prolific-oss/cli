@@ -129,6 +129,7 @@ const (
 type CreateAITaskBuilderCollection struct {
 	WorkspaceID     string           `json:"workspace_id" mapstructure:"workspace_id"`
 	Name            string           `json:"name" mapstructure:"name"`
+	TaskDetails     *TaskDetails     `json:"task_details,omitempty" mapstructure:"task_details"`
 	CollectionItems []CollectionPage `json:"collection_items" mapstructure:"collection_items"`
 }
 

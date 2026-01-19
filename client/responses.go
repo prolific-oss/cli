@@ -280,6 +280,7 @@ type CreateAITaskBuilderCollectionResponse struct {
 	WorkspaceID     string                 `json:"workspace_id"`
 	SchemaVersion   int                    `json:"schema_version"`
 	CreatedBy       string                 `json:"created_by"`
+	TaskDetails     *model.TaskDetails     `json:"task_details,omitempty"`
 	CollectionItems []model.CollectionPage `json:"collection_items"`
 }
 

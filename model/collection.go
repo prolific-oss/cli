@@ -7,11 +7,12 @@ import (
 
 // Collection represents a Prolific Collection
 type Collection struct {
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
-	CreatedAt time.Time `json:"created_at"`
-	CreatedBy string    `json:"created_by"`
-	ItemCount int       `json:"item_count"`
+	ID          string       `json:"id"`
+	Name        string       `json:"name"`
+	CreatedAt   time.Time    `json:"created_at"`
+	CreatedBy   string       `json:"created_by"`
+	ItemCount   int          `json:"item_count"`
+	TaskDetails *TaskDetails `json:"task_details,omitempty"`
 }
 
 // FilterValue will help the bubbletea views run
@@ -78,7 +79,8 @@ type Page struct {
 // UpdateCollection represents the payload for updating a collection.
 type UpdateCollection struct {
 	BaseEntity      `yaml:",inline" mapstructure:",squash"`
-	Name            string `json:"name" yaml:"name" mapstructure:"name"`
-	WorkspaceID     string `json:"workspace_id,omitempty" yaml:"workspace_id,omitempty" mapstructure:"workspace_id"`
-	CollectionItems []Page `json:"collection_items" yaml:"collection_items" mapstructure:"collection_items"`
+	Name            string       `json:"name" yaml:"name" mapstructure:"name"`
+	WorkspaceID     string       `json:"workspace_id,omitempty" yaml:"workspace_id,omitempty" mapstructure:"workspace_id"`
+	TaskDetails     *TaskDetails `json:"task_details,omitempty" yaml:"task_details,omitempty" mapstructure:"task_details"`
+	CollectionItems []Page       `json:"collection_items" yaml:"collection_items" mapstructure:"collection_items"`
 }

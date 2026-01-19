@@ -66,6 +66,13 @@ func RenderCollection(collection *model.Collection, w io.Writer) error {
 	content += fmt.Sprintf("Created by: %s\n", collection.CreatedBy)
 	content += fmt.Sprintf("Created at: %s\n", collection.CreatedAt.Format("2006-01-02 15:04:05"))
 
+	if collection.TaskDetails != nil {
+		content += "\nTask Details:\n"
+		content += fmt.Sprintf("  Task Name:         %s\n", collection.TaskDetails.TaskName)
+		content += fmt.Sprintf("  Task Introduction: %s\n", collection.TaskDetails.TaskIntroduction)
+		content += fmt.Sprintf("  Task Steps:        %s\n", collection.TaskDetails.TaskSteps)
+	}
+
 	_, err := fmt.Fprint(w, content)
 	return err
 }
@@ -76,6 +83,13 @@ func renderCollectionString(collection model.Collection) string {
 	content += fmt.Sprintf("ID:         %s\n", collection.ID)
 	content += fmt.Sprintf("Created by: %s\n", collection.CreatedBy)
 	content += fmt.Sprintf("Created at: %s\n", collection.CreatedAt.Format("2006-01-02 15:04:05"))
+
+	if collection.TaskDetails != nil {
+		content += "\nTask Details:\n"
+		content += fmt.Sprintf("  Task Name:         %s\n", collection.TaskDetails.TaskName)
+		content += fmt.Sprintf("  Task Introduction: %s\n", collection.TaskDetails.TaskIntroduction)
+		content += fmt.Sprintf("  Task Steps:        %s\n", collection.TaskDetails.TaskSteps)
+	}
 
 	return content
 }
