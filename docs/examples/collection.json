@@ -1,10 +1,15 @@
 {
   "workspace_id": "67890abcdef12345678901234",
   "name": "example-collection",
-  "items": [
+  "task_details": {
+    "task_name": "example task name",
+    "task_introduction": "<p>Example task introduction</p>",
+    "task_steps": "<ol><li>Example Step 1</li><li>Example Step 2</li></ol>"
+  },
+  "collection_items": [
     {
       "order": 0,
-      "items": [
+      "page_items": [
         {
           "order": 0,
           "type": "free_text",

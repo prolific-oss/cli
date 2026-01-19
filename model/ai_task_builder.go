@@ -52,9 +52,9 @@ const (
 
 // TaskDetails represents the task configuration details.
 type TaskDetails struct {
-	TaskName         string `json:"task_name"`
-	TaskIntroduction string `json:"task_introduction"`
-	TaskSteps        string `json:"task_steps"`
+	TaskName         string `json:"task_name" yaml:"task_name" mapstructure:"task_name"`
+	TaskIntroduction string `json:"task_introduction" yaml:"task_introduction" mapstructure:"task_introduction"`
+	TaskSteps        string `json:"task_steps" yaml:"task_steps" mapstructure:"task_steps"`
 }
 
 // InstructionOption represents an option for multiple choice instructions.
@@ -129,6 +129,7 @@ const (
 type CreateAITaskBuilderCollection struct {
 	WorkspaceID     string           `json:"workspace_id" mapstructure:"workspace_id"`
 	Name            string           `json:"name" mapstructure:"name"`
+	TaskDetails     *TaskDetails     `json:"task_details,omitempty" mapstructure:"task_details"`
 	CollectionItems []CollectionPage `json:"collection_items" mapstructure:"collection_items"`
 }
 

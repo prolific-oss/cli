@@ -33,6 +33,10 @@ $ prolific collection update collec12345 -t collection.json
 Example YAML config file:
 ---
 name: My Updated Collection
+task_details:
+  task_name: Updated task name
+  task_introduction: "<p>Updated task introduction</p>"
+  task_steps: "<ol><li>Updated Step 1</li></ol>"
 collection_items:
   - order: 0
     page_items:
@@ -43,10 +47,18 @@ collection_items:
 Example JSON config file:
 {
   "name": "My Updated Collection",
+  "task_details": {
+    "task_name": "Updated task name",
+    "task_introduction": "<p>Updated task introduction</p>",
+    "task_steps": "<ol><li>Updated Step 1</li></ol>"
+  },
   "collection_items": [{
-  	"type": "free_text",
-    "description": "What is your feedback?",
-    "order": 0
+    "order": 0,
+    "page_items": [{
+      "type": "free_text",
+      "description": "What is your feedback?",
+      "order": 0
+    }]
   }]
 }`,
 		Args: cobra.ExactArgs(1),

@@ -38,6 +38,11 @@ An example of a JSON collection file:
 {
   "workspace_id": "67890abcdef12345678901234",
   "name": "example-collection",
+  "task_details": {
+    "task_name": "example task name",
+    "task_introduction": "<p>Example task introduction</p>",
+    "task_steps": "<ol><li>Example Step 1</li><li>Example Step 2</li></ol>"
+  },
   "collection_items": [
     {
       "order": 0,
@@ -73,6 +78,10 @@ An example of a YAML collection file:
 ---
 workspace_id: 67890abcdef12345678901234
 name: example-collection
+task_details:
+  task_name: example task name
+  task_introduction: "<p>Example task introduction</p>"
+  task_steps: "<ol><li>Example Step 1</li><li>Example Step 2</li></ol>"
 collection_items:
   - order: 0
     page_items:
@@ -164,6 +173,13 @@ func createCollection(c client.API, opts CreateCollectionOptions, w io.Writer) e
 	fmt.Fprintf(w, "Schema Version:  %d\n", collection.SchemaVersion)
 	fmt.Fprintf(w, "Created By:      %s\n", collection.CreatedBy)
 	fmt.Fprintf(w, "Pages:           %d\n", len(collection.CollectionItems))
+
+	if collection.TaskDetails != nil {
+		fmt.Fprintf(w, "\nTask Details:\n")
+		fmt.Fprintf(w, "  Task Name:         %s\n", collection.TaskDetails.TaskName)
+		fmt.Fprintf(w, "  Task Introduction: %s\n", collection.TaskDetails.TaskIntroduction)
+		fmt.Fprintf(w, "  Task Steps:        %s\n", collection.TaskDetails.TaskSteps)
+	}
 
 	return nil
 }
