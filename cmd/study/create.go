@@ -41,31 +41,37 @@ If you are using the CLI in other tooling, you may want to silence the returned
 output of the study creation, so you can use the "-s" flag.
 $ prolific study create -t /path/to/study.json -p -s
 
-An example of a JSON study file, with an ethnicity screener
+An example of a JSON study file, with completion codes and filters
 
 {
-  "name": "Study with a ethnicity screener",
-  "internal_name": "Study with a ethnicity screener",
-  "description": "This study will be published to the participants with the selected ethnicity",
+  "name": "Study with completion codes",
+  "internal_name": "Study with completion codes",
+  "description": "This study uses the new completion_codes array format",
   "external_study_url": "https://google.com",
-  "prolific_id_option": "question",
-  "completion_code": "COMPLE01",
-  "completion_option": "code",
+  "prolific_id_option": "url_parameters",
+  "completion_codes": [
+    {
+      "code": "C1234567",
+      "code_type": "COMPLETED",
+      "actions": [{"action": "AUTOMATICALLY_APPROVE"}]
+    },
+    {
+      "code": "C7654321",
+      "code_type": "REJECTED",
+      "actions": [{"action": "AUTOMATICALLY_REJECT"}]
+    }
+  ],
   "total_available_places": 10,
   "estimated_completion_time": 10,
   "maximum_allowed_time": 10,
   "reward": 400,
   "device_compatibility": ["desktop", "tablet", "mobile"],
   "peripheral_requirements": ["audio", "camera", "download", "microphone"],
-  "eligibility_requirements": [
-    {
-      "attributes": [{ "index": 3, "value": true }],
-      "query": { "id": "5950c8413e9d730001924f2a" },
-      "_cls": "web.eligibility.models.SelectAnswerEligibilityRequirement"
-    }
-  ],
   "credential_pool_id": "64a1b2c3d4e5f6a7b8c9d0e1_12345678-1234-11e0-8000-0a1b2c3d4e5f"
 }
+
+Note: The old completion_code and completion_option fields are DEPRECATED.
+Use completion_codes array instead for new studies.
 
 An example of a YAML study file
 
@@ -75,10 +81,17 @@ internal_name: Standard sample
 description: This is my first standard sample study on the Prolific system.
 external_study_url: https://eggs-experriment.com
 # Enum: "question", "url_parameters" (Recommended), "not_required"
-prolific_id_option: question
-completion_code: COMPLE01
-# Enum: "url", "code"
-completion_option: code
+prolific_id_option: url_parameters
+# New completion_codes array format (recommended)
+completion_codes:
+  - code: C1234567
+    code_type: COMPLETED
+    actions:
+      - action: AUTOMATICALLY_APPROVE
+  - code: C7654321
+    code_type: REJECTED
+    actions:
+      - action: AUTOMATICALLY_REJECT
 total_available_places: 10
 # In minutes
 estimated_completion_time: 10
@@ -101,6 +114,23 @@ peripheral_requirements:
   - camera
   - download
   - microphone
+# For taskflow studies with multiple URLs
+# access_details:
+#   - external_url: https://example.com/task1
+#     total_allocation: 50
+#   - external_url: https://example.com/task2
+#     total_allocation: 50
+# Use predefined filter sets
+# filter_set_id: filter-set-123
+# filter_set_version: 1
+# Content warnings
+# content_warnings:
+#   - VIOLENCE
+#   - EXPLICIT_LANGUAGE
+# content_warning_details: May contain violent imagery
+# Custom metadata
+# metadata:
+#   project_id: proj-123
 ---`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args

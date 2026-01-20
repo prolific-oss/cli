@@ -111,6 +111,25 @@ type Study struct {
 	CredentialPoolID       string            `json:"credential_pool_id"`
 }
 
+// CompletionCode represents a completion code configuration for a study.
+type CompletionCode struct {
+	Code     string                 `json:"code" mapstructure:"code"`
+	CodeType string                 `json:"code_type" mapstructure:"code_type"`
+	Actions  []CompletionCodeAction `json:"actions" mapstructure:"actions"`
+}
+
+// CompletionCodeAction represents an action to take when a completion code is used.
+type CompletionCodeAction struct {
+	Action           string `json:"action" mapstructure:"action"`
+	ParticipantGroup string `json:"participant_group,omitempty" mapstructure:"participant_group,omitempty"`
+}
+
+// AccessDetail represents a taskflow study URL allocation.
+type AccessDetail struct {
+	ExternalURL     string `json:"external_url" mapstructure:"external_url"`
+	TotalAllocation int    `json:"total_allocation" mapstructure:"total_allocation"`
+}
+
 // CreateStudy is responsible for capturing what fields we need to send
 // to Prolific to create a study. The `mapstructure` is so we can take a viper
 // configuration file.
@@ -121,10 +140,17 @@ type CreateStudy struct {
 	ExternalStudyURL string `json:"external_study_url,omitempty" mapstructure:"external_study_url"`
 	// Enum "question", "url_parameters" (Recommended), "not_required"
 	ProlificIDOption string `json:"prolific_id_option" mapstructure:"prolific_id_option"`
-	CompletionCode   string `json:"completion_code" mapstructure:"completion_code"`
+
+	// New: Array of completion code configurations (replaces completion_code and completion_option)
+	CompletionCodes []CompletionCode `json:"completion_codes,omitempty" mapstructure:"completion_codes"`
+
+	// DEPRECATED: Use CompletionCodes instead. Kept for backward compatibility.
+	CompletionCode string `json:"completion_code,omitempty" mapstructure:"completion_code"`
+	// DEPRECATED: Use CompletionCodes instead. Kept for backward compatibility.
 	// Enum: "url", "code"
-	CompletionOption     string `json:"completion_option,omitempty" mapstructure:"completion_option"`
-	TotalAvailablePlaces int    `json:"total_available_places" mapstructure:"total_available_places"`
+	CompletionOption string `json:"completion_option,omitempty" mapstructure:"completion_option"`
+
+	TotalAvailablePlaces int `json:"total_available_places" mapstructure:"total_available_places"`
 	// Minutes
 	EstimatedCompletionTime int     `json:"estimated_completion_time" mapstructure:"estimated_completion_time"`
 	MaximumAllowedTime      int     `json:"maximum_allowed_time,omitempty" mapstructure:"maximum_allowed_time"`
@@ -135,18 +161,45 @@ type CreateStudy struct {
 	PeripheralRequirements []string `json:"peripheral_requirements,omitempty" mapstructure:"peripheral_requirements"`
 	// Study labels for categorization (e.g., "ai_annotation")
 	StudyLabels []string `json:"study_labels,omitempty" mapstructure:"study_labels"`
+
+	// New: Array of access details for taskflow studies with multiple URLs (replaces access_details_collection_id)
+	AccessDetails []AccessDetail `json:"access_details,omitempty" mapstructure:"access_details"`
+
+	// DEPRECATED: Use AccessDetails instead. Kept for backward compatibility.
 	// Access details collection ID: ID of the collection to attach to the study (for Taskflow studies)
 	AccessDetailsCollectionID string `json:"access_details_collection_id,omitempty" mapstructure:"access_details_collection_id"`
+
 	// Data collection method: "AI_TASK_BUILDER", "DC_TOOL", or "HUMAN_SIGNAL"
 	DataCollectionMethod string `json:"data_collection_method,omitempty" mapstructure:"data_collection_method"`
 	// Data collection ID: Project/collection/batch ID for data collection
 	DataCollectionID string `json:"data_collection_id,omitempty" mapstructure:"data_collection_id"`
 	// Data collection metadata: Configuration parameters (optional dict)
-	DataCollectionMetadata map[string]interface{} `json:"data_collection_metadata,omitempty" mapstructure:"data_collection_metadata"`
-	SubmissionsConfig      struct {
-		MaxSubmissionsPerParticipant int `json:"max_submissions_per_participant,omitempty" mapstructure:"max_submissions_per_participant"`
-		MaxConcurrentSubmissions     int `json:"max_concurrent_submissions,omitempty" mapstructure:"max_concurrent_submissions"`
+	DataCollectionMetadata map[string]any `json:"data_collection_metadata,omitempty" mapstructure:"data_collection_metadata"`
+
+	// New: Predefined filter set configuration
+	FilterSetID      string `json:"filter_set_id,omitempty" mapstructure:"filter_set_id"`
+	FilterSetVersion int    `json:"filter_set_version,omitempty" mapstructure:"filter_set_version"`
+
+	// New: Custom screening flag
+	IsCustomScreening bool `json:"is_custom_screening,omitempty" mapstructure:"is_custom_screening"`
+
+	// New: Content warnings
+	ContentWarnings       []string `json:"content_warnings,omitempty" mapstructure:"content_warnings"`
+	ContentWarningDetails string   `json:"content_warning_details,omitempty" mapstructure:"content_warning_details"`
+
+	// New: Custom metadata
+	Metadata map[string]any `json:"metadata,omitempty" mapstructure:"metadata"`
+
+	// New: JWT security flag for external study URLs
+	IsExternalStudyURLSecure bool `json:"is_external_study_url_secure,omitempty" mapstructure:"is_external_study_url_secure"`
+
+	SubmissionsConfig struct {
+		MaxSubmissionsPerParticipant int      `json:"max_submissions_per_participant,omitempty" mapstructure:"max_submissions_per_participant"`
+		MaxConcurrentSubmissions     int      `json:"max_concurrent_submissions,omitempty" mapstructure:"max_concurrent_submissions"`
+		AutoRejectionCategories      []string `json:"auto_rejection_categories,omitempty" mapstructure:"auto_rejection_categories"`
 	} `json:"submissions_config,omitempty" mapstructure:"submissions_config"`
+
+	// DEPRECATED: Use Filters or FilterSetID instead. Kept for backward compatibility.
 	EligibilityRequirements []struct {
 		Attributes []struct {
 			ID    string `json:"id" mapstructure:"id"`
@@ -172,8 +225,9 @@ type UpdateStudy struct {
 
 // SubmissionsConfig represents configuration around submission gathering
 type SubmissionsConfig struct {
-	MaxSubmissionsPerParticipant int `json:"max_submissions_per_participant"`
-	MaxConcurrentSubmissions     int `json:"max_concurrent_submissions"`
+	MaxSubmissionsPerParticipant int      `json:"max_submissions_per_participant"`
+	MaxConcurrentSubmissions     int      `json:"max_concurrent_submissions"`
+	AutoRejectionCategories      []string `json:"auto_rejection_categories,omitempty"`
 }
 
 // FilterValue will help the bubbletea views run
