@@ -8,5 +8,6 @@ trace.out
 debug.test
 debug
 notes.md
+templates/*
 
 .idea
