@@ -46,7 +46,7 @@ An example of a JSON study file, with completion codes and filters
 {
   "name": "Study with completion codes",
   "internal_name": "Study with completion codes",
-  "description": "This study uses the new completion_codes array format",
+  "description": "This study uses completion codes and a handedness filter set",
   "external_study_url": "https://google.com",
   "prolific_id_option": "url_parameters",
   "completion_codes": [
@@ -57,8 +57,8 @@ An example of a JSON study file, with completion codes and filters
     },
     {
       "code": "C7654321",
-      "code_type": "REJECTED",
-      "actions": [{"action": "AUTOMATICALLY_REJECT"}]
+      "code_type": "FAILED_ATTENTION_CHECK",
+      "actions": [{"action": "MANUALLY_REVIEW"}]
     }
   ],
   "total_available_places": 10,
@@ -67,11 +67,8 @@ An example of a JSON study file, with completion codes and filters
   "reward": 400,
   "device_compatibility": ["desktop", "tablet", "mobile"],
   "peripheral_requirements": ["audio", "camera", "download", "microphone"],
-  "credential_pool_id": "64a1b2c3d4e5f6a7b8c9d0e1_12345678-1234-11e0-8000-0a1b2c3d4e5f"
+  "filter_set_id": "handedness"
 }
-
-Note: The old completion_code and completion_option fields are DEPRECATED.
-Use completion_codes array instead for new studies.
 
 An example of a YAML study file
 
@@ -89,9 +86,9 @@ completion_codes:
     actions:
       - action: AUTOMATICALLY_APPROVE
   - code: C7654321
-    code_type: REJECTED
+    code_type: FAILED_ATTENTION_CHECK
     actions:
-      - action: AUTOMATICALLY_REJECT
+      - action: MANUALLY_REVIEW
 total_available_places: 10
 # In minutes
 estimated_completion_time: 10
@@ -114,23 +111,6 @@ peripheral_requirements:
   - camera
   - download
   - microphone
-# For taskflow studies with multiple URLs
-# access_details:
-#   - external_url: https://example.com/task1
-#     total_allocation: 50
-#   - external_url: https://example.com/task2
-#     total_allocation: 50
-# Use predefined filter sets
-# filter_set_id: filter-set-123
-# filter_set_version: 1
-# Content warnings
-# content_warnings:
-#   - VIOLENCE
-#   - EXPLICIT_LANGUAGE
-# content_warning_details: May contain violent imagery
-# Custom metadata
-# metadata:
-#   project_id: proj-123
 ---`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args

@@ -4,16 +4,11 @@ description: This is my first standard sample study on the Prolific system.
 external_study_url: "https://eggs-experriment.com?participant={{%PROLIFIC_PID%}}"
 prolific_id_option: url_parameters
 
-# New completion_codes array format (recommended)
 completion_codes:
   - code: COMPLE01
     code_type: COMPLETED
     actions:
       - action: AUTOMATICALLY_APPROVE
-
-# DEPRECATED: Old format still supported for backward compatibility
-# completion_code: COMPLE01
-# completion_option: code
 
 total_available_places: 10
 estimated_completion_time: 10
@@ -30,21 +25,3 @@ peripheral_requirements:
   - microphone
 submissions_config:
   max_submissions_per_participant: -1
-
-# New optional fields:
-# access_details:  # For taskflow studies with multiple URLs
-#   - external_url: https://example.com/task1
-#     total_allocation: 50
-#   - external_url: https://example.com/task2
-#     total_allocation: 50
-# filter_set_id: filter-set-123  # Use predefined filter set
-# filter_set_version: 1
-# is_custom_screening: false
-# content_warnings:  # Content warning flags
-#   - VIOLENCE
-#   - EXPLICIT_LANGUAGE
-# content_warning_details: "May contain violent imagery"
-# metadata:  # Custom metadata
-#   project_id: "proj-123"
-#   researcher_notes: "Important study"
-# is_external_study_url_secure: false  # JWT security for external URLs

@@ -256,7 +256,7 @@ func TestSubmissionsConfigWithAutoRejectionCategories(t *testing.T) {
 		"submissions_config": {
 			"max_submissions_per_participant": 5,
 			"max_concurrent_submissions": 2,
-			"auto_rejection_categories": ["LOW_EFFORT", "SPAM"]
+			"auto_rejection_categories": ["EXCEPTIONALLY_FAST"]
 		}
 	}`
 
@@ -269,11 +269,11 @@ func TestSubmissionsConfigWithAutoRejectionCategories(t *testing.T) {
 	if study.SubmissionsConfig.MaxSubmissionsPerParticipant != 5 {
 		t.Errorf("expected max_submissions_per_participant to be 5, got %d", study.SubmissionsConfig.MaxSubmissionsPerParticipant)
 	}
-	if len(study.SubmissionsConfig.AutoRejectionCategories) != 2 {
+	if len(study.SubmissionsConfig.AutoRejectionCategories) != 1 {
 		t.Fatalf("expected 2 auto_rejection_categories, got %d", len(study.SubmissionsConfig.AutoRejectionCategories))
 	}
-	if study.SubmissionsConfig.AutoRejectionCategories[0] != "LOW_EFFORT" {
-		t.Errorf("expected first category to be LOW_EFFORT, got %s", study.SubmissionsConfig.AutoRejectionCategories[0])
+	if study.SubmissionsConfig.AutoRejectionCategories[0] != "EXCEPTIONALLY_FAST" {
+		t.Errorf("expected first category to be EXCEPTIONALLY_FAST, got %s", study.SubmissionsConfig.AutoRejectionCategories[0])
 	}
 }
 
