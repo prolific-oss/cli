@@ -73,8 +73,9 @@ type PageInstruction struct {
 	PlaceholderTextInput string `json:"placeholder_text_input,omitempty" yaml:"placeholder_text_input,omitempty" mapstructure:"placeholder_text_input"`
 
 	// Optional - for multiple_choice and multiple_choice_with_free_text types
-	AnswerLimit int                    `json:"answer_limit,omitempty" yaml:"answer_limit,omitempty" mapstructure:"answer_limit"`
-	Options     []MultipleChoiceOption `json:"options,omitempty" yaml:"options,omitempty" mapstructure:"options"`
+	AnswerLimit     int                    `json:"answer_limit,omitempty" yaml:"answer_limit,omitempty" mapstructure:"answer_limit"`
+	Options         []MultipleChoiceOption `json:"options,omitempty" yaml:"options,omitempty" mapstructure:"options"`
+	DisableDropdown *bool                  `json:"disable_dropdown,omitempty" yaml:"disable_dropdown,omitempty" mapstructure:"disable_dropdown"`
 
 	// Content block fields - for rich_text type
 	Content string `json:"content,omitempty" yaml:"content,omitempty" mapstructure:"content"`
