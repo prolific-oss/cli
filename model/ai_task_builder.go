@@ -52,9 +52,9 @@ const (
 
 // TaskDetails represents the task configuration details.
 type TaskDetails struct {
-	TaskName         string `json:"task_name"`
-	TaskIntroduction string `json:"task_introduction"`
-	TaskSteps        string `json:"task_steps"`
+	TaskName         string `json:"task_name" mapstructure:"task_name"`
+	TaskIntroduction string `json:"task_introduction" mapstructure:"task_introduction"`
+	TaskSteps        string `json:"task_steps" mapstructure:"task_steps"`
 }
 
 // InstructionOption represents an option for multiple choice instructions.
@@ -139,11 +139,42 @@ type CollectionPage struct {
 	PageItems []CollectionInstruction `json:"page_items" mapstructure:"page_items"`
 }
 
-// CollectionInstruction represents an instruction item within a collection page.
-type CollectionInstruction struct {
-	Order       int                 `json:"order" mapstructure:"order"`
-	Type        string              `json:"type" mapstructure:"type"`
-	Description string              `json:"description" mapstructure:"description"`
-	Options     []InstructionOption `json:"options,omitempty" mapstructure:"options"`
-	AnswerLimit *int                `json:"answer_limit,omitempty" mapstructure:"answer_limit"`
+// PageItemType constants for collection page items
+const (
+	// Instruction types (interactive)
+	PageItemTypeFreeText                   = "free_text"
+	PageItemTypeMultipleChoice             = "multiple_choice"
+	PageItemTypeMultipleChoiceWithFreeText = "multiple_choice_with_free_text"
+	PageItemTypeFileUpload                 = "file_upload"
+
+	// Content block types (non-interactive)
+	PageItemTypeRichText = "rich_text"
+	PageItemTypeImage    = "image"
+)
+
+// CollectionPageItem represents an item within a collection page.
+// This can be either an instruction (interactive) or a content block (non-interactive).
+// The Type field determines which other fields are relevant.
+type CollectionPageItem struct {
+	Order int    `json:"order" mapstructure:"order"`
+	Type  string `json:"type" mapstructure:"type"`
+
+	// Instruction fields (for free_text, multiple_choice, multiple_choice_with_free_text, file_upload)
+	Description          string              `json:"description,omitempty" mapstructure:"description"`
+	Options              []InstructionOption `json:"options,omitempty" mapstructure:"options"`
+	AnswerLimit          *int                `json:"answer_limit,omitempty" mapstructure:"answer_limit"`
+	PlaceholderTextInput string              `json:"placeholder_text_input,omitempty" mapstructure:"placeholder_text_input"`
+	DisableDropdown      *bool               `json:"disable_dropdown,omitempty" mapstructure:"disable_dropdown"`
+
+	// Content block fields (for rich_text)
+	Content string `json:"content,omitempty" mapstructure:"content"`
+
+	// Content block fields (for image)
+	URL     string `json:"url,omitempty" mapstructure:"url"`
+	AltText string `json:"alt_text,omitempty" mapstructure:"alt_text"`
+	Caption string `json:"caption,omitempty" mapstructure:"caption"`
 }
+
+// CollectionInstruction is an alias for CollectionPageItem for backward compatibility.
+// Deprecated: Use CollectionPageItem instead.
+type CollectionInstruction = CollectionPageItem

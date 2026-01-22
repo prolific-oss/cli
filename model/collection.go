@@ -40,9 +40,14 @@ type BaseEntity struct {
 type InstructionType string
 
 const (
+	// Instruction types (interactive - participants respond to these)
 	InstructionTypeFreeText                   InstructionType = "free_text"
 	InstructionTypeMultipleChoice             InstructionType = "multiple_choice"
 	InstructionTypeMultipleChoiceWithFreeText InstructionType = "multiple_choice_with_free_text"
+
+	// Content block types (non-interactive - for context or guidance)
+	ContentBlockTypeRichText InstructionType = "rich_text"
+	ContentBlockTypeImage    InstructionType = "image"
 )
 
 // MultipleChoiceOption represents an option for multiple choice instructions
@@ -52,21 +57,33 @@ type MultipleChoiceOption struct {
 	Heading string `json:"heading,omitempty" yaml:"heading,omitempty" mapstructure:"heading"` // Required for multiple_choice_with_free_text
 }
 
-// PageInstruction represents a single instruction item within a collection page.
+// PageInstruction represents a single page item within a collection page.
+// This can be either an instruction (interactive) or a content block (non-interactive).
 type PageInstruction struct {
 	BaseEntity `yaml:",inline" mapstructure:",squash"`
 
 	// Required fields
-	Type        InstructionType `json:"type" yaml:"type" mapstructure:"type"`
-	Description string          `json:"description" yaml:"description" mapstructure:"description"`
-	Order       int             `json:"order" yaml:"order" mapstructure:"order"`
+	Type  InstructionType `json:"type" yaml:"type" mapstructure:"type"`
+	Order int             `json:"order" yaml:"order" mapstructure:"order"`
+
+	// Required for instruction types (free_text, multiple_choice, multiple_choice_with_free_text, file_upload)
+	Description string `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description"`
 
 	// Optional - for free_text type
 	PlaceholderTextInput string `json:"placeholder_text_input,omitempty" yaml:"placeholder_text_input,omitempty" mapstructure:"placeholder_text_input"`
 
 	// Optional - for multiple_choice and multiple_choice_with_free_text types
-	AnswerLimit int                    `json:"answer_limit,omitempty" yaml:"answer_limit,omitempty" mapstructure:"answer_limit"`
-	Options     []MultipleChoiceOption `json:"options,omitempty" yaml:"options,omitempty" mapstructure:"options"`
+	AnswerLimit     int                    `json:"answer_limit,omitempty" yaml:"answer_limit,omitempty" mapstructure:"answer_limit"`
+	Options         []MultipleChoiceOption `json:"options,omitempty" yaml:"options,omitempty" mapstructure:"options"`
+	DisableDropdown *bool                  `json:"disable_dropdown,omitempty" yaml:"disable_dropdown,omitempty" mapstructure:"disable_dropdown"`
+
+	// Content block fields - for rich_text type
+	Content string `json:"content,omitempty" yaml:"content,omitempty" mapstructure:"content"`
+
+	// Content block fields - for image type
+	URL     string `json:"url,omitempty" yaml:"url,omitempty" mapstructure:"url"`
+	AltText string `json:"alt_text,omitempty" yaml:"alt_text,omitempty" mapstructure:"alt_text"`
+	Caption string `json:"caption,omitempty" yaml:"caption,omitempty" mapstructure:"caption"`
 }
 
 // Page represents a single page within a collection.
