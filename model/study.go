@@ -169,7 +169,7 @@ type CreateStudy struct {
 	// Access details collection ID: ID of the collection to attach to the study (for Taskflow studies)
 	AccessDetailsCollectionID string `json:"access_details_collection_id,omitempty" mapstructure:"access_details_collection_id"`
 
-	// Data collection method: "AI_TASK_BUILDER", "DC_TOOL", or "HUMAN_SIGNAL"
+	// Data collection method: "AI_TASK_BUILDER"
 	DataCollectionMethod string `json:"data_collection_method,omitempty" mapstructure:"data_collection_method"`
 	// Data collection ID: Project/collection/batch ID for data collection
 	DataCollectionID string `json:"data_collection_id,omitempty" mapstructure:"data_collection_id"`
