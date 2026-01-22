@@ -24,7 +24,7 @@ var studyTemplate = model.CreateStudy{
 	CompletionCode:          "COMPLE01",
 	TotalAvailablePlaces:    10,
 	EstimatedCompletionTime: 10,
-	MaximumAllowedTime:      10,
+	MaximumAllowedTime:      100,
 	Reward:                  400,
 	DeviceCompatibility:     []string{"desktop", "tablet", "mobile"},
 	PeripheralRequirements:  []string{"audio", "camera", "download", "microphone"},
@@ -46,7 +46,7 @@ var actualStudy = model.Study{
 	ExternalStudyURL:        "https://eggs-experriment.com?participant={{%PROLIFIC_PID%}}",
 	TotalAvailablePlaces:    10,
 	EstimatedCompletionTime: 10,
-	MaximumAllowedTime:      10,
+	MaximumAllowedTime:      100,
 	Reward:                  400,
 	DeviceCompatibility:     []string{"desktop", "tablet", "mobile"},
 }

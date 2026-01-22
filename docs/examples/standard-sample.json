@@ -7,7 +7,7 @@
   "completion_code": "COMPLE01",
   "total_available_places": 10,
   "estimated_completion_time": 10,
-  "maximum_allowed_time": 10,
+  "maximum_allowed_time": 100,
   "reward": 400,
   "device_compatibility": ["desktop", "tablet", "mobile"],
   "peripheral_requirements": ["audio", "camera", "download", "microphone"],
