@@ -147,39 +147,23 @@ go install github.com/prolific-oss/cli/cmd/prolific@latest
 
 ## Development with Claude Code
 
-When implementing new CLI commands, use the structured planning template:
-
-### 1. Create Your Plan
-
-Duplicate the template and fill in the details for your command:
-
-```shell
-cp .claude/templates/cli-command-plan.md {TICKET-NUMBER}-{resource}-{command}.md
-```
-
-### 2. Fill in the Template
-
-Update the template with:
-- Command type (LIST/VIEW/CREATE/UPDATE/ACTION)
-- API contract (Bruno file path or inline spec)
-- Required flags
-- Implementation details
-
-### 3. Execute with Claude Code
-
-Run Claude Code with your plan file:
+When implementing new CLI commands, use the `/cli-command-create` skill:
 
 ```shell
 claude
 ```
 
-Then reference your plan:
+Then invoke the skill:
 
 ```
-@{TICKET-NUMBER}-{resource}-{command}.md now do as it says
+/cli-command-create DCP-1234 collection get
 ```
 
-Claude will follow the structured checklist to implement the model, client, command, UI renderers, mocks, and tests.
+The skill will:
+1. Gather requirements (API contract, flags, command type)
+2. Present an implementation plan for approval
+3. Implement model, client, command, UI renderers, mocks, and tests
+4. Verify with `make test` and `make lint`
 
 ## Release Process
 
