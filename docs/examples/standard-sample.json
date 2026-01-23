@@ -4,7 +4,17 @@
   "description": "This is my first standard sample study on the Prolific system.",
   "external_study_url": "https://eggs-experriment.com?participant={{%PROLIFIC_PID%}}",
   "prolific_id_option": "url_parameters",
-  "completion_code": "COMPLE01",
+  "completion_codes": [
+    {
+      "code": "COMPLE01",
+      "code_type": "COMPLETED",
+      "actions": [
+        {
+          "action": "AUTOMATICALLY_APPROVE"
+        }
+      ]
+    }
+  ],
   "total_available_places": 10,
   "estimated_completion_time": 10,
   "maximum_allowed_time": 100,

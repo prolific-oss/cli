@@ -16,12 +16,22 @@ import (
 )
 
 var studyTemplate = model.CreateStudy{
-	Name:                    "My first standard sample",
-	InternalName:            "Standard sample",
-	Description:             "This is my first standard sample study on the Prolific system.",
-	ExternalStudyURL:        "https://eggs-experriment.com?participant={{%PROLIFIC_PID%}}",
-	ProlificIDOption:        "url_parameters",
-	CompletionCode:          "COMPLE01",
+	Name:             "My first standard sample",
+	InternalName:     "Standard sample",
+	Description:      "This is my first standard sample study on the Prolific system.",
+	ExternalStudyURL: "https://eggs-experriment.com?participant={{%PROLIFIC_PID%}}",
+	ProlificIDOption: "url_parameters",
+	CompletionCodes: []model.CompletionCode{
+		{
+			Code:     "COMPLE01",
+			CodeType: "COMPLETED",
+			Actions: []model.CompletionCodeAction{
+				{
+					Action: "AUTOMATICALLY_APPROVE",
+				},
+			},
+		},
+	},
 	TotalAvailablePlaces:    10,
 	EstimatedCompletionTime: 10,
 	MaximumAllowedTime:      100,
