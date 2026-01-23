@@ -1,21 +1,39 @@
 ---
 name: cli-command-create
-description: Create a new CLI command with planning and implementation. Use when adding a new command to the Prolific CLI.
-disable-model-invocation: true
-argument-hint: <ticket> <resource> <command> [command-type]
+description: Create a new CLI command with planning and implementation for the Prolific CLI.
+argument-hint: "[ticket] [resource] [command] [command-type]"
+user-invocable: true
 ---
 
 # CLI Command Creator
+
+## When to Use This Skill
+
+Invoke this skill when the user:
+- Asks to "create a command", "add a command", or "implement a command" for the CLI
+- Mentions adding new CLI functionality (e.g., "create me a command that publishes collections")
+- Uses the slash command /cli-command-create
+
+---
 
 Create a new CLI command for the Prolific CLI from start to finish.
 
 ## Arguments
 
-Parse from `$ARGUMENTS`:
+Arguments may be provided via `$ARGUMENTS` or gathered interactively.
+
+**Expected arguments:**
 - `ticket` - Jira ticket number (e.g., DCP-2154)
 - `resource` - Resource name (e.g., collection, study, workspace)
 - `command` - Command name (e.g., list, get, create, update)
 - `command-type` - Optional: LIST | VIEW | CREATE | UPDATE | ACTION (will infer if not provided)
+
+**If arguments are missing or `$ARGUMENTS` is empty, use the AskUserQuestion tool to gather them:**
+
+1. First ask for the **Jira ticket number** (e.g., "DCP-2154")
+2. Then ask for the **resource name** (e.g., "collection", "study", "workspace")
+3. Then ask for the **command name** (e.g., "list", "get", "create", "publish")
+4. Finally ask for the **command type** with options: LIST, VIEW, CREATE, UPDATE, ACTION (or let Claude infer from the command name)
 
 ---
 
@@ -26,6 +44,11 @@ Parse from `$ARGUMENTS`:
 Ask the user to provide ONE of:
 - **Bruno file path** - e.g., `path/to/request.bru`
 - **Inline API contract** - endpoint, request/response examples, error codes
+
+Also ask if they have any **acceptance criteria** (optional):
+- Feature requirements or user stories
+- Expected behavior descriptions
+- Edge cases to handle
 
 ### 1.2 Determine Command Type
 

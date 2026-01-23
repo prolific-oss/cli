@@ -147,23 +147,57 @@ go install github.com/prolific-oss/cli/cmd/prolific@latest
 
 ## Development with Claude Code
 
-When implementing new CLI commands, use the `/cli-command-create` skill:
+When implementing new CLI commands, use the `/cli-command-create` skill.
 
-```shell
-claude
-```
+### Option 1: Natural Language
 
-Then invoke the skill:
+Simply describe what command you want to create:
 
 ```
-/cli-command-create DCP-1234 collection get
+Create a new command to publish collections
 ```
 
-The skill will:
-1. Gather requirements (API contract, flags, command type)
-2. Present an implementation plan for approval
-3. Implement model, client, command, UI renderers, mocks, and tests
-4. Verify with `make test` and `make lint`
+```
+Add a command that lets users delete studies
+```
+
+Claude will ask follow-up questions to gather the ticket number, API contract, and other details.
+
+### Option 2: Slash Command with Arguments
+
+Use the slash command with optional arguments:
+
+```
+/cli-command-create
+```
+
+Or provide arguments directly (ticket, resource, command, command-type):
+
+```
+/cli-command-create DCP-2190 collection publish CREATE
+```
+
+```
+/cli-command-create DCP-2200 study delete ACTION
+```
+
+**Argument order:** `[ticket] [resource] [command] [command-type]`
+
+| Argument | Description | Examples |
+|----------|-------------|----------|
+| `ticket` | Jira ticket number | DCP-2190 |
+| `resource` | Resource name | collection, study, workspace |
+| `command` | Command name | list, get, create, publish |
+| `command-type` | Command type (optional) | LIST, VIEW, CREATE, UPDATE, ACTION |
+
+If any arguments are omitted, Claude will ask for them interactively.
+
+### What the Skill Does
+
+1. Gathers requirements (API contract, flags, command type)
+2. Presents an implementation plan for approval
+3. Implements model, client, command, UI renderers, mocks, and tests
+4. Verifies with `make test` and `make lint`
 
 ## Release Process
 
