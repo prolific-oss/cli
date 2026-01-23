@@ -1,4 +1,4 @@
-# CRUSH.md - Prolific CLI Development Guide
+# Prolific CLI Development Guide
 
 ## Project Overview
 
