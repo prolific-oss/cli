@@ -147,39 +147,57 @@ go install github.com/prolific-oss/cli/cmd/prolific@latest
 
 ## Development with Claude Code
 
-When implementing new CLI commands, use the structured planning template:
+When implementing new CLI commands, use the `/cli-command-create` skill.
 
-### 1. Create Your Plan
+### Option 1: Natural Language
 
-Duplicate the template and fill in the details for your command:
-
-```shell
-cp .claude/templates/cli-command-plan.md {TICKET-NUMBER}-{resource}-{command}.md
-```
-
-### 2. Fill in the Template
-
-Update the template with:
-- Command type (LIST/VIEW/CREATE/UPDATE/ACTION)
-- API contract (Bruno file path or inline spec)
-- Required flags
-- Implementation details
-
-### 3. Execute with Claude Code
-
-Run Claude Code with your plan file:
-
-```shell
-claude
-```
-
-Then reference your plan:
+Simply describe what command you want to create:
 
 ```
-@{TICKET-NUMBER}-{resource}-{command}.md now do as it says
+Create a new command to publish collections
 ```
 
-Claude will follow the structured checklist to implement the model, client, command, UI renderers, mocks, and tests.
+```
+Add a command that lets users delete studies
+```
+
+Claude will ask follow-up questions to gather the ticket number, API contract, and other details.
+
+### Option 2: Slash Command with Arguments
+
+Use the slash command with optional arguments:
+
+```
+/cli-command-create
+```
+
+Or provide arguments directly (ticket, resource, command, command-type):
+
+```
+/cli-command-create DCP-2190 collection publish CREATE
+```
+
+```
+/cli-command-create DCP-2200 study delete ACTION
+```
+
+**Argument order:** `[ticket] [resource] [command] [command-type]`
+
+| Argument | Description | Examples |
+|----------|-------------|----------|
+| `ticket` | Jira ticket number | DCP-2190 |
+| `resource` | Resource name | collection, study, workspace |
+| `command` | Command name | list, get, create, publish |
+| `command-type` | Command type (optional) | LIST, VIEW, CREATE, UPDATE, ACTION |
+
+If any arguments are omitted, Claude will ask for them interactively.
+
+### What the Skill Does
+
+1. Gathers requirements (API contract, flags, command type)
+2. Presents an implementation plan for approval
+3. Implements model, client, command, UI renderers, mocks, and tests
+4. Verifies with `make test` and `make lint`
 
 ## Release Process
 
