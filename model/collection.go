@@ -44,6 +44,7 @@ const (
 	InstructionTypeFreeText                   InstructionType = "free_text"
 	InstructionTypeMultipleChoice             InstructionType = "multiple_choice"
 	InstructionTypeMultipleChoiceWithFreeText InstructionType = "multiple_choice_with_free_text"
+	InstructionTypeMultipleChoiceWithUnit     InstructionType = "multiple_choice_with_unit"
 
 	// Content block types (non-interactive - for context or guidance)
 	ContentBlockTypeRichText InstructionType = "rich_text"
@@ -57,6 +58,12 @@ type MultipleChoiceOption struct {
 	Heading string `json:"heading,omitempty" yaml:"heading,omitempty" mapstructure:"heading"` // Required for multiple_choice_with_free_text
 }
 
+// UnitOption represents a unit option for multiple_choice_with_unit instructions
+type UnitOption struct {
+	Label string `json:"label" yaml:"label" mapstructure:"label"`
+	Value string `json:"value" yaml:"value" mapstructure:"value"`
+}
+
 // PageInstruction represents a single page item within a collection page.
 // This can be either an instruction (interactive) or a content block (non-interactive).
 type PageInstruction struct {
@@ -66,7 +73,7 @@ type PageInstruction struct {
 	Type  InstructionType `json:"type" yaml:"type" mapstructure:"type"`
 	Order int             `json:"order" yaml:"order" mapstructure:"order"`
 
-	// Required for instruction types (free_text, multiple_choice, multiple_choice_with_free_text, file_upload)
+	// Required for instruction types (free_text, multiple_choice, multiple_choice_with_free_text, multiple_choice_with_unit, file_upload)
 	Description string `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description"`
 
 	// Optional - for free_text type
@@ -76,6 +83,10 @@ type PageInstruction struct {
 	AnswerLimit     int                    `json:"answer_limit,omitempty" yaml:"answer_limit,omitempty" mapstructure:"answer_limit"`
 	Options         []MultipleChoiceOption `json:"options,omitempty" yaml:"options,omitempty" mapstructure:"options"`
 	DisableDropdown *bool                  `json:"disable_dropdown,omitempty" yaml:"disable_dropdown,omitempty" mapstructure:"disable_dropdown"`
+
+	// Optional - for multiple_choice_with_unit type
+	UnitOptions []UnitOption `json:"unit_options,omitempty" yaml:"unit_options,omitempty" mapstructure:"unit_options"`
+	DefaultUnit string       `json:"default_unit,omitempty" yaml:"default_unit,omitempty" mapstructure:"default_unit"`
 
 	// Content block fields - for rich_text type
 	Content string `json:"content,omitempty" yaml:"content,omitempty" mapstructure:"content"`

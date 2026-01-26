@@ -48,6 +48,8 @@ const (
 	InstructionTypeFreeText InstructionType = "free_text"
 	// InstructionTypeMultipleChoiceWithFreeText represents a multiple choice instruction with free text.
 	InstructionTypeMultipleChoiceWithFreeText InstructionType = "multiple_choice_with_free_text"
+	// InstructionTypeMultipleChoiceWithUnit represents a multiple choice instruction with unit selection.
+	InstructionTypeMultipleChoiceWithUnit InstructionType = "multiple_choice_with_unit"
 )
 
 // InstructionOption represents an option for multiple choice instructions
@@ -55,6 +57,12 @@ type InstructionOption struct {
 	Label   string `json:"label"`
 	Value   string `json:"value"`
 	Heading string `json:"heading,omitempty"`
+}
+
+// UnitOption represents a unit option for multiple_choice_with_unit instructions
+type UnitOption struct {
+	Label string `json:"label"`
+	Value string `json:"value"`
 }
 
 // AnswerLimit represents the answer limit for multiple choice with free text instructions
@@ -70,6 +78,8 @@ type Instruction struct {
 	Description string              `json:"description"`
 	Options     []InstructionOption `json:"options,omitempty"`
 	AnswerLimit *AnswerLimit        `json:"answer_limit,omitempty"`
+	UnitOptions []UnitOption        `json:"unit_options,omitempty"`
+	DefaultUnit string              `json:"default_unit,omitempty"`
 }
 
 // CreateAITaskBuilderInstructionsPayload represents the JSON payload for creating AI Task Builder instructions

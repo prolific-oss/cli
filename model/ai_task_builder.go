@@ -73,6 +73,8 @@ type Instruction struct {
 	CreatedAt   string              `json:"created_at"`
 	Description string              `json:"description"`
 	Options     []InstructionOption `json:"options,omitempty"`
+	UnitOptions []UnitOption        `json:"unit_options,omitempty"`
+	DefaultUnit string              `json:"default_unit,omitempty"`
 }
 
 // AITaskBuilderResponse represents a response from an AI Task Builder batch task.
@@ -95,7 +97,8 @@ type AITaskBuilderResponseData struct {
 	InstructionID string                      `json:"instruction_id"`
 	Type          AITaskBuilderResponseType   `json:"type"`
 	Text          *string                     `json:"text,omitempty"`   // For free_text and multiple_choice_with_free_text
-	Answer        []AITaskBuilderAnswerOption `json:"answer,omitempty"` // For multiple_choice and multiple_choice_with_free_text
+	Answer        []AITaskBuilderAnswerOption `json:"answer,omitempty"` // For multiple_choice, multiple_choice_with_free_text, and multiple_choice_with_unit
+	Unit          *string                     `json:"unit,omitempty"`   // For multiple_choice_with_unit - the selected unit value
 }
 
 // AITaskBuilderResponseType represents the type of response.
@@ -105,6 +108,7 @@ const (
 	AITaskBuilderResponseTypeFreeText                   AITaskBuilderResponseType = "free_text"
 	AITaskBuilderResponseTypeMultipleChoice             AITaskBuilderResponseType = "multiple_choice"
 	AITaskBuilderResponseTypeMultipleChoiceWithFreeText AITaskBuilderResponseType = "multiple_choice_with_free_text"
+	AITaskBuilderResponseTypeMultipleChoiceWithUnit     AITaskBuilderResponseType = "multiple_choice_with_unit"
 )
 
 // AITaskBuilderAnswerOption represents an answer option for multiple choice responses.
@@ -145,6 +149,7 @@ const (
 	PageItemTypeFreeText                   = "free_text"
 	PageItemTypeMultipleChoice             = "multiple_choice"
 	PageItemTypeMultipleChoiceWithFreeText = "multiple_choice_with_free_text"
+	PageItemTypeMultipleChoiceWithUnit     = "multiple_choice_with_unit"
 	PageItemTypeFileUpload                 = "file_upload"
 
 	// Content block types (non-interactive)
@@ -159,12 +164,16 @@ type CollectionPageItem struct {
 	Order int    `json:"order" mapstructure:"order"`
 	Type  string `json:"type" mapstructure:"type"`
 
-	// Instruction fields (for free_text, multiple_choice, multiple_choice_with_free_text, file_upload)
+	// Instruction fields (for free_text, multiple_choice, multiple_choice_with_free_text, multiple_choice_with_unit, file_upload)
 	Description          string              `json:"description,omitempty" mapstructure:"description"`
 	Options              []InstructionOption `json:"options,omitempty" mapstructure:"options"`
 	AnswerLimit          *int                `json:"answer_limit,omitempty" mapstructure:"answer_limit"`
 	PlaceholderTextInput string              `json:"placeholder_text_input,omitempty" mapstructure:"placeholder_text_input"`
 	DisableDropdown      *bool               `json:"disable_dropdown,omitempty" mapstructure:"disable_dropdown"`
+
+	// Unit fields (for multiple_choice_with_unit)
+	UnitOptions []UnitOption `json:"unit_options,omitempty" mapstructure:"unit_options"`
+	DefaultUnit string       `json:"default_unit,omitempty" mapstructure:"default_unit"`
 
 	// Content block fields (for rich_text)
 	Content string `json:"content,omitempty" mapstructure:"content"`
