@@ -575,3 +575,46 @@ func TestNewBatchInstructionsCommandMultipleChoiceWithUnitMissingOptions(t *test
 		t.Fatalf("expected error about missing options; got %s", err.Error())
 	}
 }
+
+func TestNewBatchInstructionsCommandMultipleChoiceWithUnitInvalidDefaultUnit(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	batchID := "01954894-65b3-779e-aaf6-348698e23703"
+
+	var buf bytes.Buffer
+	writer := bufio.NewWriter(&buf)
+
+	cmd := aitaskbuilder.NewBatchInstructionsCommand(c, writer)
+
+	// default_unit doesn't match any unit_options value
+	instructionsJSON := `[{
+		"type": "multiple_choice_with_unit",
+		"created_by": "Sean",
+		"description": "What is your height?",
+		"options": [
+			{"label": "150", "value": "150"},
+			{"label": "160", "value": "160"}
+		],
+		"unit_options": [
+			{"label": "CM", "value": "cm"},
+			{"label": "Inches", "value": "in"}
+		],
+		"default_unit": "meters"
+	}]`
+
+	cmd.SetArgs([]string{
+		"-b", batchID,
+		"-j", instructionsJSON,
+	})
+
+	err := cmd.Execute()
+	if err == nil {
+		t.Fatal("expected an error; got nil")
+	}
+
+	if !strings.Contains(err.Error(), "default_unit 'meters' must match one of the unit_options values") {
+		t.Fatalf("expected error about invalid default_unit; got %s", err.Error())
+	}
+}

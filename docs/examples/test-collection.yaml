@@ -1,0 +1,143 @@
+workspace_id: 679271425fe00981084a5f58
+name: Tell us about your injury
+collection_items:
+  - order: 0
+    page_items:
+      - order: 0
+        type: multiple_choice_with_unit
+        description: What is your height?
+        options:
+          - label: "150"
+            value: "150"
+          - label: "155"
+            value: "155"
+          - label: "160"
+            value: "160"
+          - label: "165"
+            value: "165"
+          - label: "170"
+            value: "170"
+          - label: "175"
+            value: "175"
+          - label: "180"
+            value: "180"
+          - label: "185"
+            value: "185"
+          - label: "190"
+            value: "190"
+        unit_options:
+          - label: CM
+            value: cm
+          - label: Inches
+            value: in
+        default_unit: cm
+      - order: 1
+        type: multiple_choice_with_unit
+        description: What is your weight?
+        options:
+          - label: "40"
+            value: "40"
+          - label: "45"
+            value: "45"
+          - label: "50"
+            value: "50"
+          - label: "55"
+            value: "55"
+          - label: "60"
+            value: "60"
+          - label: "65"
+            value: "65"
+          - label: "70"
+            value: "70"
+          - label: "75"
+            value: "75"
+          - label: "80"
+            value: "80"
+          - label: "85"
+            value: "85"
+          - label: "90"
+            value: "90"
+        unit_options:
+          - label: KG
+            value: kg
+          - label: lbs
+            value: lbs
+        default_unit: kg
+      - order: 2
+        type: image
+        url: https://i.postimg.cc/Bv5PKTM3/Screenshot-2025-12-01-at-14-11-02.png
+        alt_text: Skin tone scale showing colors numbered 1 through 10, from lightest to darkest
+        caption: Skin tone reference scale
+      - order: 3
+        type: multiple_choice
+        description: Look at the healthy skin next to your injury (or where the injury used to be). Using the scale above, pick the number (1-10) that most closely matches your skin.
+        options:
+          - label: "1"
+            value: "1"
+          - label: "2"
+            value: "2"
+          - label: "3"
+            value: "3"
+          - label: "4"
+            value: "4"
+          - label: "5"
+            value: "5"
+          - label: "6"
+            value: "6"
+          - label: "7"
+            value: "7"
+          - label: "8"
+            value: "8"
+          - label: "9"
+            value: "9"
+          - label: "10"
+            value: "10"
+        answer_limit: 1
+      - order: 4
+        type: multiple_choice
+        description: Where on your body is the injury?
+        options:
+          - label: Head
+            value: head
+          - label: Face
+            value: face
+          - label: Neck
+            value: neck
+          - label: Chest
+            value: chest
+          - label: Back
+            value: back
+          - label: Abdomen
+            value: abdomen
+          - label: Left Arm
+            value: left_arm
+          - label: Right Arm
+            value: right_arm
+          - label: Left Hand
+            value: left_hand
+          - label: Right Hand
+            value: right_hand
+          - label: Left Leg
+            value: left_leg
+          - label: Right Leg
+            value: right_leg
+          - label: Left Foot
+            value: left_foot
+          - label: Right Foot
+            value: right_foot
+        answer_limit: 1
+      - order: 5
+        type: multiple_choice
+        description: "At any point, did the injury break the skin? (For example: a cut, scrape, or scab)"
+        options:
+          - label: "Yes"
+            value: "yes"
+          - label: "No"
+            value: "no"
+        answer_limit: 1
+      - order: 6
+        type: free_text
+        description: "What type of injury do you think this is? Briefly describe in your own words. (For example: bruise, cut, scrape, scratch, scar, surgical wound, burn, etc.)"
+      - order: 7
+        type: free_text
+        description: "What caused the injury? Briefly describe in your own words. (For example: fell, hit a wall, cut with a knife, dog bite, human bite, etc.)"
