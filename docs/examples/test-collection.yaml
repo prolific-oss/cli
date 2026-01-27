@@ -1,5 +1,9 @@
 workspace_id: 679271425fe00981084a5f58
 name: Tell us about your injury
+task_details:
+  task_name: Injury Assessment Survey
+  task_introduction: "<p>Please help us by providing information about your injury. Your responses will help improve our understanding of various injury types.</p>"
+  task_steps: "<ol><li>Provide your physical measurements</li><li>Identify your skin tone using the reference scale</li><li>Describe your injury location and type</li><li>Answer all questions accurately</li></ol>"
 collection_items:
   - order: 0
     page_items:

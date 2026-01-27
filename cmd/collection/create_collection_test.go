@@ -46,6 +46,12 @@ const collectionItems = `[
 	}
 ]`
 
+const taskDetails = `{
+    "task_name": "Test Task Name",
+    "task_introduction": "Test task introduction",
+    "task_steps": "Test task steps"
+  }`
+
 const collectionItemsWithContentBlocks = `[
     {
       "order": 0,
@@ -106,8 +112,9 @@ func TestNewCreateCollectionCommandCallsAPIWithJSON(t *testing.T) {
 	templateContent := fmt.Sprintf(`{
   "workspace_id": "6716028cd934ced9bac18658",
   "name": "test-collection",
-	"collection_items": %s
-}`, collectionItems)
+  "task_details": %s,
+  "collection_items": %s
+}`, taskDetails, collectionItems)
 
 	err := os.WriteFile(templateFile, []byte(templateContent), 0600)
 	if err != nil {
@@ -337,8 +344,9 @@ func TestNewCreateCollectionCommandHandlesAPIError(t *testing.T) {
 	templateContent := fmt.Sprintf(`{
   "workspace_id": "6716028cd934ced9bac18658",
   "name": "test-collection",
+  "task_details": %s,
   "collection_items": %s
-}`, collectionItems)
+}`, taskDetails, collectionItems)
 
 	err := os.WriteFile(templateFile, []byte(templateContent), 0600)
 	if err != nil {
@@ -529,8 +537,9 @@ func TestNewCreateCollectionCommandWithContentBlocks(t *testing.T) {
 	templateContent := fmt.Sprintf(`{
   "workspace_id": "6716028cd934ced9bac18658",
   "name": "test-collection-with-content-blocks",
+  "task_details": %s,
   "collection_items": %s
-}`, collectionItemsWithContentBlocks)
+}`, taskDetails, collectionItemsWithContentBlocks)
 
 	err := os.WriteFile(templateFile, []byte(templateContent), 0600)
 	if err != nil {
@@ -717,5 +726,145 @@ func TestNewCreateCollectionCommandWithTaskDetails(t *testing.T) {
 
 	if capturedPayload.TaskDetails.TaskSteps != "1. Read the content on each page\n2. Answer the questions thoughtfully\n3. Submit your responses" {
 		t.Fatalf("expected task_steps to be set; got '%s'", capturedPayload.TaskDetails.TaskSteps)
+	}
+}
+
+func TestNewCreateCollectionCommandRequiresTaskDetails(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	tmpDir := t.TempDir()
+	templateFile := filepath.Join(tmpDir, "collection.json")
+	templateContent := fmt.Sprintf(`{
+  "workspace_id": "6716028cd934ced9bac18658",
+  "name": "test-collection",
+  "collection_items": %s
+}`, collectionItems)
+
+	err := os.WriteFile(templateFile, []byte(templateContent), 0600)
+	if err != nil {
+		t.Fatalf("failed to create temporary file: %s", err.Error())
+	}
+
+	cmd := collection.NewCreateCollectionCommand(c, os.Stdout)
+	cmd.SetArgs([]string{"-t", templateFile})
+	err = cmd.Execute()
+
+	if err == nil {
+		t.Fatal("expected error when task_details is missing")
+	}
+
+	expected := collection.ErrTaskDetailsRequired
+	if !strings.Contains(err.Error(), expected) {
+		t.Fatalf("expected error to contain '%s', got '%s'", expected, err.Error())
+	}
+}
+
+func TestNewCreateCollectionCommandRequiresTaskName(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	tmpDir := t.TempDir()
+	templateFile := filepath.Join(tmpDir, "collection.json")
+	templateContent := fmt.Sprintf(`{
+  "workspace_id": "6716028cd934ced9bac18658",
+  "name": "test-collection",
+  "task_details": {
+    "task_introduction": "Introduction",
+    "task_steps": "Steps"
+  },
+  "collection_items": %s
+}`, collectionItems)
+
+	err := os.WriteFile(templateFile, []byte(templateContent), 0600)
+	if err != nil {
+		t.Fatalf("failed to create temporary file: %s", err.Error())
+	}
+
+	cmd := collection.NewCreateCollectionCommand(c, os.Stdout)
+	cmd.SetArgs([]string{"-t", templateFile})
+	err = cmd.Execute()
+
+	if err == nil {
+		t.Fatal("expected error when task_name is missing")
+	}
+
+	expected := collection.ErrTaskNameRequired
+	if !strings.Contains(err.Error(), expected) {
+		t.Fatalf("expected error to contain '%s', got '%s'", expected, err.Error())
+	}
+}
+
+func TestNewCreateCollectionCommandRequiresTaskIntroduction(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	tmpDir := t.TempDir()
+	templateFile := filepath.Join(tmpDir, "collection.json")
+	templateContent := fmt.Sprintf(`{
+  "workspace_id": "6716028cd934ced9bac18658",
+  "name": "test-collection",
+  "task_details": {
+    "task_name": "Task Name",
+    "task_steps": "Steps"
+  },
+  "collection_items": %s
+}`, collectionItems)
+
+	err := os.WriteFile(templateFile, []byte(templateContent), 0600)
+	if err != nil {
+		t.Fatalf("failed to create temporary file: %s", err.Error())
+	}
+
+	cmd := collection.NewCreateCollectionCommand(c, os.Stdout)
+	cmd.SetArgs([]string{"-t", templateFile})
+	err = cmd.Execute()
+
+	if err == nil {
+		t.Fatal("expected error when task_introduction is missing")
+	}
+
+	expected := collection.ErrTaskIntroductionRequired
+	if !strings.Contains(err.Error(), expected) {
+		t.Fatalf("expected error to contain '%s', got '%s'", expected, err.Error())
+	}
+}
+
+func TestNewCreateCollectionCommandRequiresTaskSteps(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	tmpDir := t.TempDir()
+	templateFile := filepath.Join(tmpDir, "collection.json")
+	templateContent := fmt.Sprintf(`{
+  "workspace_id": "6716028cd934ced9bac18658",
+  "name": "test-collection",
+  "task_details": {
+    "task_name": "Task Name",
+    "task_introduction": "Introduction"
+  },
+  "collection_items": %s
+}`, collectionItems)
+
+	err := os.WriteFile(templateFile, []byte(templateContent), 0600)
+	if err != nil {
+		t.Fatalf("failed to create temporary file: %s", err.Error())
+	}
+
+	cmd := collection.NewCreateCollectionCommand(c, os.Stdout)
+	cmd.SetArgs([]string{"-t", templateFile})
+	err = cmd.Execute()
+
+	if err == nil {
+		t.Fatal("expected error when task_steps is missing")
+	}
+
+	expected := collection.ErrTaskStepsRequired
+	if !strings.Contains(err.Error(), expected) {
+		t.Fatalf("expected error to contain '%s', got '%s'", expected, err.Error())
 	}
 }
