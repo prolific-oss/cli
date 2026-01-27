@@ -48,6 +48,11 @@ const (
 	TransitionStudyStop = "STOP"
 )
 
+const (
+	// DataCollectionMethodAITBCollection is the data collection method for AI Task Builder Collections
+	DataCollectionMethodAITBCollection = "AI_TASK_BUILDER_COLLECTION"
+)
+
 // TransitionList is the list of transitions we can use on a Study.
 var TransitionList = []string{
 	TransitionStudyPublish,
