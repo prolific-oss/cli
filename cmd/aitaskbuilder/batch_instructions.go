@@ -215,18 +215,19 @@ func validateInstructions(instructions client.CreateAITaskBuilderInstructionsPay
 					return fmt.Errorf("instruction %d, unit_option %d: value is required", i+1, j+1)
 				}
 			}
-			// Validate default_unit matches one of the unit_options values
-			if instruction.DefaultUnit != "" {
-				validUnit := false
-				for _, opt := range instruction.UnitOptions {
-					if opt.Value == instruction.DefaultUnit {
-						validUnit = true
-						break
-					}
+			// Validate default_unit is required and matches one of the unit_options values
+			if instruction.DefaultUnit == "" {
+				return fmt.Errorf("instruction %d: default_unit is required for type 'multiple_choice_with_unit'", i+1)
+			}
+			validUnit := false
+			for _, opt := range instruction.UnitOptions {
+				if opt.Value == instruction.DefaultUnit {
+					validUnit = true
+					break
 				}
-				if !validUnit {
-					return fmt.Errorf("instruction %d: default_unit '%s' must match one of the unit_options values", i+1, instruction.DefaultUnit)
-				}
+			}
+			if !validUnit {
+				return fmt.Errorf("instruction %d: default_unit '%s' must match one of the unit_options values", i+1, instruction.DefaultUnit)
 			}
 		}
 

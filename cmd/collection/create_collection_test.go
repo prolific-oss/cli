@@ -110,11 +110,11 @@ func TestNewCreateCollectionCommandCallsAPIWithJSON(t *testing.T) {
 	tmpDir := t.TempDir()
 	templateFile := filepath.Join(tmpDir, "collection.json")
 	templateContent := fmt.Sprintf(`{
-  "workspace_id": "6716028cd934ced9bac18658",
+  "workspace_id": "%s",
   "name": "test-collection",
   "task_details": %s,
   "collection_items": %s
-}`, taskDetails, collectionItems)
+}`, testWorkspaceID, taskDetails, collectionItems)
 
 	err := os.WriteFile(templateFile, []byte(templateContent), 0600)
 	if err != nil {
@@ -125,7 +125,7 @@ func TestNewCreateCollectionCommandCallsAPIWithJSON(t *testing.T) {
 	response := client.CreateAITaskBuilderCollectionResponse{
 		ID:            "collection-123",
 		Name:          "test-collection",
-		WorkspaceID:   "6716028cd934ced9bac18658",
+		WorkspaceID:   testWorkspaceID,
 		SchemaVersion: 1,
 		CreatedBy:     "user-456",
 		CollectionItems: []model.CollectionPage{
@@ -169,7 +169,7 @@ func TestNewCreateCollectionCommandCallsAPIWithJSON(t *testing.T) {
 		"Collection created successfully!",
 		"ID:              collection-123",
 		"Name:            test-collection",
-		"Workspace ID:    6716028cd934ced9bac18658",
+		"Workspace ID:    " + testWorkspaceID,
 		"Schema Version:  1",
 		"Created By:      user-456",
 		"Pages:           1",
@@ -190,7 +190,7 @@ func TestNewCreateCollectionCommandCallsAPIWithYAML(t *testing.T) {
 	// Create temporary YAML test file
 	tmpDir := t.TempDir()
 	templateFile := filepath.Join(tmpDir, "collection.yaml")
-	templateContent := `workspace_id: 6716028cd934ced9bac18658
+	templateContent := `workspace_id: ` + testWorkspaceID + `
 name: yaml-test-collection
 task_details:
   task_name: YAML Task Name
@@ -233,7 +233,7 @@ collection_items:
 	response := client.CreateAITaskBuilderCollectionResponse{
 		ID:              "collection-yaml-123",
 		Name:            "yaml-test-collection",
-		WorkspaceID:     "6716028cd934ced9bac18658",
+		WorkspaceID:     testWorkspaceID,
 		SchemaVersion:   1,
 		CreatedBy:       "user-789",
 		CollectionItems: []model.CollectionPage{},
@@ -342,11 +342,11 @@ func TestNewCreateCollectionCommandHandlesAPIError(t *testing.T) {
 	tmpDir := t.TempDir()
 	templateFile := filepath.Join(tmpDir, "collection.json")
 	templateContent := fmt.Sprintf(`{
-  "workspace_id": "6716028cd934ced9bac18658",
+  "workspace_id": "%s",
   "name": "test-collection",
   "task_details": %s,
   "collection_items": %s
-}`, taskDetails, collectionItems)
+}`, testWorkspaceID, taskDetails, collectionItems)
 
 	err := os.WriteFile(templateFile, []byte(templateContent), 0600)
 	if err != nil {
@@ -396,9 +396,9 @@ func TestNewCreateCollectionCommandRequiresName(t *testing.T) {
 	tmpDir := t.TempDir()
 	templateFile := filepath.Join(tmpDir, "collection.json")
 	templateContent := fmt.Sprintf(`{
-  "workspace_id": "6716028cd934ced9bac18658",
+  "workspace_id": "%s",
   "collection_items": %s
-}`, collectionItems)
+}`, testWorkspaceID, collectionItems)
 
 	err := os.WriteFile(templateFile, []byte(templateContent), 0600)
 	if err != nil {
@@ -459,7 +459,7 @@ func TestNewCreateCollectionCommandRequiresItems(t *testing.T) {
 	templateFile := filepath.Join(tmpDir, "collection.json")
 	templateContent := `{
   "name": "test-collection",
-	"workspace_id": "6716028cd934ced9bac18658",
+	"workspace_id": "` + testWorkspaceID + `",
   "collection_items": []
 }`
 
@@ -535,11 +535,11 @@ func TestNewCreateCollectionCommandWithContentBlocks(t *testing.T) {
 	tmpDir := t.TempDir()
 	templateFile := filepath.Join(tmpDir, "collection.json")
 	templateContent := fmt.Sprintf(`{
-  "workspace_id": "6716028cd934ced9bac18658",
+  "workspace_id": "%s",
   "name": "test-collection-with-content-blocks",
   "task_details": %s,
   "collection_items": %s
-}`, taskDetails, collectionItemsWithContentBlocks)
+}`, testWorkspaceID, taskDetails, collectionItemsWithContentBlocks)
 
 	err := os.WriteFile(templateFile, []byte(templateContent), 0600)
 	if err != nil {
@@ -549,7 +549,7 @@ func TestNewCreateCollectionCommandWithContentBlocks(t *testing.T) {
 	response := client.CreateAITaskBuilderCollectionResponse{
 		ID:            "collection-content-blocks-123",
 		Name:          "test-collection-with-content-blocks",
-		WorkspaceID:   "6716028cd934ced9bac18658",
+		WorkspaceID:   testWorkspaceID,
 		SchemaVersion: 1,
 		CreatedBy:     "user-456",
 		CollectionItems: []model.CollectionPage{
@@ -660,7 +660,7 @@ func TestNewCreateCollectionCommandWithTaskDetails(t *testing.T) {
 	tmpDir := t.TempDir()
 	templateFile := filepath.Join(tmpDir, "collection.json")
 	templateContent := fmt.Sprintf(`{
-  "workspace_id": "6716028cd934ced9bac18658",
+  "workspace_id": "%s",
   "name": "test-collection-with-task-details",
   "task_details": {
     "task_name": "Quality Assessment Task",
@@ -668,7 +668,7 @@ func TestNewCreateCollectionCommandWithTaskDetails(t *testing.T) {
     "task_steps": "1. Read the content on each page\n2. Answer the questions thoughtfully\n3. Submit your responses"
   },
   "collection_items": %s
-}`, collectionItems)
+}`, testWorkspaceID, collectionItems)
 
 	err := os.WriteFile(templateFile, []byte(templateContent), 0600)
 	if err != nil {
@@ -678,7 +678,7 @@ func TestNewCreateCollectionCommandWithTaskDetails(t *testing.T) {
 	response := client.CreateAITaskBuilderCollectionResponse{
 		ID:            "collection-task-details-123",
 		Name:          "test-collection-with-task-details",
-		WorkspaceID:   "6716028cd934ced9bac18658",
+		WorkspaceID:   testWorkspaceID,
 		SchemaVersion: 1,
 		CreatedBy:     "user-456",
 		TaskDetails: &model.TaskDetails{
@@ -737,10 +737,10 @@ func TestNewCreateCollectionCommandRequiresTaskDetails(t *testing.T) {
 	tmpDir := t.TempDir()
 	templateFile := filepath.Join(tmpDir, "collection.json")
 	templateContent := fmt.Sprintf(`{
-  "workspace_id": "6716028cd934ced9bac18658",
+  "workspace_id": "%s",
   "name": "test-collection",
   "collection_items": %s
-}`, collectionItems)
+}`, testWorkspaceID, collectionItems)
 
 	err := os.WriteFile(templateFile, []byte(templateContent), 0600)
 	if err != nil {
@@ -769,14 +769,14 @@ func TestNewCreateCollectionCommandRequiresTaskName(t *testing.T) {
 	tmpDir := t.TempDir()
 	templateFile := filepath.Join(tmpDir, "collection.json")
 	templateContent := fmt.Sprintf(`{
-  "workspace_id": "6716028cd934ced9bac18658",
+  "workspace_id": "%s",
   "name": "test-collection",
   "task_details": {
     "task_introduction": "Introduction",
     "task_steps": "Steps"
   },
   "collection_items": %s
-}`, collectionItems)
+}`, testWorkspaceID, collectionItems)
 
 	err := os.WriteFile(templateFile, []byte(templateContent), 0600)
 	if err != nil {
@@ -805,14 +805,14 @@ func TestNewCreateCollectionCommandRequiresTaskIntroduction(t *testing.T) {
 	tmpDir := t.TempDir()
 	templateFile := filepath.Join(tmpDir, "collection.json")
 	templateContent := fmt.Sprintf(`{
-  "workspace_id": "6716028cd934ced9bac18658",
+  "workspace_id": "%s",
   "name": "test-collection",
   "task_details": {
     "task_name": "Task Name",
     "task_steps": "Steps"
   },
   "collection_items": %s
-}`, collectionItems)
+}`, testWorkspaceID, collectionItems)
 
 	err := os.WriteFile(templateFile, []byte(templateContent), 0600)
 	if err != nil {
@@ -841,14 +841,14 @@ func TestNewCreateCollectionCommandRequiresTaskSteps(t *testing.T) {
 	tmpDir := t.TempDir()
 	templateFile := filepath.Join(tmpDir, "collection.json")
 	templateContent := fmt.Sprintf(`{
-  "workspace_id": "6716028cd934ced9bac18658",
+  "workspace_id": "%s",
   "name": "test-collection",
   "task_details": {
     "task_name": "Task Name",
     "task_introduction": "Introduction"
   },
   "collection_items": %s
-}`, collectionItems)
+}`, testWorkspaceID, collectionItems)
 
 	err := os.WriteFile(templateFile, []byte(templateContent), 0600)
 	if err != nil {
