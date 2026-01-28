@@ -11,7 +11,7 @@ import (
 	"github.com/prolific-oss/cli/model"
 )
 
-const testWorkspaceID = "6655b8281cc82a88996f0bbb"
+const testWorkspaceID = "67890abcdef1234567890123"
 
 func TestNewListCommand(t *testing.T) {
 	ctrl := gomock.NewController(t)
