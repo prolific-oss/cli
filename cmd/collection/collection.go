@@ -19,6 +19,7 @@ func NewCollectionCommand(client client.API, w io.Writer) *cobra.Command {
 		NewGetCommand(client, w),
 		NewCreateCollectionCommand(client, w),
 		NewUpdateCommand(client, w),
+		NewPublishCommand(client, w),
 	)
 	return cmd
 }
