@@ -16,24 +16,36 @@ import (
 )
 
 var studyTemplate = model.CreateStudy{
-	Name:                    "My first standard sample",
-	InternalName:            "Standard sample",
-	Description:             "This is my first standard sample study on the Prolific system.",
-	ExternalStudyURL:        "https://eggs-experriment.com?participant={{%PROLIFIC_PID%}}",
-	ProlificIDOption:        "url_parameters",
-	CompletionCode:          "COMPLE01",
+	Name:             "My first standard sample",
+	InternalName:     "Standard sample",
+	Description:      "This is my first standard sample study on the Prolific system.",
+	ExternalStudyURL: "https://eggs-experriment.com?participant={{%PROLIFIC_PID%}}",
+	ProlificIDOption: "url_parameters",
+	CompletionCodes: []model.CompletionCode{
+		{
+			Code:     "COMPLE01",
+			CodeType: "COMPLETED",
+			Actions: []model.CompletionCodeAction{
+				{
+					Action: "AUTOMATICALLY_APPROVE",
+				},
+			},
+		},
+	},
 	TotalAvailablePlaces:    10,
 	EstimatedCompletionTime: 10,
-	MaximumAllowedTime:      10,
+	MaximumAllowedTime:      100,
 	Reward:                  400,
 	DeviceCompatibility:     []string{"desktop", "tablet", "mobile"},
 	PeripheralRequirements:  []string{"audio", "camera", "download", "microphone"},
 	SubmissionsConfig: struct {
-		MaxSubmissionsPerParticipant int `json:"max_submissions_per_participant,omitempty" mapstructure:"max_submissions_per_participant"`
-		MaxConcurrentSubmissions     int `json:"max_concurrent_submissions,omitempty" mapstructure:"max_concurrent_submissions"`
+		MaxSubmissionsPerParticipant int      `json:"max_submissions_per_participant,omitempty" mapstructure:"max_submissions_per_participant"`
+		MaxConcurrentSubmissions     int      `json:"max_concurrent_submissions,omitempty" mapstructure:"max_concurrent_submissions"`
+		AutoRejectionCategories      []string `json:"auto_rejection_categories,omitempty" mapstructure:"auto_rejection_categories"`
 	}{
 		MaxSubmissionsPerParticipant: -1,
 		MaxConcurrentSubmissions:     0,
+		AutoRejectionCategories:      nil,
 	},
 }
 
@@ -44,7 +56,7 @@ var actualStudy = model.Study{
 	ExternalStudyURL:        "https://eggs-experriment.com?participant={{%PROLIFIC_PID%}}",
 	TotalAvailablePlaces:    10,
 	EstimatedCompletionTime: 10,
-	MaximumAllowedTime:      10,
+	MaximumAllowedTime:      100,
 	Reward:                  400,
 	DeviceCompatibility:     []string{"desktop", "tablet", "mobile"},
 }
