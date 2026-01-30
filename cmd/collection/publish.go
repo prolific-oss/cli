@@ -11,6 +11,7 @@ import (
 	"github.com/prolific-oss/cli/ui"
 	studyui "github.com/prolific-oss/cli/ui/study"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // PublishOptions is the options for the publish collection command.
@@ -19,6 +20,7 @@ type PublishOptions struct {
 	Participants int
 	Name         string
 	Description  string
+	TemplatePath string
 }
 
 // NewPublishCommand creates a new `collection publish` command to publish
@@ -34,7 +36,15 @@ func NewPublishCommand(c client.API, w io.Writer) *cobra.Command {
 
 This command creates and publishes a study from an AI Task Builder Collection.
 The study will be created with the collection's content and made available
-to participants.`,
+to participants.
+
+You can either specify the number of participants directly, or provide a study
+template file. When using a template, the collection ID will be automatically
+set as the data_collection_id and data_collection_method will be set to
+AI_TASK_BUILDER_COLLECTION.
+
+If both a template and --participants are provided, the --participants flag
+will override the template's total_available_places value.`,
 		Example: `
 Publish a collection with 100 participants:
 
@@ -43,6 +53,14 @@ $ prolific collection publish 67890abcdef --participants 100
 Publish with a custom study name:
 
 $ prolific collection publish 67890abcdef -p 50 --name "My Custom Study"
+
+Publish using a study template file:
+
+$ prolific collection publish 67890abcdef -t /path/to/study-template.json
+
+Publish using a template but override the participant count:
+
+$ prolific collection publish 67890abcdef -t /path/to/template.json -p 200
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
@@ -51,8 +69,8 @@ $ prolific collection publish 67890abcdef -p 50 --name "My Custom Study"
 				return errors.New("please provide a collection ID")
 			}
 
-			if opts.Participants <= 0 {
-				return errors.New("please provide a valid number of participants using --participants or -p")
+			if opts.TemplatePath == "" && opts.Participants <= 0 {
+				return errors.New("please provide a valid number of participants using --participants or -p, or provide a template file using --template or -t")
 			}
 
 			return publishCollection(c, opts, w)
@@ -60,9 +78,10 @@ $ prolific collection publish 67890abcdef -p 50 --name "My Custom Study"
 	}
 
 	flags := cmd.Flags()
-	flags.IntVarP(&opts.Participants, "participants", "p", 0, "Number of participants required (required)")
+	flags.IntVarP(&opts.Participants, "participants", "p", 0, "Number of participants required (required if no template)")
 	flags.StringVarP(&opts.Name, "name", "n", "", "Study name (defaults to collection's task name)")
 	flags.StringVarP(&opts.Description, "description", "d", "", "Study description (defaults to collection's task introduction)")
+	flags.StringVarP(&opts.TemplatePath, "template", "t", "", "Path to a study template file (JSON/YAML) - collection ID and method will be set automatically")
 
 	return cmd
 }
@@ -80,31 +99,62 @@ func publishCollection(c client.API, opts PublishOptions, w io.Writer) error {
 		return fmt.Errorf("failed to get collection: %s", err.Error())
 	}
 
-	// Use collection details as defaults if not provided
-	studyName := opts.Name
-	if studyName == "" && coll.TaskDetails != nil {
-		studyName = coll.TaskDetails.TaskName
-	}
-	if studyName == "" {
-		studyName = coll.Name
-	}
+	var createStudy model.CreateStudy
 
-	studyDescription := opts.Description
-	if studyDescription == "" && coll.TaskDetails != nil {
-		studyDescription = coll.TaskDetails.TaskIntroduction
-	}
-	if studyDescription == "" {
-		studyDescription = fmt.Sprintf("Study for collection: %s", coll.Name)
-	}
+	if opts.TemplatePath != "" {
+		// Load study configuration from template file
+		v := viper.New()
+		v.SetConfigFile(opts.TemplatePath)
+		if err := v.ReadInConfig(); err != nil {
+			return fmt.Errorf("failed to read template file: %s", err.Error())
+		}
 
-	// Create the study with collection-specific configuration
-	createStudy := model.CreateStudy{
-		Name:                 studyName,
-		InternalName:         studyName,
-		Description:          studyDescription,
-		TotalAvailablePlaces: opts.Participants,
-		DataCollectionMethod: model.DataCollectionMethodAITBCollection,
-		DataCollectionID:     collectionID,
+		if err := v.Unmarshal(&createStudy); err != nil {
+			return fmt.Errorf("failed to parse template file: %s", err.Error())
+		}
+
+		// Override collection-specific fields
+		createStudy.DataCollectionMethod = model.DataCollectionMethodAITBCollection
+		createStudy.DataCollectionID = collectionID
+		// Clear external_study_url as it's incompatible with data collection method
+		createStudy.ExternalStudyURL = ""
+
+		// Use collection's task introduction as description if not provided in template
+		if createStudy.Description == "" && coll.TaskDetails != nil {
+			createStudy.Description = coll.TaskDetails.TaskIntroduction
+		}
+
+		// Allow -p flag to override template's total_available_places
+		if opts.Participants > 0 {
+			createStudy.TotalAvailablePlaces = opts.Participants
+		}
+	} else {
+		// Use collection details as defaults if not provided
+		studyName := opts.Name
+		if studyName == "" && coll.TaskDetails != nil {
+			studyName = coll.TaskDetails.TaskName
+		}
+		if studyName == "" {
+			studyName = coll.Name
+		}
+
+		studyDescription := opts.Description
+		if studyDescription == "" && coll.TaskDetails != nil {
+			studyDescription = coll.TaskDetails.TaskIntroduction
+		}
+		if studyDescription == "" {
+			studyDescription = fmt.Sprintf("Study for collection: %s", coll.Name)
+		}
+
+		// Create the study with collection-specific configuration
+		createStudy = model.CreateStudy{
+			Name:                 studyName,
+			InternalName:         studyName,
+			Description:          studyDescription,
+			TotalAvailablePlaces: opts.Participants,
+			DataCollectionMethod: model.DataCollectionMethodAITBCollection,
+			DataCollectionID:     collectionID,
+		}
 	}
 
 	study, err := c.CreateStudy(createStudy)
