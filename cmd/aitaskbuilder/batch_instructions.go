@@ -35,7 +35,8 @@ a JSON file or as a JSON string directly.
 The instructions should be an array of instruction objects with the following types:
 - multiple_choice: Instructions with predefined options
 - free_text: Instructions requiring text input
-- multiple_choice_with_free_text: Instructions with options and text input`,
+- multiple_choice_with_free_text: Instructions with options and text input
+- multiple_choice_with_unit: Instructions with options and unit selection (e.g., height in cm/inches)`,
 		Example: `
 Add instructions from a file:
 $ prolific aitaskbuilder batch instructions -b <batch_id> -f instructions.json
@@ -154,6 +155,9 @@ func createBatchInstructions(c client.API, opts BatchInstructionsOptions, w io.W
 		if len(instruction.Options) > 0 {
 			fmt.Fprintf(w, "  Options: %d\n", len(instruction.Options))
 		}
+		if len(instruction.UnitOptions) > 0 {
+			fmt.Fprintf(w, "  Unit Options: %d\n", len(instruction.UnitOptions))
+		}
 	}
 
 	return nil
@@ -169,6 +173,7 @@ func validateInstructions(instructions client.CreateAITaskBuilderInstructionsPay
 		client.InstructionTypeMultipleChoice:             true,
 		client.InstructionTypeFreeText:                   true,
 		client.InstructionTypeMultipleChoiceWithFreeText: true,
+		client.InstructionTypeMultipleChoiceWithUnit:     true,
 	}
 
 	for i, instruction := range instructions.Instructions {
@@ -177,7 +182,7 @@ func validateInstructions(instructions client.CreateAITaskBuilderInstructionsPay
 		}
 
 		if !validTypes[instruction.Type] {
-			return fmt.Errorf("instruction %d: invalid type '%s'. Must be one of: multiple_choice, free_text, multiple_choice_with_free_text", i+1, instruction.Type)
+			return fmt.Errorf("instruction %d: invalid type '%s'. Must be one of: multiple_choice, free_text, multiple_choice_with_free_text, multiple_choice_with_unit", i+1, instruction.Type)
 		}
 
 		if instruction.CreatedBy == "" {
@@ -189,9 +194,40 @@ func validateInstructions(instructions client.CreateAITaskBuilderInstructionsPay
 		}
 
 		// Validate type-specific requirements
-		if instruction.Type == client.InstructionTypeMultipleChoice || instruction.Type == client.InstructionTypeMultipleChoiceWithFreeText {
+		if instruction.Type == client.InstructionTypeMultipleChoice ||
+			instruction.Type == client.InstructionTypeMultipleChoiceWithFreeText ||
+			instruction.Type == client.InstructionTypeMultipleChoiceWithUnit {
 			if len(instruction.Options) == 0 {
 				return fmt.Errorf("instruction %d: options are required for type '%s'", i+1, instruction.Type)
+			}
+		}
+
+		// Validate unit_options for multiple_choice_with_unit
+		if instruction.Type == client.InstructionTypeMultipleChoiceWithUnit {
+			if len(instruction.UnitOptions) < 2 {
+				return fmt.Errorf("instruction %d: unit_options requires at least 2 options for type 'multiple_choice_with_unit'", i+1)
+			}
+			for j, unitOption := range instruction.UnitOptions {
+				if unitOption.Label == "" {
+					return fmt.Errorf("instruction %d, unit_option %d: label is required", i+1, j+1)
+				}
+				if unitOption.Value == "" {
+					return fmt.Errorf("instruction %d, unit_option %d: value is required", i+1, j+1)
+				}
+			}
+			// Validate default_unit is required and matches one of the unit_options values
+			if instruction.DefaultUnit == "" {
+				return fmt.Errorf("instruction %d: default_unit is required for type 'multiple_choice_with_unit'", i+1)
+			}
+			validUnit := false
+			for _, opt := range instruction.UnitOptions {
+				if opt.Value == instruction.DefaultUnit {
+					validUnit = true
+					break
+				}
+			}
+			if !validUnit {
+				return fmt.Errorf("instruction %d: default_unit '%s' must match one of the unit_options values", i+1, instruction.DefaultUnit)
 			}
 		}
 

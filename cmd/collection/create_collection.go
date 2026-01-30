@@ -139,6 +139,23 @@ func validatePayload(payload model.CreateAITaskBuilderCollection) error {
 		return errors.New(ErrCollectionItemsRequired)
 	}
 
+	// Validate task_details
+	if payload.TaskDetails == nil {
+		return errors.New(ErrTaskDetailsRequired)
+	}
+
+	if payload.TaskDetails.TaskName == "" {
+		return errors.New(ErrTaskNameRequired)
+	}
+
+	if payload.TaskDetails.TaskIntroduction == "" {
+		return errors.New(ErrTaskIntroductionRequired)
+	}
+
+	if payload.TaskDetails.TaskSteps == "" {
+		return errors.New(ErrTaskStepsRequired)
+	}
+
 	return nil
 }
 
