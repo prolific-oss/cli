@@ -43,8 +43,8 @@ template file. When using a template, the collection ID will be automatically
 set as the data_collection_id and data_collection_method will be set to
 AI_TASK_BUILDER_COLLECTION.
 
-If both a template and --participants are provided, the --participants flag
-will override the template's total_available_places value.`,
+When using a template, CLI flags (--participants, --name, --description) will
+override the corresponding template values.`,
 		Example: `
 Publish a collection with 100 participants:
 
@@ -119,14 +119,25 @@ func publishCollection(c client.API, opts PublishOptions, w io.Writer) error {
 		// Clear external_study_url as it's incompatible with data collection method
 		createStudy.ExternalStudyURL = ""
 
-		// Use collection's task introduction as description if not provided in template
+		// Allow CLI flags to override template values
+		if opts.Name != "" {
+			createStudy.Name = opts.Name
+			createStudy.InternalName = opts.Name
+		}
+		if opts.Description != "" {
+			createStudy.Description = opts.Description
+		}
+		if opts.Participants > 0 {
+			createStudy.TotalAvailablePlaces = opts.Participants
+		}
+
+		// Use collection's task introduction as description if not provided in template or flags
 		if createStudy.Description == "" && coll.TaskDetails != nil {
 			createStudy.Description = coll.TaskDetails.TaskIntroduction
 		}
-
-		// Allow -p flag to override template's total_available_places
-		if opts.Participants > 0 {
-			createStudy.TotalAvailablePlaces = opts.Participants
+		// Final fallback if still no description
+		if createStudy.Description == "" {
+			createStudy.Description = fmt.Sprintf("Study for collection: %s", coll.Name)
 		}
 	} else {
 		// Use collection details as defaults if not provided

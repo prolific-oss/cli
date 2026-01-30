@@ -742,3 +742,173 @@ func TestPublishCommandWithTemplateAndParticipantsFlag(t *testing.T) {
 		t.Fatalf("expected no error, got: %v", err)
 	}
 }
+
+func TestPublishCommandWithTemplateAndNameDescriptionFlags(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockClient := mock_client.NewMockAPI(ctrl)
+
+	// Create a template with name and description set
+	templateContent := `{
+		"name": "Template Name",
+		"description": "Template description",
+		"reward": 100,
+		"total_available_places": 50,
+		"prolific_id_option": "question",
+		"completion_code": "TEST01",
+		"estimated_completion_time": 5,
+		"device_compatibility": ["desktop"]
+	}`
+
+	tmpDir := t.TempDir()
+	templatePath := filepath.Join(tmpDir, "template.json")
+	if err := os.WriteFile(templatePath, []byte(templateContent), 0600); err != nil {
+		t.Fatalf("failed to create template file: %v", err)
+	}
+
+	testCollection := &model.Collection{
+		ID:        testCollectionID,
+		Name:      "Test Collection",
+		CreatedAt: time.Now(),
+		CreatedBy: "test-user",
+		ItemCount: 10,
+	}
+
+	testStudy := &model.Study{
+		ID:                   "study-name-desc-test",
+		Name:                 "Flag Override Name",
+		Status:               "active",
+		TotalAvailablePlaces: 50,
+	}
+
+	mockClient.
+		EXPECT().
+		GetCollection(gomock.Eq(testCollectionID)).
+		Return(testCollection, nil).
+		Times(1)
+
+	mockClient.
+		EXPECT().
+		CreateStudy(gomock.Any()).
+		DoAndReturn(func(s model.CreateStudy) (*model.Study, error) {
+			// Verify -n and -d flags override template values
+			if s.Name != "Flag Override Name" {
+				t.Errorf("expected Name to be overridden to 'Flag Override Name', got %q", s.Name)
+			}
+			if s.InternalName != "Flag Override Name" {
+				t.Errorf("expected InternalName to be overridden to 'Flag Override Name', got %q", s.InternalName)
+			}
+			if s.Description != "Flag override description" {
+				t.Errorf("expected Description to be overridden to 'Flag override description', got %q", s.Description)
+			}
+			// Verify other template values are still used
+			if s.Reward != 100 {
+				t.Errorf("expected Reward from template (100), got %f", s.Reward)
+			}
+			return testStudy, nil
+		}).
+		Times(1)
+
+	mockClient.
+		EXPECT().
+		TransitionStudy(gomock.Eq("study-name-desc-test"), gomock.Eq(model.TransitionStudyPublish)).
+		Return(&client.TransitionStudyResponse{}, nil).
+		Times(1)
+
+	mockClient.
+		EXPECT().
+		GetStudy(gomock.Eq("study-name-desc-test")).
+		Return(testStudy, nil).
+		Times(1)
+
+	var buf bytes.Buffer
+	cmd := collection.NewPublishCommand(mockClient, &buf)
+	_ = cmd.Flags().Set("template", templatePath)
+	_ = cmd.Flags().Set("name", "Flag Override Name")
+	_ = cmd.Flags().Set("description", "Flag override description")
+
+	err := cmd.RunE(cmd, []string{testCollectionID})
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+}
+
+func TestPublishCommandWithTemplateUsesDefaultDescriptionFallback(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockClient := mock_client.NewMockAPI(ctrl)
+
+	// Create a template WITHOUT a description
+	templateContent := `{
+		"name": "Template Study",
+		"reward": 100,
+		"total_available_places": 50,
+		"prolific_id_option": "question",
+		"completion_code": "TEST01",
+		"estimated_completion_time": 5,
+		"device_compatibility": ["desktop"]
+	}`
+
+	tmpDir := t.TempDir()
+	templatePath := filepath.Join(tmpDir, "template.json")
+	if err := os.WriteFile(templatePath, []byte(templateContent), 0600); err != nil {
+		t.Fatalf("failed to create template file: %v", err)
+	}
+
+	// Collection WITHOUT TaskDetails
+	testCollection := &model.Collection{
+		ID:          testCollectionID,
+		Name:        "My Test Collection",
+		CreatedAt:   time.Now(),
+		CreatedBy:   "test-user",
+		ItemCount:   10,
+		TaskDetails: nil, // No task details
+	}
+
+	testStudy := &model.Study{
+		ID:                   "study-fallback-test",
+		Name:                 "Template Study",
+		Status:               "active",
+		TotalAvailablePlaces: 50,
+	}
+
+	mockClient.
+		EXPECT().
+		GetCollection(gomock.Eq(testCollectionID)).
+		Return(testCollection, nil).
+		Times(1)
+
+	mockClient.
+		EXPECT().
+		CreateStudy(gomock.Any()).
+		DoAndReturn(func(s model.CreateStudy) (*model.Study, error) {
+			// Verify the description falls back to the default format
+			expectedDescription := "Study for collection: My Test Collection"
+			if s.Description != expectedDescription {
+				t.Errorf("expected Description to fall back to %q, got %q", expectedDescription, s.Description)
+			}
+			return testStudy, nil
+		}).
+		Times(1)
+
+	mockClient.
+		EXPECT().
+		TransitionStudy(gomock.Eq("study-fallback-test"), gomock.Eq(model.TransitionStudyPublish)).
+		Return(&client.TransitionStudyResponse{}, nil).
+		Times(1)
+
+	mockClient.
+		EXPECT().
+		GetStudy(gomock.Eq("study-fallback-test")).
+		Return(testStudy, nil).
+		Times(1)
+
+	var buf bytes.Buffer
+	cmd := collection.NewPublishCommand(mockClient, &buf)
+	_ = cmd.Flags().Set("template", templatePath)
+
+	err := cmd.RunE(cmd, []string{testCollectionID})
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+}
