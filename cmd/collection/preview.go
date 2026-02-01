@@ -39,8 +39,13 @@ func NewPreviewCommandWithOpener(c client.API, w io.Writer, browserOpener Browse
 	opts.BrowserOpener = browserOpener
 
 	cmd := &cobra.Command{
-		Use:   "preview <collection-id>",
-		Args:  cobra.MinimumNArgs(1),
+		Use: "preview <collection-id>",
+		Args: func(cmd *cobra.Command, args []string) error {
+			if len(args) < 1 || args[0] == "" {
+				return errors.New("please provide a collection ID")
+			}
+			return nil
+		},
 		Short: "Preview a collection in the browser",
 		Long: `Preview a collection in the browser
 
@@ -52,13 +57,7 @@ Preview a collection in the browser
 $ prolific collection preview 123456789
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.Args = args
-
-			if len(opts.Args) < 1 || opts.Args[0] == "" {
-				return errors.New("please provide a collection ID")
-			}
-
-			collectionID := opts.Args[0]
+			collectionID := args[0]
 
 			// Fetch collection to validate access
 			_, err := c.GetCollection(collectionID)

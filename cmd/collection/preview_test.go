@@ -47,7 +47,8 @@ func TestPreviewCommandRequiresCollectionID(t *testing.T) {
 	var buf bytes.Buffer
 	cmd := collection.NewPreviewCommandWithOpener(mockClient, &buf, noOpBrowserOpener)
 
-	err := cmd.RunE(cmd, []string{})
+	// Test the Args validator directly
+	err := cmd.Args(cmd, []string{})
 	if err == nil {
 		t.Fatalf("expected error for missing collection ID, got nil")
 	}
@@ -66,7 +67,8 @@ func TestPreviewCommandRequiresNonEmptyCollectionID(t *testing.T) {
 	var buf bytes.Buffer
 	cmd := collection.NewPreviewCommandWithOpener(mockClient, &buf, noOpBrowserOpener)
 
-	err := cmd.RunE(cmd, []string{""})
+	// Test the Args validator directly
+	err := cmd.Args(cmd, []string{""})
 	if err == nil {
 		t.Fatalf("expected error for empty collection ID, got nil")
 	}
