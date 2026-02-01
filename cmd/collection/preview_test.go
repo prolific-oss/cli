@@ -14,13 +14,18 @@ import (
 	"github.com/prolific-oss/cli/model"
 )
 
+// noOpBrowserOpener is a no-op browser opener for testing
+func noOpBrowserOpener(url string) error {
+	return nil
+}
+
 func TestNewPreviewCommand(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockClient := mock_client.NewMockAPI(ctrl)
 
 	var buf bytes.Buffer
-	cmd := collection.NewPreviewCommand(mockClient, &buf)
+	cmd := collection.NewPreviewCommandWithOpener(mockClient, &buf, noOpBrowserOpener)
 
 	use := "preview <collection-id>"
 	short := "Preview a collection in the browser"
@@ -40,7 +45,7 @@ func TestPreviewCommandRequiresCollectionID(t *testing.T) {
 	mockClient := mock_client.NewMockAPI(ctrl)
 
 	var buf bytes.Buffer
-	cmd := collection.NewPreviewCommand(mockClient, &buf)
+	cmd := collection.NewPreviewCommandWithOpener(mockClient, &buf, noOpBrowserOpener)
 
 	err := cmd.RunE(cmd, []string{})
 	if err == nil {
@@ -59,7 +64,7 @@ func TestPreviewCommandRequiresNonEmptyCollectionID(t *testing.T) {
 	mockClient := mock_client.NewMockAPI(ctrl)
 
 	var buf bytes.Buffer
-	cmd := collection.NewPreviewCommand(mockClient, &buf)
+	cmd := collection.NewPreviewCommandWithOpener(mockClient, &buf, noOpBrowserOpener)
 
 	err := cmd.RunE(cmd, []string{""})
 	if err == nil {
@@ -93,16 +98,13 @@ func TestPreviewCommandCallsGetCollection(t *testing.T) {
 
 	var buf bytes.Buffer
 	writer := bufio.NewWriter(&buf)
-	cmd := collection.NewPreviewCommand(mockClient, writer)
+	cmd := collection.NewPreviewCommandWithOpener(mockClient, writer, noOpBrowserOpener)
 
-	// Note: This will attempt to open the browser, but we're just testing that
-	// the GetCollection call is made and no error is returned
 	err := cmd.RunE(cmd, []string{testCollectionID})
 	writer.Flush()
 
-	// We don't fail on browser.OpenURL errors in CI environments
-	if err != nil && !strings.Contains(err.Error(), "browser") {
-		t.Fatalf("expected no error (or browser error), got: %v", err)
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
 	}
 }
 
@@ -119,7 +121,7 @@ func TestPreviewCommandReturnsErrorOnClientError(t *testing.T) {
 
 	var buf bytes.Buffer
 	writer := bufio.NewWriter(&buf)
-	cmd := collection.NewPreviewCommand(mockClient, writer)
+	cmd := collection.NewPreviewCommandWithOpener(mockClient, writer, noOpBrowserOpener)
 
 	err := cmd.RunE(cmd, []string{testCollectionID})
 	writer.Flush()
@@ -150,7 +152,7 @@ func TestPreviewCommandHandlesFeatureNotEnabledError(t *testing.T) {
 
 	var buf bytes.Buffer
 	writer := bufio.NewWriter(&buf)
-	cmd := collection.NewPreviewCommand(mockClient, writer)
+	cmd := collection.NewPreviewCommandWithOpener(mockClient, writer, noOpBrowserOpener)
 
 	err := cmd.RunE(cmd, []string{testCollectionID})
 	writer.Flush()
@@ -183,11 +185,14 @@ func TestPreviewCommandOutputContainsURL(t *testing.T) {
 
 	var buf bytes.Buffer
 	writer := bufio.NewWriter(&buf)
-	cmd := collection.NewPreviewCommand(mockClient, writer)
+	cmd := collection.NewPreviewCommandWithOpener(mockClient, writer, noOpBrowserOpener)
 
-	// Run the command - may fail to open browser in CI
-	_ = cmd.RunE(cmd, []string{testCollectionID})
+	err := cmd.RunE(cmd, []string{testCollectionID})
 	writer.Flush()
+
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
 
 	output := buf.String()
 

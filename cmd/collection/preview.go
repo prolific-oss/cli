@@ -13,15 +13,30 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// BrowserOpener is a function type for opening URLs in a browser.
+// This allows for dependency injection in tests.
+type BrowserOpener func(url string) error
+
+// DefaultBrowserOpener uses the system browser to open URLs.
+var DefaultBrowserOpener BrowserOpener = browser.OpenURL
+
 // PreviewOptions is the options for the preview collection command.
 type PreviewOptions struct {
-	Args []string
+	Args          []string
+	BrowserOpener BrowserOpener
 }
 
 // NewPreviewCommand creates a new `collection preview` command to open a collection
 // preview in the browser.
 func NewPreviewCommand(c client.API, w io.Writer) *cobra.Command {
+	return NewPreviewCommandWithOpener(c, w, DefaultBrowserOpener)
+}
+
+// NewPreviewCommandWithOpener creates a new `collection preview` command with a custom browser opener.
+// This is useful for testing to avoid opening actual browser windows.
+func NewPreviewCommandWithOpener(c client.API, w io.Writer, browserOpener BrowserOpener) *cobra.Command {
 	var opts PreviewOptions
+	opts.BrowserOpener = browserOpener
 
 	cmd := &cobra.Command{
 		Use:   "preview <collection-id>",
@@ -55,15 +70,17 @@ $ prolific collection preview 123456789
 				return fmt.Errorf("error: %s", err.Error())
 			}
 
-			// Open the collection preview in the browser
+			// Build the preview URL and display it
 			previewURL := collectionui.GetCollectionPreviewURL(collectionID)
-			if err := browser.OpenURL(previewURL); err != nil {
-				return fmt.Errorf("failed to open browser: %s", err.Error())
-			}
-
 			fmt.Fprintln(w, "Opening collection preview in browser...")
 			fmt.Fprintln(w)
 			fmt.Fprintln(w, previewURL)
+
+			// Attempt to open the browser - don't fail if it doesn't work
+			// (e.g., in headless/CI environments)
+			if opts.BrowserOpener != nil {
+				_ = opts.BrowserOpener(previewURL)
+			}
 
 			return nil
 		},
