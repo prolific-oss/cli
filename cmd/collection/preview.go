@@ -57,7 +57,8 @@ Preview a collection in the browser
 $ prolific collection preview 123456789
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			collectionID := args[0]
+			opts.Args = args
+			collectionID := opts.Args[0]
 
 			// Fetch collection to validate access
 			_, err := c.GetCollection(collectionID)
