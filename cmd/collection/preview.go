@@ -67,7 +67,7 @@ $ prolific collection preview 123456789
 					ui.RenderFeatureAccessMessage(FeatureNameAITBCollection, FeatureContactURLAITBCollection)
 					return nil
 				}
-				return fmt.Errorf("error: %s", err.Error())
+				return fmt.Errorf("failed to get collection: %s", err.Error())
 			}
 
 			// Build the preview URL and display it
@@ -79,7 +79,9 @@ $ prolific collection preview 123456789
 			// Attempt to open the browser - don't fail if it doesn't work
 			// (e.g., in headless/CI environments)
 			if opts.BrowserOpener != nil {
-				_ = opts.BrowserOpener(previewURL)
+				if err := opts.BrowserOpener(previewURL); err != nil {
+					fmt.Fprintln(w, "(Browser did not open automatically - use the URL above)")
+				}
 			}
 
 			return nil

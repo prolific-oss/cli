@@ -132,7 +132,7 @@ func TestPreviewCommandReturnsErrorOnClientError(t *testing.T) {
 		t.Fatal("expected error, got nil")
 	}
 
-	expected := "error: collection not found"
+	expected := "failed to get collection: collection not found"
 	if err.Error() != expected {
 		t.Fatalf("expected error %q, got %q", expected, err.Error())
 	}
