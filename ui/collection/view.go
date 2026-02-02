@@ -8,6 +8,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/config"
 	"github.com/prolific-oss/cli/model"
 	"github.com/prolific-oss/cli/ui"
 )
@@ -92,4 +93,14 @@ func renderCollectionString(collection model.Collection) string {
 	}
 
 	return content
+}
+
+// GetCollectionPreviewPath returns the URL path to a collection preview, agnostic of domain
+func GetCollectionPreviewPath(ID string) string {
+	return fmt.Sprintf("data-collection-tool/collections/%s?preview=true", ID)
+}
+
+// GetCollectionPreviewURL returns the full URL to a collection preview using configuration
+func GetCollectionPreviewURL(ID string) string {
+	return fmt.Sprintf("%s/%s", config.GetApplicationURL(), GetCollectionPreviewPath(ID))
 }
