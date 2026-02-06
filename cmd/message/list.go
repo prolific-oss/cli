@@ -100,7 +100,7 @@ func renderMessages(c client.API, opts ListOptions, w io.Writer) error {
 		results = messages.Results
 	}
 
-	fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\t%s\n", "ID", "Sender ID", "Study ID", "Category", "Sent At", "Body")
+	fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\t%s\n", "ID", "Sender ID", "Study ID", "Category", "Created", "Body")
 	for _, msg := range results {
 		studyID := ""
 		category := ""
@@ -110,10 +110,10 @@ func renderMessages(c client.API, opts ListOptions, w io.Writer) error {
 		}
 		fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\t%s\n",
 			msg.ID,
-			msg.SenderID,
+			msg.GetSenderID(),
 			studyID,
 			category,
-			msg.SentAt.Format(ui.AppDateTimeFormat),
+			msg.DatetimeCreated.Format(ui.AppDateTimeFormat),
 			msg.Body,
 		)
 	}

@@ -67,14 +67,27 @@ type Secret struct {
 }
 
 // Message represents a message on the Prolific platform.
+// The regular messages endpoint returns "sender_id" while the unread
+// endpoint returns "sender", so both fields are present.
 type Message struct {
-	ID        string       `json:"id"`
-	SenderID  string       `json:"sender_id"`
-	Body      string       `json:"body"`
-	SentAt    time.Time    `json:"sent_at"`
-	Type      string       `json:"type,omitempty"`
-	ChannelID string       `json:"channel_id"`
-	Data      *MessageData `json:"data,omitempty"`
+	ID              string       `json:"id"`
+	SenderID        string       `json:"sender_id,omitempty"`
+	Sender          string       `json:"sender,omitempty"`
+	Body            string       `json:"body"`
+	DatetimeCreated time.Time    `json:"datetime_created"`
+	Type            string       `json:"type,omitempty"`
+	ChannelID       string       `json:"channel_id"`
+	Data            *MessageData `json:"data,omitempty"`
+}
+
+// GetSenderID returns the sender identifier regardless of which API
+// endpoint populated the message. The regular messages endpoint uses
+// "sender_id" while the unread endpoint uses "sender".
+func (m Message) GetSenderID() string {
+	if m.SenderID != "" {
+		return m.SenderID
+	}
+	return m.Sender
 }
 
 // MessageData contains metadata associated with a message.
