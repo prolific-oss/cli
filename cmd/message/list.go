@@ -6,6 +6,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/model"
 	"github.com/prolific-oss/cli/ui"
 	"github.com/spf13/cobra"
 )
@@ -83,36 +84,38 @@ func renderMessages(c client.API, opts ListOptions, w io.Writer) error {
 
 	tw := tabwriter.NewWriter(w, 0, 1, 1, ' ', 0)
 
+	var results []model.Message
+
 	if opts.Unread {
 		messages, err := c.GetUnreadMessages()
 		if err != nil {
 			return err
 		}
-
-		fmt.Fprintf(tw, "%s\t%s\t%s\n", "Sender ID", "Datetime Created", "Body")
-		for _, message := range messages.Results {
-			fmt.Fprintf(tw, "%s\t%s\t%s\n",
-				message.Sender,
-				message.DatetimeCreated.Format(ui.AppDateTimeFormat),
-				message.Body,
-			)
-		}
+		results = messages.Results
 	} else {
 		messages, err := c.GetMessages(userID, createdAfter)
-
 		if err != nil {
 			return err
 		}
+		results = messages.Results
+	}
 
-		fmt.Fprintf(tw, "%s\t%s\t%s\t%s\n", "Sender ID", "Study ID", "Datetime Created", "Body")
-		for _, message := range messages.Results {
-			fmt.Fprintf(tw, "%s\t%s\t%s\t%s\n",
-				message.SenderID,
-				message.StudyID,
-				message.DatetimeCreated.Format(ui.AppDateTimeFormat),
-				message.Body,
-			)
+	fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\t%s\n", "ID", "Sender ID", "Study ID", "Category", "Sent At", "Body")
+	for _, msg := range results {
+		studyID := ""
+		category := ""
+		if msg.Data != nil {
+			studyID = msg.Data.StudyID
+			category = msg.Data.Category
 		}
+		fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\t%s\n",
+			msg.ID,
+			msg.SenderID,
+			studyID,
+			category,
+			msg.SentAt.Format(ui.AppDateTimeFormat),
+			msg.Body,
+		)
 	}
 
 	_ = tw.Flush()

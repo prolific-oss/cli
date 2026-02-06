@@ -66,18 +66,19 @@ type Secret struct {
 	WorkspaceID string `json:"workspace_id"`
 }
 
-// Message represents the message model
+// Message represents a message on the Prolific platform.
 type Message struct {
-	DatetimeCreated time.Time      `json:"datetime_created"`
-	Body            string         `json:"body"`
-	SenderID        string         `json:"sender_id"`
-	StudyID         string         `json:"study_id,omitempty"`
-	Data            map[string]any `json:"data,omitempty"`
+	ID        string       `json:"id"`
+	SenderID  string       `json:"sender_id"`
+	Body      string       `json:"body"`
+	SentAt    time.Time    `json:"sent_at"`
+	Type      string       `json:"type,omitempty"`
+	ChannelID string       `json:"channel_id"`
+	Data      *MessageData `json:"data,omitempty"`
 }
 
-// UnreadMessage represents the unread message model
-type UnreadMessage struct {
-	DatetimeCreated time.Time `json:"datetime_created"`
-	Body            string    `json:"body"`
-	Sender          string    `json:"sender"`
+// MessageData contains metadata associated with a message.
+type MessageData struct {
+	StudyID  string `json:"study_id,omitempty"`
+	Category string `json:"category,omitempty"`
 }

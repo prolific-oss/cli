@@ -64,3 +64,10 @@ Read `DEVELOPMENT.md` when implementing new commands or debugging test patterns.
 - UI rendering helpers (`ui/ui.go`)
 - Study templates (`docs/examples/`)
 - CI/CD workflows
+
+## Active Technologies
+- Go (matching parent `prolific-oss/cli`) + Cobra (`github.com/spf13/cobra`), Viper (002-fix-message-api-conformance)
+- N/A (API client only) (002-fix-message-api-conformance)
+
+## Recent Changes
+- 002-fix-message-api-conformance: Added Go (matching parent `prolific-oss/cli`) + Cobra (`github.com/spf13/cobra`), Viper

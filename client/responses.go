@@ -188,7 +188,7 @@ type ListMessagesResponse struct {
 
 // ListUnreadMessagesResponse is the response for the unread messages endpoint.
 type ListUnreadMessagesResponse struct {
-	Results []model.UnreadMessage `json:"results"`
+	Results []model.Message `json:"results"`
 	*JSONAPILinks
 	*JSONAPIMeta
 }
