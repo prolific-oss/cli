@@ -69,10 +69,10 @@ func TestNewListCommandCallsTheAPI(t *testing.T) {
 	response := client.ListMessagesResponse{
 		Results: []model.Message{
 			{
-				ID:       "msg-001",
-				SenderID: "sender-id",
-				Body:     "body",
-				SentAt:   time.Date(2023, 01, 27, 19, 39, 0, 0, time.UTC),
+				ID:              "msg-001",
+				SenderID:        "sender-id",
+				Body:            "body",
+				DatetimeCreated: time.Date(2023, 01, 27, 19, 39, 0, 0, time.UTC),
 				Data: &model.MessageData{
 					StudyID:  "study-id",
 					Category: "feedback",
@@ -105,7 +105,7 @@ func TestNewListCommandCallsTheAPI(t *testing.T) {
 	writer.Flush()
 
 	actual := b.String()
-	expected := fmt.Sprintf(`ID      Sender ID Study ID Category Sent At          Body
+	expected := fmt.Sprintf(`ID      Sender ID Study ID Category Created          Body
 msg-001 sender-id study-id feedback 27-01-2023 19:39 body
 
 ---
@@ -126,10 +126,10 @@ func TestNewListCommandWithUnreadFlagCallsTheAPI(t *testing.T) {
 	response := client.ListUnreadMessagesResponse{
 		Results: []model.Message{
 			{
-				ID:       "msg-002",
-				SenderID: "sender-id",
-				Body:     "body",
-				SentAt:   time.Date(2023, 01, 27, 19, 39, 0, 0, time.UTC),
+				ID:              "msg-002",
+				Sender:          "sender-id",
+				Body:            "body",
+				DatetimeCreated: time.Date(2023, 01, 27, 19, 39, 0, 0, time.UTC),
 				Data: &model.MessageData{
 					StudyID:  "study-id",
 					Category: "feedback",
@@ -165,7 +165,7 @@ func TestNewListCommandWithUnreadFlagCallsTheAPI(t *testing.T) {
 	writer.Flush()
 
 	actual := b.String()
-	expected := fmt.Sprintf(`ID      Sender ID Study ID Category Sent At          Body
+	expected := fmt.Sprintf(`ID      Sender ID Study ID Category Created          Body
 msg-002 sender-id study-id feedback 27-01-2023 19:39 body
 
 ---
