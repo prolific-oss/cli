@@ -17,6 +17,8 @@ func NewMessageCommand(client client.API, w io.Writer) *cobra.Command {
 	cmd.AddCommand(
 		NewListCommand("list", client, w),
 		NewSendCommand("send", client, w),
+		NewBulkSendCommand("bulk-send", client, w),
+		NewSendGroupCommand("send-group", client, w),
 	)
 
 	return cmd

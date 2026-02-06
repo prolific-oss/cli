@@ -35,6 +35,20 @@ func (m *MockAPI) EXPECT() *MockAPIMockRecorder {
 	return m.recorder
 }
 
+// BulkSendMessage mocks base method.
+func (m *MockAPI) BulkSendMessage(ids []string, body, studyID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BulkSendMessage", ids, body, studyID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BulkSendMessage indicates an expected call of BulkSendMessage.
+func (mr *MockAPIMockRecorder) BulkSendMessage(ids, body, studyID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BulkSendMessage", reflect.TypeOf((*MockAPI)(nil).BulkSendMessage), ids, body, studyID)
+}
+
 // CreateAITaskBuilderBatch mocks base method.
 func (m *MockAPI) CreateAITaskBuilderBatch(params client.CreateBatchParams) (*client.CreateAITaskBuilderBatchResponse, error) {
 	m.ctrl.T.Helper()
@@ -633,6 +647,20 @@ func (m *MockAPI) ListCredentialPools(workspaceID string) (*client.ListCredentia
 func (mr *MockAPIMockRecorder) ListCredentialPools(workspaceID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCredentialPools", reflect.TypeOf((*MockAPI)(nil).ListCredentialPools), workspaceID)
+}
+
+// SendGroupMessage mocks base method.
+func (m *MockAPI) SendGroupMessage(participantGroupID, body string, studyID *string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SendGroupMessage", participantGroupID, body, studyID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SendGroupMessage indicates an expected call of SendGroupMessage.
+func (mr *MockAPIMockRecorder) SendGroupMessage(participantGroupID, body, studyID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendGroupMessage", reflect.TypeOf((*MockAPI)(nil).SendGroupMessage), participantGroupID, body, studyID)
 }
 
 // SendMessage mocks base method.

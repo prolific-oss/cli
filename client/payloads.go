@@ -1,10 +1,26 @@
 package client
 
-// MessagePayload represents the JSON payload for sending a message
+// SendMessagePayload represents the JSON payload for sending a message.
 type SendMessagePayload struct {
 	RecipientID string `json:"recipient_id"`
 	StudyID     string `json:"study_id"`
 	Body        string `json:"body"`
+}
+
+// BulkSendMessagePayload represents the JSON payload for
+// sending a message to multiple participants.
+type BulkSendMessagePayload struct {
+	IDs     []string `json:"ids"`
+	Body    string   `json:"body"`
+	StudyID string   `json:"study_id"`
+}
+
+// SendGroupMessagePayload represents the JSON payload for
+// sending a message to a participant group.
+type SendGroupMessagePayload struct {
+	ParticipantGroupID string `json:"participant_group_id"`
+	Body               string `json:"body"`
+	StudyID            string `json:"study_id,omitempty"`
 }
 
 // CreateAITaskBuilderDatasetPayload represents the request for creating a dataset

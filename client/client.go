@@ -73,6 +73,8 @@ type API interface {
 	GetMessages(userID *string, createdAfter *string) (*ListMessagesResponse, error)
 	SendMessage(body, recipientID, studyID string) error
 	GetUnreadMessages() (*ListUnreadMessagesResponse, error)
+	BulkSendMessage(ids []string, body, studyID string) error
+	SendGroupMessage(participantGroupID, body string, studyID *string) error
 
 	CreateAITaskBuilderBatch(params CreateBatchParams) (*CreateAITaskBuilderBatchResponse, error)
 	CreateAITaskBuilderInstructions(batchID string, instructions CreateAITaskBuilderInstructionsPayload) (*CreateAITaskBuilderInstructionsResponse, error)
@@ -657,14 +659,6 @@ func (c *Client) GetMessages(userID *string, createdAfter *string) (*ListMessage
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
 
-	for index, message := range response.Results {
-		if value, ok := message.Data["study_id"].(string); ok {
-			response.Results[index].StudyID = value
-		}
-		// Now remove the data field
-		response.Results[index].Data = nil
-	}
-
 	return &response, nil
 }
 
@@ -685,7 +679,7 @@ func (c *Client) SendMessage(body string, recipientID string, studyID string) er
 	return nil
 }
 
-// GetMessages will return the unread messages for the authenticated user
+// GetUnreadMessages will return the unread messages for the authenticated user
 func (c *Client) GetUnreadMessages() (*ListUnreadMessagesResponse, error) {
 	var response ListUnreadMessagesResponse
 
@@ -697,6 +691,43 @@ func (c *Client) GetUnreadMessages() (*ListUnreadMessagesResponse, error) {
 	}
 
 	return &response, nil
+}
+
+// BulkSendMessage will send a message to multiple participants
+func (c *Client) BulkSendMessage(ids []string, body, studyID string) error {
+	payload := BulkSendMessagePayload{
+		IDs:     ids,
+		Body:    body,
+		StudyID: studyID,
+	}
+
+	url := "/api/v1/messages/bulk/"
+	_, err := c.Execute(http.MethodPost, url, payload, nil)
+	if err != nil {
+		return fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return nil
+}
+
+// SendGroupMessage will send a message to a participant group
+func (c *Client) SendGroupMessage(participantGroupID, body string, studyID *string) error {
+	payload := SendGroupMessagePayload{
+		ParticipantGroupID: participantGroupID,
+		Body:               body,
+	}
+
+	if studyID != nil {
+		payload.StudyID = *studyID
+	}
+
+	url := "/api/v1/messages/participant-group/"
+	_, err := c.Execute(http.MethodPost, url, payload, nil)
+	if err != nil {
+		return fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return nil
 }
 
 // GetAITaskBuilderBatch will return details of an AI Task Builder batch.

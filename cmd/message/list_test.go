@@ -69,10 +69,14 @@ func TestNewListCommandCallsTheAPI(t *testing.T) {
 	response := client.ListMessagesResponse{
 		Results: []model.Message{
 			{
-				SenderID:        "sender-id",
-				StudyID:         "study-id",
-				DatetimeCreated: time.Date(2023, 01, 27, 19, 39, 0, 0, time.UTC),
-				Body:            "body",
+				ID:       "msg-001",
+				SenderID: "sender-id",
+				Body:     "body",
+				SentAt:   time.Date(2023, 01, 27, 19, 39, 0, 0, time.UTC),
+				Data: &model.MessageData{
+					StudyID:  "study-id",
+					Category: "feedback",
+				},
 			},
 		},
 		JSONAPIMeta: &client.JSONAPIMeta{
@@ -101,8 +105,8 @@ func TestNewListCommandCallsTheAPI(t *testing.T) {
 	writer.Flush()
 
 	actual := b.String()
-	expected := fmt.Sprintf(`Sender ID Study ID Datetime Created Body
-sender-id study-id 27-01-2023 19:39 body
+	expected := fmt.Sprintf(`ID      Sender ID Study ID Category Sent At          Body
+msg-001 sender-id study-id feedback 27-01-2023 19:39 body
 
 ---
 
@@ -120,11 +124,16 @@ func TestNewListCommandWithUnreadFlagCallsTheAPI(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	response := client.ListUnreadMessagesResponse{
-		Results: []model.UnreadMessage{
+		Results: []model.Message{
 			{
-				Sender:          "sender-id",
-				DatetimeCreated: time.Date(2023, 01, 27, 19, 39, 0, 0, time.UTC),
-				Body:            "body",
+				ID:       "msg-002",
+				SenderID: "sender-id",
+				Body:     "body",
+				SentAt:   time.Date(2023, 01, 27, 19, 39, 0, 0, time.UTC),
+				Data: &model.MessageData{
+					StudyID:  "study-id",
+					Category: "feedback",
+				},
 			},
 		},
 		JSONAPIMeta: &client.JSONAPIMeta{
@@ -156,8 +165,8 @@ func TestNewListCommandWithUnreadFlagCallsTheAPI(t *testing.T) {
 	writer.Flush()
 
 	actual := b.String()
-	expected := fmt.Sprintf(`Sender ID Datetime Created Body
-sender-id 27-01-2023 19:39 body
+	expected := fmt.Sprintf(`ID      Sender ID Study ID Category Sent At          Body
+msg-002 sender-id study-id feedback 27-01-2023 19:39 body
 
 ---
 
