@@ -9,6 +9,8 @@ import (
 	"github.com/prolific-oss/cli/mock_client"
 )
 
+const errBodyRequired = "error: body is required"
+
 func TestNewMessageCommand(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

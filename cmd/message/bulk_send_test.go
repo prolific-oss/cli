@@ -120,9 +120,8 @@ func TestNewBulkSendCommandValidatesBody(t *testing.T) {
 	_ = cmd.Flags().Set("study", "bulk-study-id")
 	err := cmd.Execute()
 
-	expectedError := "error: body is required"
-	if err == nil || err.Error() != expectedError {
-		t.Fatalf("expected error: '%s'; got error: '%v'", expectedError, err)
+	if err == nil || err.Error() != errBodyRequired {
+		t.Fatalf("expected error: '%s'; got error: '%v'", errBodyRequired, err)
 	}
 }
 
