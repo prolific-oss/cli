@@ -317,3 +317,13 @@ type ListCollectionsResponse struct {
 	Results []model.Collection `json:"results"`
 	*JSONAPIMeta
 }
+
+// CreateBonusPaymentsResponse is the response for creating bonus payments.
+type CreateBonusPaymentsResponse struct {
+	ID          string  `json:"id"`
+	Study       string  `json:"study"`
+	Amount      float64 `json:"amount"`
+	Fees        float64 `json:"fees"`
+	VAT         float64 `json:"vat"`
+	TotalAmount float64 `json:"total_amount"`
+}
