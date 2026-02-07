@@ -102,6 +102,36 @@ group-id N/A      Hello group
 	}
 }
 
+func TestNewSendGroupCommandValidatesGroup(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	cmd := message.NewSendGroupCommand("send-group", c, os.Stdout)
+	_ = cmd.Flags().Set("body", "body")
+	err := cmd.Execute()
+
+	expectedError := "error: group is required"
+	if err == nil || err.Error() != expectedError {
+		t.Fatalf("expected error: '%s'; got error: '%v'", expectedError, err)
+	}
+}
+
+func TestNewSendGroupCommandValidatesBody(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	cmd := message.NewSendGroupCommand("send-group", c, os.Stdout)
+	_ = cmd.Flags().Set("group", "group-id")
+	err := cmd.Execute()
+
+	expectedError := "error: body is required"
+	if err == nil || err.Error() != expectedError {
+		t.Fatalf("expected error: '%s'; got error: '%v'", expectedError, err)
+	}
+}
+
 func TestNewSendGroupCommandHandlesErrors(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

@@ -58,6 +58,18 @@ Please make sure you quote the message with "" for the -b flag.
 
 // createMessage will show your message
 func createMessage(client client.API, opts SendOptions, w io.Writer) error {
+	if opts.RecipientID == "" {
+		return fmt.Errorf("recipient is required")
+	}
+
+	if opts.StudyID == "" {
+		return fmt.Errorf("study is required")
+	}
+
+	if opts.Body == "" {
+		return fmt.Errorf("body is required")
+	}
+
 	err := client.SendMessage(opts.Body, opts.RecipientID, opts.StudyID)
 	if err != nil {
 		return err

@@ -94,6 +94,38 @@ func TestNewBulkSendCommandHandlesErrors(t *testing.T) {
 	}
 }
 
+func TestNewBulkSendCommandValidatesStudy(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	cmd := message.NewBulkSendCommand("bulk-send", c, os.Stdout)
+	_ = cmd.Flags().Set("ids", "id1")
+	_ = cmd.Flags().Set("body", "body")
+	err := cmd.Execute()
+
+	expectedError := "error: study is required"
+	if err == nil || err.Error() != expectedError {
+		t.Fatalf("expected error: '%s'; got error: '%v'", expectedError, err)
+	}
+}
+
+func TestNewBulkSendCommandValidatesBody(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	cmd := message.NewBulkSendCommand("bulk-send", c, os.Stdout)
+	_ = cmd.Flags().Set("ids", "id1")
+	_ = cmd.Flags().Set("study", "bulk-study-id")
+	err := cmd.Execute()
+
+	expectedError := "error: body is required"
+	if err == nil || err.Error() != expectedError {
+		t.Fatalf("expected error: '%s'; got error: '%v'", expectedError, err)
+	}
+}
+
 func TestNewBulkSendCommandValidatesEmptyIDs(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
