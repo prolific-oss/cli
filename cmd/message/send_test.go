@@ -74,9 +74,8 @@ func TestNewSendCommandValidatesBody(t *testing.T) {
 	_ = cmd.Flags().Set("study", "study-id")
 	err := cmd.Execute()
 
-	expectedError := "error: body is required" //nolint:goconst
-	if err == nil || err.Error() != expectedError {
-		t.Fatalf("expected error: '%s'; got error: '%v'", expectedError, err)
+	if err == nil || err.Error() != errBodyRequired {
+		t.Fatalf("expected error: '%s'; got error: '%v'", errBodyRequired, err)
 	}
 }
 
