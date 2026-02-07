@@ -1,5 +1,6 @@
 vendor/
 build/
+specs/
 
 /prolific
 coverage.out
