@@ -56,6 +56,14 @@ func bulkSendMessage(c client.API, opts BulkSendOptions, w io.Writer) error {
 		return fmt.Errorf("at least one participant ID is required")
 	}
 
+	if opts.StudyID == "" {
+		return fmt.Errorf("study is required")
+	}
+
+	if opts.Body == "" {
+		return fmt.Errorf("body is required")
+	}
+
 	err := c.BulkSendMessage(ids, opts.Body, opts.StudyID)
 	if err != nil {
 		return err

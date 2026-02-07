@@ -32,6 +32,54 @@ func TestNewSendCommand(t *testing.T) {
 	}
 }
 
+func TestNewSendCommandValidatesRecipient(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	cmd := message.NewSendCommand("send", c, os.Stdout)
+	_ = cmd.Flags().Set("study", "study-id")
+	_ = cmd.Flags().Set("body", "body")
+	err := cmd.Execute()
+
+	expectedError := "error: recipient is required"
+	if err == nil || err.Error() != expectedError {
+		t.Fatalf("expected error: '%s'; got error: '%v'", expectedError, err)
+	}
+}
+
+func TestNewSendCommandValidatesStudy(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	cmd := message.NewSendCommand("send", c, os.Stdout)
+	_ = cmd.Flags().Set("recipient", "recipient-id")
+	_ = cmd.Flags().Set("body", "body")
+	err := cmd.Execute()
+
+	expectedError := "error: study is required"
+	if err == nil || err.Error() != expectedError {
+		t.Fatalf("expected error: '%s'; got error: '%v'", expectedError, err)
+	}
+}
+
+func TestNewSendCommandValidatesBody(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	cmd := message.NewSendCommand("send", c, os.Stdout)
+	_ = cmd.Flags().Set("recipient", "recipient-id")
+	_ = cmd.Flags().Set("study", "study-id")
+	err := cmd.Execute()
+
+	expectedError := "error: body is required" //nolint:goconst
+	if err == nil || err.Error() != expectedError {
+		t.Fatalf("expected error: '%s'; got error: '%v'", expectedError, err)
+	}
+}
+
 func TestNewSendCommandHandlesErrors(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

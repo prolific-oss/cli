@@ -51,6 +51,14 @@ $ prolific message send-group -g group-id -s study-id -b "Thanks for participati
 }
 
 func sendGroupMessage(c client.API, opts SendGroupOptions, w io.Writer) error {
+	if opts.GroupID == "" {
+		return fmt.Errorf("group is required")
+	}
+
+	if opts.Body == "" {
+		return fmt.Errorf("body is required")
+	}
+
 	var studyID *string
 	if opts.StudyID != "" {
 		studyID = &opts.StudyID
