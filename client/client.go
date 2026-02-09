@@ -754,9 +754,14 @@ func (c *Client) CreateBonusPayments(payload CreateBonusPaymentsPayload) (*Creat
 // PayBonusPayments triggers asynchronous payment of previously created bonus records.
 func (c *Client) PayBonusPayments(id string) error {
 	url := fmt.Sprintf("/api/v1/bulk-bonus-payments/%s/pay/", id)
-	_, err := c.Execute(http.MethodPost, url, nil, nil)
+	httpResponse, err := c.Execute(http.MethodPost, url, nil, nil)
 	if err != nil {
 		return fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusAccepted {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return fmt.Errorf("unable to pay bonus payments: %v", string(body))
 	}
 
 	return nil
