@@ -319,6 +319,8 @@ type ListCollectionsResponse struct {
 }
 
 // CreateBonusPaymentsResponse is the response for creating bonus payments.
+// Monetary fields are returned by the API as floats in minor currency units
+// (e.g., 100.0 = £1.00). Divide by 100 before display via ui.RenderMoney().
 type CreateBonusPaymentsResponse struct {
 	ID          string  `json:"id"`
 	Study       string  `json:"study"`
