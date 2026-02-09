@@ -660,3 +660,268 @@ func TestNewBatchInstructionsCommandMultipleChoiceWithUnitMissingDefaultUnit(t *
 		t.Fatalf("expected error about missing default_unit; got %s", err.Error())
 	}
 }
+
+func TestNewBatchInstructionsCommandWithFileUpload(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	batchID := "01954894-65b3-779e-aaf6-348698e12347"
+
+	response := client.CreateAITaskBuilderInstructionsResponse{
+		model.Instruction{
+			ID:          "inst-file-001",
+			Type:        "file_upload",
+			BatchID:     batchID,
+			CreatedBy:   "Sean",
+			CreatedAt:   "2024-09-18T07:50:15.055Z",
+			Description: "Please upload a screenshot of your work.",
+		},
+	}
+
+	instructions := client.CreateAITaskBuilderInstructionsPayload{
+		Instructions: []client.Instruction{
+			{
+				Type:        "file_upload",
+				CreatedBy:   "Sean",
+				Description: "Please upload a screenshot of your work.",
+			},
+		},
+	}
+
+	c.EXPECT().CreateAITaskBuilderInstructions(batchID, instructions).Return(&response, nil)
+
+	var buf bytes.Buffer
+	writer := bufio.NewWriter(&buf)
+
+	cmd := aitaskbuilder.NewBatchInstructionsCommand(c, writer)
+
+	instructionsJSON := `[{"type":"file_upload","created_by":"Sean","description":"Please upload a screenshot of your work."}]`
+
+	cmd.SetArgs([]string{
+		"-b", batchID,
+		"-j", instructionsJSON,
+	})
+
+	err := cmd.Execute()
+	if err != nil {
+		t.Fatalf("expected no error; got %s", err.Error())
+	}
+
+	writer.Flush()
+
+	expectedOutput := "Successfully added 1 instruction(s) to batch " + batchID
+	if !strings.Contains(buf.String(), expectedOutput) {
+		t.Fatalf("expected output to contain '%s'; got %s", expectedOutput, buf.String())
+	}
+
+	expectedID := "ID: inst-file-001"
+	if !strings.Contains(buf.String(), expectedID) {
+		t.Fatalf("expected output to contain '%s'; got %s", expectedID, buf.String())
+	}
+
+	expectedType := "Type: file_upload"
+	if !strings.Contains(buf.String(), expectedType) {
+		t.Fatalf("expected output to contain '%s'; got %s", expectedType, buf.String())
+	}
+}
+
+func TestNewBatchInstructionsCommandWithFileUploadAndConfig(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	batchID := "01954894-65b3-779e-aaf6-348698e12348"
+
+	response := client.CreateAITaskBuilderInstructionsResponse{
+		model.Instruction{
+			ID:          "inst-file-002",
+			Type:        "file_upload",
+			BatchID:     batchID,
+			CreatedBy:   "Sean",
+			CreatedAt:   "2024-09-18T07:50:15.055Z",
+			Description: "Please upload your document.",
+			FileUploadConfig: &model.FileUploadConfig{
+				AllowedFileTypes: []string{"pdf", "docx", "txt"},
+				MaxFileSizeMB:    10,
+			},
+		},
+	}
+
+	instructions := client.CreateAITaskBuilderInstructionsPayload{
+		Instructions: []client.Instruction{
+			{
+				Type:        "file_upload",
+				CreatedBy:   "Sean",
+				Description: "Please upload your document.",
+				FileUploadConfig: &client.FileUploadConfig{
+					AllowedFileTypes: []string{"pdf", "docx", "txt"},
+					MaxFileSizeMB:    10,
+				},
+			},
+		},
+	}
+
+	c.EXPECT().CreateAITaskBuilderInstructions(batchID, instructions).Return(&response, nil)
+
+	var buf bytes.Buffer
+	writer := bufio.NewWriter(&buf)
+
+	cmd := aitaskbuilder.NewBatchInstructionsCommand(c, writer)
+
+	instructionsJSON := `[{
+		"type": "file_upload",
+		"created_by": "Sean",
+		"description": "Please upload your document.",
+		"file_upload_config": {
+			"allowed_file_types": ["pdf", "docx", "txt"],
+			"max_file_size_mb": 10
+		}
+	}]`
+
+	cmd.SetArgs([]string{
+		"-b", batchID,
+		"-j", instructionsJSON,
+	})
+
+	err := cmd.Execute()
+	if err != nil {
+		t.Fatalf("expected no error; got %s", err.Error())
+	}
+
+	writer.Flush()
+
+	expectedOutput := "Successfully added 1 instruction(s) to batch " + batchID
+	if !strings.Contains(buf.String(), expectedOutput) {
+		t.Fatalf("expected output to contain '%s'; got %s", expectedOutput, buf.String())
+	}
+
+	expectedFileTypes := "Allowed File Types: [pdf docx txt]"
+	if !strings.Contains(buf.String(), expectedFileTypes) {
+		t.Fatalf("expected output to contain '%s'; got %s", expectedFileTypes, buf.String())
+	}
+
+	expectedMaxSize := "Max File Size: 10 MB"
+	if !strings.Contains(buf.String(), expectedMaxSize) {
+		t.Fatalf("expected output to contain '%s'; got %s", expectedMaxSize, buf.String())
+	}
+}
+
+func TestNewBatchInstructionsCommandFileUploadNegativeMaxSize(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	batchID := "01954894-65b3-779e-aaf6-348698e23704"
+
+	var buf bytes.Buffer
+	writer := bufio.NewWriter(&buf)
+
+	cmd := aitaskbuilder.NewBatchInstructionsCommand(c, writer)
+
+	// Negative max_file_size_mb
+	instructionsJSON := `[{
+		"type": "file_upload",
+		"created_by": "Sean",
+		"description": "Please upload your document.",
+		"file_upload_config": {
+			"allowed_file_types": ["pdf"],
+			"max_file_size_mb": -5
+		}
+	}]`
+
+	cmd.SetArgs([]string{
+		"-b", batchID,
+		"-j", instructionsJSON,
+	})
+
+	err := cmd.Execute()
+	if err == nil {
+		t.Fatal("expected an error; got nil")
+	}
+
+	if !strings.Contains(err.Error(), "max_file_size_mb must be a positive number") {
+		t.Fatalf("expected error about negative max_file_size_mb; got %s", err.Error())
+	}
+}
+
+func TestNewBatchInstructionsCommandWithFileUploadFromFile(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	batchID := "01954894-65b3-779e-aaf6-348698e54322"
+
+	// Create a temporary file with file_upload instructions
+	tmpDir := t.TempDir()
+	instructionsFile := filepath.Join(tmpDir, "file_upload_instructions.json")
+	instructionsContent := `[
+		{
+			"type": "file_upload",
+			"created_by": "Sean",
+			"description": "Please upload your completed annotation.",
+			"file_upload_config": {
+				"allowed_file_types": ["png", "jpg", "jpeg"],
+				"max_file_size_mb": 5
+			}
+		}
+	]`
+
+	err := os.WriteFile(instructionsFile, []byte(instructionsContent), 0600)
+	if err != nil {
+		t.Fatalf("failed to create temporary file: %s", err.Error())
+	}
+
+	response := client.CreateAITaskBuilderInstructionsResponse{
+		model.Instruction{
+			ID:          "inst-file-003",
+			Type:        "file_upload",
+			BatchID:     batchID,
+			CreatedBy:   "Sean",
+			CreatedAt:   "2024-09-18T07:50:15.055Z",
+			Description: "Please upload your completed annotation.",
+			FileUploadConfig: &model.FileUploadConfig{
+				AllowedFileTypes: []string{"png", "jpg", "jpeg"},
+				MaxFileSizeMB:    5,
+			},
+		},
+	}
+
+	instructions := client.CreateAITaskBuilderInstructionsPayload{
+		Instructions: []client.Instruction{
+			{
+				Type:        "file_upload",
+				CreatedBy:   "Sean",
+				Description: "Please upload your completed annotation.",
+				FileUploadConfig: &client.FileUploadConfig{
+					AllowedFileTypes: []string{"png", "jpg", "jpeg"},
+					MaxFileSizeMB:    5,
+				},
+			},
+		},
+	}
+
+	c.EXPECT().CreateAITaskBuilderInstructions(batchID, instructions).Return(&response, nil)
+
+	var buf bytes.Buffer
+	writer := bufio.NewWriter(&buf)
+
+	cmd := aitaskbuilder.NewBatchInstructionsCommand(c, writer)
+
+	cmd.SetArgs([]string{
+		"-b", batchID,
+		"-f", instructionsFile,
+	})
+
+	err = cmd.Execute()
+	if err != nil {
+		t.Fatalf("expected no error; got %s", err.Error())
+	}
+
+	writer.Flush()
+
+	expectedOutput := "Successfully added 1 instruction(s) to batch " + batchID
+	if !strings.Contains(buf.String(), expectedOutput) {
+		t.Fatalf("expected output to contain '%s'; got %s", expectedOutput, buf.String())
+	}
+}

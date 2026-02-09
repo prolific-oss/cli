@@ -66,6 +66,8 @@ const (
 	InstructionTypeMultipleChoiceWithFreeText InstructionType = "multiple_choice_with_free_text"
 	// InstructionTypeMultipleChoiceWithUnit represents a multiple choice instruction with unit selection.
 	InstructionTypeMultipleChoiceWithUnit InstructionType = "multiple_choice_with_unit"
+	// InstructionTypeFileUpload represents a file upload instruction.
+	InstructionTypeFileUpload InstructionType = "file_upload"
 )
 
 // InstructionOption represents an option for multiple choice instructions
@@ -87,15 +89,22 @@ type AnswerLimit struct {
 	Description string `json:"description"`
 }
 
+// FileUploadConfig represents configuration options for file upload instructions
+type FileUploadConfig struct {
+	AllowedFileTypes []string `json:"allowed_file_types,omitempty"`
+	MaxFileSizeMB    int      `json:"max_file_size_mb,omitempty"`
+}
+
 // Instruction represents a single instruction in the request payload
 type Instruction struct {
-	Type        InstructionType     `json:"type"`
-	CreatedBy   string              `json:"created_by"`
-	Description string              `json:"description"`
-	Options     []InstructionOption `json:"options,omitempty"`
-	AnswerLimit *AnswerLimit        `json:"answer_limit,omitempty"`
-	UnitOptions []UnitOption        `json:"unit_options,omitempty"`
-	DefaultUnit string              `json:"default_unit,omitempty"`
+	Type             InstructionType     `json:"type"`
+	CreatedBy        string              `json:"created_by"`
+	Description      string              `json:"description"`
+	Options          []InstructionOption `json:"options,omitempty"`
+	AnswerLimit      *AnswerLimit        `json:"answer_limit,omitempty"`
+	UnitOptions      []UnitOption        `json:"unit_options,omitempty"`
+	DefaultUnit      string              `json:"default_unit,omitempty"`
+	FileUploadConfig *FileUploadConfig   `json:"file_upload_config,omitempty"`
 }
 
 // CreateAITaskBuilderInstructionsPayload represents the JSON payload for creating AI Task Builder instructions

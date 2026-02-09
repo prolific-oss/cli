@@ -1,0 +1,78 @@
+[
+  {
+    "type": "multiple_choice",
+    "created_by": "Sean",
+    "description": "Choose the LLM response which is more accurate.",
+    "options": [
+      {
+        "label": "Response 1",
+        "value": "response1"
+      },
+      {
+        "label": "Response 2",
+        "value": "response2"
+      }
+    ]
+  },
+  {
+    "type": "free_text",
+    "created_by": "Sean",
+    "description": "Please share the reasons for your choice."
+  },
+  {
+    "type": "multiple_choice_with_free_text",
+    "created_by": "Sean",
+    "description": "Rate each response quality.",
+    "options": [
+      {
+        "label": "Excellent",
+        "value": "excellent",
+        "heading": "Response 1"
+      },
+      {
+        "label": "Good",
+        "value": "good",
+        "heading": "Response 2"
+      }
+    ]
+  },
+  {
+    "type": "multiple_choice_with_unit",
+    "created_by": "Sean",
+    "description": "Estimate the word count of the response.",
+    "options": [
+      {
+        "label": "100",
+        "value": "100"
+      },
+      {
+        "label": "200",
+        "value": "200"
+      },
+      {
+        "label": "300",
+        "value": "300"
+      }
+    ],
+    "unit_options": [
+      {
+        "label": "Words",
+        "value": "words"
+      },
+      {
+        "label": "Characters",
+        "value": "chars"
+      }
+    ],
+    "default_unit": "words"
+  },
+  {
+    "type": "file_upload",
+    "created_by": "Sean",
+    "description": "Please upload a screenshot of your annotation work.",
+    "file_upload_config": {
+      "allowed_file_types": ["png", "jpg", "jpeg", "pdf"],
+      "max_file_size_mb": 10
+    }
+  }
+]

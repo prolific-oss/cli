@@ -143,6 +143,12 @@ func renderAITaskBuilderResponses(c client.API, opts BatchGetResponsesOptions, w
 			} else {
 				fmt.Fprintf(w, "    Unit: \n")
 			}
+		case model.AITaskBuilderResponseTypeFileUpload:
+			if resp.Response.FileReference != nil {
+				fmt.Fprintf(w, "    File Reference: %s\n", *resp.Response.FileReference)
+			} else {
+				fmt.Fprintf(w, "    File Reference: \n")
+			}
 		}
 
 		if i < len(response.Results)-1 {
