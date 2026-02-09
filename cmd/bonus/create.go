@@ -18,7 +18,7 @@ type CreateOptions struct {
 	Bonuses        []string
 	File           string
 	NonInteractive bool
-	CSV            bool
+	Csv            bool
 }
 
 // NewCreateCommand creates a new command to create bonus payments
@@ -63,7 +63,7 @@ Bonus records must be paid separately using the 'bonus pay' command.`,
 	flags.StringArrayVarP(&opts.Bonuses, "bonus", "b", nil, "Participant bonus entry in format 'id,amount' (repeatable)")
 	flags.StringVarP(&opts.File, "file", "f", "", "Path to CSV file containing bonus entries")
 	flags.BoolVarP(&opts.NonInteractive, "non-interactive", "n", false, "Non-interactive output for scripting")
-	flags.BoolVarP(&opts.CSV, "csv", "c", false, "Output in CSV format")
+	flags.BoolVarP(&opts.Csv, "csv", "c", false, "Output in CSV format")
 
 	return cmd
 }
@@ -105,7 +105,7 @@ func createBonusPayments(apiClient client.API, studyID string, opts CreateOption
 	}
 
 	// Render output
-	if opts.CSV {
+	if opts.Csv {
 		return renderCSVOutput(response, w)
 	}
 
