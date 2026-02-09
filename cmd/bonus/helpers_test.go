@@ -8,7 +8,6 @@ import (
 	"testing"
 )
 
-// T010: TestParseBonusEntries_ValidInline
 func TestParseBonusEntries_ValidInline(t *testing.T) {
 	entries := []string{"pid1,4.25", "pid2,3.50"}
 	result, err := parseBonusEntries(entries)
@@ -35,7 +34,6 @@ func TestParseBonusEntries_SingleEntry(t *testing.T) {
 	}
 }
 
-// T011: TestParseBonusEntries_InvalidEntries
 func TestParseBonusEntries_EmptyID(t *testing.T) {
 	entries := []string{",4.25"}
 	_, err := parseBonusEntries(entries)
@@ -92,7 +90,6 @@ func TestParseBonusEntries_MissingComma(t *testing.T) {
 	}
 }
 
-// T012: TestParseBonusFile_ValidCSV
 func TestParseBonusFile_ValidCSV(t *testing.T) {
 	dir := t.TempDir()
 	filePath := filepath.Join(dir, "bonuses.csv")
@@ -112,7 +109,6 @@ func TestParseBonusFile_ValidCSV(t *testing.T) {
 	}
 }
 
-// T013: TestParseBonusFile_InvalidCSV
 func TestParseBonusFile_NonExistentFile(t *testing.T) {
 	_, err := parseBonusFile("/non/existent/file.csv")
 	if err == nil {
@@ -166,7 +162,6 @@ func TestParseBonusFile_ExtraWhitespace(t *testing.T) {
 	}
 }
 
-// T030: TestConfirmPayment_Yes
 func TestConfirmPayment_Yes(t *testing.T) {
 	reader := strings.NewReader("y\n")
 	var buf bytes.Buffer
@@ -186,7 +181,6 @@ func TestConfirmPayment_Yes(t *testing.T) {
 	}
 }
 
-// T031: TestConfirmPayment_No
 func TestConfirmPayment_No(t *testing.T) {
 	reader := strings.NewReader("n\n")
 	var buf bytes.Buffer
@@ -201,7 +195,6 @@ func TestConfirmPayment_No(t *testing.T) {
 	}
 }
 
-// T032: TestConfirmPayment_NonInteractive
 func TestConfirmPayment_NonInteractive(t *testing.T) {
 	var buf bytes.Buffer
 

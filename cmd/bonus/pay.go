@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// NewPayCommand creates a new command to pay bonus payments
 func NewPayCommand(commandName string, apiClient client.API, w io.Writer) *cobra.Command {
 	var nonInteractive bool
 
@@ -45,7 +44,6 @@ updated within minutes.`,
 	return cmd
 }
 
-// payBonusPayments orchestrates the pay bonus workflow.
 func payBonusPayments(apiClient client.API, bonusID string, nonInteractive bool, reader io.Reader, w io.Writer) error {
 	confirmed, err := confirmPayment(bonusID, nonInteractive, reader, w)
 	if err != nil {
