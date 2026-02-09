@@ -60,6 +60,22 @@ func TestParseBonusEntries_ZeroAmount(t *testing.T) {
 	}
 }
 
+func TestParseBonusEntries_NaN(t *testing.T) {
+	entries := []string{"pid1,NaN"}
+	_, err := parseBonusEntries(entries)
+	if err == nil {
+		t.Fatal("expected error for NaN amount")
+	}
+}
+
+func TestParseBonusEntries_Inf(t *testing.T) {
+	entries := []string{"pid1,+Inf"}
+	_, err := parseBonusEntries(entries)
+	if err == nil {
+		t.Fatal("expected error for Inf amount")
+	}
+}
+
 func TestParseBonusEntries_NonNumericAmount(t *testing.T) {
 	entries := []string{"pid1,abc"}
 	_, err := parseBonusEntries(entries)

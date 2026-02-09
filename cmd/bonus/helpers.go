@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -18,6 +19,10 @@ func validateBonusEntry(id, amount string) error {
 	val, err := strconv.ParseFloat(amount, 64)
 	if err != nil {
 		return fmt.Errorf("invalid amount '%s': must be a number", amount)
+	}
+
+	if math.IsNaN(val) || math.IsInf(val, 0) {
+		return fmt.Errorf("invalid amount '%s': must be a finite number", amount)
 	}
 
 	if val <= 0 {
