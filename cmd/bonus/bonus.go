@@ -7,7 +7,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// NewBonusCommand creates a new `bonus` command
 func NewBonusCommand(client client.API, w io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "bonus",

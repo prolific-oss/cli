@@ -14,7 +14,6 @@ import (
 	"github.com/prolific-oss/cli/mock_client"
 )
 
-// T033: TestNewPayCommand_Metadata
 func TestNewPayCommand_Metadata(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -32,7 +31,6 @@ func TestNewPayCommand_Metadata(t *testing.T) {
 	}
 }
 
-// T034: TestPayBonusPayments_SuccessNonInteractive
 func TestPayBonusPayments_SuccessNonInteractive(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -62,7 +60,6 @@ func TestPayBonusPayments_SuccessNonInteractive(t *testing.T) {
 	}
 }
 
-// T035: TestPayBonusPayments_APIError
 func TestPayBonusPayments_APIError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -86,7 +83,6 @@ func TestPayBonusPayments_APIError(t *testing.T) {
 	}
 }
 
-// T036: TestPayBonusPayments_Declined
 func TestPayBonusPayments_Declined(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
