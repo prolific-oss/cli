@@ -43,7 +43,6 @@ var defaultCreateResponse = &client.CreateBonusPaymentsResponse{
 	TotalAmount: 1150,
 }
 
-// T014: TestNewCreateCommand_Metadata
 func TestNewCreateCommand_Metadata(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -61,7 +60,6 @@ func TestNewCreateCommand_Metadata(t *testing.T) {
 	}
 }
 
-// T015: TestCreateBonusPayments_SuccessInline
 func TestCreateBonusPayments_SuccessInline(t *testing.T) {
 	c, writer, b := setupCreateMock(t, defaultCreateResponse)
 
@@ -85,7 +83,6 @@ func TestCreateBonusPayments_SuccessInline(t *testing.T) {
 	}
 }
 
-// T016: TestCreateBonusPayments_SuccessFile
 func TestCreateBonusPayments_SuccessFile(t *testing.T) {
 	response := &client.CreateBonusPaymentsResponse{
 		ID:          "bonus-file-123",
@@ -120,7 +117,6 @@ func TestCreateBonusPayments_SuccessFile(t *testing.T) {
 	}
 }
 
-// T017: TestCreateBonusPayments_APIError
 func TestCreateBonusPayments_APIError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -144,7 +140,6 @@ func TestCreateBonusPayments_APIError(t *testing.T) {
 	}
 }
 
-// T018: TestCreateBonusPayments_MutualExclusivity
 func TestCreateBonusPayments_MutualExclusivity(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -165,7 +160,6 @@ func TestCreateBonusPayments_MutualExclusivity(t *testing.T) {
 	}
 }
 
-// T019: TestCreateBonusPayments_NonInteractive
 func TestCreateBonusPayments_NonInteractive(t *testing.T) {
 	response := &client.CreateBonusPaymentsResponse{
 		ID:          "bonus-ni-123",
@@ -200,7 +194,6 @@ func TestCreateBonusPayments_NonInteractive(t *testing.T) {
 	}
 }
 
-// T020: TestCreateBonusPayments_CSVOutput
 func TestCreateBonusPayments_CSVOutput(t *testing.T) {
 	response := &client.CreateBonusPaymentsResponse{
 		ID:          "bonus-csv-123",

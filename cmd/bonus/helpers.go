@@ -10,7 +10,6 @@ import (
 	"strings"
 )
 
-// validateBonusEntry validates a single bonus entry (participant ID and amount).
 func validateBonusEntry(id, amount string) error {
 	if id == "" {
 		return fmt.Errorf("participant ID must not be empty")
@@ -98,7 +97,6 @@ func parseBonusFile(filePath string) (string, error) {
 	return strings.Join(entries, "\n"), nil
 }
 
-// confirmPayment prompts the user for confirmation before paying bonuses.
 func confirmPayment(bonusID string, nonInteractive bool, r io.Reader, w io.Writer) (bool, error) {
 	if nonInteractive {
 		return true, nil

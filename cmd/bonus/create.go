@@ -13,7 +13,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// CreateOptions holds the options for the create bonus command.
 type CreateOptions struct {
 	Bonuses        []string
 	File           string
@@ -21,7 +20,6 @@ type CreateOptions struct {
 	Csv            bool
 }
 
-// NewCreateCommand creates a new command to create bonus payments
 func NewCreateCommand(commandName string, apiClient client.API, w io.Writer) *cobra.Command {
 	var opts CreateOptions
 
@@ -68,7 +66,6 @@ Bonus records must be paid separately using the 'bonus pay' command.`,
 	return cmd
 }
 
-// createBonusPayments orchestrates the create bonus workflow.
 func createBonusPayments(apiClient client.API, studyID string, opts CreateOptions, w io.Writer) error {
 	// Validate mutual exclusivity
 	if len(opts.Bonuses) > 0 && opts.File != "" {
@@ -93,7 +90,6 @@ func createBonusPayments(apiClient client.API, studyID string, opts CreateOption
 		return err
 	}
 
-	// Call API
 	payload := client.CreateBonusPaymentsPayload{
 		StudyID:    studyID,
 		CSVBonuses: csvBonuses,
@@ -104,7 +100,6 @@ func createBonusPayments(apiClient client.API, studyID string, opts CreateOption
 		return err
 	}
 
-	// Render output
 	if opts.Csv {
 		return renderCSVOutput(response, w)
 	}
@@ -116,7 +111,6 @@ func createBonusPayments(apiClient client.API, studyID string, opts CreateOption
 	return renderInteractiveOutput(response, csvBonuses, w)
 }
 
-// renderInteractiveOutput renders the bonus summary with tabwriter.
 func renderInteractiveOutput(resp *client.CreateBonusPaymentsResponse, csvBonuses string, w io.Writer) error {
 	tw := tabwriter.NewWriter(w, 0, 1, 1, ' ', 0)
 
@@ -146,7 +140,6 @@ func renderInteractiveOutput(resp *client.CreateBonusPaymentsResponse, csvBonuse
 	return tw.Flush()
 }
 
-// renderNonInteractiveOutput renders output suitable for scripting.
 func renderNonInteractiveOutput(resp *client.CreateBonusPaymentsResponse, w io.Writer) error {
 	// First line: bonus ID for pipe extraction
 	fmt.Fprintln(w, resp.ID)
@@ -159,7 +152,6 @@ func renderNonInteractiveOutput(resp *client.CreateBonusPaymentsResponse, w io.W
 	return nil
 }
 
-// renderCSVOutput renders the bonus summary as CSV.
 func renderCSVOutput(resp *client.CreateBonusPaymentsResponse, w io.Writer) error {
 	csvWriter := csv.NewWriter(w)
 
