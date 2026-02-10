@@ -64,6 +64,11 @@
             }
           ],
           "default_unit": "cm"
+        },
+        {
+          "order": 3,
+          "type": "file_upload",
+          "description": "Please upload a screenshot of your completed work."
         }
       ]
     }

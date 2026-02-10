@@ -64,17 +64,24 @@ type InstructionOption struct {
 	Heading string `json:"heading,omitempty"`
 }
 
+// FileUploadConfig represents configuration options for file upload instructions.
+type FileUploadConfig struct {
+	AllowedFileTypes []string `json:"allowed_file_types,omitempty"`
+	MaxFileSizeMB    int      `json:"max_file_size_mb,omitempty"`
+}
+
 // Instruction represents an instruction in a batch.
 type Instruction struct {
-	ID          string              `json:"id"`
-	Type        string              `json:"type"`
-	BatchID     string              `json:"batch_id"`
-	CreatedBy   string              `json:"created_by"`
-	CreatedAt   string              `json:"created_at"`
-	Description string              `json:"description"`
-	Options     []InstructionOption `json:"options,omitempty"`
-	UnitOptions []UnitOption        `json:"unit_options,omitempty"`
-	DefaultUnit string              `json:"default_unit,omitempty"`
+	ID               string              `json:"id"`
+	Type             string              `json:"type"`
+	BatchID          string              `json:"batch_id"`
+	CreatedBy        string              `json:"created_by"`
+	CreatedAt        string              `json:"created_at"`
+	Description      string              `json:"description"`
+	Options          []InstructionOption `json:"options,omitempty"`
+	UnitOptions      []UnitOption        `json:"unit_options,omitempty"`
+	DefaultUnit      string              `json:"default_unit,omitempty"`
+	FileUploadConfig *FileUploadConfig   `json:"file_upload_config,omitempty"`
 }
 
 // AITaskBuilderResponse represents a response from an AI Task Builder batch task.
@@ -96,9 +103,10 @@ type AITaskBuilderResponse struct {
 type AITaskBuilderResponseData struct {
 	InstructionID string                      `json:"instruction_id"`
 	Type          AITaskBuilderResponseType   `json:"type"`
-	Text          *string                     `json:"text,omitempty"`   // For free_text and multiple_choice_with_free_text
-	Answer        []AITaskBuilderAnswerOption `json:"answer,omitempty"` // For multiple_choice, multiple_choice_with_free_text, and multiple_choice_with_unit
-	Unit          *string                     `json:"unit,omitempty"`   // For multiple_choice_with_unit - the selected unit value
+	Text          *string                     `json:"text,omitempty"`           // For free_text and multiple_choice_with_free_text
+	Answer        []AITaskBuilderAnswerOption `json:"answer,omitempty"`         // For multiple_choice, multiple_choice_with_free_text, and multiple_choice_with_unit
+	Unit          *string                     `json:"unit,omitempty"`           // For multiple_choice_with_unit - the selected unit value
+	FileReference *string                     `json:"file_reference,omitempty"` // For file_upload - reference to the uploaded file
 }
 
 // AITaskBuilderResponseType represents the type of response.
@@ -109,6 +117,7 @@ const (
 	AITaskBuilderResponseTypeMultipleChoice             AITaskBuilderResponseType = "multiple_choice"
 	AITaskBuilderResponseTypeMultipleChoiceWithFreeText AITaskBuilderResponseType = "multiple_choice_with_free_text"
 	AITaskBuilderResponseTypeMultipleChoiceWithUnit     AITaskBuilderResponseType = "multiple_choice_with_unit"
+	AITaskBuilderResponseTypeFileUpload                 AITaskBuilderResponseType = "file_upload"
 )
 
 // AITaskBuilderAnswerOption represents an answer option for multiple choice responses.

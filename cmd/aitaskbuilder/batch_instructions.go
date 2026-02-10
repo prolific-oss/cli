@@ -36,7 +36,8 @@ The instructions should be an array of instruction objects with the following ty
 - multiple_choice: Instructions with predefined options
 - free_text: Instructions requiring text input
 - multiple_choice_with_free_text: Instructions with options and text input
-- multiple_choice_with_unit: Instructions with options and unit selection (e.g., height in cm/inches)`,
+- multiple_choice_with_unit: Instructions with options and unit selection (e.g., height in cm/inches)
+- file_upload: Instructions requesting file uploads from participants`,
 		Example: `
 Add instructions from a file:
 $ prolific aitaskbuilder batch instructions -b <batch_id> -f instructions.json
@@ -158,6 +159,14 @@ func createBatchInstructions(c client.API, opts BatchInstructionsOptions, w io.W
 		if len(instruction.UnitOptions) > 0 {
 			fmt.Fprintf(w, "  Unit Options: %d\n", len(instruction.UnitOptions))
 		}
+		if instruction.FileUploadConfig != nil {
+			if len(instruction.FileUploadConfig.AllowedFileTypes) > 0 {
+				fmt.Fprintf(w, "  Allowed File Types: %v\n", instruction.FileUploadConfig.AllowedFileTypes)
+			}
+			if instruction.FileUploadConfig.MaxFileSizeMB > 0 {
+				fmt.Fprintf(w, "  Max File Size: %d MB\n", instruction.FileUploadConfig.MaxFileSizeMB)
+			}
+		}
 	}
 
 	return nil
@@ -174,6 +183,7 @@ func validateInstructions(instructions client.CreateAITaskBuilderInstructionsPay
 		client.InstructionTypeFreeText:                   true,
 		client.InstructionTypeMultipleChoiceWithFreeText: true,
 		client.InstructionTypeMultipleChoiceWithUnit:     true,
+		client.InstructionTypeFileUpload:                 true,
 	}
 
 	for i, instruction := range instructions.Instructions {
@@ -182,7 +192,7 @@ func validateInstructions(instructions client.CreateAITaskBuilderInstructionsPay
 		}
 
 		if !validTypes[instruction.Type] {
-			return fmt.Errorf("instruction %d: invalid type '%s'. Must be one of: multiple_choice, free_text, multiple_choice_with_free_text, multiple_choice_with_unit", i+1, instruction.Type)
+			return fmt.Errorf("instruction %d: invalid type '%s'. Must be one of: multiple_choice, free_text, multiple_choice_with_free_text, multiple_choice_with_unit, file_upload", i+1, instruction.Type)
 		}
 
 		if instruction.CreatedBy == "" {
@@ -228,6 +238,15 @@ func validateInstructions(instructions client.CreateAITaskBuilderInstructionsPay
 			}
 			if !validUnit {
 				return fmt.Errorf("instruction %d: default_unit '%s' must match one of the unit_options values", i+1, instruction.DefaultUnit)
+			}
+		}
+
+		// Validate file_upload_config for file_upload
+		if instruction.Type == client.InstructionTypeFileUpload {
+			if instruction.FileUploadConfig != nil {
+				if instruction.FileUploadConfig.MaxFileSizeMB < 0 {
+					return fmt.Errorf("instruction %d: max_file_size_mb must be a positive number", i+1)
+				}
 			}
 		}
 
