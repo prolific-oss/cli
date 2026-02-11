@@ -129,14 +129,11 @@ func renderAITaskBuilderResponses(c client.API, opts BatchGetResponsesOptions, w
 			} else {
 				fmt.Fprintf(w, "    Additional Text: \n")
 			}
-		case model.AITaskBuilderResponseTypeMultipleChoiceWithUnit:
-			if len(resp.Response.Answer) > 0 {
-				fmt.Fprintf(w, "    Selected Options:\n")
-				for _, option := range resp.Response.Answer {
-					fmt.Fprintf(w, "      - %s\n", option.Value)
-				}
+		case model.AITaskBuilderResponseTypeFreeTextWithUnit:
+			if resp.Response.Text != nil {
+				fmt.Fprintf(w, "    Text: %s\n", *resp.Response.Text)
 			} else {
-				fmt.Fprintf(w, "    Selected Options: \n")
+				fmt.Fprintf(w, "    Text: \n")
 			}
 			if resp.Response.Unit != nil {
 				fmt.Fprintf(w, "    Unit: %s\n", *resp.Response.Unit)

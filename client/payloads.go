@@ -64,8 +64,8 @@ const (
 	InstructionTypeFreeText InstructionType = "free_text"
 	// InstructionTypeMultipleChoiceWithFreeText represents a multiple choice instruction with free text.
 	InstructionTypeMultipleChoiceWithFreeText InstructionType = "multiple_choice_with_free_text"
-	// InstructionTypeMultipleChoiceWithUnit represents a multiple choice instruction with unit selection.
-	InstructionTypeMultipleChoiceWithUnit InstructionType = "multiple_choice_with_unit"
+	// InstructionTypeFreeTextWithUnit represents a free text instruction with unit selection.
+	InstructionTypeFreeTextWithUnit InstructionType = "free_text_with_unit"
 )
 
 // InstructionOption represents an option for multiple choice instructions
@@ -89,13 +89,16 @@ type AnswerLimit struct {
 
 // Instruction represents a single instruction in the request payload
 type Instruction struct {
-	Type        InstructionType     `json:"type"`
-	CreatedBy   string              `json:"created_by"`
-	Description string              `json:"description"`
-	Options     []InstructionOption `json:"options,omitempty"`
-	AnswerLimit *AnswerLimit        `json:"answer_limit,omitempty"`
-	UnitOptions []UnitOption        `json:"unit_options,omitempty"`
-	DefaultUnit string              `json:"default_unit,omitempty"`
+	Type                 InstructionType     `json:"type"`
+	CreatedBy            string              `json:"created_by"`
+	Description          string              `json:"description"`
+	Options              []InstructionOption `json:"options,omitempty"`
+	AnswerLimit          *AnswerLimit        `json:"answer_limit,omitempty"`
+	UnitOptions          []UnitOption        `json:"unit_options,omitempty"`
+	DefaultUnit          string              `json:"default_unit,omitempty"`
+	UnitPosition         string              `json:"unit_position,omitempty"`
+	HelperText           string              `json:"helper_text,omitempty"`
+	PlaceholderTextInput string              `json:"placeholder_text_input,omitempty"`
 }
 
 // CreateAITaskBuilderInstructionsPayload represents the JSON payload for creating AI Task Builder instructions

@@ -305,3 +305,79 @@ Response 1:
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, actual)
 	}
 }
+
+func TestNewGetResponsesCommandHandlesFreeTextWithUnitResponse(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	batchID := "f1e498d3-09cc-4f11-b3ed-99b6753b0a3d"
+	createdAt := time.Date(2024, 1, 1, 12, 0, 0, 0, time.UTC)
+
+	textValue := "75.5"
+	unitValue := "kg"
+
+	response := client.GetAITaskBuilderResponsesResponse{
+		Results: []model.AITaskBuilderResponse{
+			{
+				ID:            "response-789",
+				BatchID:       batchID,
+				ParticipantID: "participant-789",
+				TaskID:        "task-789",
+				CorrelationID: "correlation-003",
+				SubmissionID:  "submission-003",
+				Metadata:      map[string]string{},
+				Response: model.AITaskBuilderResponseData{
+					InstructionID: "instruction-003",
+					Type:          model.AITaskBuilderResponseTypeFreeTextWithUnit,
+					Text:          &textValue,
+					Unit:          &unitValue,
+				},
+				CreatedAt:     createdAt,
+				SchemaVersion: 2,
+			},
+		},
+		Meta: client.ResponseMeta{
+			Count: 1,
+		},
+	}
+
+	c.
+		EXPECT().
+		GetAITaskBuilderResponses(gomock.Eq(batchID)).
+		Return(&response, nil).
+		AnyTimes()
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := aitaskbuilder.NewGetResponsesCommand(c, writer)
+	_ = cmd.Flags().Set("batch-id", batchID)
+	_ = cmd.RunE(cmd, nil)
+
+	writer.Flush()
+
+	expected := `AI Task Builder Batch Responses:
+Batch ID: f1e498d3-09cc-4f11-b3ed-99b6753b0a3d
+Total Responses: 1
+
+Response 1:
+  ID: response-789
+  Batch ID: f1e498d3-09cc-4f11-b3ed-99b6753b0a3d
+  Participant ID: participant-789
+  Task ID: task-789
+  Correlation ID: correlation-003
+  Submission ID: submission-003
+  Schema Version: 2
+  Created At: 2024-01-01 12:00:00
+  Response:
+    Instruction ID: instruction-003
+    Type: free_text_with_unit
+    Text: 75.5
+    Unit: kg
+`
+	actual := b.String()
+	if actual != expected {
+		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, actual)
+	}
+}

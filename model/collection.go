@@ -44,7 +44,7 @@ const (
 	InstructionTypeFreeText                   InstructionType = "free_text"
 	InstructionTypeMultipleChoice             InstructionType = "multiple_choice"
 	InstructionTypeMultipleChoiceWithFreeText InstructionType = "multiple_choice_with_free_text"
-	InstructionTypeMultipleChoiceWithUnit     InstructionType = "multiple_choice_with_unit"
+	InstructionTypeFreeTextWithUnit           InstructionType = "free_text_with_unit"
 
 	// Content block types (non-interactive - for context or guidance)
 	ContentBlockTypeRichText InstructionType = "rich_text"
@@ -73,20 +73,22 @@ type PageInstruction struct {
 	Type  InstructionType `json:"type" yaml:"type" mapstructure:"type"`
 	Order int             `json:"order" yaml:"order" mapstructure:"order"`
 
-	// Required for instruction types (free_text, multiple_choice, multiple_choice_with_free_text, multiple_choice_with_unit, file_upload)
+	// Required for instruction types (free_text, multiple_choice, multiple_choice_with_free_text, free_text_with_unit, file_upload)
 	Description string `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description"`
 
-	// Optional - for free_text type
+	// Optional - for free_text and free_text_with_unit types
 	PlaceholderTextInput string `json:"placeholder_text_input,omitempty" yaml:"placeholder_text_input,omitempty" mapstructure:"placeholder_text_input"`
+	HelperText           string `json:"helper_text,omitempty" yaml:"helper_text,omitempty" mapstructure:"helper_text"`
 
 	// Optional - for multiple_choice and multiple_choice_with_free_text types
 	AnswerLimit     int                    `json:"answer_limit,omitempty" yaml:"answer_limit,omitempty" mapstructure:"answer_limit"`
 	Options         []MultipleChoiceOption `json:"options,omitempty" yaml:"options,omitempty" mapstructure:"options"`
 	DisableDropdown *bool                  `json:"disable_dropdown,omitempty" yaml:"disable_dropdown,omitempty" mapstructure:"disable_dropdown"`
 
-	// Optional - for multiple_choice_with_unit type
-	UnitOptions []UnitOption `json:"unit_options,omitempty" yaml:"unit_options,omitempty" mapstructure:"unit_options"`
-	DefaultUnit string       `json:"default_unit,omitempty" yaml:"default_unit,omitempty" mapstructure:"default_unit"`
+	// Optional - for free_text_with_unit type
+	UnitOptions  []UnitOption `json:"unit_options,omitempty" yaml:"unit_options,omitempty" mapstructure:"unit_options"`
+	DefaultUnit  string       `json:"default_unit,omitempty" yaml:"default_unit,omitempty" mapstructure:"default_unit"`
+	UnitPosition string       `json:"unit_position,omitempty" yaml:"unit_position,omitempty" mapstructure:"unit_position"`
 
 	// Content block fields - for rich_text type
 	Content string `json:"content,omitempty" yaml:"content,omitempty" mapstructure:"content"`

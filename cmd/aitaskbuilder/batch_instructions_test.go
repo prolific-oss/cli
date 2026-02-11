@@ -363,48 +363,46 @@ func TestNewBatchInstructionsCommandInvalidInstructionType(t *testing.T) {
 	}
 }
 
-func TestNewBatchInstructionsCommandWithMultipleChoiceWithUnit(t *testing.T) {
+func TestNewBatchInstructionsCommandWithFreeTextWithUnit(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	batchID := "01954894-65b3-779e-aaf6-348698e12346"
+	batchID := "01954894-65b3-779e-aaf6-348698e12347"
 
 	response := client.CreateAITaskBuilderInstructionsResponse{
 		model.Instruction{
-			ID:          "inst-789",
-			Type:        "multiple_choice_with_unit",
+			ID:          "inst-890",
+			Type:        "free_text_with_unit",
 			BatchID:     batchID,
 			CreatedBy:   "Sean",
 			CreatedAt:   "2024-09-18T07:50:15.055Z",
-			Description: "What is your height?",
-			Options: []model.InstructionOption{
-				{Label: "150", Value: "150"},
-				{Label: "160", Value: "160"},
-			},
+			Description: "What is your weight?",
 			UnitOptions: []model.UnitOption{
-				{Label: "CM", Value: "cm"},
-				{Label: "Inches", Value: "in"},
+				{Label: "KG", Value: "kg"},
+				{Label: "Pounds", Value: "lbs"},
 			},
-			DefaultUnit: "cm",
+			DefaultUnit:          "kg",
+			UnitPosition:         "suffix",
+			HelperText:           "Please enter your current weight",
+			PlaceholderTextInput: "Enter weight",
 		},
 	}
 
 	instructions := client.CreateAITaskBuilderInstructionsPayload{
 		Instructions: []client.Instruction{
 			{
-				Type:        "multiple_choice_with_unit",
+				Type:        "free_text_with_unit",
 				CreatedBy:   "Sean",
-				Description: "What is your height?",
-				Options: []client.InstructionOption{
-					{Label: "150", Value: "150"},
-					{Label: "160", Value: "160"},
-				},
+				Description: "What is your weight?",
 				UnitOptions: []client.UnitOption{
-					{Label: "CM", Value: "cm"},
-					{Label: "Inches", Value: "in"},
+					{Label: "KG", Value: "kg"},
+					{Label: "Pounds", Value: "lbs"},
 				},
-				DefaultUnit: "cm",
+				DefaultUnit:          "kg",
+				UnitPosition:         "suffix",
+				HelperText:           "Please enter your current weight",
+				PlaceholderTextInput: "Enter weight",
 			},
 		},
 	}
@@ -417,18 +415,17 @@ func TestNewBatchInstructionsCommandWithMultipleChoiceWithUnit(t *testing.T) {
 	cmd := aitaskbuilder.NewBatchInstructionsCommand(c, writer)
 
 	instructionsJSON := `[{
-		"type": "multiple_choice_with_unit",
+		"type": "free_text_with_unit",
 		"created_by": "Sean",
-		"description": "What is your height?",
-		"options": [
-			{"label": "150", "value": "150"},
-			{"label": "160", "value": "160"}
-		],
+		"description": "What is your weight?",
 		"unit_options": [
-			{"label": "CM", "value": "cm"},
-			{"label": "Inches", "value": "in"}
+			{"label": "KG", "value": "kg"},
+			{"label": "Pounds", "value": "lbs"}
 		],
-		"default_unit": "cm"
+		"default_unit": "kg",
+		"unit_position": "suffix",
+		"helper_text": "Please enter your current weight",
+		"placeholder_text_input": "Enter weight"
 	}]`
 
 	cmd.SetArgs([]string{
@@ -448,7 +445,7 @@ func TestNewBatchInstructionsCommandWithMultipleChoiceWithUnit(t *testing.T) {
 		t.Fatalf("expected output to contain '%s'; got %s", expectedOutput, buf.String())
 	}
 
-	expectedID := "ID: inst-789"
+	expectedID := "ID: inst-890"
 	if !strings.Contains(buf.String(), expectedID) {
 		t.Fatalf("expected output to contain '%s'; got %s", expectedID, buf.String())
 	}
@@ -459,12 +456,12 @@ func TestNewBatchInstructionsCommandWithMultipleChoiceWithUnit(t *testing.T) {
 	}
 }
 
-func TestNewBatchInstructionsCommandMultipleChoiceWithUnitMissingUnitOptions(t *testing.T) {
+func TestNewBatchInstructionsCommandFreeTextWithUnitMissingUnitOptions(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	batchID := "01954894-65b3-779e-aaf6-348698e23700"
+	batchID := "01954894-65b3-779e-aaf6-348698e23704"
 
 	var buf bytes.Buffer
 	writer := bufio.NewWriter(&buf)
@@ -473,13 +470,10 @@ func TestNewBatchInstructionsCommandMultipleChoiceWithUnitMissingUnitOptions(t *
 
 	// Missing unit_options
 	instructionsJSON := `[{
-		"type": "multiple_choice_with_unit",
+		"type": "free_text_with_unit",
 		"created_by": "Sean",
-		"description": "What is your height?",
-		"options": [
-			{"label": "150", "value": "150"},
-			{"label": "160", "value": "160"}
-		]
+		"description": "What is your weight?",
+		"unit_position": "suffix"
 	}]`
 
 	cmd.SetArgs([]string{
@@ -497,12 +491,12 @@ func TestNewBatchInstructionsCommandMultipleChoiceWithUnitMissingUnitOptions(t *
 	}
 }
 
-func TestNewBatchInstructionsCommandMultipleChoiceWithUnitInsufficientUnitOptions(t *testing.T) {
+func TestNewBatchInstructionsCommandFreeTextWithUnitInsufficientUnitOptions(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	batchID := "01954894-65b3-779e-aaf6-348698e23701"
+	batchID := "01954894-65b3-779e-aaf6-348698e23705"
 
 	var buf bytes.Buffer
 	writer := bufio.NewWriter(&buf)
@@ -511,16 +505,13 @@ func TestNewBatchInstructionsCommandMultipleChoiceWithUnitInsufficientUnitOption
 
 	// Only 1 unit_option (need at least 2)
 	instructionsJSON := `[{
-		"type": "multiple_choice_with_unit",
+		"type": "free_text_with_unit",
 		"created_by": "Sean",
-		"description": "What is your height?",
-		"options": [
-			{"label": "150", "value": "150"},
-			{"label": "160", "value": "160"}
-		],
+		"description": "What is your weight?",
 		"unit_options": [
-			{"label": "CM", "value": "cm"}
-		]
+			{"label": "KG", "value": "kg"}
+		],
+		"unit_position": "suffix"
 	}]`
 
 	cmd.SetArgs([]string{
@@ -538,26 +529,26 @@ func TestNewBatchInstructionsCommandMultipleChoiceWithUnitInsufficientUnitOption
 	}
 }
 
-func TestNewBatchInstructionsCommandMultipleChoiceWithUnitMissingOptions(t *testing.T) {
+func TestNewBatchInstructionsCommandFreeTextWithUnitMissingUnitPosition(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	batchID := "01954894-65b3-779e-aaf6-348698e23702"
+	batchID := "01954894-65b3-779e-aaf6-348698e23706"
 
 	var buf bytes.Buffer
 	writer := bufio.NewWriter(&buf)
 
 	cmd := aitaskbuilder.NewBatchInstructionsCommand(c, writer)
 
-	// Missing options (required for multiple_choice_with_unit)
+	// Missing unit_position
 	instructionsJSON := `[{
-		"type": "multiple_choice_with_unit",
+		"type": "free_text_with_unit",
 		"created_by": "Sean",
-		"description": "What is your height?",
+		"description": "What is your weight?",
 		"unit_options": [
-			{"label": "CM", "value": "cm"},
-			{"label": "Inches", "value": "in"}
+			{"label": "KG", "value": "kg"},
+			{"label": "Pounds", "value": "lbs"}
 		]
 	}]`
 
@@ -571,17 +562,56 @@ func TestNewBatchInstructionsCommandMultipleChoiceWithUnitMissingOptions(t *test
 		t.Fatal("expected an error; got nil")
 	}
 
-	if !strings.Contains(err.Error(), "options are required for type 'multiple_choice_with_unit'") {
-		t.Fatalf("expected error about missing options; got %s", err.Error())
+	if !strings.Contains(err.Error(), "unit_position is required for type 'free_text_with_unit'") {
+		t.Fatalf("expected error about missing unit_position; got %s", err.Error())
 	}
 }
 
-func TestNewBatchInstructionsCommandMultipleChoiceWithUnitInvalidDefaultUnit(t *testing.T) {
+func TestNewBatchInstructionsCommandFreeTextWithUnitInvalidUnitPosition(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	batchID := "01954894-65b3-779e-aaf6-348698e23703"
+	batchID := "01954894-65b3-779e-aaf6-348698e23707"
+
+	var buf bytes.Buffer
+	writer := bufio.NewWriter(&buf)
+
+	cmd := aitaskbuilder.NewBatchInstructionsCommand(c, writer)
+
+	// Invalid unit_position value
+	instructionsJSON := `[{
+		"type": "free_text_with_unit",
+		"created_by": "Sean",
+		"description": "What is your weight?",
+		"unit_options": [
+			{"label": "KG", "value": "kg"},
+			{"label": "Pounds", "value": "lbs"}
+		],
+		"unit_position": "middle"
+	}]`
+
+	cmd.SetArgs([]string{
+		"-b", batchID,
+		"-j", instructionsJSON,
+	})
+
+	err := cmd.Execute()
+	if err == nil {
+		t.Fatal("expected an error; got nil")
+	}
+
+	if !strings.Contains(err.Error(), "unit_position must be either 'prefix' or 'suffix'") {
+		t.Fatalf("expected error about invalid unit_position; got %s", err.Error())
+	}
+}
+
+func TestNewBatchInstructionsCommandFreeTextWithUnitInvalidDefaultUnit(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	batchID := "01954894-65b3-779e-aaf6-348698e23708"
 
 	var buf bytes.Buffer
 	writer := bufio.NewWriter(&buf)
@@ -590,18 +620,15 @@ func TestNewBatchInstructionsCommandMultipleChoiceWithUnitInvalidDefaultUnit(t *
 
 	// default_unit doesn't match any unit_options value
 	instructionsJSON := `[{
-		"type": "multiple_choice_with_unit",
+		"type": "free_text_with_unit",
 		"created_by": "Sean",
-		"description": "What is your height?",
-		"options": [
-			{"label": "150", "value": "150"},
-			{"label": "160", "value": "160"}
-		],
+		"description": "What is your weight?",
 		"unit_options": [
-			{"label": "CM", "value": "cm"},
-			{"label": "Inches", "value": "in"}
+			{"label": "KG", "value": "kg"},
+			{"label": "Pounds", "value": "lbs"}
 		],
-		"default_unit": "meters"
+		"unit_position": "suffix",
+		"default_unit": "grams"
 	}]`
 
 	cmd.SetArgs([]string{
@@ -614,36 +641,66 @@ func TestNewBatchInstructionsCommandMultipleChoiceWithUnitInvalidDefaultUnit(t *
 		t.Fatal("expected an error; got nil")
 	}
 
-	if !strings.Contains(err.Error(), "default_unit 'meters' must match one of the unit_options values") {
+	if !strings.Contains(err.Error(), "default_unit 'grams' must match one of the unit_options values") {
 		t.Fatalf("expected error about invalid default_unit; got %s", err.Error())
 	}
 }
 
-func TestNewBatchInstructionsCommandMultipleChoiceWithUnitMissingDefaultUnit(t *testing.T) {
+func TestNewBatchInstructionsCommandFreeTextWithUnitWithoutDefaultUnit(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	batchID := "01954894-65b3-779e-aaf6-348698e23703"
+	batchID := "01954894-65b3-779e-aaf6-348698e12348"
+
+	response := client.CreateAITaskBuilderInstructionsResponse{
+		model.Instruction{
+			ID:          "inst-891",
+			Type:        "free_text_with_unit",
+			BatchID:     batchID,
+			CreatedBy:   "Sean",
+			CreatedAt:   "2024-09-18T07:50:15.055Z",
+			Description: "What is your weight?",
+			UnitOptions: []model.UnitOption{
+				{Label: "KG", Value: "kg"},
+				{Label: "Pounds", Value: "lbs"},
+			},
+			UnitPosition: "suffix",
+		},
+	}
+
+	instructions := client.CreateAITaskBuilderInstructionsPayload{
+		Instructions: []client.Instruction{
+			{
+				Type:        "free_text_with_unit",
+				CreatedBy:   "Sean",
+				Description: "What is your weight?",
+				UnitOptions: []client.UnitOption{
+					{Label: "KG", Value: "kg"},
+					{Label: "Pounds", Value: "lbs"},
+				},
+				UnitPosition: "suffix",
+			},
+		},
+	}
+
+	c.EXPECT().CreateAITaskBuilderInstructions(batchID, instructions).Return(&response, nil)
 
 	var buf bytes.Buffer
 	writer := bufio.NewWriter(&buf)
 
 	cmd := aitaskbuilder.NewBatchInstructionsCommand(c, writer)
 
-	// default_unit is missing
+	// default_unit is optional for free_text_with_unit
 	instructionsJSON := `[{
-		"type": "multiple_choice_with_unit",
+		"type": "free_text_with_unit",
 		"created_by": "Sean",
-		"description": "What is your height?",
-		"options": [
-			{"label": "150", "value": "150"},
-			{"label": "160", "value": "160"}
-		],
+		"description": "What is your weight?",
 		"unit_options": [
-			{"label": "CM", "value": "cm"},
-			{"label": "Inches", "value": "in"}
-		]
+			{"label": "KG", "value": "kg"},
+			{"label": "Pounds", "value": "lbs"}
+		],
+		"unit_position": "suffix"
 	}]`
 
 	cmd.SetArgs([]string{
@@ -652,11 +709,91 @@ func TestNewBatchInstructionsCommandMultipleChoiceWithUnitMissingDefaultUnit(t *
 	})
 
 	err := cmd.Execute()
-	if err == nil {
-		t.Fatal("expected an error; got nil")
+	if err != nil {
+		t.Fatalf("expected no error; got %s", err.Error())
 	}
 
-	if !strings.Contains(err.Error(), "default_unit is required for type 'multiple_choice_with_unit'") {
-		t.Fatalf("expected error about missing default_unit; got %s", err.Error())
+	writer.Flush()
+
+	expectedOutput := "Successfully added 1 instruction(s) to batch " + batchID
+	if !strings.Contains(buf.String(), expectedOutput) {
+		t.Fatalf("expected output to contain '%s'; got %s", expectedOutput, buf.String())
+	}
+}
+
+func TestNewBatchInstructionsCommandFreeTextWithUnitPrefixPosition(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	batchID := "01954894-65b3-779e-aaf6-348698e12349"
+
+	response := client.CreateAITaskBuilderInstructionsResponse{
+		model.Instruction{
+			ID:          "inst-892",
+			Type:        "free_text_with_unit",
+			BatchID:     batchID,
+			CreatedBy:   "Sean",
+			CreatedAt:   "2024-09-18T07:50:15.055Z",
+			Description: "What is the price?",
+			UnitOptions: []model.UnitOption{
+				{Label: "$", Value: "usd"},
+				{Label: "€", Value: "eur"},
+			},
+			UnitPosition: "prefix",
+			DefaultUnit:  "usd",
+		},
+	}
+
+	instructions := client.CreateAITaskBuilderInstructionsPayload{
+		Instructions: []client.Instruction{
+			{
+				Type:        "free_text_with_unit",
+				CreatedBy:   "Sean",
+				Description: "What is the price?",
+				UnitOptions: []client.UnitOption{
+					{Label: "$", Value: "usd"},
+					{Label: "€", Value: "eur"},
+				},
+				UnitPosition: "prefix",
+				DefaultUnit:  "usd",
+			},
+		},
+	}
+
+	c.EXPECT().CreateAITaskBuilderInstructions(batchID, instructions).Return(&response, nil)
+
+	var buf bytes.Buffer
+	writer := bufio.NewWriter(&buf)
+
+	cmd := aitaskbuilder.NewBatchInstructionsCommand(c, writer)
+
+	instructionsJSON := `[{
+		"type": "free_text_with_unit",
+		"created_by": "Sean",
+		"description": "What is the price?",
+		"unit_options": [
+			{"label": "$", "value": "usd"},
+			{"label": "€", "value": "eur"}
+		],
+		"unit_position": "prefix",
+		"default_unit": "usd"
+	}]`
+
+	cmd.SetArgs([]string{
+		"-b", batchID,
+		"-j", instructionsJSON,
+	})
+
+	err := cmd.Execute()
+	if err != nil {
+		t.Fatalf("expected no error; got %s", err.Error())
+	}
+
+	writer.Flush()
+
+	expectedOutput := "Successfully added 1 instruction(s) to batch " + batchID
+	if !strings.Contains(buf.String(), expectedOutput) {
+		t.Fatalf("expected output to contain '%s'; got %s", expectedOutput, buf.String())
 	}
 }

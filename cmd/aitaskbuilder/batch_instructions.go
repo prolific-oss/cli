@@ -36,7 +36,7 @@ The instructions should be an array of instruction objects with the following ty
 - multiple_choice: Instructions with predefined options
 - free_text: Instructions requiring text input
 - multiple_choice_with_free_text: Instructions with options and text input
-- multiple_choice_with_unit: Instructions with options and unit selection (e.g., height in cm/inches)`,
+- free_text_with_unit: Instructions requiring text input with unit selection (e.g., weight with kg/lbs)`,
 		Example: `
 Add instructions from a file:
 $ prolific aitaskbuilder batch instructions -b <batch_id> -f instructions.json
@@ -44,29 +44,8 @@ $ prolific aitaskbuilder batch instructions -b <batch_id> -f instructions.json
 Add instructions with JSON string:
 $ prolific aitaskbuilder batch instructions -b <batch_id> -j '[{"type":"free_text","created_by":"Sean","description":"Please explain your choice."}]'
 
-Example instructions.json:
-[
-  {
-    "type": "multiple_choice",
-    "created_by": "Sean",
-    "description": "Choose the LLM response which is more accurate.",
-    "options": [
-      {
-        "label": "Response 1",
-        "value": "response1"
-      },
-      {
-        "label": "Response 2",
-        "value": "response2"
-      }
-    ]
-  },
-  {
-    "type": "free_text",
-    "created_by": "Sean",
-    "description": "Please share the reasons for your choice."
-  }
-]
+For a comprehensive example file with all instruction types, see:
+docs/examples/batch-instructions.json
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
@@ -173,78 +152,133 @@ func validateInstructions(instructions client.CreateAITaskBuilderInstructionsPay
 		client.InstructionTypeMultipleChoice:             true,
 		client.InstructionTypeFreeText:                   true,
 		client.InstructionTypeMultipleChoiceWithFreeText: true,
-		client.InstructionTypeMultipleChoiceWithUnit:     true,
+		client.InstructionTypeFreeTextWithUnit:           true,
 	}
 
 	for i, instruction := range instructions.Instructions {
-		if instruction.Type == "" {
-			return fmt.Errorf("instruction %d: type is required", i+1)
+		if err := validateInstructionBasicFields(instruction, i, validTypes); err != nil {
+			return err
 		}
 
-		if !validTypes[instruction.Type] {
-			return fmt.Errorf("instruction %d: invalid type '%s'. Must be one of: multiple_choice, free_text, multiple_choice_with_free_text, multiple_choice_with_unit", i+1, instruction.Type)
+		if err := validateInstructionTypeSpecificFields(instruction, i); err != nil {
+			return err
 		}
 
-		if instruction.CreatedBy == "" {
-			return fmt.Errorf("instruction %d: created_by is required", i+1)
-		}
-
-		if instruction.Description == "" {
-			return fmt.Errorf("instruction %d: description is required", i+1)
-		}
-
-		// Validate type-specific requirements
-		if instruction.Type == client.InstructionTypeMultipleChoice ||
-			instruction.Type == client.InstructionTypeMultipleChoiceWithFreeText ||
-			instruction.Type == client.InstructionTypeMultipleChoiceWithUnit {
-			if len(instruction.Options) == 0 {
-				return fmt.Errorf("instruction %d: options are required for type '%s'", i+1, instruction.Type)
-			}
-		}
-
-		// Validate unit_options for multiple_choice_with_unit
-		if instruction.Type == client.InstructionTypeMultipleChoiceWithUnit {
-			if len(instruction.UnitOptions) < 2 {
-				return fmt.Errorf("instruction %d: unit_options requires at least 2 options for type 'multiple_choice_with_unit'", i+1)
-			}
-			for j, unitOption := range instruction.UnitOptions {
-				if unitOption.Label == "" {
-					return fmt.Errorf("instruction %d, unit_option %d: label is required", i+1, j+1)
-				}
-				if unitOption.Value == "" {
-					return fmt.Errorf("instruction %d, unit_option %d: value is required", i+1, j+1)
-				}
-			}
-			// Validate default_unit is required and matches one of the unit_options values
-			if instruction.DefaultUnit == "" {
-				return fmt.Errorf("instruction %d: default_unit is required for type 'multiple_choice_with_unit'", i+1)
-			}
-			validUnit := false
-			for _, opt := range instruction.UnitOptions {
-				if opt.Value == instruction.DefaultUnit {
-					validUnit = true
-					break
-				}
-			}
-			if !validUnit {
-				return fmt.Errorf("instruction %d: default_unit '%s' must match one of the unit_options values", i+1, instruction.DefaultUnit)
-			}
-		}
-
-		// Validate options if present
-		for j, option := range instruction.Options {
-			if option.Label == "" {
-				return fmt.Errorf("instruction %d, option %d: label is required", i+1, j+1)
-			}
-			if option.Value == "" {
-				return fmt.Errorf("instruction %d, option %d: value is required", i+1, j+1)
-			}
-			// Heading is required for multiple_choice_with_free_text
-			if instruction.Type == client.InstructionTypeMultipleChoiceWithFreeText && option.Heading == "" {
-				return fmt.Errorf("instruction %d, option %d: heading is required for type 'multiple_choice_with_free_text'", i+1, j+1)
-			}
+		if err := validateInstructionOptions(instruction, i); err != nil {
+			return err
 		}
 	}
 
+	return nil
+}
+
+// validateInstructionBasicFields validates required basic fields
+func validateInstructionBasicFields(instruction client.Instruction, index int, validTypes map[client.InstructionType]bool) error {
+	if instruction.Type == "" {
+		return fmt.Errorf("instruction %d: type is required", index+1)
+	}
+
+	if !validTypes[instruction.Type] {
+		return fmt.Errorf("instruction %d: invalid type '%s'. Must be one of: multiple_choice, free_text, multiple_choice_with_free_text, free_text_with_unit", index+1, instruction.Type)
+	}
+
+	if instruction.CreatedBy == "" {
+		return fmt.Errorf("instruction %d: created_by is required", index+1)
+	}
+
+	if instruction.Description == "" {
+		return fmt.Errorf("instruction %d: description is required", index+1)
+	}
+
+	return nil
+}
+
+// validateInstructionTypeSpecificFields validates fields specific to instruction type
+func validateInstructionTypeSpecificFields(instruction client.Instruction, index int) error {
+	// Validate options requirement for choice-based types
+	if instruction.Type == client.InstructionTypeMultipleChoice ||
+		instruction.Type == client.InstructionTypeMultipleChoiceWithFreeText {
+		if len(instruction.Options) == 0 {
+			return fmt.Errorf("instruction %d: options are required for type '%s'", index+1, instruction.Type)
+		}
+	}
+
+	// Validate unit_options for free_text_with_unit
+	if instruction.Type == client.InstructionTypeFreeTextWithUnit {
+		return validateFreeTextWithUnit(instruction, index)
+	}
+
+	return nil
+}
+
+// validateFreeTextWithUnit validates free_text_with_unit specific fields
+func validateFreeTextWithUnit(instruction client.Instruction, index int) error {
+	if err := validateUnitOptions(instruction.UnitOptions, index); err != nil {
+		return err
+	}
+
+	// Validate unit_position is required and has valid value
+	if instruction.UnitPosition == "" {
+		return fmt.Errorf("instruction %d: unit_position is required for type 'free_text_with_unit'", index+1)
+	}
+	if instruction.UnitPosition != "prefix" && instruction.UnitPosition != "suffix" {
+		return fmt.Errorf("instruction %d: unit_position must be either 'prefix' or 'suffix', got '%s'", index+1, instruction.UnitPosition)
+	}
+
+	// Validate default_unit if provided (optional for free_text_with_unit)
+	if instruction.DefaultUnit != "" {
+		return validateDefaultUnit(instruction.DefaultUnit, instruction.UnitOptions, index)
+	}
+
+	return nil
+}
+
+// validateUnitOptions validates unit options array
+func validateUnitOptions(unitOptions []client.UnitOption, index int) error {
+	if len(unitOptions) < 2 {
+		return fmt.Errorf("instruction %d: unit_options requires at least 2 options", index+1)
+	}
+
+	for j, unitOption := range unitOptions {
+		if unitOption.Label == "" {
+			return fmt.Errorf("instruction %d, unit_option %d: label is required", index+1, j+1)
+		}
+		if unitOption.Value == "" {
+			return fmt.Errorf("instruction %d, unit_option %d: value is required", index+1, j+1)
+		}
+	}
+
+	return nil
+}
+
+// validateDefaultUnit validates that default_unit matches one of the unit_options values
+func validateDefaultUnit(defaultUnit string, unitOptions []client.UnitOption, index int) error {
+	validUnit := false
+	for _, opt := range unitOptions {
+		if opt.Value == defaultUnit {
+			validUnit = true
+			break
+		}
+	}
+	if !validUnit {
+		return fmt.Errorf("instruction %d: default_unit '%s' must match one of the unit_options values", index+1, defaultUnit)
+	}
+	return nil
+}
+
+// validateInstructionOptions validates instruction options
+func validateInstructionOptions(instruction client.Instruction, index int) error {
+	for j, option := range instruction.Options {
+		if option.Label == "" {
+			return fmt.Errorf("instruction %d, option %d: label is required", index+1, j+1)
+		}
+		if option.Value == "" {
+			return fmt.Errorf("instruction %d, option %d: value is required", index+1, j+1)
+		}
+		// Heading is required for multiple_choice_with_free_text
+		if instruction.Type == client.InstructionTypeMultipleChoiceWithFreeText && option.Heading == "" {
+			return fmt.Errorf("instruction %d, option %d: heading is required for type 'multiple_choice_with_free_text'", index+1, j+1)
+		}
+	}
 	return nil
 }
