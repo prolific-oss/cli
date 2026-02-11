@@ -45,7 +45,7 @@ Add instructions with JSON string:
 $ prolific aitaskbuilder batch instructions -b <batch_id> -j '[{"type":"free_text","created_by":"Sean","description":"Please explain your choice."}]'
 
 For a comprehensive example file with all instruction types, see:
-docs/examples/batch-instructions.json
+https://github.com/prolific-oss/cli/blob/main/docs/examples/batch-instructions.json
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
