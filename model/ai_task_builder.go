@@ -188,7 +188,7 @@ type CollectionPageItem struct {
 	// Unit fields (for free_text_with_unit)
 	UnitOptions  []UnitOption `json:"unit_options,omitempty" mapstructure:"unit_options"`
 	DefaultUnit  string       `json:"default_unit,omitempty" mapstructure:"default_unit"`
-	UnitPosition string       `json:"unit_position,omitempty" mapstructure:"unit_position"`
+	UnitPosition UnitPosition `json:"unit_position,omitempty" mapstructure:"unit_position"`
 
 	// Content block fields (for rich_text)
 	Content string `json:"content,omitempty" mapstructure:"content"`

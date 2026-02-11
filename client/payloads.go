@@ -75,7 +75,7 @@ type InstructionOption struct {
 	Heading string `json:"heading,omitempty"`
 }
 
-// UnitOption represents a unit option for multiple_choice_with_unit instructions
+// UnitOption represents a unit option for free_text_with_unit instructions
 type UnitOption struct {
 	Label string `json:"label"`
 	Value string `json:"value"`

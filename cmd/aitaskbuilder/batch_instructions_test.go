@@ -383,7 +383,7 @@ func TestNewBatchInstructionsCommandWithFreeTextWithUnit(t *testing.T) {
 				{Label: "Pounds", Value: "lbs"},
 			},
 			DefaultUnit:          "kg",
-			UnitPosition:         "suffix",
+			UnitPosition:         model.UnitPositionSuffix,
 			HelperText:           "Please enter your current weight",
 			PlaceholderTextInput: "Enter weight",
 		},
@@ -400,7 +400,7 @@ func TestNewBatchInstructionsCommandWithFreeTextWithUnit(t *testing.T) {
 					{Label: "Pounds", Value: "lbs"},
 				},
 				DefaultUnit:          "kg",
-				UnitPosition:         "suffix",
+				UnitPosition:         string(model.UnitPositionSuffix),
 				HelperText:           "Please enter your current weight",
 				PlaceholderTextInput: "Enter weight",
 			},
@@ -423,7 +423,7 @@ func TestNewBatchInstructionsCommandWithFreeTextWithUnit(t *testing.T) {
 			{"label": "Pounds", "value": "lbs"}
 		],
 		"default_unit": "kg",
-		"unit_position": "suffix",
+		"unit_position": "` + string(model.UnitPositionSuffix) + `",
 		"helper_text": "Please enter your current weight",
 		"placeholder_text_input": "Enter weight"
 	}]`
@@ -473,7 +473,7 @@ func TestNewBatchInstructionsCommandFreeTextWithUnitMissingUnitOptions(t *testin
 		"type": "free_text_with_unit",
 		"created_by": "Sean",
 		"description": "What is your weight?",
-		"unit_position": "suffix"
+		"unit_position": "` + string(model.UnitPositionSuffix) + `"
 	}]`
 
 	cmd.SetArgs([]string{
@@ -511,7 +511,7 @@ func TestNewBatchInstructionsCommandFreeTextWithUnitInsufficientUnitOptions(t *t
 		"unit_options": [
 			{"label": "KG", "value": "kg"}
 		],
-		"unit_position": "suffix"
+		"unit_position": "` + string(model.UnitPositionSuffix) + `"
 	}]`
 
 	cmd.SetArgs([]string{
@@ -627,7 +627,7 @@ func TestNewBatchInstructionsCommandFreeTextWithUnitInvalidDefaultUnit(t *testin
 			{"label": "KG", "value": "kg"},
 			{"label": "Pounds", "value": "lbs"}
 		],
-		"unit_position": "suffix",
+		"unit_position": "` + string(model.UnitPositionSuffix) + `",
 		"default_unit": "grams"
 	}]`
 
@@ -665,7 +665,7 @@ func TestNewBatchInstructionsCommandFreeTextWithUnitWithoutDefaultUnit(t *testin
 				{Label: "KG", Value: "kg"},
 				{Label: "Pounds", Value: "lbs"},
 			},
-			UnitPosition: "suffix",
+			UnitPosition: model.UnitPositionSuffix,
 		},
 	}
 
@@ -679,7 +679,7 @@ func TestNewBatchInstructionsCommandFreeTextWithUnitWithoutDefaultUnit(t *testin
 					{Label: "KG", Value: "kg"},
 					{Label: "Pounds", Value: "lbs"},
 				},
-				UnitPosition: "suffix",
+				UnitPosition: string(model.UnitPositionSuffix),
 			},
 		},
 	}
@@ -700,7 +700,7 @@ func TestNewBatchInstructionsCommandFreeTextWithUnitWithoutDefaultUnit(t *testin
 			{"label": "KG", "value": "kg"},
 			{"label": "Pounds", "value": "lbs"}
 		],
-		"unit_position": "suffix"
+		"unit_position": "` + string(model.UnitPositionSuffix) + `"
 	}]`
 
 	cmd.SetArgs([]string{
@@ -740,7 +740,7 @@ func TestNewBatchInstructionsCommandFreeTextWithUnitPrefixPosition(t *testing.T)
 				{Label: "$", Value: "usd"},
 				{Label: "€", Value: "eur"},
 			},
-			UnitPosition: "prefix",
+			UnitPosition: model.UnitPositionPrefix,
 			DefaultUnit:  "usd",
 		},
 	}
@@ -755,7 +755,7 @@ func TestNewBatchInstructionsCommandFreeTextWithUnitPrefixPosition(t *testing.T)
 					{Label: "$", Value: "usd"},
 					{Label: "€", Value: "eur"},
 				},
-				UnitPosition: "prefix",
+				UnitPosition: string(model.UnitPositionPrefix),
 				DefaultUnit:  "usd",
 			},
 		},
@@ -776,7 +776,7 @@ func TestNewBatchInstructionsCommandFreeTextWithUnitPrefixPosition(t *testing.T)
 			{"label": "$", "value": "usd"},
 			{"label": "€", "value": "eur"}
 		],
-		"unit_position": "prefix",
+		"unit_position": "` + string(model.UnitPositionPrefix) + `",
 		"default_unit": "usd"
 	}]`
 

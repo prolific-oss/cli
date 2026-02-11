@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/model"
 	"github.com/spf13/cobra"
 )
 
@@ -221,8 +222,8 @@ func validateFreeTextWithUnit(instruction client.Instruction, index int) error {
 	if instruction.UnitPosition == "" {
 		return fmt.Errorf("instruction %d: unit_position is required for type 'free_text_with_unit'", index+1)
 	}
-	if instruction.UnitPosition != "prefix" && instruction.UnitPosition != "suffix" {
-		return fmt.Errorf("instruction %d: unit_position must be either 'prefix' or 'suffix', got '%s'", index+1, instruction.UnitPosition)
+	if instruction.UnitPosition != string(model.UnitPositionPrefix) && instruction.UnitPosition != string(model.UnitPositionSuffix) {
+		return fmt.Errorf("instruction %d: unit_position must be either '%s' or '%s', got '%s'", index+1, model.UnitPositionPrefix, model.UnitPositionSuffix, instruction.UnitPosition)
 	}
 
 	// Validate default_unit if provided (optional for free_text_with_unit)

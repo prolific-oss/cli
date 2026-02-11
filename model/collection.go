@@ -58,7 +58,7 @@ type MultipleChoiceOption struct {
 	Heading string `json:"heading,omitempty" yaml:"heading,omitempty" mapstructure:"heading"` // Required for multiple_choice_with_free_text
 }
 
-// UnitOption represents a unit option for multiple_choice_with_unit instructions
+// UnitOption represents a unit option for free_text_with_unit instructions
 type UnitOption struct {
 	Label string `json:"label" yaml:"label" mapstructure:"label"`
 	Value string `json:"value" yaml:"value" mapstructure:"value"`
@@ -88,7 +88,7 @@ type PageInstruction struct {
 	// Optional - for free_text_with_unit type
 	UnitOptions  []UnitOption `json:"unit_options,omitempty" yaml:"unit_options,omitempty" mapstructure:"unit_options"`
 	DefaultUnit  string       `json:"default_unit,omitempty" yaml:"default_unit,omitempty" mapstructure:"default_unit"`
-	UnitPosition string       `json:"unit_position,omitempty" yaml:"unit_position,omitempty" mapstructure:"unit_position"`
+	UnitPosition UnitPosition `json:"unit_position,omitempty" yaml:"unit_position,omitempty" mapstructure:"unit_position"`
 
 	// Content block fields - for rich_text type
 	Content string `json:"content,omitempty" yaml:"content,omitempty" mapstructure:"content"`
