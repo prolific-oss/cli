@@ -81,19 +81,13 @@ type UnitOption struct {
 	Value string `json:"value"`
 }
 
-// AnswerLimit represents the answer limit for multiple choice with free text instructions
-type AnswerLimit struct {
-	Type        string `json:"type"`
-	Description string `json:"description"`
-}
-
 // Instruction represents a single instruction in the request payload
 type Instruction struct {
 	Type                 InstructionType     `json:"type"`
 	CreatedBy            string              `json:"created_by"`
 	Description          string              `json:"description"`
 	Options              []InstructionOption `json:"options,omitempty"`
-	AnswerLimit          *AnswerLimit        `json:"answer_limit,omitempty"`
+	AnswerLimit          *int                `json:"answer_limit,omitempty"`
 	UnitOptions          []UnitOption        `json:"unit_options,omitempty"`
 	DefaultUnit          string              `json:"default_unit,omitempty"`
 	UnitPosition         string              `json:"unit_position,omitempty"`

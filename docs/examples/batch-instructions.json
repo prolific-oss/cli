@@ -9,6 +9,7 @@
     "type": "multiple_choice",
     "created_by": "Sean",
     "description": "Choose the LLM response which is more accurate.",
+    "answer_limit": 1,
     "options": [
       {
         "label": "Response A",
@@ -28,6 +29,7 @@
     "type": "multiple_choice_with_free_text",
     "created_by": "Sean",
     "description": "Which of the following best describes the sentiment?",
+    "answer_limit": 1,
     "options": [
       {
         "label": "Positive",
