@@ -33,37 +33,22 @@
         },
         {
           "order": 2,
-          "type": "multiple_choice_with_unit",
-          "description": "What is your height?",
-          "options": [
-            {
-              "label": "150",
-              "value": "150"
-            },
-            {
-              "label": "160",
-              "value": "160"
-            },
-            {
-              "label": "170",
-              "value": "170"
-            },
-            {
-              "label": "180",
-              "value": "180"
-            }
-          ],
+          "type": "free_text_with_unit",
+          "description": "What is your current weight?",
+          "helper_text": "Please enter your weight as a number",
+          "placeholder_text_input": "Enter weight",
           "unit_options": [
             {
-              "label": "CM",
-              "value": "cm"
+              "label": "KG",
+              "value": "kg"
             },
             {
-              "label": "Inches",
-              "value": "in"
+              "label": "Pounds",
+              "value": "lbs"
             }
           ],
-          "default_unit": "cm"
+          "default_unit": "kg",
+          "unit_position": "suffix"
         }
       ]
     }

@@ -8,65 +8,27 @@ collection_items:
   - order: 0
     page_items:
       - order: 0
-        type: multiple_choice_with_unit
+        type: free_text_with_unit
         description: What is your height?
-        options:
-          - label: "150"
-            value: "150"
-          - label: "155"
-            value: "155"
-          - label: "160"
-            value: "160"
-          - label: "165"
-            value: "165"
-          - label: "170"
-            value: "170"
-          - label: "175"
-            value: "175"
-          - label: "180"
-            value: "180"
-          - label: "185"
-            value: "185"
-          - label: "190"
-            value: "190"
+        placeholder_text_input: Enter your height
         unit_options:
           - label: CM
             value: cm
           - label: Inches
             value: in
         default_unit: cm
+        unit_position: suffix
       - order: 1
-        type: multiple_choice_with_unit
+        type: free_text_with_unit
         description: What is your weight?
-        options:
-          - label: "40"
-            value: "40"
-          - label: "45"
-            value: "45"
-          - label: "50"
-            value: "50"
-          - label: "55"
-            value: "55"
-          - label: "60"
-            value: "60"
-          - label: "65"
-            value: "65"
-          - label: "70"
-            value: "70"
-          - label: "75"
-            value: "75"
-          - label: "80"
-            value: "80"
-          - label: "85"
-            value: "85"
-          - label: "90"
-            value: "90"
+        placeholder_text_input: Enter your weight
         unit_options:
           - label: KG
             value: kg
           - label: lbs
             value: lbs
         default_unit: kg
+        unit_position: suffix
       - order: 2
         type: image
         url: https://i.postimg.cc/Bv5PKTM3/Screenshot-2025-12-01-at-14-11-02.png

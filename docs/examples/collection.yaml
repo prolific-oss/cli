@@ -20,20 +20,14 @@ collection_items:
             value: response2
         answer_limit: -1
       - order: 2
-        type: multiple_choice_with_unit
-        description: What is your height?
-        options:
-          - label: "150"
-            value: "150"
-          - label: "160"
-            value: "160"
-          - label: "170"
-            value: "170"
-          - label: "180"
-            value: "180"
+        type: free_text_with_unit
+        description: What is your current weight?
+        helper_text: Please enter your weight as a number
+        placeholder_text_input: Enter weight
         unit_options:
-          - label: CM
-            value: cm
-          - label: Inches
-            value: in
-        default_unit: cm
+          - label: KG
+            value: kg
+          - label: Pounds
+            value: lbs
+        default_unit: kg
+        unit_position: suffix

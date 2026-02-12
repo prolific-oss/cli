@@ -1,0 +1,91 @@
+[
+  {
+    "type": "free_text",
+    "created_by": "Sean",
+    "description": "Please explain your reasoning for the choice you made above.",
+    "placeholder_text_input": "Enter your explanation here..."
+  },
+  {
+    "type": "multiple_choice",
+    "created_by": "Sean",
+    "description": "Choose the LLM response which is more accurate.",
+    "answer_limit": 1,
+    "options": [
+      {
+        "label": "Response A",
+        "value": "response_a"
+      },
+      {
+        "label": "Response B",
+        "value": "response_b"
+      },
+      {
+        "label": "Both are equally accurate",
+        "value": "both_equal"
+      }
+    ]
+  },
+  {
+    "type": "multiple_choice_with_free_text",
+    "created_by": "Sean",
+    "description": "Which of the following best describes the sentiment?",
+    "answer_limit": 1,
+    "options": [
+      {
+        "label": "Positive",
+        "value": "positive",
+        "heading": "Explain why you think the sentiment is positive"
+      },
+      {
+        "label": "Negative",
+        "value": "negative",
+        "heading": "Explain why you think the sentiment is negative"
+      },
+      {
+        "label": "Neutral",
+        "value": "neutral",
+        "heading": "Explain why you think the sentiment is neutral"
+      }
+    ]
+  },
+  {
+    "type": "free_text_with_unit",
+    "created_by": "Sean",
+    "description": "What is your current body temperature?",
+    "helper_text": "Please enter your body temperature as a decimal number (e.g., 37.5)",
+    "placeholder_text_input": "Enter temperature",
+    "unit_options": [
+      {
+        "label": "°C",
+        "value": "celsius"
+      },
+      {
+        "label": "°F",
+        "value": "fahrenheit"
+      }
+    ],
+    "default_unit": "celsius",
+    "unit_position": "suffix"
+  },
+  {
+    "type": "free_text_with_unit",
+    "created_by": "Sean",
+    "description": "What is the price of the product you purchased?",
+    "placeholder_text_input": "Enter amount",
+    "unit_options": [
+      {
+        "label": "$",
+        "value": "usd"
+      },
+      {
+        "label": "€",
+        "value": "eur"
+      },
+      {
+        "label": "£",
+        "value": "gbp"
+      }
+    ],
+    "unit_position": "prefix"
+  }
+]
