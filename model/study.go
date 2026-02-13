@@ -126,10 +126,11 @@ type CreateStudy struct {
 	ExternalStudyURL string `json:"external_study_url,omitempty" mapstructure:"external_study_url"`
 	// Enum "question", "url_parameters" (Recommended), "not_required"
 	ProlificIDOption string `json:"prolific_id_option" mapstructure:"prolific_id_option"`
-	CompletionCode   string `json:"completion_code" mapstructure:"completion_code"`
+	CompletionCode   string `json:"completion_code,omitempty" mapstructure:"completion_code"`
 	// Enum: "url", "code"
-	CompletionOption     string `json:"completion_option,omitempty" mapstructure:"completion_option"`
-	TotalAvailablePlaces int    `json:"total_available_places" mapstructure:"total_available_places"`
+	CompletionOption     string           `json:"completion_option,omitempty" mapstructure:"completion_option"`
+	CompletionCodes      []CompletionCode `json:"completion_codes,omitempty" mapstructure:"completion_codes"`
+	TotalAvailablePlaces int              `json:"total_available_places" mapstructure:"total_available_places"`
 	// Minutes
 	EstimatedCompletionTime int     `json:"estimated_completion_time" mapstructure:"estimated_completion_time"`
 	MaximumAllowedTime      int     `json:"maximum_allowed_time,omitempty" mapstructure:"maximum_allowed_time"`
@@ -166,6 +167,13 @@ type CreateStudy struct {
 	Filters          []Filter `json:"filters,omitempty" mapstructure:"filters"`
 	Project          string   `json:"project,omitempty" mapstructure:"project"`
 	CredentialPoolID string   `json:"credential_pool_id,omitempty" mapstructure:"credential_pool_id"`
+}
+
+// CompletionCode represents a study completion code with its type and actions.
+type CompletionCode struct {
+	Code     string                   `json:"code" mapstructure:"code"`
+	CodeType string                   `json:"code_type" mapstructure:"code_type"`
+	Actions  []map[string]interface{} `json:"actions" mapstructure:"actions"`
 }
 
 // UpdateStudy represents the model we will send back to Prolific to update
