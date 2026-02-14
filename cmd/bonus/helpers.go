@@ -12,7 +12,7 @@ import (
 
 func validateBonusEntry(id, amount string) error {
 	if id == "" {
-		return fmt.Errorf("participant ID must not be empty")
+		return fmt.Errorf("id (participant or submission) must not be empty")
 	}
 
 	val, err := strconv.ParseFloat(amount, 64)
