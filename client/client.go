@@ -76,6 +76,9 @@ type API interface {
 	BulkSendMessage(ids []string, body, studyID string) error
 	SendGroupMessage(participantGroupID, body string, studyID *string) error
 
+	CreateBonusPayments(payload CreateBonusPaymentsPayload) (*CreateBonusPaymentsResponse, error)
+	PayBonusPayments(id string) error
+
 	CreateAITaskBuilderBatch(params CreateBatchParams) (*CreateAITaskBuilderBatchResponse, error)
 	CreateAITaskBuilderInstructions(batchID string, instructions CreateAITaskBuilderInstructionsPayload) (*CreateAITaskBuilderInstructionsResponse, error)
 	SetupAITaskBuilderBatch(batchID, datasetID string, tasksPerGroup int) (*SetupAITaskBuilderBatchResponse, error)
@@ -725,6 +728,40 @@ func (c *Client) SendGroupMessage(participantGroupID, body string, studyID *stri
 	_, err := c.Execute(http.MethodPost, url, payload, nil)
 	if err != nil {
 		return fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return nil
+}
+
+// CreateBonusPayments creates bonus payment records for participants in a study.
+func (c *Client) CreateBonusPayments(payload CreateBonusPaymentsPayload) (*CreateBonusPaymentsResponse, error) {
+	var response CreateBonusPaymentsResponse
+
+	url := "/api/v1/submissions/bonus-payments/"
+	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unable to create bonus payments: %v", string(body))
+	}
+
+	return &response, nil
+}
+
+// PayBonusPayments triggers asynchronous payment of previously created bonus records.
+func (c *Client) PayBonusPayments(id string) error {
+	url := fmt.Sprintf("/api/v1/bulk-bonus-payments/%s/pay/", id)
+	httpResponse, err := c.Execute(http.MethodPost, url, nil, nil)
+	if err != nil {
+		return fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusAccepted {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return fmt.Errorf("unable to pay bonus payments: %v", string(body))
 	}
 
 	return nil
