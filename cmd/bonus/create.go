@@ -28,13 +28,15 @@ func NewCreateCommand(commandName string, apiClient client.API, w io.Writer) *co
 		Short: "Create bonus payments for study participants",
 		Long: `Create bonus payment records for participants in a study.
 
-Provide participant-amount pairs either inline via repeatable --bonus flags
-or via a CSV file. The system creates bonus records and returns a summary
-showing the bonus ID, amounts, fees, VAT, and total cost.
+Provide participant-amount or submission-amount pairs either inline via 
+repeatable --bonus flags or via a CSV file. The system creates bonus 
+records and returns a summary showing the bonus ID, amounts, fees, VAT, 
+and total cost.
 
 Bonus records must be paid separately using the 'bonus pay' command.`,
 		Example: `  # Create with inline flags
   prolific bonus create <study_id> --bonus "pid1,4.25" --bonus "pid2,3.50"
+  prolific bonus create <study_id> --bonus "subid1,4.25" --bonus "subid2,3.50"
 
   # Create from CSV file
   prolific bonus create <study_id> --file bonuses.csv
