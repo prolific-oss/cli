@@ -9,7 +9,7 @@
 
 <hr />
 
-![GitHub Badge](https://github.com/prolific-oss/cli/workflows/Go/badge.svg)
+![GitHub Badge](https://github.com/prolific-oss/cli/actions/workflows/go.yml/badge.svg)
 
 CLI application for getting information out of [Prolific](https://www.prolific.com) about your research studies.
 
