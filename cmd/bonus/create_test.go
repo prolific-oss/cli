@@ -160,6 +160,27 @@ func TestCreateBonusPayments_MutualExclusivity(t *testing.T) {
 	}
 }
 
+func TestCreateBonusPayments_OutputFormatMutualExclusivity(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	cmd := bonus.NewCreateCommand("create", c, os.Stdout)
+	_ = cmd.Flags().Set("bonus", "pid1,4.25")
+	_ = cmd.Flags().Set("csv", "true")
+	_ = cmd.Flags().Set("non-interactive", "true")
+	cmd.SetArgs([]string{"study-xyz"})
+	err := cmd.Execute()
+
+	if err == nil {
+		t.Fatal("expected error when both --csv and --non-interactive are specified")
+	}
+
+	if !strings.Contains(err.Error(), "cannot use both --csv and --non-interactive") {
+		t.Fatalf("expected output format mutual exclusivity error, got: %s", err.Error())
+	}
+}
+
 func TestCreateBonusPayments_NonInteractive(t *testing.T) {
 	response := &client.CreateBonusPaymentsResponse{
 		ID:          "bonus-ni-123",

@@ -74,6 +74,10 @@ func createBonusPayments(apiClient client.API, studyID string, opts CreateOption
 		return fmt.Errorf("cannot use both --bonus and --file flags")
 	}
 
+	if opts.Csv && opts.NonInteractive {
+		return fmt.Errorf("cannot use both --csv and --non-interactive flags")
+	}
+
 	if len(opts.Bonuses) == 0 && opts.File == "" {
 		return fmt.Errorf("either --bonus or --file flag is required")
 	}
