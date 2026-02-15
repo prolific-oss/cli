@@ -95,14 +95,3 @@ type MessageData struct {
 	StudyID  string `json:"study_id,omitempty"`
 	Category string `json:"category,omitempty"`
 }
-
-// RewardRecommendation represents a recommended reward rate for participants.
-type RewardRecommendation struct {
-	Currency                  string  `json:"currency_code"`
-	MinReward                 float64 `json:"min_reward_per_hour"`
-	EstimatedRewardPerHour    float64 `json:"estimated_reward_per_hour"`
-	MaxReward                 float64 `json:"max_reward_per_hour"`
-	MinRewardForEstimatedTime float64 `json:"min_reward_for_estimated_time"`
-	EstimatedReward           float64 `json:"estimated_reward"`
-	MaxRewardForEstimatedTime float64 `json:"max_reward_for_estimated_time"`
-}
