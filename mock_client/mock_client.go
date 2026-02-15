@@ -544,6 +544,21 @@ func (mr *MockAPIMockRecorder) GetProjects(workspaceID, limit, offset interface{
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProjects", reflect.TypeOf((*MockAPI)(nil).GetProjects), workspaceID, limit, offset)
 }
 
+// GetRewardRecommendations mocks base method.
+func (m *MockAPI) GetRewardRecommendations(currency string, estimatedTime int, filterIDs []string) (*client.RewardRecommendationsResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRewardRecommendations", currency, estimatedTime, filterIDs)
+	ret0, _ := ret[0].(*client.RewardRecommendationsResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRewardRecommendations indicates an expected call of GetRewardRecommendations.
+func (mr *MockAPIMockRecorder) GetRewardRecommendations(currency, estimatedTime, filterIDs interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRewardRecommendations", reflect.TypeOf((*MockAPI)(nil).GetRewardRecommendations), currency, estimatedTime, filterIDs)
+}
+
 // GetStudies mocks base method.
 func (m *MockAPI) GetStudies(status, projectID string) (*client.ListStudiesResponse, error) {
 	m.ctrl.T.Helper()
