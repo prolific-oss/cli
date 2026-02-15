@@ -88,6 +88,10 @@ type Instruction struct {
 	UnitPosition         UnitPosition        `json:"unit_position,omitempty"`
 	HelperText           string              `json:"helper_text,omitempty"`
 	PlaceholderTextInput string              `json:"placeholder_text_input,omitempty"`
+	AcceptedFileTypes    []string            `json:"accepted_file_types,omitempty"`
+	MaxFileSizeMB        *float64            `json:"max_file_size_mb,omitempty"`
+	MinFileCount         *int                `json:"min_file_count,omitempty"`
+	MaxFileCount         *int                `json:"max_file_count,omitempty"`
 }
 
 // AITaskBuilderResponse represents a response from an AI Task Builder batch task.
@@ -122,6 +126,7 @@ const (
 	AITaskBuilderResponseTypeMultipleChoice             AITaskBuilderResponseType = "multiple_choice"
 	AITaskBuilderResponseTypeMultipleChoiceWithFreeText AITaskBuilderResponseType = "multiple_choice_with_free_text"
 	AITaskBuilderResponseTypeFreeTextWithUnit           AITaskBuilderResponseType = "free_text_with_unit"
+	AITaskBuilderResponseTypeFileUpload                 AITaskBuilderResponseType = "file_upload"
 )
 
 // AITaskBuilderAnswerOption represents an answer option for multiple choice responses.
@@ -189,6 +194,12 @@ type CollectionPageItem struct {
 	UnitOptions  []UnitOption `json:"unit_options,omitempty" mapstructure:"unit_options"`
 	DefaultUnit  string       `json:"default_unit,omitempty" mapstructure:"default_unit"`
 	UnitPosition UnitPosition `json:"unit_position,omitempty" mapstructure:"unit_position"`
+
+	// File upload fields (for file_upload)
+	AcceptedFileTypes []string `json:"accepted_file_types,omitempty" mapstructure:"accepted_file_types"`
+	MaxFileSizeMB     *float64 `json:"max_file_size_mb,omitempty" mapstructure:"max_file_size_mb"`
+	MinFileCount      *int     `json:"min_file_count,omitempty" mapstructure:"min_file_count"`
+	MaxFileCount      *int     `json:"max_file_count,omitempty" mapstructure:"max_file_count"`
 
 	// Content block fields (for rich_text)
 	Content string `json:"content,omitempty" mapstructure:"content"`

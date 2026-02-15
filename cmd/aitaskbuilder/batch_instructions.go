@@ -37,7 +37,8 @@ The instructions should be an array of instruction objects with the following ty
 - multiple_choice: Instructions with predefined options
 - free_text: Instructions requiring text input
 - multiple_choice_with_free_text: Instructions with options and text input
-- free_text_with_unit: Instructions requiring text input with unit selection (e.g., weight with kg/lbs)`,
+- free_text_with_unit: Instructions requiring text input with unit selection (e.g., weight with kg/lbs)
+- file_upload: Instructions for uploading files (e.g., images, documents)`,
 		Example: `
 Add instructions from a file:
 $ prolific aitaskbuilder batch instructions -b <batch_id> -f instructions.json
@@ -154,6 +155,7 @@ func validateInstructions(instructions client.CreateAITaskBuilderInstructionsPay
 		client.InstructionTypeFreeText:                   true,
 		client.InstructionTypeMultipleChoiceWithFreeText: true,
 		client.InstructionTypeFreeTextWithUnit:           true,
+		client.InstructionTypeFileUpload:                 true,
 	}
 
 	for i, instruction := range instructions.Instructions {
@@ -180,7 +182,7 @@ func validateInstructionBasicFields(instruction client.Instruction, index int, v
 	}
 
 	if !validTypes[instruction.Type] {
-		return fmt.Errorf("instruction %d: invalid type '%s'. Must be one of: multiple_choice, free_text, multiple_choice_with_free_text, free_text_with_unit", index+1, instruction.Type)
+		return fmt.Errorf("instruction %d: invalid type '%s'. Must be one of: multiple_choice, free_text, multiple_choice_with_free_text, free_text_with_unit, file_upload", index+1, instruction.Type)
 	}
 
 	if instruction.CreatedBy == "" {
@@ -207,6 +209,11 @@ func validateInstructionTypeSpecificFields(instruction client.Instruction, index
 	// Validate unit_options for free_text_with_unit
 	if instruction.Type == client.InstructionTypeFreeTextWithUnit {
 		return validateFreeTextWithUnit(instruction, index)
+	}
+
+	// Validate file upload fields for file_upload
+	if instruction.Type == client.InstructionTypeFileUpload {
+		return validateFileUpload(instruction, index)
 	}
 
 	return nil
@@ -264,6 +271,37 @@ func validateDefaultUnit(defaultUnit string, unitOptions []client.UnitOption, in
 	if !validUnit {
 		return fmt.Errorf("instruction %d: default_unit '%s' must match one of the unit_options values", index+1, defaultUnit)
 	}
+	return nil
+}
+
+// validateFileUpload validates file_upload specific fields
+func validateFileUpload(instruction client.Instruction, index int) error {
+	// Validate accepted_file_types (all must start with a dot)
+	if len(instruction.AcceptedFileTypes) > 0 {
+		for j, fileType := range instruction.AcceptedFileTypes {
+			if len(fileType) == 0 || fileType[0] != '.' {
+				return fmt.Errorf("instruction %d, accepted_file_type %d: file extension '%s' must start with a dot (e.g., '.pdf')", index+1, j+1, fileType)
+			}
+		}
+	}
+
+	// Validate max_file_size_mb (must be positive if provided)
+	if instruction.MaxFileSizeMB != nil && *instruction.MaxFileSizeMB <= 0 {
+		return fmt.Errorf("instruction %d: max_file_size_mb must be a positive number, got %f", index+1, *instruction.MaxFileSizeMB)
+	}
+
+	// Validate min_file_count (must be at least 1 if provided)
+	if instruction.MinFileCount != nil && *instruction.MinFileCount < 1 {
+		return fmt.Errorf("instruction %d: min_file_count must be at least 1, got %d", index+1, *instruction.MinFileCount)
+	}
+
+	// Validate max_file_count >= min_file_count
+	if instruction.MinFileCount != nil && instruction.MaxFileCount != nil {
+		if *instruction.MaxFileCount < *instruction.MinFileCount {
+			return fmt.Errorf("instruction %d: max_file_count (%d) must be greater than or equal to min_file_count (%d)", index+1, *instruction.MaxFileCount, *instruction.MinFileCount)
+		}
+	}
+
 	return nil
 }
 

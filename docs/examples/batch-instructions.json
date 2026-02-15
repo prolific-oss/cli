@@ -87,5 +87,14 @@
       }
     ],
     "unit_position": "prefix"
+  },
+  {
+    "type": "file_upload",
+    "created_by": "Sean",
+    "description": "Please upload photos of the product from different angles.",
+    "accepted_file_types": [".jpg", ".png", ".heic"],
+    "max_file_size_mb": 10.0,
+    "min_file_count": 2,
+    "max_file_count": 5
   }
 ]

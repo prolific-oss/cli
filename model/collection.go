@@ -90,6 +90,12 @@ type PageInstruction struct {
 	DefaultUnit  string       `json:"default_unit,omitempty" yaml:"default_unit,omitempty" mapstructure:"default_unit"`
 	UnitPosition UnitPosition `json:"unit_position,omitempty" yaml:"unit_position,omitempty" mapstructure:"unit_position"`
 
+	// Optional - for file_upload type
+	AcceptedFileTypes []string `json:"accepted_file_types,omitempty" yaml:"accepted_file_types,omitempty" mapstructure:"accepted_file_types"`
+	MaxFileSizeMB     *float64 `json:"max_file_size_mb,omitempty" yaml:"max_file_size_mb,omitempty" mapstructure:"max_file_size_mb"`
+	MinFileCount      *int     `json:"min_file_count,omitempty" yaml:"min_file_count,omitempty" mapstructure:"min_file_count"`
+	MaxFileCount      *int     `json:"max_file_count,omitempty" yaml:"max_file_count,omitempty" mapstructure:"max_file_count"`
+
 	// Content block fields - for rich_text type
 	Content string `json:"content,omitempty" yaml:"content,omitempty" mapstructure:"content"`
 
@@ -110,6 +116,7 @@ type Page struct {
 type UpdateCollection struct {
 	BaseEntity      `yaml:",inline" mapstructure:",squash"`
 	Name            string       `json:"name" yaml:"name" mapstructure:"name"`
+	Description     string       `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description"`
 	WorkspaceID     string       `json:"workspace_id,omitempty" yaml:"workspace_id,omitempty" mapstructure:"workspace_id"`
 	TaskDetails     *TaskDetails `json:"task_details,omitempty" yaml:"task_details,omitempty" mapstructure:"task_details"`
 	CollectionItems []Page       `json:"collection_items" yaml:"collection_items" mapstructure:"collection_items"`

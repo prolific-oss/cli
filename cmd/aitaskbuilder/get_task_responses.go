@@ -140,6 +140,10 @@ func renderAITaskBuilderResponses(c client.API, opts BatchGetResponsesOptions, w
 			} else {
 				fmt.Fprintf(w, "    Unit: \n")
 			}
+		case model.AITaskBuilderResponseTypeFileUpload:
+			fmt.Fprintf(w, "    File Upload Response\n")
+			// File upload responses contain file metadata
+			// The actual implementation will depend on the API response structure
 		}
 
 		if i < len(response.Results)-1 {

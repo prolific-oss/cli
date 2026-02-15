@@ -31,3 +31,13 @@ collection_items:
             value: lbs
         default_unit: kg
         unit_position: suffix
+      - order: 3
+        type: file_upload
+        description: Please upload a photo of your receipt.
+        accepted_file_types:
+          - .jpg
+          - .png
+          - .pdf
+        max_file_size_mb: 5.0
+        min_file_count: 1
+        max_file_count: 3
