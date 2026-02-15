@@ -1,7 +1,9 @@
+# Dependencies
 vendor/
 build/
 specs/
 
+# Tools
 /prolific
 coverage.out
 profile.out
@@ -11,4 +13,8 @@ debug
 notes.md
 templates/*
 
+# IDEs
 .idea
+
+# OS
+.DS_Store

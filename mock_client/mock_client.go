@@ -109,6 +109,21 @@ func (mr *MockAPIMockRecorder) CreateAITaskBuilderInstructions(batchID, instruct
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAITaskBuilderInstructions", reflect.TypeOf((*MockAPI)(nil).CreateAITaskBuilderInstructions), batchID, instructions)
 }
 
+// CreateBonusPayments mocks base method.
+func (m *MockAPI) CreateBonusPayments(payload client.CreateBonusPaymentsPayload) (*client.CreateBonusPaymentsResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateBonusPayments", payload)
+	ret0, _ := ret[0].(*client.CreateBonusPaymentsResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateBonusPayments indicates an expected call of CreateBonusPayments.
+func (mr *MockAPIMockRecorder) CreateBonusPayments(payload interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBonusPayments", reflect.TypeOf((*MockAPI)(nil).CreateBonusPayments), payload)
+}
+
 // CreateCredentialPool mocks base method.
 func (m *MockAPI) CreateCredentialPool(credentials, workspaceID string) (*client.CredentialPoolResponse, error) {
 	m.ctrl.T.Helper()
@@ -662,6 +677,20 @@ func (m *MockAPI) ListCredentialPools(workspaceID string) (*client.ListCredentia
 func (mr *MockAPIMockRecorder) ListCredentialPools(workspaceID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCredentialPools", reflect.TypeOf((*MockAPI)(nil).ListCredentialPools), workspaceID)
+}
+
+// PayBonusPayments mocks base method.
+func (m *MockAPI) PayBonusPayments(id string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PayBonusPayments", id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PayBonusPayments indicates an expected call of PayBonusPayments.
+func (mr *MockAPIMockRecorder) PayBonusPayments(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PayBonusPayments", reflect.TypeOf((*MockAPI)(nil).PayBonusPayments), id)
 }
 
 // SendGroupMessage mocks base method.

@@ -327,4 +327,14 @@ type RewardRecommendationsResponse struct {
 	MinRewardForEstimatedTime float64 `json:"min_reward_for_estimated_time"`
 	EstimatedReward           float64 `json:"estimated_reward"`
 	MaxRewardForEstimatedTime float64 `json:"max_reward_for_estimated_time"`
+// CreateBonusPaymentsResponse is the response for creating bonus payments.
+// Monetary fields are returned by the API as floats in minor currency units
+// (e.g., 100.0 = £1.00). Divide by 100 before display via ui.RenderMoney().
+type CreateBonusPaymentsResponse struct {
+	ID          string  `json:"id"`
+	Study       string  `json:"study"`
+	Amount      float64 `json:"amount"`
+	Fees        float64 `json:"fees"`
+	VAT         float64 `json:"vat"`
+	TotalAmount float64 `json:"total_amount"`
 }
