@@ -176,23 +176,10 @@ type CollectionPage struct {
 	PageItems []CollectionInstruction `json:"page_items" mapstructure:"page_items"`
 }
 
-// PageItemType constants for collection page items
-const (
-	// Instruction types (interactive)
-	PageItemTypeFreeText                   = "free_text"
-	PageItemTypeMultipleChoice             = "multiple_choice"
-	PageItemTypeMultipleChoiceWithFreeText = "multiple_choice_with_free_text"
-	PageItemTypeFreeTextWithUnit           = "free_text_with_unit"
-	PageItemTypeFileUpload                 = "file_upload"
-
-	// Content block types (non-interactive)
-	PageItemTypeRichText = "rich_text"
-	PageItemTypeImage    = "image"
-)
-
 // CollectionPageItem represents an item within a collection page.
 // This can be either an instruction (interactive) or a content block (non-interactive).
 // The Type field determines which other fields are relevant.
+// Use InstructionType constants from collection.go for the Type field.
 type CollectionPageItem struct {
 	Order int    `json:"order" mapstructure:"order"`
 	Type  string `json:"type" mapstructure:"type"`
