@@ -110,12 +110,11 @@ type AITaskBuilderResponse struct {
 
 // AITaskBuilderResponseData represents the response data structure.
 // This is a discriminated union based on the Type field.
+// All response types use the Answer array with different object structures.
 type AITaskBuilderResponseData struct {
 	InstructionID string                      `json:"instruction_id"`
 	Type          AITaskBuilderResponseType   `json:"type"`
-	Text          *string                     `json:"text,omitempty"`   // For free_text, multiple_choice_with_free_text, and free_text_with_unit
-	Answer        []AITaskBuilderAnswerOption `json:"answer,omitempty"` // For multiple_choice and multiple_choice_with_free_text
-	Unit          *string                     `json:"unit,omitempty"`   // For free_text_with_unit - the selected unit value
+	Answer        []AITaskBuilderAnswerOption `json:"answer"`
 }
 
 // AITaskBuilderResponseType represents the type of response.
@@ -129,9 +128,25 @@ const (
 	AITaskBuilderResponseTypeFileUpload                 AITaskBuilderResponseType = "file_upload"
 )
 
-// AITaskBuilderAnswerOption represents an answer option for multiple choice responses.
+// AITaskBuilderAnswerOption represents an answer option in a response.
+// The fields used depend on the response type:
+// - free_text: value
+// - free_text_with_unit: value, unit
+// - multiple_choice: value
+// - multiple_choice_with_free_text: value, explanation
+// - file_upload: file_key, file_name, file_size_mb, content_type
 type AITaskBuilderAnswerOption struct {
-	Value string `json:"value"`
+	// For free_text, free_text_with_unit, multiple_choice, multiple_choice_with_free_text
+	Value string `json:"value,omitempty"`
+	// For free_text_with_unit
+	Unit string `json:"unit,omitempty"`
+	// For multiple_choice_with_free_text
+	Explanation string `json:"explanation,omitempty"`
+	// For file_upload
+	FileKey     string  `json:"file_key,omitempty"`
+	FileName    string  `json:"file_name,omitempty"`
+	FileSizeMB  float64 `json:"file_size_mb,omitempty"`
+	ContentType string  `json:"content_type,omitempty"`
 }
 
 type AITaskBuilderBatchStatusEnum string
