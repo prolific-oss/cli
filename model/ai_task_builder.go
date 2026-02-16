@@ -88,6 +88,10 @@ type Instruction struct {
 	UnitPosition         UnitPosition        `json:"unit_position,omitempty"`
 	HelperText           string              `json:"helper_text,omitempty"`
 	PlaceholderTextInput string              `json:"placeholder_text_input,omitempty"`
+	AcceptedFileTypes    []string            `json:"accepted_file_types,omitempty"`
+	MaxFileSizeMB        *float64            `json:"max_file_size_mb,omitempty"`
+	MinFileCount         *int                `json:"min_file_count,omitempty"`
+	MaxFileCount         *int                `json:"max_file_count,omitempty"`
 }
 
 // AITaskBuilderResponse represents a response from an AI Task Builder batch task.
@@ -106,12 +110,11 @@ type AITaskBuilderResponse struct {
 
 // AITaskBuilderResponseData represents the response data structure.
 // This is a discriminated union based on the Type field.
+// All response types use the Answer array with different object structures.
 type AITaskBuilderResponseData struct {
 	InstructionID string                      `json:"instruction_id"`
 	Type          AITaskBuilderResponseType   `json:"type"`
-	Text          *string                     `json:"text,omitempty"`   // For free_text, multiple_choice_with_free_text, and free_text_with_unit
-	Answer        []AITaskBuilderAnswerOption `json:"answer,omitempty"` // For multiple_choice and multiple_choice_with_free_text
-	Unit          *string                     `json:"unit,omitempty"`   // For free_text_with_unit - the selected unit value
+	Answer        []AITaskBuilderAnswerOption `json:"answer"`
 }
 
 // AITaskBuilderResponseType represents the type of response.
@@ -122,11 +125,28 @@ const (
 	AITaskBuilderResponseTypeMultipleChoice             AITaskBuilderResponseType = "multiple_choice"
 	AITaskBuilderResponseTypeMultipleChoiceWithFreeText AITaskBuilderResponseType = "multiple_choice_with_free_text"
 	AITaskBuilderResponseTypeFreeTextWithUnit           AITaskBuilderResponseType = "free_text_with_unit"
+	AITaskBuilderResponseTypeFileUpload                 AITaskBuilderResponseType = "file_upload"
 )
 
-// AITaskBuilderAnswerOption represents an answer option for multiple choice responses.
+// AITaskBuilderAnswerOption represents an answer option in a response.
+// The fields used depend on the response type:
+// - free_text: value
+// - free_text_with_unit: value, unit
+// - multiple_choice: value
+// - multiple_choice_with_free_text: value, explanation
+// - file_upload: file_key, file_name, file_size_mb, content_type
 type AITaskBuilderAnswerOption struct {
-	Value string `json:"value"`
+	// For free_text, free_text_with_unit, multiple_choice, multiple_choice_with_free_text
+	Value string `json:"value,omitempty"`
+	// For free_text_with_unit
+	Unit string `json:"unit,omitempty"`
+	// For multiple_choice_with_free_text
+	Explanation string `json:"explanation,omitempty"`
+	// For file_upload
+	FileKey     string  `json:"file_key,omitempty"`
+	FileName    string  `json:"file_name,omitempty"`
+	FileSizeMB  float64 `json:"file_size_mb,omitempty"`
+	ContentType string  `json:"content_type,omitempty"`
 }
 
 type AITaskBuilderBatchStatusEnum string
@@ -156,23 +176,10 @@ type CollectionPage struct {
 	PageItems []CollectionInstruction `json:"page_items" mapstructure:"page_items"`
 }
 
-// PageItemType constants for collection page items
-const (
-	// Instruction types (interactive)
-	PageItemTypeFreeText                   = "free_text"
-	PageItemTypeMultipleChoice             = "multiple_choice"
-	PageItemTypeMultipleChoiceWithFreeText = "multiple_choice_with_free_text"
-	PageItemTypeFreeTextWithUnit           = "free_text_with_unit"
-	PageItemTypeFileUpload                 = "file_upload"
-
-	// Content block types (non-interactive)
-	PageItemTypeRichText = "rich_text"
-	PageItemTypeImage    = "image"
-)
-
 // CollectionPageItem represents an item within a collection page.
 // This can be either an instruction (interactive) or a content block (non-interactive).
 // The Type field determines which other fields are relevant.
+// Use InstructionType constants from collection.go for the Type field.
 type CollectionPageItem struct {
 	Order int    `json:"order" mapstructure:"order"`
 	Type  string `json:"type" mapstructure:"type"`
@@ -189,6 +196,12 @@ type CollectionPageItem struct {
 	UnitOptions  []UnitOption `json:"unit_options,omitempty" mapstructure:"unit_options"`
 	DefaultUnit  string       `json:"default_unit,omitempty" mapstructure:"default_unit"`
 	UnitPosition UnitPosition `json:"unit_position,omitempty" mapstructure:"unit_position"`
+
+	// File upload fields (for file_upload)
+	AcceptedFileTypes []string `json:"accepted_file_types,omitempty" mapstructure:"accepted_file_types"`
+	MaxFileSizeMB     *float64 `json:"max_file_size_mb,omitempty" mapstructure:"max_file_size_mb"`
+	MinFileCount      *int     `json:"min_file_count,omitempty" mapstructure:"min_file_count"`
+	MaxFileCount      *int     `json:"max_file_count,omitempty" mapstructure:"max_file_count"`
 
 	// Content block fields (for rich_text)
 	Content string `json:"content,omitempty" mapstructure:"content"`

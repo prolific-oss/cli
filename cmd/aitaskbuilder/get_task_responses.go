@@ -101,8 +101,8 @@ func renderAITaskBuilderResponses(c client.API, opts BatchGetResponsesOptions, w
 		// Handle different response types
 		switch resp.Response.Type {
 		case model.AITaskBuilderResponseTypeFreeText:
-			if resp.Response.Text != nil {
-				fmt.Fprintf(w, "    Text: %s\n", *resp.Response.Text)
+			if len(resp.Response.Answer) > 0 && resp.Response.Answer[0].Value != "" {
+				fmt.Fprintf(w, "    Text: %s\n", resp.Response.Answer[0].Value)
 			} else {
 				fmt.Fprintf(w, "    Text: \n")
 			}
@@ -120,25 +120,40 @@ func renderAITaskBuilderResponses(c client.API, opts BatchGetResponsesOptions, w
 				fmt.Fprintf(w, "    Selected Options:\n")
 				for _, option := range resp.Response.Answer {
 					fmt.Fprintf(w, "      - %s\n", option.Value)
+					if option.Explanation != "" {
+						fmt.Fprintf(w, "        Explanation: %s\n", option.Explanation)
+					}
 				}
 			} else {
 				fmt.Fprintf(w, "    Selected Options: \n")
 			}
-			if resp.Response.Text != nil {
-				fmt.Fprintf(w, "    Additional Text: %s\n", *resp.Response.Text)
-			} else {
-				fmt.Fprintf(w, "    Additional Text: \n")
-			}
 		case model.AITaskBuilderResponseTypeFreeTextWithUnit:
-			if resp.Response.Text != nil {
-				fmt.Fprintf(w, "    Text: %s\n", *resp.Response.Text)
+			if len(resp.Response.Answer) > 0 {
+				if resp.Response.Answer[0].Value != "" {
+					fmt.Fprintf(w, "    Text: %s\n", resp.Response.Answer[0].Value)
+				} else {
+					fmt.Fprintf(w, "    Text: \n")
+				}
+				if resp.Response.Answer[0].Unit != "" {
+					fmt.Fprintf(w, "    Unit: %s\n", resp.Response.Answer[0].Unit)
+				} else {
+					fmt.Fprintf(w, "    Unit: \n")
+				}
 			} else {
 				fmt.Fprintf(w, "    Text: \n")
-			}
-			if resp.Response.Unit != nil {
-				fmt.Fprintf(w, "    Unit: %s\n", *resp.Response.Unit)
-			} else {
 				fmt.Fprintf(w, "    Unit: \n")
+			}
+		case model.AITaskBuilderResponseTypeFileUpload:
+			if len(resp.Response.Answer) > 0 {
+				fmt.Fprintf(w, "    Uploaded Files:\n")
+				for _, file := range resp.Response.Answer {
+					fmt.Fprintf(w, "      - File Name: %s\n", file.FileName)
+					fmt.Fprintf(w, "        File Size: %.2f MB\n", file.FileSizeMB)
+					fmt.Fprintf(w, "        Content Type: %s\n", file.ContentType)
+					fmt.Fprintf(w, "        File Key: %s\n", file.FileKey)
+				}
+			} else {
+				fmt.Fprintf(w, "    Uploaded Files: \n")
 			}
 		}
 

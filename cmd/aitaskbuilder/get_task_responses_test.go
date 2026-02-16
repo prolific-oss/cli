@@ -61,7 +61,9 @@ func TestNewGetResponsesCommandCallsAPI(t *testing.T) {
 				Response: model.AITaskBuilderResponseData{
 					InstructionID: "instruction-001",
 					Type:          model.AITaskBuilderResponseTypeFreeText,
-					Text:          &textResponse,
+					Answer: []model.AITaskBuilderAnswerOption{
+						{Value: textResponse},
+					},
 				},
 				CreatedAt:     createdAt,
 				SchemaVersion: 2,
@@ -256,7 +258,7 @@ func TestNewGetResponsesCommandHandlesResponseWithEmptyAnswer(t *testing.T) {
 				Response: model.AITaskBuilderResponseData{
 					InstructionID: "instruction-001",
 					Type:          model.AITaskBuilderResponseTypeFreeText,
-					Text:          nil, // empty answer
+					Answer:        []model.AITaskBuilderAnswerOption{}, // empty answer
 				},
 				CreatedAt:     createdAt,
 				SchemaVersion: 2,
@@ -330,8 +332,9 @@ func TestNewGetResponsesCommandHandlesFreeTextWithUnitResponse(t *testing.T) {
 				Response: model.AITaskBuilderResponseData{
 					InstructionID: "instruction-003",
 					Type:          model.AITaskBuilderResponseTypeFreeTextWithUnit,
-					Text:          &textValue,
-					Unit:          &unitValue,
+					Answer: []model.AITaskBuilderAnswerOption{
+						{Value: textValue, Unit: unitValue},
+					},
 				},
 				CreatedAt:     createdAt,
 				SchemaVersion: 2,
