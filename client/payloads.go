@@ -122,3 +122,9 @@ type CredentialPoolPayload struct {
 type UpdateCredentialPoolPayload struct {
 	Credentials string `json:"credentials"`
 }
+
+// CreateBonusPaymentsPayload represents the JSON payload for creating bonus payments
+type CreateBonusPaymentsPayload struct {
+	StudyID    string `json:"study_id"`
+	CSVBonuses string `json:"csv_bonuses"`
+}
