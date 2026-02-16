@@ -1,5 +1,80 @@
 # CHANGELOG
 
+## 0.0.58
+
+### AI Task Builder
+
+- **Add `file_upload` instruction type support:**
+  - Create file upload instructions with configurable file types, size limits, and count constraints
+  - Validate file extensions (must start with dot), positive file sizes, and min/max file counts
+  - Render file upload responses with file metadata (name, size, content type, file key)
+  - Full validation ensures `max_file_count >= min_file_count` and both must be >= 1
+- **Add `free_text_with_unit` instruction type:**
+  - Supersedes deprecated `multiple_choice_with_unit` instruction type
+  - Support unit selection with customizable unit options (e.g., kg/lbs, °C/°F, USD/EUR)
+  - Configure unit position (prefix/suffix) and optional default unit
+  - Properly typed `UnitPosition` enum with `prefix` and `suffix` constants
+- **Add `completion_codes` support:**
+  - Support completion codes in batch and collection configurations
+  - Fix `omitempty` handling for completion_code field
+- **Improve response rendering:**
+  - Correctly handle all response types using unified Answer array structure
+  - Display explanations for `multiple_choice_with_free_text` responses
+  - Support empty/nil responses gracefully with fallback display
+  - Update response model to match API schemas exactly (Zod schema compliance)
+- **Add collection commands:**
+  - `aitaskbuilder collection create` - Create collections from JSON/YAML templates
+  - `aitaskbuilder collection update` - Update existing collections
+  - `aitaskbuilder collection list` - List all collections in a workspace
+  - `aitaskbuilder collection get` - View collection details
+  - `aitaskbuilder collection preview` - Open collection preview in browser
+  - `aitaskbuilder collection publish` - Publish collections with study configuration
+- **Improve collection support:**
+  - Add `task_details` validation for collections
+  - Support content block types (rich_text, image) in collections
+  - Correctly map collection schema with `collection_items` and `page_items`
+  - Add comprehensive collection examples (JSON/YAML)
+- **Breaking changes:**
+  - Removed `multiple_choice_with_unit` instruction type (superseded by `free_text_with_unit`)
+  - Removed duplicate `PageItemType` constants (use `InstructionType` from collection.go)
+  - Updated `CollectionPageItem` to reference `InstructionType` enum
+
+### Participant Management
+
+- Fix participant group list command to use `workspace_id` query parameter
+
+### Bonus Payments
+
+- **Add `bonus` commands:**
+  - `bonus create` - Create bonus payments from CSV file or command-line arguments
+  - `bonus pay` - Pay pending bonus payments
+  - Validate bonus amounts (reject NaN and Inf values)
+  - Support CSV file format with participant IDs and amounts
+  - Document minor currency units in response fields
+  - Add comprehensive CSV format examples to help output
+
+### Messaging
+
+- **Add group messaging commands:**
+  - `message bulk-send` - Send messages to multiple participants
+  - `message send-group` - Send messages to participant groups
+- Fix message API conformance (sender vs sender_id, datetime_created fields)
+- Add required flag validation to all message send commands
+
+### Developer Experience
+
+- Add `CLAUDE.md` with project guidelines for AI-assisted development
+- Rename `CRUSH.md` to `DEVELOPMENT.md` for clarity
+- Convert CLI command template to Claude Code skill
+- Add CLI command plan template
+
+### Bug Fixes
+
+- Fix `goconst` lint for shared test error string
+- Correct Go workflow badge on README
+- Improve feature access error detection and messaging
+- Fix collection item_count display in detail view
+
 ## 0.0.57
 
 - Add `study credentials-report` command to download CSV report of credential usage for a study:
