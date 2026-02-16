@@ -45,6 +45,7 @@ const (
 	InstructionTypeMultipleChoice             InstructionType = "multiple_choice"
 	InstructionTypeMultipleChoiceWithFreeText InstructionType = "multiple_choice_with_free_text"
 	InstructionTypeFreeTextWithUnit           InstructionType = "free_text_with_unit"
+	InstructionTypeFileUpload                 InstructionType = "file_upload"
 
 	// Content block types (non-interactive - for context or guidance)
 	ContentBlockTypeRichText InstructionType = "rich_text"
