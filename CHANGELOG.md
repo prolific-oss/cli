@@ -67,15 +67,6 @@
 - Rename `CRUSH.md` to `DEVELOPMENT.md` for clarity
 - Convert CLI command template to Claude Code skill
 - Add CLI command plan template
-- Add `.DS_Store` to `.gitignore`
-- Remove `specs/` directory from repository
-
-### Dependencies
-
-- Bump `golang.org/x/text` in production dependencies
-- Bump `github.com/charmbracelet/bubbles`
-- Bump `actions/setup-go` from 6.1.0 to 6.2.0
-- Bump golang from 1.25.5-alpine to 1.25.7-alpine in Docker
 
 ### Bug Fixes
 
