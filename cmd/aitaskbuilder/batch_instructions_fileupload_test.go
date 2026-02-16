@@ -328,3 +328,138 @@ func TestNewBatchInstructionsCommandFileUploadZeroMaxFileSize(t *testing.T) {
 		t.Fatalf("expected error about zero max_file_size_mb; got %s", err.Error())
 	}
 }
+
+func TestNewBatchInstructionsCommandFileUploadZeroMaxFileCount(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	batchID := "01954894-65b3-779e-aaf6-348698e23715"
+
+	var buf bytes.Buffer
+	writer := bufio.NewWriter(&buf)
+
+	cmd := aitaskbuilder.NewBatchInstructionsCommand(c, writer)
+
+	// Zero max_file_count (invalid - must be at least 1)
+	instructionsJSON := `[{
+		"type": "file_upload",
+		"created_by": "Sean",
+		"description": "Upload your files",
+		"max_file_count": 0
+	}]`
+
+	cmd.SetArgs([]string{
+		"-b", batchID,
+		"-j", instructionsJSON,
+	})
+
+	err := cmd.Execute()
+	if err == nil {
+		t.Fatal("expected an error; got nil")
+	}
+
+	if !strings.Contains(err.Error(), "max_file_count must be at least 1") {
+		t.Fatalf("expected error about zero max_file_count; got %s", err.Error())
+	}
+}
+
+func TestNewBatchInstructionsCommandFileUploadNegativeMaxFileCount(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	batchID := "01954894-65b3-779e-aaf6-348698e23716"
+
+	var buf bytes.Buffer
+	writer := bufio.NewWriter(&buf)
+
+	cmd := aitaskbuilder.NewBatchInstructionsCommand(c, writer)
+
+	// Negative max_file_count
+	instructionsJSON := `[{
+		"type": "file_upload",
+		"created_by": "Sean",
+		"description": "Upload your files",
+		"max_file_count": -3
+	}]`
+
+	cmd.SetArgs([]string{
+		"-b", batchID,
+		"-j", instructionsJSON,
+	})
+
+	err := cmd.Execute()
+	if err == nil {
+		t.Fatal("expected an error; got nil")
+	}
+
+	if !strings.Contains(err.Error(), "max_file_count must be at least 1") {
+		t.Fatalf("expected error about negative max_file_count; got %s", err.Error())
+	}
+}
+
+func TestNewBatchInstructionsCommandFileUploadMaxFileCountWithoutMin(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	batchID := "01954894-65b3-779e-aaf6-348698e23717"
+
+	maxFileCount := 3
+
+	response := client.CreateAITaskBuilderInstructionsResponse{
+		model.Instruction{
+			ID:           "inst-upload-3",
+			Type:         "file_upload",
+			BatchID:      batchID,
+			CreatedBy:    "Sean",
+			CreatedAt:    "2024-09-18T07:50:15.055Z",
+			Description:  "Upload your files",
+			MaxFileCount: &maxFileCount,
+		},
+	}
+
+	instructions := client.CreateAITaskBuilderInstructionsPayload{
+		Instructions: []client.Instruction{
+			{
+				Type:         "file_upload",
+				CreatedBy:    "Sean",
+				Description:  "Upload your files",
+				MaxFileCount: &maxFileCount,
+			},
+		},
+	}
+
+	c.EXPECT().CreateAITaskBuilderInstructions(batchID, instructions).Return(&response, nil)
+
+	var buf bytes.Buffer
+	writer := bufio.NewWriter(&buf)
+
+	cmd := aitaskbuilder.NewBatchInstructionsCommand(c, writer)
+
+	// Valid: max_file_count without min_file_count should be allowed
+	instructionsJSON := `[{
+		"type": "file_upload",
+		"created_by": "Sean",
+		"description": "Upload your files",
+		"max_file_count": 3
+	}]`
+
+	cmd.SetArgs([]string{
+		"-b", batchID,
+		"-j", instructionsJSON,
+	})
+
+	err := cmd.Execute()
+	if err != nil {
+		t.Fatalf("expected no error; got %s", err.Error())
+	}
+
+	writer.Flush()
+
+	expectedOutput := "Successfully added 1 instruction(s) to batch " + batchID
+	if !strings.Contains(buf.String(), expectedOutput) {
+		t.Fatalf("expected output to contain '%s'; got %s", expectedOutput, buf.String())
+	}
+}

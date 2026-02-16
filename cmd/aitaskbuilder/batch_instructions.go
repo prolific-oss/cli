@@ -295,7 +295,12 @@ func validateFileUpload(instruction client.Instruction, index int) error {
 		return fmt.Errorf("instruction %d: min_file_count must be at least 1, got %d", index+1, *instruction.MinFileCount)
 	}
 
-	// Validate max_file_count >= min_file_count
+	// Validate max_file_count (must be at least 1 if provided)
+	if instruction.MaxFileCount != nil && *instruction.MaxFileCount < 1 {
+		return fmt.Errorf("instruction %d: max_file_count must be at least 1, got %d", index+1, *instruction.MaxFileCount)
+	}
+
+	// Validate max_file_count >= min_file_count (when both are provided)
 	if instruction.MinFileCount != nil && instruction.MaxFileCount != nil {
 		if *instruction.MaxFileCount < *instruction.MinFileCount {
 			return fmt.Errorf("instruction %d: max_file_count (%d) must be greater than or equal to min_file_count (%d)", index+1, *instruction.MaxFileCount, *instruction.MinFileCount)
