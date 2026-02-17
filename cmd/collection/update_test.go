@@ -182,6 +182,58 @@ Name: JSON Updated Collection
 			expectedError: "",
 		},
 		{
+			name:      "successful update with collection description field",
+			args:      []string{collectionID},
+			configExt: ".json",
+			configContent: `{
+  "name": "Collection With Description",
+  "description": "This is a test collection description",
+  "collection_items": [
+    {
+      "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+      "order": 0,
+      "page_items": [
+        {
+          "type": "free_text",
+          "description": "Enter your feedback",
+          "order": 0
+        }
+      ]
+    }
+  ]
+}`,
+			expectedPayload: model.UpdateCollection{
+				Name:        "Collection With Description",
+				Description: "This is a test collection description",
+				CollectionItems: []model.Page{
+					{
+						BaseEntity: model.BaseEntity{ID: pageID},
+						Order:      0,
+						PageItems: []model.PageInstruction{
+							{
+								Type:        model.InstructionTypeFreeText,
+								Description: "Enter your feedback",
+								Order:       0,
+							},
+						},
+					},
+				},
+			},
+			mockReturn: &model.Collection{
+				ID:        collectionID,
+				Name:      "Collection With Description",
+				CreatedAt: time.Now(),
+				CreatedBy: "user123",
+				ItemCount: 1,
+			},
+			mockError: nil,
+			expectedOutput: `Collection updated successfully
+ID: 550e8400-e29b-41d4-a716-446655440000
+Name: Collection With Description
+`,
+			expectedError: "",
+		},
+		{
 			name:           "missing collection ID",
 			args:           []string{},
 			configContent:  "",

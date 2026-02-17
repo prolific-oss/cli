@@ -66,6 +66,8 @@ const (
 	InstructionTypeMultipleChoiceWithFreeText InstructionType = "multiple_choice_with_free_text"
 	// InstructionTypeFreeTextWithUnit represents a free text instruction with unit selection.
 	InstructionTypeFreeTextWithUnit InstructionType = "free_text_with_unit"
+	// InstructionTypeFileUpload represents a file upload instruction.
+	InstructionTypeFileUpload InstructionType = "file_upload"
 )
 
 // InstructionOption represents an option for multiple choice instructions
@@ -93,6 +95,10 @@ type Instruction struct {
 	UnitPosition         string              `json:"unit_position,omitempty"`
 	HelperText           string              `json:"helper_text,omitempty"`
 	PlaceholderTextInput string              `json:"placeholder_text_input,omitempty"`
+	AcceptedFileTypes    []string            `json:"accepted_file_types,omitempty"`
+	MaxFileSizeMB        *float64            `json:"max_file_size_mb,omitempty"`
+	MinFileCount         *int                `json:"min_file_count,omitempty"`
+	MaxFileCount         *int                `json:"max_file_count,omitempty"`
 }
 
 // CreateAITaskBuilderInstructionsPayload represents the JSON payload for creating AI Task Builder instructions
