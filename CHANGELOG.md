@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## next
+
+- Bump Go version to 1.26.
+
 ## 0.0.58
 
 ### AI Task Builder
