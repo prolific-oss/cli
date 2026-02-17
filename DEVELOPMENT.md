@@ -4,7 +4,7 @@
 
 **Prolific CLI** is a command-line interface for the [Prolific](https://www.prolific.com) research platform. It's written in Go using the Cobra framework for CLI commands and Bubbletea for interactive TUI components.
 
-- **Language**: Go 1.25+
+- **Language**: Go 1.26+
 - **Primary Frameworks**: Cobra (CLI), Bubbletea (TUI), Viper (config)
 - **API Client**: Custom HTTP client in `client/client.go`
 - **License**: Apache 2.0
@@ -13,15 +13,16 @@
 
 ### Installing Go
 
-This project requires **Go 1.25 or later**.
+This project requires **Go 1.26 or later**.
 
 **macOS:**
+
 ```bash
 brew install go
 ```
 
 **Other platforms:**
-Download from https://go.dev/dl/
+Download from <https://go.dev/dl/>
 
 ### Setting up your PATH
 
@@ -36,8 +37,9 @@ source ~/.zshrc  # or source ~/.bash_profile
 ```
 
 Verify setup:
+
 ```bash
-go version           # Should show Go 1.25+
+go version           # Should show Go 1.26+
 go env GOPATH        # Should show your Go workspace (typically ~/go)
 echo $PATH | grep go # Should include your GOPATH/bin
 ```
@@ -127,9 +129,11 @@ make docker-scout
 ### Environment Variables
 
 **Required:**
-- `PROLIFIC_TOKEN` - API token from Prolific (get from https://app.prolific.com/researcher/tokens/)
+
+- `PROLIFIC_TOKEN` - API token from Prolific (get from <https://app.prolific.com/researcher/tokens/>)
 
 **Optional:**
+
 - `PROLIFIC_URL` - Override API URL (defaults to `https://api.prolific.com`)
 - `PROLIFIC_DEBUG` - Enable debug output for API requests
 
@@ -138,6 +142,7 @@ make docker-scout
 Location: `$HOME/.config/prolific-oss/prolific.yaml`
 
 Available settings:
+
 ```yaml
 workspace: xxxxxxxxxx  # Default workspace ID for commands
 ```
@@ -191,7 +196,7 @@ All commands follow a consistent pattern:
 // Each command package exports a New*Command function
 func NewListCommand(commandName string, client client.API, w io.Writer) *cobra.Command {
     var opts ListOptions
-    
+
     cmd := &cobra.Command{
         Use:   commandName,
         Short: "Description",
@@ -202,10 +207,10 @@ func NewListCommand(commandName string, client client.API, w io.Writer) *cobra.C
             return nil
         },
     }
-    
+
     // Add flags
     cmd.Flags().StringVarP(&opts.Field, "flag", "f", "default", "help")
-    
+
     return cmd
 }
 ```
@@ -240,23 +245,23 @@ func TestNewListCommand(t *testing.T) {
     ctrl := gomock.NewController(t)
     defer ctrl.Finish()
     c := mock_client.NewMockAPI(ctrl)
-    
+
     // Setup expectations
     c.EXPECT().
         GetStudies(status, projectID).
         Return(&response, nil).
         AnyTimes()
-    
+
     // Capture output
     var b bytes.Buffer
     writer := bufio.NewWriter(&b)
-    
+
     // Execute command
     cmd := study.NewListCommand("studies", c, writer)
     _ = cmd.RunE(cmd, nil)
-    
+
     writer.Flush()
-    
+
     // Assert output
     expected := `...`
     if b.String() != expected {
@@ -287,6 +292,7 @@ This regenerates `mock_client/mock_client.go` from `client/client.go`.
 ### Linting
 
 Enabled linters (`.golangci.yml`):
+
 - dogsled, dupl, errcheck, exhaustive
 - gochecknoinits, goconst, gocyclo
 - goprintffuncname, gosec, govet
@@ -313,6 +319,7 @@ Formatters: `gofmt`, `goimports`
 ### UI Rendering
 
 Common helpers in `ui/ui.go`:
+
 - `RenderSectionMarker()` - Visual separator
 - `RenderHeading(heading)` - Bold headings
 - `RenderMoney(amount, currencyCode)` - Currency formatting
@@ -324,11 +331,13 @@ Date format: `AppDateTimeFormat = "02-01-2006 15:04"`
 ### Interactive vs Non-Interactive Commands
 
 Many list commands support multiple rendering strategies:
+
 - **Interactive**: Bubbletea TUI with search/navigation
 - **Non-interactive**: Table output to stdout
 - **CSV**: Machine-readable format
 
 Example from `cmd/study/list.go:89-99`:
+
 ```go
 renderer := study.ListRenderer{}
 if opts.Csv {
@@ -343,6 +352,7 @@ if opts.Csv {
 ## Model Layer
 
 Key models in `model/`:
+
 - `Study` - Research study with eligibility requirements, filters
 - `Workspace` - Organizational workspace
 - `Project` - Project within a workspace
@@ -353,14 +363,17 @@ Key models in `model/`:
 - `Hook` - Webhook subscriptions
 
 Study statuses (see `model/study.go:8-38`):
+
 - `unpublished`, `active`, `scheduled`, `awaiting review`, `completed`
 
 Study transitions:
+
 - `PUBLISH`, `START`, `PAUSE`, `STOP`
 
 ## API Client Defaults
 
 From `client/client.go`:
+
 - `DefaultRecordOffset = 0`
 - `DefaultRecordLimit = 200`
 
@@ -369,6 +382,7 @@ All API methods follow pattern: `Get*`, `Create*`, `Update*`, `Transition*`
 ## Study Creation Templates
 
 Template examples in `docs/examples/`:
+
 - `standard-sample.yaml` / `.json` - Basic study
 - `minimal-study.json` - Minimal required fields
 - `study-with-ethnicity-screener.json` - With eligibility requirements
@@ -384,6 +398,7 @@ Templates support both JSON and YAML formats.
 ### Pre-commit Hook
 
 Located at `scripts/hooks/pre-commit`, automatically runs:
+
 1. `make lint` - Lints all Go code
 2. `make test` - Runs test suite
 3. `make lint-dockerfile` - Lints Dockerfile (if changed)
@@ -401,6 +416,7 @@ Installed via `make install`.
 From `.github/copilot-instructions.md:43-50`:
 
 When creating a release:
+
 1. Use last git tag and summarize commits since
 2. Update `CHANGELOG.md` with new version
 3. Format:
@@ -410,12 +426,13 @@ When creating a release:
    - **No dates** - just version numbers
 
 Example:
+
 ```markdown
 ## 0.0.56
 
 - Add Apache 2 License.
 - Add `aitaskbuilder` command to the root of the application.
-- Bump the project to Go 1.25.
+- Bump the project to Go 1.26.
 ```
 
 ## CI/CD
@@ -423,7 +440,8 @@ Example:
 GitHub Actions workflows in `.github/workflows/`:
 
 ### `go.yml` (runs on every push)
-1. Setup Go 1.25.x
+
+1. Setup Go 1.26.x
 2. `make install` - Get dependencies
 3. Lint Go code with golangci-lint
 4. `make lint-dockerfile`
@@ -431,9 +449,11 @@ GitHub Actions workflows in `.github/workflows/`:
 6. `make test`
 
 ### `docker.yml`
+
 Builds and pushes Docker images.
 
 ### `release.yml`
+
 Handles release automation.
 
 ## Common Patterns
@@ -442,9 +462,11 @@ Handles release automation.
 
 1. Create package under `cmd/<resource>/`
 2. Implement command function(s) following pattern:
+
    ```go
    func NewXCommand(client client.API, w io.Writer) *cobra.Command
    ```
+
 3. Add tests in `<command>_test.go`
 4. Register in `cmd/root.go:65-80`
 5. Update `CHANGELOG.md`
@@ -460,6 +482,7 @@ Handles release automation.
 ### Error Handling
 
 API errors are structured as `JSONAPIError`:
+
 ```go
 type JSONAPIError struct {
     Error struct {
@@ -503,13 +526,14 @@ Client automatically handles 400+ status codes and returns formatted errors.
 
 - All API calls require `PROLIFIC_TOKEN` environment variable
 - Client will return error if token not set: `"PROLIFIC_TOKEN not set"`
-- Get token from: https://app.prolific.com/researcher/tokens/
+- Get token from: <https://app.prolific.com/researcher/tokens/>
 
 ## Dependencies
 
 Key dependencies from `go.mod`:
 
 **CLI/UI:**
+
 - `github.com/spf13/cobra` - CLI framework
 - `github.com/spf13/viper` - Configuration management
 - `github.com/charmbracelet/bubbletea` - TUI framework
@@ -517,9 +541,11 @@ Key dependencies from `go.mod`:
 - `github.com/charmbracelet/bubbles` - TUI components
 
 **Testing:**
+
 - `github.com/golang/mock` - Mocking framework
 
 **Utilities:**
+
 - `github.com/mitchellh/go-homedir` - Home directory detection
 - `github.com/pkg/browser` - Open URLs in browser
 - `golang.org/x/text` - Text processing (currency, i18n)
@@ -529,6 +555,7 @@ Update dependencies with `go get` and run `go mod tidy`.
 ## Version Information
 
 Version is injected at build time via `-ldflags`:
+
 ```bash
 -X github.com/prolific-oss/cli/version.GITCOMMIT=$(GIT_RELEASE)
 ```
@@ -538,6 +565,7 @@ Stored in `version/version.go` and displayed in root command.
 ## Browser Integration
 
 Some commands support `-W` flag to open resources in browser:
+
 - `project view [id] -W`
 - `study view [id] -W`
 - `filter-sets view [id] -W`
