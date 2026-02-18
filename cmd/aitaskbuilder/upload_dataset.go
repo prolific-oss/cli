@@ -121,6 +121,6 @@ func uploadFileToPresignedURL(filePath, uploadURL string) error {
 
 	request.Header.Set("Content-Type", "multipart/form-data")
 	client := &http.Client{}
-	_, err = client.Do(request)
+	_, err = client.Do(request) //nolint:gosec // G704: URL from API-provided presigned upload URL
 	return err
 }

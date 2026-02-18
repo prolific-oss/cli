@@ -145,7 +145,7 @@ func (c *Client) Execute(method, url string, body any, response any) (*http.Resp
 		fmt.Println(request)
 	}
 
-	httpResponse, err := c.Client.Do(request)
+	httpResponse, err := c.Client.Do(request) //nolint:gosec // G704: URL constructed from user-configured API base
 	if err != nil {
 		return nil, err
 	}
