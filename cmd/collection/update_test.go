@@ -674,19 +674,33 @@ func TestUpdateCollectionPassesThroughContentFormat(t *testing.T) {
   ]
 }`
 
-	var capturedPayload model.UpdateCollection
+	expectedPayload := model.UpdateCollection{
+		Name: "Test Collection",
+		CollectionItems: []model.Page{
+			{
+				Order: 0,
+				PageItems: []model.PageInstruction{
+					{
+						Type:          model.ContentBlockTypeRichText,
+						Content:       "# Welcome",
+						ContentFormat: model.ContentFormatMarkdown,
+						Order:         0,
+					},
+				},
+			},
+		},
+	}
+
 	c.EXPECT().
-		UpdateCollection(collectionID, gomock.Any()).
-		DoAndReturn(func(id string, payload model.UpdateCollection) (*model.Collection, error) {
-			capturedPayload = payload
-			return &model.Collection{
-				ID:        collectionID,
-				Name:      "Test Collection",
-				CreatedAt: time.Now(),
-				CreatedBy: "user123",
-				ItemCount: 1,
-			}, nil
-		})
+		UpdateCollection(collectionID, gomock.Eq(expectedPayload)).
+		Return(&model.Collection{
+			ID:        collectionID,
+			Name:      "Test Collection",
+			CreatedAt: time.Now(),
+			CreatedBy: "user123",
+			ItemCount: 1,
+		}, nil).
+		Times(1)
 
 	configFile := createTempConfigFile(t, configContent, ".json")
 
@@ -696,15 +710,8 @@ func TestUpdateCollectionPassesThroughContentFormat(t *testing.T) {
 	cmd := collection.NewUpdateCommand(c, writer)
 	cmd.SetArgs([]string{collectionID, "-t", configFile})
 	err := cmd.Execute()
-	writer.Flush()
-
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
-	}
-
-	pageItem := capturedPayload.CollectionItems[0].PageItems[0]
-	if pageItem.ContentFormat != "markdown" {
-		t.Fatalf("expected content_format 'markdown' to pass through; got '%s'", pageItem.ContentFormat)
 	}
 }
 

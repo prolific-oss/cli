@@ -12,11 +12,17 @@
       "page_items": [
         {
           "order": 0,
+          "type": "rich_text",
+          "content": "# Welcome\nPlease read the **instructions** carefully before starting.",
+          "content_format": "markdown"
+        },
+        {
+          "order": 1,
           "type": "free_text",
           "description": "How was your experience completing this task?"
         },
         {
-          "order": 1,
+          "order": 2,
           "type": "multiple_choice",
           "description": "Which option do you prefer?",
           "options": [
@@ -32,7 +38,7 @@
           "answer_limit": -1
         },
         {
-          "order": 2,
+          "order": 3,
           "type": "free_text_with_unit",
           "description": "What is your current weight?",
           "helper_text": "Please enter your weight as a number",
@@ -49,12 +55,6 @@
           ],
           "default_unit": "kg",
           "unit_position": "suffix"
-        },
-        {
-          "order": 3,
-          "type": "rich_text",
-          "content": "# Welcome\nPlease read the **instructions** carefully before starting.",
-          "content_format": "markdown"
         },
         {
           "order": 4,
