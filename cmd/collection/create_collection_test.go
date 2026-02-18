@@ -652,6 +652,66 @@ func TestNewCreateCollectionCommandWithContentBlocks(t *testing.T) {
 	}
 }
 
+func TestNewCreateCollectionCommandPassesThroughContentFormat(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	tmpDir := t.TempDir()
+	templateFile := filepath.Join(tmpDir, "collection.json")
+	templateContent := fmt.Sprintf(`{
+  "workspace_id": "%s",
+  "name": "test-collection",
+  "task_details": %s,
+  "collection_items": [
+    {
+      "order": 0,
+      "page_items": [
+        {
+          "order": 0,
+          "type": "rich_text",
+          "content": "# Welcome",
+          "content_format": "markdown"
+        }
+      ]
+    }
+  ]
+}`, testWorkspaceID, taskDetails)
+
+	err := os.WriteFile(templateFile, []byte(templateContent), 0600)
+	if err != nil {
+		t.Fatalf("failed to create temporary file: %s", err.Error())
+	}
+
+	var capturedPayload model.CreateAITaskBuilderCollection
+	c.EXPECT().
+		CreateAITaskBuilderCollection(gomock.Any()).
+		DoAndReturn(func(payload model.CreateAITaskBuilderCollection) (*client.CreateAITaskBuilderCollectionResponse, error) {
+			capturedPayload = payload
+			return &client.CreateAITaskBuilderCollectionResponse{
+				ID:          "collection-123",
+				Name:        "test-collection",
+				WorkspaceID: testWorkspaceID,
+			}, nil
+		})
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := collection.NewCreateCollectionCommand(c, writer)
+	cmd.SetArgs([]string{"-t", templateFile})
+
+	err = cmd.Execute()
+	if err != nil {
+		t.Fatalf("expected no error; got %s", err.Error())
+	}
+
+	pageItem := capturedPayload.CollectionItems[0].PageItems[0]
+	if pageItem.ContentFormat != "markdown" {
+		t.Fatalf("expected content_format 'markdown' to pass through; got '%s'", pageItem.ContentFormat)
+	}
+}
+
 func TestNewCreateCollectionCommandWithTaskDetails(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

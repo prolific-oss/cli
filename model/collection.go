@@ -98,7 +98,8 @@ type PageInstruction struct {
 	MaxFileCount      *int     `json:"max_file_count,omitempty" yaml:"max_file_count,omitempty" mapstructure:"max_file_count"`
 
 	// Content block fields - for rich_text type
-	Content string `json:"content,omitempty" yaml:"content,omitempty" mapstructure:"content"`
+	Content       string `json:"content,omitempty" yaml:"content,omitempty" mapstructure:"content"`
+	ContentFormat string `json:"content_format,omitempty" yaml:"content_format,omitempty" mapstructure:"content_format"`
 
 	// Content block fields - for image type
 	URL     string `json:"url,omitempty" yaml:"url,omitempty" mapstructure:"url"`
