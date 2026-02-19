@@ -21,6 +21,7 @@ type PublishOptions struct {
 	Name         string
 	Description  string
 	TemplatePath string
+	Draft        bool
 }
 
 // NewPublishCommand creates a new `collection publish` command to publish
@@ -38,6 +39,10 @@ This command creates and publishes a study from an AI Task Builder Collection.
 The study will be created with the collection's content and made available
 to participants.
 
+Use --draft (-d) to create the study without publishing it. The study will
+remain in draft/unpublished status, allowing you to review it before
+publishing with 'prolific study transition <study-id> -a PUBLISH'.
+
 You can either specify the number of participants directly, or provide a study
 template file. When using a template, the collection ID will be automatically
 set as the data_collection_id and data_collection_method will be set to
@@ -53,6 +58,14 @@ $ prolific collection publish 67890abcdef --participants 100
 Publish with a custom study name:
 
 $ prolific collection publish 67890abcdef -p 50 --name "My Custom Study"
+
+Create a draft study (not published):
+
+$ prolific collection publish 67890abcdef -p 100 --draft
+
+Create a draft study using the -d shorthand:
+
+$ prolific collection publish 67890abcdef -p 100 -d
 
 Publish using a study template file:
 
@@ -80,7 +93,8 @@ $ prolific collection publish 67890abcdef -t /path/to/template.json -p 200
 	flags := cmd.Flags()
 	flags.IntVarP(&opts.Participants, "participants", "p", 0, "Number of participants required (required if no template)")
 	flags.StringVarP(&opts.Name, "name", "n", "", "Study name (defaults to collection's task name)")
-	flags.StringVarP(&opts.Description, "description", "d", "", "Study description (defaults to collection's task introduction)")
+	flags.StringVar(&opts.Description, "description", "", "Study description (defaults to collection's task introduction)")
+	flags.BoolVarP(&opts.Draft, "draft", "d", false, "Create the study in draft status without publishing")
 	flags.StringVarP(&opts.TemplatePath, "template", "t", "", "Path to a study template file (JSON/YAML) - collection ID and method will be set automatically")
 
 	return cmd
@@ -173,6 +187,15 @@ func publishCollection(c client.API, opts PublishOptions, w io.Writer) error {
 		return fmt.Errorf("failed to create study: %s", err.Error())
 	}
 
+	if opts.Draft {
+		fmt.Fprintln(w, studyui.RenderStudy(*study))
+		fmt.Fprintf(w, "\nStudy created in draft status. Study ID: %s\n", study.ID)
+		fmt.Fprintf(w, "Study URL: %s\n", studyui.GetStudyURL(study.ID))
+		fmt.Fprintln(w, "\nTo publish this study, run:")
+		fmt.Fprintf(w, "  prolific study transition %s -a PUBLISH\n", study.ID)
+		return nil
+	}
+
 	// Transition the study to publish
 	_, err = c.TransitionStudy(study.ID, model.TransitionStudyPublish)
 	if err != nil {
@@ -185,7 +208,6 @@ func publishCollection(c client.API, opts PublishOptions, w io.Writer) error {
 		return fmt.Errorf("failed to get study details: %s", err.Error())
 	}
 
-	// Display the result
 	fmt.Fprintln(w, studyui.RenderStudy(*study))
 	fmt.Fprintf(w, "\nStudy URL: %s\n", studyui.GetStudyURL(study.ID))
 
