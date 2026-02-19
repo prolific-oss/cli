@@ -791,7 +791,7 @@ func TestPublishCommandWithTemplateAndNameDescriptionFlags(t *testing.T) {
 		EXPECT().
 		CreateStudy(gomock.Any()).
 		DoAndReturn(func(s model.CreateStudy) (*model.Study, error) {
-			// Verify -n and -d flags override template values
+			// Verify --name and --description flags override template values
 			if s.Name != "Flag Override Name" {
 				t.Errorf("expected Name to be overridden to 'Flag Override Name', got %q", s.Name)
 			}
@@ -830,6 +830,152 @@ func TestPublishCommandWithTemplateAndNameDescriptionFlags(t *testing.T) {
 	err := cmd.RunE(cmd, []string{testCollectionID})
 	if err != nil {
 		t.Fatalf("expected no error, got: %v", err)
+	}
+}
+
+func TestPublishCommandDraftSuccess(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockClient := mock_client.NewMockAPI(ctrl)
+
+	testCollection := &model.Collection{
+		ID:        testCollectionID,
+		Name:      "Test Collection",
+		CreatedAt: time.Now(),
+		CreatedBy: "test-user",
+		ItemCount: 10,
+		TaskDetails: &model.TaskDetails{
+			TaskName:         "Test Task Name",
+			TaskIntroduction: "Test task introduction",
+		},
+	}
+
+	testStudy := &model.Study{
+		ID:                   "study-draft-123",
+		Name:                 "Test Task Name",
+		Status:               "unpublished",
+		TotalAvailablePlaces: 100,
+	}
+
+	mockClient.
+		EXPECT().
+		GetCollection(gomock.Eq(testCollectionID)).
+		Return(testCollection, nil).
+		Times(1)
+
+	mockClient.
+		EXPECT().
+		CreateStudy(gomock.Any()).
+		Return(testStudy, nil).
+		Times(1)
+
+	mockClient.EXPECT().TransitionStudy(gomock.Any(), gomock.Any()).Times(0)
+	mockClient.EXPECT().GetStudy(gomock.Any()).Times(0)
+
+	var buf bytes.Buffer
+	cmd := collection.NewPublishCommand(mockClient, &buf)
+	_ = cmd.Flags().Set("participants", "100")
+	_ = cmd.Flags().Set("draft", "true")
+
+	err := cmd.RunE(cmd, []string{testCollectionID})
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+
+	output := buf.String()
+	if !strings.Contains(output, "draft status") {
+		t.Errorf("expected output to contain 'draft status', got: %s", output)
+	}
+	if !strings.Contains(output, "Study ID: study-draft-123") {
+		t.Errorf("expected output to contain 'Study ID: study-draft-123', got: %s", output)
+	}
+	if !strings.Contains(output, "Study URL:") {
+		t.Errorf("expected output to contain 'Study URL:', got: %s", output)
+	}
+	if !strings.Contains(output, "To publish this study, run:") {
+		t.Errorf("expected output to contain publish instructions, got: %s", output)
+	}
+	if !strings.Contains(output, "prolific study transition study-draft-123 -a PUBLISH") {
+		t.Errorf("expected output to contain publish command hint, got: %s", output)
+	}
+}
+
+func TestPublishCommandDraftWithTemplate(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockClient := mock_client.NewMockAPI(ctrl)
+
+	templateContent := `{
+		"name": "Template Draft Study",
+		"description": "A draft study from template",
+		"reward": 100,
+		"total_available_places": 200,
+		"prolific_id_option": "question",
+		"completion_code": "DRAFT01",
+		"estimated_completion_time": 5,
+		"device_compatibility": ["desktop"]
+	}`
+
+	tmpDir := t.TempDir()
+	templatePath := filepath.Join(tmpDir, "template.json")
+	if err := os.WriteFile(templatePath, []byte(templateContent), 0600); err != nil {
+		t.Fatalf("failed to create template file: %v", err)
+	}
+
+	testCollection := &model.Collection{
+		ID:        testCollectionID,
+		Name:      "Test Collection",
+		CreatedAt: time.Now(),
+		CreatedBy: "test-user",
+		ItemCount: 10,
+	}
+
+	testStudy := &model.Study{
+		ID:                   "study-draft-456",
+		Name:                 "Template Draft Study",
+		Status:               "unpublished",
+		TotalAvailablePlaces: 200,
+	}
+
+	mockClient.
+		EXPECT().
+		GetCollection(gomock.Eq(testCollectionID)).
+		Return(testCollection, nil).
+		Times(1)
+
+	mockClient.
+		EXPECT().
+		CreateStudy(gomock.Any()).
+		DoAndReturn(func(s model.CreateStudy) (*model.Study, error) {
+			if s.DataCollectionMethod != model.DataCollectionMethodAITBCollection {
+				t.Errorf("expected DataCollectionMethod %s, got %s", model.DataCollectionMethodAITBCollection, s.DataCollectionMethod)
+			}
+			if s.DataCollectionID != testCollectionID {
+				t.Errorf("expected DataCollectionID %s, got %s", testCollectionID, s.DataCollectionID)
+			}
+			return testStudy, nil
+		}).
+		Times(1)
+
+	mockClient.EXPECT().TransitionStudy(gomock.Any(), gomock.Any()).Times(0)
+	mockClient.EXPECT().GetStudy(gomock.Any()).Times(0)
+
+	var buf bytes.Buffer
+	cmd := collection.NewPublishCommand(mockClient, &buf)
+	_ = cmd.Flags().Set("template", templatePath)
+	_ = cmd.Flags().Set("draft", "true")
+
+	err := cmd.RunE(cmd, []string{testCollectionID})
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+
+	output := buf.String()
+	if !strings.Contains(output, "study-draft-456") {
+		t.Errorf("expected output to contain study ID 'study-draft-456', got: %s", output)
+	}
+	if !strings.Contains(output, "draft status") {
+		t.Errorf("expected output to contain 'draft status', got: %s", output)
 	}
 }
 
