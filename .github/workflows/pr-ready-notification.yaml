@@ -1,0 +1,52 @@
+name: PR Ready for Review Notification
+
+on:
+  pull_request:
+    types: [opened, ready_for_review, labeled]
+
+env:
+  # GitHub username to Slack user ID mapping
+  SLACK_USERS: >-
+    {
+      "ajmalkhan-eng": "U09G7U3JJA2",
+      "dessskris": "U02CWC7UY87",
+      "script-this": "U09LC914NGH",
+      "keyboSlice": "U062XSS5S95",
+      "MrManning": "U05TR5V4MB8",
+      "Matt2298": "U05SDFX707N",
+      "SeanAlexanderHarris": "U0667EK8QLA"
+    }
+
+jobs:
+  notify:
+    # Requires 'dct-ready-for-review' label, PR not draft, and correct event
+    if: |
+      github.event.pull_request.draft == false &&
+      contains(github.event.pull_request.labels.*.name, 'dct-ready-for-review') &&
+      (
+        github.event.action == 'ready_for_review' ||
+        github.event.action == 'opened' ||
+        (github.event.action == 'labeled' && github.event.label.name == 'dct-ready-for-review')
+      )
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Slack user mention
+        id: slack-user
+        run: |
+          GITHUB_USER="${{ github.event.pull_request.user.login }}"
+          SLACK_ID=$(echo '${{ env.SLACK_USERS }}' | jq -r --arg user "$GITHUB_USER" '.[$user] // empty')
+          if [ -n "$SLACK_ID" ]; then
+            echo "mention=<@${SLACK_ID}>" >> $GITHUB_OUTPUT
+          else
+            echo "mention=${GITHUB_USER}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Slack notification
+        uses: slackapi/slack-github-action@v2.0.0
+        with:
+          webhook: ${{ secrets.SLACK_PR_READY_WEBHOOK }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": ":pr-open: [${{ github.event.repository.name }}] ${{ github.event.pull_request.title }}\nAuthor: ${{ steps.slack-user.outputs.mention }} | <${{ github.event.pull_request.html_url }}|#${{ github.event.pull_request.number }}>"
+            }
