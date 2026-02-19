@@ -22,6 +22,13 @@ linters:
     - unparam
     - unused
     - whitespace
+  settings:
+    gosec:
+      config:
+        # Customise G101 pattern to remove "cred" which false-positives on
+        # domain terms like CredentialPoolID (an identifier, not a secret).
+        G101:
+          pattern: "(?i)passwd|pass|password|pwd|secret|token|pw|apiKey|bearer"
   exclusions:
     generated: lax
     presets:
@@ -29,6 +36,17 @@ linters:
       - common-false-positives
       - legacy
       - std-error-handling
+    rules:
+      # G703 (path traversal) false-positives on test temp files.
+      - linters: [gosec]
+        text: "G703"
+        path: '_test\.go'
+      # docs/scripts/ is a documentation example that invokes a local CLI
+      # binary with exec args (not shell expansion), uses constant paths,
+      # and writes to stderr. Taint analysis rules are false positives here.
+      - linters: [gosec]
+        text: "G70[235]"
+        path: 'docs/scripts/'
     paths:
       - third_party$
       - builtin$
