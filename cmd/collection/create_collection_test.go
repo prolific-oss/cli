@@ -652,6 +652,152 @@ func TestNewCreateCollectionCommandWithContentBlocks(t *testing.T) {
 	}
 }
 
+func TestNewCreateCollectionCommandPassesThroughContentFormatJSON(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	tmpDir := t.TempDir()
+	templateFile := filepath.Join(tmpDir, "collection.json")
+	templateContent := fmt.Sprintf(`{
+  "workspace_id": "%s",
+  "name": "test-collection",
+  "task_details": %s,
+  "collection_items": [
+    {
+      "order": 0,
+      "page_items": [
+        {
+          "order": 0,
+          "type": "rich_text",
+          "content": "# Welcome",
+          "content_format": "markdown"
+        }
+      ]
+    }
+  ]
+}`, testWorkspaceID, taskDetails)
+
+	err := os.WriteFile(templateFile, []byte(templateContent), 0600)
+	if err != nil {
+		t.Fatalf("failed to create temporary file: %s", err.Error())
+	}
+
+	expectedPayload := model.CreateAITaskBuilderCollection{
+		WorkspaceID: testWorkspaceID,
+		Name:        "test-collection",
+		TaskDetails: &model.TaskDetails{
+			TaskName:         "Test Task Name",
+			TaskIntroduction: "Test task introduction",
+			TaskSteps:        "Test task steps",
+		},
+		CollectionItems: []model.CollectionPage{
+			{
+				Order: 0,
+				PageItems: []model.CollectionPageItem{
+					{
+						Order:         0,
+						Type:          string(model.ContentBlockTypeRichText),
+						Content:       "# Welcome",
+						ContentFormat: model.ContentFormatMarkdown,
+					},
+				},
+			},
+		},
+	}
+
+	c.EXPECT().
+		CreateAITaskBuilderCollection(gomock.Eq(expectedPayload)).
+		Return(&client.CreateAITaskBuilderCollectionResponse{
+			ID:          "collection-123",
+			Name:        "test-collection",
+			WorkspaceID: testWorkspaceID,
+		}, nil).
+		Times(1)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := collection.NewCreateCollectionCommand(c, writer)
+	cmd.SetArgs([]string{"-t", templateFile})
+
+	err = cmd.Execute()
+	if err != nil {
+		t.Fatalf("expected no error; got %s", err.Error())
+	}
+}
+
+func TestNewCreateCollectionCommandPassesThroughContentFormatYAML(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	tmpDir := t.TempDir()
+	templateFile := filepath.Join(tmpDir, "collection.yaml")
+	templateContent := `workspace_id: ` + testWorkspaceID + `
+name: test-collection
+task_details:
+  task_name: Test Task Name
+  task_introduction: Test task introduction
+  task_steps: Test task steps
+collection_items:
+  - order: 0
+    page_items:
+      - order: 0
+        type: rich_text
+        content: "# Welcome"
+        content_format: markdown
+`
+
+	err := os.WriteFile(templateFile, []byte(templateContent), 0600)
+	if err != nil {
+		t.Fatalf("failed to create temporary file: %s", err.Error())
+	}
+
+	expectedPayload := model.CreateAITaskBuilderCollection{
+		WorkspaceID: testWorkspaceID,
+		Name:        "test-collection",
+		TaskDetails: &model.TaskDetails{
+			TaskName:         "Test Task Name",
+			TaskIntroduction: "Test task introduction",
+			TaskSteps:        "Test task steps",
+		},
+		CollectionItems: []model.CollectionPage{
+			{
+				Order: 0,
+				PageItems: []model.CollectionPageItem{
+					{
+						Order:         0,
+						Type:          string(model.ContentBlockTypeRichText),
+						Content:       "# Welcome",
+						ContentFormat: model.ContentFormatMarkdown,
+					},
+				},
+			},
+		},
+	}
+
+	c.EXPECT().
+		CreateAITaskBuilderCollection(gomock.Eq(expectedPayload)).
+		Return(&client.CreateAITaskBuilderCollectionResponse{
+			ID:          "collection-123",
+			Name:        "test-collection",
+			WorkspaceID: testWorkspaceID,
+		}, nil).
+		Times(1)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := collection.NewCreateCollectionCommand(c, writer)
+	cmd.SetArgs([]string{"-t", templateFile})
+
+	err = cmd.Execute()
+	if err != nil {
+		t.Fatalf("expected no error; got %s", err.Error())
+	}
+}
+
 func TestNewCreateCollectionCommandWithTaskDetails(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

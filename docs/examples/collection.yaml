@@ -32,6 +32,12 @@ collection_items:
         default_unit: kg
         unit_position: suffix
       - order: 3
+        type: rich_text
+        content: |
+          # Welcome
+          Please read the **instructions** carefully before starting.
+        content_format: markdown
+      - order: 4
         type: file_upload
         description: Please upload a photo of your receipt.
         accepted_file_types:

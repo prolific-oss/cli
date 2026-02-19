@@ -204,7 +204,8 @@ type CollectionPageItem struct {
 	MaxFileCount      *int     `json:"max_file_count,omitempty" mapstructure:"max_file_count"`
 
 	// Content block fields (for rich_text)
-	Content string `json:"content,omitempty" mapstructure:"content"`
+	Content       string        `json:"content,omitempty" mapstructure:"content"`
+	ContentFormat ContentFormat `json:"content_format,omitempty" mapstructure:"content_format"`
 
 	// Content block fields (for image)
 	URL     string `json:"url,omitempty" mapstructure:"url"`

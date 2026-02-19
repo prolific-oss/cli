@@ -650,6 +650,71 @@ Name: Exact Payload Test
 	}
 }
 
+func TestUpdateCollectionPassesThroughContentFormat(t *testing.T) {
+	collectionID := testCollectionID
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	configContent := `{
+  "name": "Test Collection",
+  "collection_items": [
+    {
+      "order": 0,
+      "page_items": [
+        {
+          "type": "rich_text",
+          "content": "# Welcome",
+          "content_format": "markdown",
+          "order": 0
+        }
+      ]
+    }
+  ]
+}`
+
+	expectedPayload := model.UpdateCollection{
+		Name: "Test Collection",
+		CollectionItems: []model.Page{
+			{
+				Order: 0,
+				PageItems: []model.PageInstruction{
+					{
+						Type:          model.ContentBlockTypeRichText,
+						Content:       "# Welcome",
+						ContentFormat: model.ContentFormatMarkdown,
+						Order:         0,
+					},
+				},
+			},
+		},
+	}
+
+	c.EXPECT().
+		UpdateCollection(collectionID, gomock.Eq(expectedPayload)).
+		Return(&model.Collection{
+			ID:        collectionID,
+			Name:      "Test Collection",
+			CreatedAt: time.Now(),
+			CreatedBy: "user123",
+			ItemCount: 1,
+		}, nil).
+		Times(1)
+
+	configFile := createTempConfigFile(t, configContent, ".json")
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := collection.NewUpdateCommand(c, writer)
+	cmd.SetArgs([]string{collectionID, "-t", configFile})
+	err := cmd.Execute()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
 func createTempConfigFile(t *testing.T, content string, ext string) string {
 	t.Helper()
 
