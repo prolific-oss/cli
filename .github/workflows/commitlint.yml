@@ -1,0 +1,40 @@
+name: Commit Lint
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+jobs:
+  commitlint:
+    runs-on: ubuntu-latest
+    name: Validate commit messages
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Lint commit messages
+        run: |
+          pattern='^(feat|fix|docs|refactor|test|chore|ci|build|perf|style|revert)(\([a-zA-Z0-9_/-]+\))?: .+'
+          errors=0
+
+          for sha in $(git log --format='%H' origin/${{ github.base_ref }}..HEAD); do
+            subject=$(git log -1 --format='%s' "$sha")
+
+            # Skip merge commits and fixup/squash
+            if [[ "$subject" =~ ^Merge\  ]] || [[ "$subject" =~ ^(fixup|squash)!\  ]]; then
+              continue
+            fi
+
+            if ! [[ "$subject" =~ $pattern ]]; then
+              echo "::error::Invalid commit message: $subject"
+              errors=$((errors + 1))
+            fi
+          done
+
+          if [[ $errors -gt 0 ]]; then
+            echo ""
+            echo "Expected format: <type>(<scope>): <description>"
+            echo "Valid types: feat, fix, docs, refactor, test, chore, ci, build, perf, style, revert"
+            echo "Scope is optional."
+            exit 1
+          fi
