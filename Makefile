@@ -7,6 +7,7 @@ GOOS ?=
 ARCH ?=
 OUT_PATH=$(BUILD_DIR)/$(NAME)-$(GOOS)-$(GOARCH)
 GIT_RELEASE ?= $(shell git rev-parse --short HEAD)
+VERSION = $(GIT_RELEASE:v%=%)
 
 .PHONY: explain
 explain:
@@ -73,14 +74,14 @@ build: ## Build the application
 .PHONY: static
 static: ## Build the application
 	CGO_ENABLED=0 go build \
-		-ldflags "-extldflags -static -X github.com/$(GIT_ORG)/$(NAME)/version.GITCOMMIT=$(GIT_RELEASE)" \
+		-ldflags "-extldflags -static -X github.com/$(GIT_ORG)/cli/version.GITCOMMIT=$(VERSION)" \
 		-o $(NAME) ./cmd/prolific
 
 .PHONY: static-named
 static-named: ## Build the application with named outputs
 	GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 \
 		go build \
-		-ldflags "-extldflags -static -X github.com/$(GIT_ORG)/$(NAME)/version.GITCOMMIT=$(GIT_RELEASE)" \
+		-ldflags "-extldflags -static -X github.com/$(GIT_ORG)/cli/version.GITCOMMIT=$(VERSION)" \
 		-o $(OUT_PATH) ./cmd/prolific
 
 	md5sum $(OUT_PATH) > $(OUT_PATH).md5 || md5 $(OUT_PATH) > $(OUT_PATH).md5
