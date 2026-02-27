@@ -12,8 +12,16 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
+)
+
+var (
+	reHTMLComment    = regexp.MustCompile(`(?s)<!--.*?-->`)
+	reBlankLines     = regexp.MustCompile(`\n{3,}`)
+	reVersionHeading = regexp.MustCompile(`^## \d`)
+	reChangelogTitle = regexp.MustCompile(`(?m)(# CHANGELOG\n+)`)
 )
 
 func main() {
@@ -38,8 +46,23 @@ func main() {
 	}
 }
 
+// resolvePath resolves a relative file path against the working directory and
+// verifies it does not escape via traversal (CWE-23). The resolved absolute
+// path is returned.
+func resolvePath(raw string) (string, error) {
+	wd, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("getting working directory: %w", err)
+	}
+	abs := filepath.Join(wd, filepath.Clean(raw))
+	if !strings.HasPrefix(abs, wd+string(filepath.Separator)) && abs != wd {
+		return "", fmt.Errorf("path %q is outside the working directory", raw)
+	}
+	return abs, nil
+}
+
 func runExtract() {
-	fs := flag.NewFlagSet("extract", flag.ExitOnError)
+	fs := flag.NewFlagSet("extract", flag.ContinueOnError)
 	section := fs.String("section", "", "section heading to extract (e.g. next, 0.0.60)")
 	stripComments := fs.Bool("strip-comments", false, "remove HTML comments and resulting blank lines")
 	changelog := fs.String("changelog", "CHANGELOG.md", "path to changelog file")
@@ -53,7 +76,12 @@ func runExtract() {
 		os.Exit(1)
 	}
 
-	data, err := os.ReadFile(*changelog)
+	path, err := resolvePath(*changelog)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "extract: %v\n", err)
+		os.Exit(1)
+	}
+	data, err := os.ReadFile(path)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "extract: %v\n", err)
 		os.Exit(1)
@@ -64,7 +92,7 @@ func runExtract() {
 }
 
 func runMerge() {
-	fs := flag.NewFlagSet("merge", flag.ExitOnError)
+	fs := flag.NewFlagSet("merge", flag.ContinueOnError)
 	manual := fs.String("manual", "", "path to manual notes file")
 	generated := fs.String("generated", "", "path to generated notes file")
 	fallback := fs.String("fallback", "- Maintenance and dependency updates", "fallback text if both inputs are empty")
@@ -84,14 +112,19 @@ func runMerge() {
 
 	result := MergeNotes(manualText, generatedText, *fallback)
 
-	if err := os.WriteFile(*output, []byte(result), 0o600); err != nil {
+	outPath, err := resolvePath(*output)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "merge: %v\n", err)
+		os.Exit(1)
+	}
+	if err := os.WriteFile(outPath, []byte(result), 0o600); err != nil {
 		fmt.Fprintf(os.Stderr, "merge: %v\n", err)
 		os.Exit(1)
 	}
 }
 
 func runUpdate() {
-	fs := flag.NewFlagSet("update", flag.ExitOnError)
+	fs := flag.NewFlagSet("update", flag.ContinueOnError)
 	version := fs.String("version", "", "new version number (e.g. 0.1.0)")
 	notes := fs.String("notes", "", "path to release notes file")
 	changelog := fs.String("changelog", "CHANGELOG.md", "path to changelog file")
@@ -109,13 +142,23 @@ func runUpdate() {
 		os.Exit(1)
 	}
 
-	changelogData, err := os.ReadFile(*changelog)
+	changelogPath, err := resolvePath(*changelog)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "update: %v\n", err)
+		os.Exit(1)
+	}
+	changelogData, err := os.ReadFile(changelogPath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "update: reading changelog: %v\n", err)
 		os.Exit(1)
 	}
 
-	notesData, err := os.ReadFile(*notes)
+	notesPath, err := resolvePath(*notes)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "update: %v\n", err)
+		os.Exit(1)
+	}
+	notesData, err := os.ReadFile(notesPath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "update: reading notes: %v\n", err)
 		os.Exit(1)
@@ -123,7 +166,7 @@ func runUpdate() {
 
 	result := UpdateChangelog(string(changelogData), *version, strings.TrimSpace(string(notesData)))
 
-	if err := os.WriteFile(*changelog, []byte(result), 0o600); err != nil {
+	if err := os.WriteFile(changelogPath, []byte(result), 0o600); err != nil {
 		fmt.Fprintf(os.Stderr, "update: writing changelog: %v\n", err)
 		os.Exit(1)
 	}
@@ -131,8 +174,12 @@ func runUpdate() {
 
 // readFileOrEmpty reads a file and returns its trimmed content, or empty string
 // if the path is empty or the file doesn't exist.
-func readFileOrEmpty(path string) string {
-	if path == "" {
+func readFileOrEmpty(raw string) string {
+	if raw == "" {
+		return ""
+	}
+	path, err := resolvePath(raw)
+	if err != nil {
 		return ""
 	}
 	data, err := os.ReadFile(path)
@@ -169,13 +216,8 @@ func ExtractSection(changelog, section string, stripComments bool) string {
 	result := strings.Join(out, "\n")
 
 	if stripComments {
-		// Remove HTML comments (single-line and multi-line).
-		re := regexp.MustCompile(`(?s)<!--.*?-->`)
-		result = re.ReplaceAllString(result, "")
-
-		// Collapse runs of blank lines into at most one.
-		reBlank := regexp.MustCompile(`\n{3,}`)
-		result = reBlank.ReplaceAllString(result, "\n\n")
+		result = reHTMLComment.ReplaceAllString(result, "")
+		result = reBlankLines.ReplaceAllString(result, "\n\n")
 	}
 
 	result = strings.TrimSpace(result)
@@ -218,11 +260,10 @@ func UpdateChangelog(changelog, version, notes string) string {
 	lines := strings.Split(changelog, "\n")
 	nextIdx := -1
 	endIdx := -1
-	versionHeading := regexp.MustCompile(`^## \d`)
 	for i, line := range lines {
-		if strings.TrimSpace(line) == "## next" {
+		if nextIdx < 0 && strings.TrimSpace(line) == "## next" {
 			nextIdx = i
-		} else if nextIdx >= 0 && endIdx < 0 && versionHeading.MatchString(line) {
+		} else if nextIdx >= 0 && endIdx < 0 && reVersionHeading.MatchString(line) {
 			endIdx = i
 		}
 	}
@@ -239,10 +280,9 @@ func UpdateChangelog(changelog, version, notes string) string {
 	}
 
 	// If no ## next section, insert before the first version heading.
-	reFirst := regexp.MustCompile(`(?m)(# CHANGELOG\n+)`)
-	if reFirst.MatchString(changelog) {
+	if reChangelogTitle.MatchString(changelog) {
 		replacement := "${1}" + nextSection + "\n\n" + newEntry + "\n\n"
-		return reFirst.ReplaceAllString(changelog, replacement)
+		return reChangelogTitle.ReplaceAllString(changelog, replacement)
 	}
 
 	// Last resort: prepend.

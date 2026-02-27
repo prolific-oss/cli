@@ -79,7 +79,7 @@ jobs:
       - name: Update CHANGELOG.md
         run: |
           go run ./scripts/changelog update \
-            --version ${{ steps.version.outputs.new_version }} \
+            --version "${{ steps.version.outputs.new_version }}" \
             --notes MERGED_NOTES.md
 
       - name: Create release branch and PR
@@ -142,7 +142,7 @@ EOF
       - name: Extract changelog notes
         run: |
           go run ./scripts/changelog extract \
-            --section ${{ steps.version.outputs.version }} > RELEASE_NOTES.md
+            --section "${{ steps.version.outputs.version }}" > RELEASE_NOTES.md
           if [ ! -s RELEASE_NOTES.md ]; then
             echo "::warning::No changelog entry found. Release notes will be empty."
           fi
