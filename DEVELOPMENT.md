@@ -423,31 +423,42 @@ Enforces [Conventional Commits](https://www.conventionalcommits.org/) format on 
 
 - Main branch: `main`
 - Clean status expected (no uncommitted changes)
-- Releases tagged with version numbers (e.g., `0.0.56`)
+- Releases are automated via two GitHub Actions workflows:
+  1. **Create Release** (`create-release.yml`): Triggered manually via workflow dispatch. Calculates the next version, generates a changelog using git-cliff, and opens a `release/vX.Y.Z` PR
+  2. **Finalize Release** (same file, second job): When the release PR is merged, creates the git tag and GitHub Release, which triggers the existing `release.yml` (binary builds) and `docker.yml` (Docker image)
+
+#### Release flow
+
+1. Go to **Actions → Create Release → Run workflow** and select `patch`, `minor`, or `major`
+2. Review and merge the generated release PR
+3. Tag, GitHub Release, binaries, and Docker image are created automatically
 
 ## Changelog Conventions
 
-From `.github/copilot-instructions.md:43-50`:
+Versioned changelog entries are **auto-generated** from conventional commits by [git-cliff](https://git-cliff.org/) at release time. The configuration lives in `cliff.toml`.
 
-When creating a release:
+### Manual release notes
 
-1. Use last git tag and summarize commits since
-2. Update `CHANGELOG.md` with new version
-3. Format:
-   - `## next` for unreleased changes
-   - `## x.y.z` for released versions
-   - Bullet points for changes
-   - **No dates** - just version numbers
-
-Example:
+To include hand-written notes in the next release, add them under the `## next` section in `CHANGELOG.md`:
 
 ```markdown
-## 0.0.56
+## next
 
-- Add Apache 2 License.
-- Add `aitaskbuilder` command to the root of the application.
-- Bump the project to Go 1.26.
+- My manual release note here
 ```
+
+At release time the workflow merges any `## next` content with the auto-generated notes and resets the section.
+
+### What gets included
+
+Only user-facing commit types appear in the changelog:
+- `feat` → **Features**, `fix` → **Bug Fixes**, `docs` → **Documentation**, `perf` → **Performance**, `refactor` → **Refactoring**, `revert` → **Reverts**, `test` → **Testing**
+- `chore`, `ci`, `build`, `style` are **skipped** (internal housekeeping)
+
+### Format
+
+- `## x.y.z` for released versions (no dates)
+- Grouped by commit type with optional bold scope prefix
 
 ## CI/CD
 
@@ -462,13 +473,19 @@ GitHub Actions workflows in `.github/workflows/`:
 5. `make build`
 6. `make test`
 
+### `create-release.yml`
+
+Automates the release process with two jobs:
+- **create-release-pr**: Triggered via workflow dispatch. Calculates next version, generates changelog with git-cliff, and opens a release PR
+- **finalize-release**: Triggered when a `release/v*` PR is merged. Creates git tag, GitHub Release, and cleans up the release branch
+
 ### `docker.yml`
 
-Builds and pushes Docker images.
+Builds and pushes Docker images. Triggered by new tags.
 
 ### `release.yml`
 
-Handles release automation.
+Builds release binaries for multiple platforms. Triggered by new GitHub Releases.
 
 ## Common Patterns
 

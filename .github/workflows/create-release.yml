@@ -1,0 +1,223 @@
+name: Create Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: "Version bump type"
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  create-release-pr:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Calculate new version
+        id: version
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "latest_tag=$LATEST_TAG" >> "$GITHUB_OUTPUT"
+
+          # Strip v prefix for semver parsing
+          VERSION="${LATEST_TAG#v}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+
+          case "${{ github.event.inputs.bump_type }}" in
+            major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+            minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+            patch) PATCH=$((PATCH + 1)) ;;
+          esac
+
+          NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "new_tag=v${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Bumping $LATEST_TAG -> v${NEW_VERSION} (${{ github.event.inputs.bump_type }})"
+
+      - name: Generate changelog with git-cliff
+        id: cliff
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: --latest --tag ${{ steps.version.outputs.new_tag }} --strip header
+        env:
+          OUTPUT: CLIFF_NOTES.md
+          GITHUB_REPO: ${{ github.repository }}
+
+      - name: Extract manual notes from ## next
+        id: manual
+        run: |
+          MANUAL_NOTES=""
+          if grep -q "^## next" CHANGELOG.md; then
+            MANUAL_NOTES=$(awk '/^## next/{found=1; next} /^## /{found=0} found{print}' CHANGELOG.md \
+              | sed '/^<!--.*-->$/d' \
+              | sed '/^\s*$/d')
+          fi
+          # Write to file to preserve multiline content
+          echo "$MANUAL_NOTES" > MANUAL_NOTES.md
+          if [ -n "$MANUAL_NOTES" ]; then
+            echo "has_manual=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_manual=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Merge changelog notes
+        id: notes
+        run: |
+          MANUAL_NOTES=$(cat MANUAL_NOTES.md)
+          CLIFF_NOTES=$(cat CLIFF_NOTES.md)
+
+          # Combine manual + generated notes
+          MERGED=""
+          if [ -n "$MANUAL_NOTES" ]; then
+            MERGED="$MANUAL_NOTES"
+          fi
+          if [ -n "$CLIFF_NOTES" ]; then
+            if [ -n "$MERGED" ]; then
+              MERGED="$MERGED"$'\n\n'"$CLIFF_NOTES"
+            else
+              MERGED="$CLIFF_NOTES"
+            fi
+          fi
+
+          # Fallback if both are empty
+          if [ -z "$MERGED" ]; then
+            MERGED="- Maintenance and dependency updates"
+          fi
+
+          echo "$MERGED" > MERGED_NOTES.md
+
+      - name: Update CHANGELOG.md
+        run: |
+          NEW_VERSION="${{ steps.version.outputs.new_version }}"
+          NOTES=$(cat MERGED_NOTES.md)
+
+          python3 << 'PYEOF'
+          import re
+
+          with open("CHANGELOG.md", "r") as f:
+              content = f.read()
+
+          new_version = "${{ steps.version.outputs.new_version }}"
+
+          with open("MERGED_NOTES.md", "r") as f:
+              notes = f.read().strip()
+
+          # Reset ## next to empty (with comment placeholder)
+          next_section = "## next\n\n<!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->"
+          new_entry = f"## {new_version}\n\n{notes}"
+
+          # Replace existing ## next block with reset ## next + new version entry
+          pattern = r"## next\n(?:.*?\n)*?(?=## \d)"
+          replacement = f"{next_section}\n\n{new_entry}\n\n"
+          updated = re.sub(pattern, replacement, content, count=1, flags=re.DOTALL)
+
+          # If no ## next section existed, insert before first version heading
+          if updated == content and "## next" not in content:
+              pattern = r"(# CHANGELOG\n+)"
+              replacement = f"\\1{next_section}\n\n{new_entry}\n\n"
+              updated = re.sub(pattern, replacement, content, count=1)
+
+          with open("CHANGELOG.md", "w") as f:
+              f.write(updated)
+          PYEOF
+
+      - name: Create release branch and PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          NEW_VERSION="${{ steps.version.outputs.new_version }}"
+          NEW_TAG="${{ steps.version.outputs.new_tag }}"
+          BRANCH="release/${NEW_TAG}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git checkout -b "$BRANCH"
+          git add CHANGELOG.md
+          git commit -m "chore: release ${NEW_TAG}"
+          git push origin "$BRANCH"
+
+          NOTES=$(cat MERGED_NOTES.md)
+          gh pr create \
+            --title "release: ${NEW_TAG}" \
+            --body "$(cat <<EOF
+          ## Release ${NEW_TAG}
+
+          ${NOTES}
+
+          ---
+          *Auto-generated release PR. Review the changelog, approve, and merge to publish the release.*
+          EOF
+          )" \
+            --base main \
+            --head "$BRANCH"
+
+  finalize-release:
+    if: >-
+      github.event.pull_request.merged == true &&
+      startsWith(github.event.pull_request.head.ref, 'release/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from branch
+        id: version
+        run: |
+          BRANCH="${{ github.event.pull_request.head.ref }}"
+          TAG="${BRANCH#release/}"
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Finalizing release $TAG"
+
+      - name: Extract changelog notes
+        id: notes
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          # Extract content between ## X.Y.Z and the next ## heading
+          NOTES=$(awk "/^## ${VERSION}\$/{ found=1; next } /^## /{ found=0 } found{ print }" CHANGELOG.md)
+          echo "$NOTES" > RELEASE_NOTES.md
+
+      - name: Create tag and GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --notes-file RELEASE_NOTES.md
+
+      - name: Delete release branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="${{ github.event.pull_request.head.ref }}"
+          git push origin --delete "$BRANCH" || true
