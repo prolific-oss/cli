@@ -156,17 +156,17 @@ jobs:
           git push origin "$BRANCH"
 
           NOTES=$(cat MERGED_NOTES.md)
+          cat <<EOF > PR_BODY.md
+## Release ${NEW_TAG}
+
+${NOTES}
+
+---
+*Auto-generated release PR. Review the changelog, approve, and merge to publish the release.*
+EOF
           gh pr create \
             --title "release: ${NEW_TAG}" \
-            --body "$(cat <<EOF
-          ## Release ${NEW_TAG}
-
-          ${NOTES}
-
-          ---
-          *Auto-generated release PR. Review the changelog, approve, and merge to publish the release.*
-          EOF
-          )" \
+            --body-file PR_BODY.md \
             --base main \
             --head "$BRANCH"
 
