@@ -47,6 +47,11 @@ linters:
       - linters: [gosec]
         text: "G70[235]"
         path: 'docs/scripts/'
+      # scripts/changelog/ is an internal CLI tool for release automation.
+      # Taint analysis on stderr output is a false positive.
+      - linters: [gosec]
+        text: "G705"
+        path: 'scripts/changelog/'
     paths:
       - third_party$
       - builtin$

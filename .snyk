@@ -5,3 +5,7 @@ patch: {}
 exclude:
   global:
   - "**/*_test.go"
+  # Internal CI-only CLI tool for changelog manipulation. All file path
+  # arguments are hardcoded in create-release.yml and never exposed to
+  # untrusted input. Path traversal findings are false positives.
+  - "scripts/changelog/**"
