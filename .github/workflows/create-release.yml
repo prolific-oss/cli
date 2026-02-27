@@ -30,6 +30,11 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
       - name: Calculate new version
         id: version
         run: |
@@ -62,75 +67,20 @@ jobs:
           GITHUB_REPO: ${{ github.repository }}
 
       - name: Extract manual notes from ## next
-        run: |
-          MANUAL_NOTES=""
-          if grep -q "^## next" CHANGELOG.md; then
-            MANUAL_NOTES=$(awk '/^## next/{found=1; next} /^## /{found=0} found{print}' CHANGELOG.md \
-              | sed '/^<!--.*-->$/d' \
-              | sed '/^\s*$/d')
-          fi
-          # Write to file to preserve multiline content
-          echo "$MANUAL_NOTES" > MANUAL_NOTES.md
+        run: go run ./scripts/changelog extract --section next --strip-comments > MANUAL_NOTES.md
 
       - name: Merge changelog notes
         run: |
-          MANUAL_NOTES=$(cat MANUAL_NOTES.md)
-          CLIFF_NOTES=""
-          if [ -f CLIFF_NOTES.md ]; then
-            CLIFF_NOTES=$(cat CLIFF_NOTES.md)
-          fi
-
-          # Combine manual + generated notes
-          MERGED=""
-          if [ -n "$MANUAL_NOTES" ]; then
-            MERGED="$MANUAL_NOTES"
-          fi
-          if [ -n "$CLIFF_NOTES" ]; then
-            if [ -n "$MERGED" ]; then
-              MERGED="$MERGED"$'\n\n'"$CLIFF_NOTES"
-            else
-              MERGED="$CLIFF_NOTES"
-            fi
-          fi
-
-          # Fallback if both are empty
-          if [ -z "$MERGED" ]; then
-            MERGED="- Maintenance and dependency updates"
-          fi
-
-          echo "$MERGED" > MERGED_NOTES.md
+          go run ./scripts/changelog merge \
+            --manual MANUAL_NOTES.md \
+            --generated CLIFF_NOTES.md \
+            --output MERGED_NOTES.md
 
       - name: Update CHANGELOG.md
         run: |
-          python3 << 'PYEOF'
-          import re
-
-          with open("CHANGELOG.md", "r") as f:
-              content = f.read()
-
-          new_version = "${{ steps.version.outputs.new_version }}"
-
-          with open("MERGED_NOTES.md", "r") as f:
-              notes = f.read().strip()
-
-          # Reset ## next to empty (with comment placeholder)
-          next_section = "## next\n\n<!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->"
-          new_entry = f"## {new_version}\n\n{notes}"
-
-          # Replace existing ## next block with reset ## next + new version entry
-          pattern = r"## next\n(?:.*?\n)*?(?=## \d)"
-          replacement = f"{next_section}\n\n{new_entry}\n\n"
-          updated = re.sub(pattern, replacement, content, count=1, flags=re.DOTALL)
-
-          # If no ## next section existed, insert before first version heading
-          if updated == content and "## next" not in content:
-              pattern = r"(# CHANGELOG\n+)"
-              replacement = f"\\1{next_section}\n\n{new_entry}\n\n"
-              updated = re.sub(pattern, replacement, content, count=1)
-
-          with open("CHANGELOG.md", "w") as f:
-              f.write(updated)
-          PYEOF
+          go run ./scripts/changelog update \
+            --version ${{ steps.version.outputs.new_version }} \
+            --notes MERGED_NOTES.md
 
       - name: Create release branch and PR
         env:
@@ -174,6 +124,11 @@ EOF
         with:
           fetch-depth: 0
 
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
       - name: Extract version from branch
         id: version
         run: |
@@ -186,13 +141,11 @@ EOF
 
       - name: Extract changelog notes
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          # Extract content between ## X.Y.Z and the next ## heading
-          NOTES=$(awk -v ver="$VERSION" '$0 == "## " ver { found=1; next } /^## /{ found=0 } found{ print }' CHANGELOG.md)
-          if [ -z "$NOTES" ]; then
-            echo "::warning::No changelog entry found for version $VERSION. Release notes will be empty."
+          go run ./scripts/changelog extract \
+            --section ${{ steps.version.outputs.version }} > RELEASE_NOTES.md
+          if [ ! -s RELEASE_NOTES.md ]; then
+            echo "::warning::No changelog entry found. Release notes will be empty."
           fi
-          echo "$NOTES" > RELEASE_NOTES.md
 
       - name: Create tag and GitHub release
         env:
