@@ -62,7 +62,6 @@ jobs:
           GITHUB_REPO: ${{ github.repository }}
 
       - name: Extract manual notes from ## next
-        id: manual
         run: |
           MANUAL_NOTES=""
           if grep -q "^## next" CHANGELOG.md; then
@@ -72,17 +71,14 @@ jobs:
           fi
           # Write to file to preserve multiline content
           echo "$MANUAL_NOTES" > MANUAL_NOTES.md
-          if [ -n "$MANUAL_NOTES" ]; then
-            echo "has_manual=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has_manual=false" >> "$GITHUB_OUTPUT"
-          fi
 
       - name: Merge changelog notes
-        id: notes
         run: |
           MANUAL_NOTES=$(cat MANUAL_NOTES.md)
-          CLIFF_NOTES=$(cat CLIFF_NOTES.md)
+          CLIFF_NOTES=""
+          if [ -f CLIFF_NOTES.md ]; then
+            CLIFF_NOTES=$(cat CLIFF_NOTES.md)
+          fi
 
           # Combine manual + generated notes
           MERGED=""
@@ -106,8 +102,6 @@ jobs:
 
       - name: Update CHANGELOG.md
         run: |
-          NEW_VERSION="${{ steps.version.outputs.new_version }}"
-
           python3 << 'PYEOF'
           import re
 
@@ -191,11 +185,13 @@ EOF
           echo "Finalizing release $TAG"
 
       - name: Extract changelog notes
-        id: notes
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           # Extract content between ## X.Y.Z and the next ## heading
           NOTES=$(awk -v ver="$VERSION" '$0 == "## " ver { found=1; next } /^## /{ found=0 } found{ print }' CHANGELOG.md)
+          if [ -z "$NOTES" ]; then
+            echo "::warning::No changelog entry found for version $VERSION. Release notes will be empty."
+          fi
           echo "$NOTES" > RELEASE_NOTES.md
 
       - name: Create tag and GitHub release
