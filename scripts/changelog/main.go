@@ -255,7 +255,9 @@ func MergeNotes(manual, generated, fallback string) string {
 // reMarker matches the [hash:...][type:...] prefix emitted by cliff.toml.
 var reMarker = regexp.MustCompile(`^\- \[hash:([a-f0-9]+)\]\[type:([^\]]+)\] (.+)$`)
 
-// areaMapping maps file path prefixes to human-readable area names.
+// areaMapping maps file path prefixes to user-facing area names.
+// Files not matching any prefix are ignored — commits that only touch
+// unrecognised paths are excluded from the changelog.
 var areaMapping = []struct {
 	prefix string
 	area   string
@@ -298,24 +300,20 @@ func ParseMarkerLine(line string) (parsedEntry, bool) {
 }
 
 // AreaForFiles determines the primary area for a set of changed file paths.
-// The area with the most matching files wins. Falls back to "Other".
+// Only files matching a prefix in areaMapping are counted. Returns "" when
+// no files match any known area.
 func AreaForFiles(files []string) string {
 	counts := make(map[string]int)
 	for _, f := range files {
-		matched := false
 		for _, am := range areaMapping {
 			if strings.HasPrefix(f, am.prefix) {
 				counts[am.area]++
-				matched = true
 				break
 			}
 		}
-		if !matched {
-			counts["Other"]++
-		}
 	}
 	if len(counts) == 0 {
-		return "Other"
+		return ""
 	}
 	best := ""
 	bestCount := 0
@@ -372,7 +370,6 @@ var areaOrder = []string{
 	"Requirements",
 	"User",
 	"Core",
-	"Other",
 }
 
 // TransformChangelog takes cliff-generated markdown with [hash:...][type:...]
@@ -392,9 +389,12 @@ func TransformChangelog(input string, diffTreeFn func(string) ([]string, error))
 		}
 
 		files, err := diffTreeFn(parsed.hash)
-		area := "Other"
-		if err == nil && len(files) > 0 {
-			area = AreaForFiles(files)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "warning: could not resolve files for %s: %v\n", parsed.hash, err)
+		}
+		area := AreaForFiles(files)
+		if area == "" {
+			continue
 		}
 
 		grouped[area] = append(grouped[area], entry{typ: parsed.typ, message: parsed.message})
