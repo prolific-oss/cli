@@ -4,6 +4,27 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+## 0.0.60
+
+### Bug Fixes
+
+- **DCP-2416:** Add typed ContentFormat constant and tighten tests
+- **DCP-2449:** Add omitempty to Filter struct fields for direct filter usage
+- Bump Go version in release workflow to match go.mod
+
+### Features
+
+- **DCP-2416:** Add content_format field for rich text markdown support
+- **DCP-2417:** Add --draft flag to collection publish command
+
+### GHA
+
+- Bump slackapi/slack-github-action from 2.0.0 to 2.1.1
+
+### Docker
+
+- Bump golang from 1.25.7-alpine to 1.26.0-alpine
+
 ## 0.0.59
 
 ### AI Task Builder
