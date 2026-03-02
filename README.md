@@ -201,25 +201,23 @@ If any arguments are omitted, Claude will ask for them interactively.
 
 ## Release Process
 
-Releases are managed via GitHub Releases and automated CI/CD.
+Releases are fully automated via GitHub Actions.
 
-### 1. Update CHANGELOG.md
+### Creating a release
 
-Add your changes to the `CHANGELOG.md` file under a new version section (e.g., `## 0.0.58`).
+1. Go to **Actions → [Create Release](https://github.com/prolific-oss/cli/actions/workflows/create-release.yml) → Run workflow**
+2. Select the bump type: `patch`, `minor`, or `major`
+3. A release PR is created automatically with an auto-generated changelog (from conventional commits via [git-cliff](https://git-cliff.org/))
+4. Review the PR, approve, and merge
 
-### 2. Create a GitHub Release
+### What happens on merge
 
-1. Go to [Releases](https://github.com/prolific-oss/cli/releases)
-2. Click "Draft a new release"
-3. Create a new tag matching the version (e.g., `v0.0.58`)
-4. Title the release with the version number
-5. Publish the release
+- A git tag (`vX.Y.Z`) and GitHub Release are created automatically
+- Release binaries are built for multiple platforms (darwin, linux, windows, freebsd)
+- A Docker image is built and pushed
 
-### 3. Automated Build
+### Manual release notes
 
-The release workflow automatically:
+To include hand-written notes in the next release, add them under the `## next` section in `CHANGELOG.md` before triggering the release workflow. They will be merged with the auto-generated notes.
 
-- Builds binaries for multiple platforms (darwin, linux, windows, freebsd)
-- Uploads binaries to the GitHub Release as assets
-
-Users can then download binaries from the release page or use `go install`.
+Users can download binaries from the [releases page](https://github.com/prolific-oss/cli/releases) or use `go install`.
