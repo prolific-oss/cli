@@ -4,6 +4,18 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+## 0.0.60
+
+### Other
+
+- Add changelog transform to group entries by subcommand area
+- Correct ldflags module path and strip v prefix from version
+- Use body-file for release PR to avoid heredoc indentation
+- Address review feedback for changelog tool
+- Fix YAML syntax and security issues in release workflow
+- Use explicit tag range instead of --latest in git-cliff
+- Extract release scripts to testable Go tool
+
 ## 0.0.59
 
 ### AI Task Builder
