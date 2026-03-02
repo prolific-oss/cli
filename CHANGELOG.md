@@ -4,6 +4,14 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+## 0.0.60
+
+### Other
+
+- Add changelog transform to group entries by subcommand area
+- Correct ldflags module path and strip v prefix from version
+- Address review feedback for changelog tool
+
 ## 0.0.59
 
 ### AI Task Builder
