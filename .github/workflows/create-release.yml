@@ -66,6 +66,12 @@ jobs:
           OUTPUT: CLIFF_NOTES.md
           GITHUB_REPO: ${{ github.repository }}
 
+      - name: Transform changelog by subcommand area
+        run: |
+          go run ./scripts/changelog transform \
+            --input CLIFF_NOTES.md \
+            --output CLIFF_NOTES.md
+
       - name: Extract manual notes from ## next
         run: go run ./scripts/changelog extract --section next --strip-comments > MANUAL_NOTES.md
 

@@ -9,11 +9,14 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -26,7 +29,7 @@ var (
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stderr, "usage: changelog <extract|merge|update> [flags]")
+		fmt.Fprintln(os.Stderr, "usage: changelog <extract|merge|update|transform> [flags]")
 		os.Exit(1)
 	}
 
@@ -40,6 +43,8 @@ func main() {
 		runMerge()
 	case "update":
 		runUpdate()
+	case "transform":
+		runTransform()
 	default:
 		fmt.Fprintf(os.Stderr, "unknown command: %s\n", cmd)
 		os.Exit(1)
@@ -245,6 +250,258 @@ func MergeNotes(manual, generated, fallback string) string {
 		return fallback + "\n"
 	}
 	return strings.Join(parts, "\n\n") + "\n"
+}
+
+// reMarker matches the [hash:...][type:...] prefix emitted by cliff.toml.
+var reMarker = regexp.MustCompile(`^\- \[hash:([a-f0-9]+)\]\[type:([^\]]+)\] (.+)$`)
+
+// areaMapping maps file path prefixes to human-readable area names.
+var areaMapping = []struct {
+	prefix string
+	area   string
+}{
+	{"cmd/aitaskbuilder/", "AI Task Builder"},
+	{"cmd/study/", "Study"},
+	{"cmd/bonus/", "Bonus Payments"},
+	{"cmd/message/", "Messaging"},
+	{"cmd/collection/", "Collections"},
+	{"cmd/credentials/", "Credentials"},
+	{"cmd/campaign/", "Campaigns"},
+	{"cmd/workspace/", "Workspaces"},
+	{"cmd/project/", "Projects"},
+	{"cmd/submission/", "Submissions"},
+	{"cmd/participantgroup/", "Participant Groups"},
+	{"cmd/hook/", "Hooks"},
+	{"cmd/filters/", "Filters"},
+	{"cmd/filtersets/", "Filters"},
+	{"cmd/requirements/", "Requirements"},
+	{"cmd/user/", "User"},
+	{"model/", "Core"},
+	{"client/", "Core"},
+}
+
+// parsedEntry represents a single changelog entry parsed from cliff output.
+type parsedEntry struct {
+	hash    string
+	typ     string // "Features", "Bug Fixes", etc.
+	message string
+}
+
+// ParseMarkerLine parses a cliff output line with [hash:...][type:...] markers.
+// Returns the parsed entry and true if the line matched, or zero value and false.
+func ParseMarkerLine(line string) (parsedEntry, bool) {
+	m := reMarker.FindStringSubmatch(strings.TrimSpace(line))
+	if m == nil {
+		return parsedEntry{}, false
+	}
+	return parsedEntry{hash: m[1], typ: m[2], message: m[3]}, true
+}
+
+// AreaForFiles determines the primary area for a set of changed file paths.
+// The area with the most matching files wins. Falls back to "Other".
+func AreaForFiles(files []string) string {
+	counts := make(map[string]int)
+	for _, f := range files {
+		matched := false
+		for _, am := range areaMapping {
+			if strings.HasPrefix(f, am.prefix) {
+				counts[am.area]++
+				matched = true
+				break
+			}
+		}
+		if !matched {
+			counts["Other"]++
+		}
+	}
+	if len(counts) == 0 {
+		return "Other"
+	}
+	best := ""
+	bestCount := 0
+	// Sort keys for deterministic tie-breaking.
+	keys := make([]string, 0, len(counts))
+	for k := range counts {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		if counts[k] > bestCount {
+			best = k
+			bestCount = counts[k]
+		}
+	}
+	return best
+}
+
+// gitDiffTreeFunc is the function used to get changed files for a commit hash.
+// It is a variable so tests can override it.
+var gitDiffTreeFunc = gitDiffTree
+
+// gitDiffTree runs git diff-tree to get the list of files changed by a commit.
+func gitDiffTree(hash string) ([]string, error) {
+	out, err := exec.CommandContext(context.Background(), "git", "diff-tree", "--no-commit-id", "--name-only", "-r", hash).Output()
+	if err != nil {
+		return nil, fmt.Errorf("git diff-tree %s: %w", hash, err)
+	}
+	var files []string
+	for _, line := range strings.Split(strings.TrimSpace(string(out)), "\n") {
+		if line != "" {
+			files = append(files, line)
+		}
+	}
+	return files, nil
+}
+
+// areaOrder defines the display order of areas in the transformed output.
+// Areas not in this list appear alphabetically after these.
+var areaOrder = []string{
+	"AI Task Builder",
+	"Study",
+	"Bonus Payments",
+	"Messaging",
+	"Collections",
+	"Credentials",
+	"Campaigns",
+	"Workspaces",
+	"Projects",
+	"Submissions",
+	"Participant Groups",
+	"Hooks",
+	"Filters",
+	"Requirements",
+	"User",
+	"Core",
+	"Other",
+}
+
+// TransformChangelog takes cliff-generated markdown with [hash:...][type:...]
+// markers, resolves each commit's changed files, and re-groups entries by
+// subcommand area with features before fixes within each area.
+func TransformChangelog(input string, diffTreeFn func(string) ([]string, error)) string {
+	type entry struct {
+		typ     string
+		message string
+	}
+	grouped := make(map[string][]entry)
+
+	for _, line := range strings.Split(input, "\n") {
+		parsed, ok := ParseMarkerLine(line)
+		if !ok {
+			continue
+		}
+
+		files, err := diffTreeFn(parsed.hash)
+		area := "Other"
+		if err == nil && len(files) > 0 {
+			area = AreaForFiles(files)
+		}
+
+		grouped[area] = append(grouped[area], entry{typ: parsed.typ, message: parsed.message})
+	}
+
+	if len(grouped) == 0 {
+		return ""
+	}
+
+	// Build ordered list of areas.
+	orderIndex := make(map[string]int)
+	for i, a := range areaOrder {
+		orderIndex[a] = i
+	}
+	areas := make([]string, 0, len(grouped))
+	for a := range grouped {
+		areas = append(areas, a)
+	}
+	sort.Slice(areas, func(i, j int) bool {
+		ii, okI := orderIndex[areas[i]]
+		ij, okJ := orderIndex[areas[j]]
+		if okI && okJ {
+			return ii < ij
+		}
+		if okI {
+			return true
+		}
+		if okJ {
+			return false
+		}
+		return areas[i] < areas[j]
+	})
+
+	var buf strings.Builder
+	for i, area := range areas {
+		if i > 0 {
+			buf.WriteString("\n")
+		}
+		buf.WriteString("### " + area + "\n\n")
+
+		entries := grouped[area]
+		// Sort: features first, then fixes, then everything else.
+		sort.SliceStable(entries, func(a, b int) bool {
+			return typePriority(entries[a].typ) < typePriority(entries[b].typ)
+		})
+
+		for _, e := range entries {
+			buf.WriteString("- " + e.message + "\n")
+		}
+	}
+
+	return buf.String()
+}
+
+// typePriority returns a sort key so features come before fixes, and
+// everything else comes after.
+func typePriority(typ string) int {
+	switch strings.ToLower(typ) {
+	case "features":
+		return 0
+	case "bug fixes":
+		return 1
+	default:
+		return 2
+	}
+}
+
+func runTransform() {
+	fs := flag.NewFlagSet("transform", flag.ContinueOnError)
+	input := fs.String("input", "", "path to cliff-generated notes file (required)")
+	output := fs.String("output", "", "output file path (required)")
+	if err := fs.Parse(os.Args[1:]); err != nil {
+		fmt.Fprintf(os.Stderr, "transform: %v\n", err)
+		os.Exit(1)
+	}
+
+	if *input == "" {
+		fmt.Fprintln(os.Stderr, "transform: --input is required")
+		os.Exit(1)
+	}
+	if *output == "" {
+		fmt.Fprintln(os.Stderr, "transform: --output is required")
+		os.Exit(1)
+	}
+
+	inputPath, err := resolvePath(*input)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "transform: %v\n", err)
+		os.Exit(1)
+	}
+	data, err := os.ReadFile(inputPath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "transform: reading input: %v\n", err)
+		os.Exit(1)
+	}
+
+	result := TransformChangelog(string(data), gitDiffTreeFunc)
+
+	outPath, err := resolvePath(*output)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "transform: %v\n", err)
+		os.Exit(1)
+	}
+	if err := os.WriteFile(outPath, []byte(result), 0o600); err != nil {
+		fmt.Fprintf(os.Stderr, "transform: writing output: %v\n", err)
+		os.Exit(1)
+	}
 }
 
 // UpdateChangelog inserts a new version entry into the changelog. It resets the

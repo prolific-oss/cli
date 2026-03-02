@@ -5,9 +5,8 @@
 header = ""
 body = """
 {% for group, commits in commits | group_by(attribute="group") %}
-### {{ group | striptags | trim | upper_first }}
 {% for commit in commits %}
-- {% if commit.scope %}**{{ commit.scope }}:** {% endif %}{{ commit.message | upper_first }}\
+- [hash:{{ commit.id | truncate(length=8, end="") }}][type:{{ group | striptags | trim | upper_first }}] {{ commit.message | upper_first }}\
 {% endfor %}
 {% endfor %}
 """
@@ -26,6 +25,7 @@ commit_parsers = [
     { message = "^refactor", group = "Refactoring" },
     { message = "^revert", group = "Reverts" },
     { message = "^test", group = "Testing" },
+    { message = "^.*[Bb]ump", skip = true },
     { message = "^chore", skip = true },
     { message = "^ci", skip = true },
     { message = "^build", skip = true },
