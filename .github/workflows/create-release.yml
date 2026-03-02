@@ -61,7 +61,7 @@ jobs:
         uses: orhun/git-cliff-action@c93ef52f3d0ddcdcc9bd5447d98d458a11cd4f72 # v4.7.1
         with:
           config: cliff.toml
-          args: --latest --tag ${{ steps.version.outputs.new_tag }} --strip header
+          args: ${{ steps.version.outputs.latest_tag }}..HEAD --tag ${{ steps.version.outputs.new_tag }} --strip header
         env:
           OUTPUT: CLIFF_NOTES.md
           GITHUB_REPO: ${{ github.repository }}
