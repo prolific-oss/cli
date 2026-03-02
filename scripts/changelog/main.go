@@ -256,10 +256,17 @@ func MergeNotes(manual, generated, fallback string) string {
 var reMarker = regexp.MustCompile(`^\- \[hash:([a-f0-9]+)\]\[type:([^\]]+)\] (.+)$`)
 
 // areaMapping maps file path prefixes to human-readable area names.
+// An empty area name means the file is internal and excluded from the changelog.
 var areaMapping = []struct {
 	prefix string
 	area   string
 }{
+	// Internal paths — excluded from changelog.
+	{"scripts/", ""},
+	{".github/", ""},
+	{".golangci", ""},
+	{".gitignore", ""},
+	// User-facing areas.
 	{"cmd/aitaskbuilder/", "AI Task Builder"},
 	{"cmd/study/", "Study"},
 	{"cmd/bonus/", "Bonus Payments"},
@@ -298,14 +305,17 @@ func ParseMarkerLine(line string) (parsedEntry, bool) {
 }
 
 // AreaForFiles determines the primary area for a set of changed file paths.
-// The area with the most matching files wins. Falls back to "Other".
+// Unrecognised files count toward "Other". Internal files (empty area in
+// areaMapping) are ignored. Returns "" when there are no non-internal files.
 func AreaForFiles(files []string) string {
 	counts := make(map[string]int)
 	for _, f := range files {
 		matched := false
 		for _, am := range areaMapping {
 			if strings.HasPrefix(f, am.prefix) {
-				counts[am.area]++
+				if am.area != "" {
+					counts[am.area]++
+				}
 				matched = true
 				break
 			}
@@ -315,7 +325,7 @@ func AreaForFiles(files []string) string {
 		}
 	}
 	if len(counts) == 0 {
-		return "Other"
+		return ""
 	}
 	best := ""
 	bestCount := 0
@@ -392,9 +402,12 @@ func TransformChangelog(input string, diffTreeFn func(string) ([]string, error))
 		}
 
 		files, err := diffTreeFn(parsed.hash)
-		area := "Other"
-		if err == nil && len(files) > 0 {
-			area = AreaForFiles(files)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "warning: could not resolve files for %s: %v\n", parsed.hash, err)
+		}
+		area := AreaForFiles(files)
+		if area == "" {
+			continue
 		}
 
 		grouped[area] = append(grouped[area], entry{typ: parsed.typ, message: parsed.message})

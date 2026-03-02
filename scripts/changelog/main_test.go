@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -336,41 +337,15 @@ func TestAreaForFiles(t *testing.T) {
 		files []string
 		want  string
 	}{
-		{
-			name:  "study command files",
-			files: []string{"cmd/study/list.go", "cmd/study/list_test.go"},
-			want:  "Study",
-		},
-		{
-			name:  "aitaskbuilder files",
-			files: []string{"cmd/aitaskbuilder/create.go"},
-			want:  "AI Task Builder",
-		},
-		{
-			name:  "mixed files uses majority area",
-			files: []string{"cmd/study/list.go", "cmd/study/get.go", "cmd/workspace/list.go"},
-			want:  "Study",
-		},
-		{
-			name:  "model and client map to Core",
-			files: []string{"model/study.go", "client/client.go"},
-			want:  "Core",
-		},
-		{
-			name:  "filters and filtersets both map to Filters",
-			files: []string{"cmd/filters/list.go", "cmd/filtersets/list.go"},
-			want:  "Filters",
-		},
-		{
-			name:  "unknown files fall back to Other",
-			files: []string{"README.md", "Makefile"},
-			want:  "Other",
-		},
-		{
-			name:  "empty file list returns Other",
-			files: []string{},
-			want:  "Other",
-		},
+		{"study files", []string{"cmd/study/list.go", "cmd/study/list_test.go"}, "Study"},
+		{"aitaskbuilder files", []string{"cmd/aitaskbuilder/create.go"}, "AI Task Builder"},
+		{"majority wins", []string{"cmd/study/list.go", "cmd/study/get.go", "cmd/workspace/list.go"}, "Study"},
+		{"model and client map to Core", []string{"model/study.go", "client/client.go"}, "Core"},
+		{"filters and filtersets both map to Filters", []string{"cmd/filters/list.go", "cmd/filtersets/list.go"}, "Filters"},
+		{"unknown files fall back to Other", []string{"README.md", "Makefile"}, "Other"},
+		{"internal-only returns empty", []string{"scripts/changelog/main.go", ".github/workflows/ci.yml"}, ""},
+		{"mixed internal and user-facing keeps user-facing", []string{"scripts/foo.sh", "cmd/study/list.go"}, "Study"},
+		{"empty file list returns empty", []string{}, ""},
 	}
 
 	for _, tt := range tests {
@@ -429,6 +404,33 @@ func TestTransformChangelog(t *testing.T) {
 		studySection := got[strings.Index(got, "### Study"):]
 		if strings.Index(studySection, "Add study list pagination") > strings.Index(studySection, "Fix study get error handling") {
 			t.Error("expected features before fixes within Study")
+		}
+	})
+
+	t.Run("internal-only commits are excluded", func(t *testing.T) {
+		filesByHash := map[string][]string{
+			"aaa11111": {"cmd/study/list.go"},
+			"bbb22222": {"scripts/changelog/main.go", ".github/workflows/release.yml"},
+		}
+		input := strings.Join([]string{
+			"- [hash:aaa11111][type:Features] Add study feature",
+			"- [hash:bbb22222][type:Features] Add changelog transform",
+		}, "\n")
+
+		got := TransformChangelog(input, func(h string) ([]string, error) { return filesByHash[h], nil })
+		if strings.Contains(got, "changelog transform") {
+			t.Error("internal-only commit should be excluded")
+		}
+		if !strings.Contains(got, "Add study feature") {
+			t.Error("user-facing commit should be included")
+		}
+	})
+
+	t.Run("diff-tree error excludes commit", func(t *testing.T) {
+		errFn := func(string) ([]string, error) { return nil, fmt.Errorf("shallow clone") }
+		input := "- [hash:aaa11111][type:Features] Some commit"
+		if got := TransformChangelog(input, errFn); got != "" {
+			t.Errorf("expected empty output when diff-tree fails, got: %q", got)
 		}
 	})
 
