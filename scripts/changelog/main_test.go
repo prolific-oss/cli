@@ -342,9 +342,8 @@ func TestAreaForFiles(t *testing.T) {
 		{"majority wins", []string{"cmd/study/list.go", "cmd/study/get.go", "cmd/workspace/list.go"}, "Study"},
 		{"model and client map to Core", []string{"model/study.go", "client/client.go"}, "Core"},
 		{"filters and filtersets both map to Filters", []string{"cmd/filters/list.go", "cmd/filtersets/list.go"}, "Filters"},
-		{"unknown files fall back to Other", []string{"README.md", "Makefile"}, "Other"},
-		{"internal-only returns empty", []string{"scripts/changelog/main.go", ".github/workflows/ci.yml"}, ""},
-		{"mixed internal and user-facing keeps user-facing", []string{"scripts/foo.sh", "cmd/study/list.go"}, "Study"},
+		{"unrecognised files return empty", []string{"README.md", "Makefile"}, ""},
+		{"mixed unrecognised and user-facing keeps user-facing", []string{"scripts/foo.sh", "cmd/study/list.go"}, "Study"},
 		{"empty file list returns empty", []string{}, ""},
 	}
 
@@ -386,13 +385,16 @@ func TestTransformChangelog(t *testing.T) {
 		got := TransformChangelog(input, func(h string) ([]string, error) { return filesByHash[h], nil })
 
 		// Area headings present, markers stripped.
-		for _, heading := range []string{"### AI Task Builder", "### Study", "### Workspaces", "### Other"} {
+		for _, heading := range []string{"### AI Task Builder", "### Study", "### Workspaces"} {
 			if !strings.Contains(got, heading) {
 				t.Errorf("missing heading %q", heading)
 			}
 		}
 		if strings.Contains(got, "[hash:") || strings.Contains(got, "[type:") {
 			t.Error("markers should be stripped from output")
+		}
+		if strings.Contains(got, "Update README") {
+			t.Error("unrecognised-only commit should be excluded")
 		}
 
 		// AI Task Builder before Study (per areaOrder).

@@ -255,18 +255,13 @@ func MergeNotes(manual, generated, fallback string) string {
 // reMarker matches the [hash:...][type:...] prefix emitted by cliff.toml.
 var reMarker = regexp.MustCompile(`^\- \[hash:([a-f0-9]+)\]\[type:([^\]]+)\] (.+)$`)
 
-// areaMapping maps file path prefixes to human-readable area names.
-// An empty area name means the file is internal and excluded from the changelog.
+// areaMapping maps file path prefixes to user-facing area names.
+// Files not matching any prefix are ignored — commits that only touch
+// unrecognised paths are excluded from the changelog.
 var areaMapping = []struct {
 	prefix string
 	area   string
 }{
-	// Internal paths — excluded from changelog.
-	{"scripts/", ""},
-	{".github/", ""},
-	{".golangci", ""},
-	{".gitignore", ""},
-	// User-facing areas.
 	{"cmd/aitaskbuilder/", "AI Task Builder"},
 	{"cmd/study/", "Study"},
 	{"cmd/bonus/", "Bonus Payments"},
@@ -305,23 +300,16 @@ func ParseMarkerLine(line string) (parsedEntry, bool) {
 }
 
 // AreaForFiles determines the primary area for a set of changed file paths.
-// Unrecognised files count toward "Other". Internal files (empty area in
-// areaMapping) are ignored. Returns "" when there are no non-internal files.
+// Only files matching a prefix in areaMapping are counted. Returns "" when
+// no files match any known area.
 func AreaForFiles(files []string) string {
 	counts := make(map[string]int)
 	for _, f := range files {
-		matched := false
 		for _, am := range areaMapping {
 			if strings.HasPrefix(f, am.prefix) {
-				if am.area != "" {
-					counts[am.area]++
-				}
-				matched = true
+				counts[am.area]++
 				break
 			}
-		}
-		if !matched {
-			counts["Other"]++
 		}
 	}
 	if len(counts) == 0 {
@@ -382,7 +370,6 @@ var areaOrder = []string{
 	"Requirements",
 	"User",
 	"Core",
-	"Other",
 }
 
 // TransformChangelog takes cliff-generated markdown with [hash:...][type:...]
