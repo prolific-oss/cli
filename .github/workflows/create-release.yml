@@ -119,6 +119,8 @@ jobs:
       github.event.pull_request.merged == true &&
       startsWith(github.event.pull_request.head.ref, 'release/v')
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -172,3 +174,12 @@ jobs:
           PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           git push origin --delete "${PR_HEAD_REF}" || true
+
+  build-release:
+    needs: finalize-release
+    if: needs.finalize-release.result == 'success'
+    uses: ./.github/workflows/release.yml
+    with:
+      tag: ${{ needs.finalize-release.outputs.tag }}
+    permissions:
+      contents: write
