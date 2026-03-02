@@ -4,6 +4,22 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+## 0.0.60
+
+### Collections
+
+- Add content_format field for rich text markdown support
+- Add --draft flag to collection publish command
+- Add typed ContentFormat constant and tighten tests
+
+### Core
+
+- Add omitempty to Filter struct fields for direct filter usage
+
+### Other
+
+- Bump Go version in release workflow to match go.mod
+
 ## 0.0.59
 
 ### AI Task Builder
