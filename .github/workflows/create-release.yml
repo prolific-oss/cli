@@ -86,7 +86,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          NEW_VERSION="${{ steps.version.outputs.new_version }}"
           NEW_TAG="${{ steps.version.outputs.new_tag }}"
           BRANCH="release/${NEW_TAG}"
 
@@ -98,15 +97,11 @@ jobs:
           git commit -m "chore: release ${NEW_TAG}"
           git push origin "$BRANCH"
 
-          NOTES=$(cat MERGED_NOTES.md)
-          cat <<EOF > PR_BODY.md
-## Release ${NEW_TAG}
-
-${NOTES}
-
----
-*Auto-generated release PR. Review the changelog, approve, and merge to publish the release.*
-EOF
+          {
+            printf '## Release %s\n\n' "${NEW_TAG}"
+            cat MERGED_NOTES.md
+            printf '\n---\n*Auto-generated release PR. Review the changelog, approve, and merge to publish the release.*\n'
+          } > PR_BODY.md
           gh pr create \
             --title "release: ${NEW_TAG}" \
             --body-file PR_BODY.md \
@@ -131,8 +126,10 @@ EOF
 
       - name: Extract version from branch
         id: version
+        env:
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
-          BRANCH="${{ github.event.pull_request.head.ref }}"
+          BRANCH="${PR_HEAD_REF}"
           TAG="${BRANCH#release/}"
           VERSION="${TAG#v}"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
@@ -166,6 +163,6 @@ EOF
       - name: Delete release branch
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
-          BRANCH="${{ github.event.pull_request.head.ref }}"
-          git push origin --delete "$BRANCH" || true
+          git push origin --delete "${PR_HEAD_REF}" || true
