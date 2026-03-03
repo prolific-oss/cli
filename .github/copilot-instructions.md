@@ -35,6 +35,10 @@
 - Update documentation and changelog as needed.
 - Keep PRs focused and well-described.
 
+## Skills
+
+- When asked to create, add, or implement a new CLI command, **always** invoke the `cli-command-create` skill tool before doing any other work.
+
 ## Misc
 
 - Use the `main.go` entrypoint for CLI execution.
