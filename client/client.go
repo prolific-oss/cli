@@ -70,6 +70,8 @@ type API interface {
 	GetFilterSets(workspaceID string, limit, offset int) (*ListFilterSetsResponse, error)
 	GetFilterSet(ID string) (*model.FilterSet, error)
 
+	GetRewardRecommendations(currency string, estimatedTime int, filterIDs []string) (*RewardRecommendationsResponse, error)
+
 	GetMessages(userID *string, createdAfter *string) (*ListMessagesResponse, error)
 	SendMessage(body, recipientID, studyID string) error
 	GetUnreadMessages() (*ListUnreadMessagesResponse, error)
@@ -618,6 +620,27 @@ func (c *Client) GetFilterSet(ID string) (*model.FilterSet, error) {
 
 	if httpResponse.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("status code was %v, so therefore unable to get filter set: %v", httpResponse.StatusCode, ID)
+	}
+
+	return &response, nil
+}
+
+// GetRewardRecommendations will return recommended reward rates for participants
+func (c *Client) GetRewardRecommendations(currency string, estimatedTime int, filterIDs []string) (*RewardRecommendationsResponse, error) {
+	var response RewardRecommendationsResponse
+
+	params := url.Values{}
+	params.Add("currency_code", currency)
+	params.Add("estimated_time", fmt.Sprintf("%d", estimatedTime))
+
+	if len(filterIDs) > 0 {
+		params.Add("filter_ids", strings.Join(filterIDs, ","))
+	}
+
+	url := fmt.Sprintf("/api/v1/studies/reward-recommendations/?%s", params.Encode())
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
 
 	return &response, nil
