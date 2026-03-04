@@ -18,6 +18,7 @@ import (
 	"github.com/prolific-oss/cli/cmd/filters"
 	"github.com/prolific-oss/cli/cmd/filtersets"
 	"github.com/prolific-oss/cli/cmd/hook"
+	"github.com/prolific-oss/cli/cmd/invitation"
 	"github.com/prolific-oss/cli/cmd/message"
 	"github.com/prolific-oss/cli/cmd/participantgroup"
 	"github.com/prolific-oss/cli/cmd/project"
@@ -77,6 +78,7 @@ func NewRootCommand() *cobra.Command {
 		filters.NewListCommand(&client, w),
 		filtersets.NewFilterSetCommand(&client, w),
 		hook.NewHookCommand(&client, w),
+		invitation.NewInvitationCommand(&client, w),
 		message.NewMessageCommand(&client, w),
 		participantgroup.NewParticipantCommand(&client, w),
 		project.NewProjectCommand(&client, w),
