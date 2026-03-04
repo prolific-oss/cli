@@ -201,23 +201,34 @@ If any arguments are omitted, Claude will ask for them interactively.
 
 ## Release Process
 
-Releases are fully automated via GitHub Actions.
+Releases are managed via GitHub Releases with changelog generation powered by [git-cliff](https://git-cliff.org/).
 
-### Creating a release
+### 1. Generate changelog
 
-1. Go to **Actions → [Create Release](https://github.com/prolific-oss/cli/actions/workflows/create-release.yml) → Run workflow**
-2. Select the bump type: `patch`, `minor`, or `major`
-3. A release PR is created automatically with an auto-generated changelog (from conventional commits via [git-cliff](https://git-cliff.org/))
-4. Review the PR, approve, and merge
+```bash
+make changelog VERSION=0.0.60
+```
 
-### What happens on merge
+This generates grouped release notes from conventional commits, merges any hand-written notes from the `## next` section of `CHANGELOG.md`, and updates the changelog file.
 
-- A git tag (`vX.Y.Z`) and GitHub Release are created automatically
-- Release binaries are built for multiple platforms (darwin, linux, windows, freebsd)
-- A Docker image is built and pushed
+### 2. Create a release PR
 
-### Manual release notes
+Create a PR with the updated `CHANGELOG.md`, get it reviewed, and merge to `main`.
 
-To include hand-written notes in the next release, add them under the `## next` section in `CHANGELOG.md` before triggering the release workflow. They will be merged with the auto-generated notes.
+### 3. Create a GitHub Release
 
-Users can download binaries from the [releases page](https://github.com/prolific-oss/cli/releases) or use `go install`.
+1. Go to [Releases](https://github.com/prolific-oss/cli/releases)
+2. Click "Draft a new release"
+3. Create a new tag matching the version (e.g., `v0.0.60`)
+4. Title the release with the version number
+5. Copy the release notes from the new `CHANGELOG.md` entry into the release description
+6. Publish the release
+
+### 4. Automated Build
+
+The release workflow automatically:
+
+- Builds binaries for multiple platforms (darwin, linux, windows, freebsd)
+- Uploads binaries to the GitHub Release as assets
+
+Users can then download binaries from the release page or use `go install`.
