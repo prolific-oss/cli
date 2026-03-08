@@ -4,6 +4,10 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+## 0.0.60
+
+- Maintenance and dependency updates
+
 ## 0.0.59
 
 ### AI Task Builder

@@ -423,19 +423,18 @@ Enforces [Conventional Commits](https://www.conventionalcommits.org/) format on 
 
 - Main branch: `main`
 - Clean status expected (no uncommitted changes)
-- Releases are automated via two GitHub Actions workflows:
-  1. **Create Release** (`create-release.yml`): Triggered manually via workflow dispatch. Calculates the next version, generates a changelog using git-cliff, and opens a `release/vX.Y.Z` PR
-  2. **Finalize Release** (same file, second job): When the release PR is merged, creates the git tag and GitHub Release, which triggers the existing `release.yml` (binary builds) and `docker.yml` (Docker image)
+- Releases tagged with version numbers (e.g., `v0.0.60`)
 
 #### Release flow
 
-1. Go to **Actions → Create Release → Run workflow** and select `patch`, `minor`, or `major`
-2. Review and merge the generated release PR
-3. Tag, GitHub Release, binaries, and Docker image are created automatically
+1. Run `make changelog VERSION=0.0.60` to generate grouped release notes
+2. Create a PR with the updated `CHANGELOG.md`, get it reviewed, and merge to `main`
+3. Create a GitHub Release with a matching tag (e.g., `v0.0.60`), using the changelog entry as the release description
+4. The `release.yml` workflow builds and uploads binaries automatically
 
 ## Changelog Conventions
 
-Versioned changelog entries are **auto-generated** from conventional commits by [git-cliff](https://git-cliff.org/) at release time. The configuration lives in `cliff.toml`.
+Changelog entries are generated from conventional commits by [git-cliff](https://git-cliff.org/). The configuration lives in `cliff.toml`, and a Go tool in `scripts/changelog/` groups entries by subcommand area.
 
 ### Manual release notes
 
@@ -447,7 +446,7 @@ To include hand-written notes in the next release, add them under the `## next` 
 - My manual release note here
 ```
 
-At release time the workflow merges any `## next` content with the auto-generated notes and resets the section.
+At release time `make changelog` merges any `## next` content with the generated notes and resets the section.
 
 ### What gets included
 
@@ -458,7 +457,7 @@ Only user-facing commit types appear in the changelog:
 ### Format
 
 - `## x.y.z` for released versions (no dates)
-- Grouped by commit type with optional bold scope prefix
+- Grouped by subcommand area with bold scope prefix
 
 ## CI/CD
 
@@ -473,19 +472,13 @@ GitHub Actions workflows in `.github/workflows/`:
 5. `make build`
 6. `make test`
 
-### `create-release.yml`
-
-Automates the release process with two jobs:
-- **create-release-pr**: Triggered via workflow dispatch. Calculates next version, generates changelog with git-cliff, and opens a release PR
-- **finalize-release**: Triggered when a `release/v*` PR is merged. Creates git tag, GitHub Release, and cleans up the release branch
-
 ### `docker.yml`
 
-Builds and pushes Docker images. Triggered by new tags.
+Builds and pushes Docker images.
 
 ### `release.yml`
 
-Builds release binaries for multiple platforms. Triggered by new GitHub Releases.
+Handles release automation.
 
 ## Common Patterns
 

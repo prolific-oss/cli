@@ -1,8 +1,5 @@
 name: Go
-on:
-  pull_request:
-  push:
-    branches: [main]
+on: [push]
 jobs:
   build:
     strategy:
