@@ -38,7 +38,7 @@ type API interface {
 	GetStudy(ID string) (*model.Study, error)
 	GetSubmissions(ID string, limit, offset int) (*ListSubmissionsResponse, error)
 	TransitionStudy(ID, action string) (*TransitionStudyResponse, error)
-	UpdateStudy(ID string, study model.UpdateStudy) (*model.Study, error)
+	UpdateStudy(ID string, study any) (*model.Study, error)
 	GetStudyCredentialsUsageReportCSV(ID string) (string, error)
 	CreateCredentialPool(credentials string, workspaceID string) (*CredentialPoolResponse, error)
 	UpdateCredentialPool(credentialPoolID string, credentials string, workspaceID string) (*CredentialPoolResponse, error)
@@ -386,7 +386,7 @@ func (c *Client) GetCollection(ID string) (*model.Collection, error) {
 }
 
 // UpdateStudy is responsible for updating the Study with a PATCH request.
-func (c *Client) UpdateStudy(ID string, study model.UpdateStudy) (*model.Study, error) {
+func (c *Client) UpdateStudy(ID string, study any) (*model.Study, error) {
 	var response model.Study
 
 	url := fmt.Sprintf("/api/v1/studies/%s/", ID)
