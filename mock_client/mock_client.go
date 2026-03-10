@@ -767,7 +767,7 @@ func (mr *MockAPIMockRecorder) UpdateCredentialPool(credentialPoolID, credential
 }
 
 // UpdateStudy mocks base method.
-func (m *MockAPI) UpdateStudy(ID string, study model.UpdateStudy) (*model.Study, error) {
+func (m *MockAPI) UpdateStudy(ID string, study any) (*model.Study, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateStudy", ID, study)
 	ret0, _ := ret[0].(*model.Study)
