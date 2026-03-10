@@ -64,9 +64,10 @@ const (
 
 // MultipleChoiceOption represents an option for multiple choice instructions
 type MultipleChoiceOption struct {
-	Label   string `json:"label" yaml:"label" mapstructure:"label"`
-	Value   string `json:"value" yaml:"value" mapstructure:"value"`
-	Heading string `json:"heading,omitempty" yaml:"heading,omitempty" mapstructure:"heading"` // Required for multiple_choice_with_free_text
+	Label     string `json:"label" yaml:"label" mapstructure:"label"`
+	Value     string `json:"value" yaml:"value" mapstructure:"value"`
+	Heading   string `json:"heading,omitempty" yaml:"heading,omitempty" mapstructure:"heading"` // Required for multiple_choice_with_free_text
+	Exclusive bool   `json:"exclusive,omitempty" yaml:"exclusive,omitempty" mapstructure:"exclusive"`
 }
 
 // UnitOption represents a unit option for free_text_with_unit instructions

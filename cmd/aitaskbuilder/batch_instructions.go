@@ -324,5 +324,48 @@ func validateInstructionOptions(instruction client.Instruction, index int) error
 			return fmt.Errorf("instruction %d, option %d: heading is required for type 'multiple_choice_with_free_text'", index+1, j+1)
 		}
 	}
+
+	// Validate exclusive options
+	if err := validateExclusiveOptions(instruction, index); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateExclusiveOptions validates exclusive option constraints
+func validateExclusiveOptions(instruction client.Instruction, index int) error {
+	// Only validate for multiple choice types
+	if instruction.Type != client.InstructionTypeMultipleChoice &&
+		instruction.Type != client.InstructionTypeMultipleChoiceWithFreeText {
+		return nil
+	}
+
+	// Count exclusive and non-exclusive options
+	exclusiveCount := 0
+	nonExclusiveCount := 0
+	for _, option := range instruction.Options {
+		if option.Exclusive {
+			exclusiveCount++
+		} else {
+			nonExclusiveCount++
+		}
+	}
+
+	// No exclusive options, nothing to validate
+	if exclusiveCount == 0 {
+		return nil
+	}
+
+	// Exclusive options are not allowed with single select (answer_limit == 1)
+	if instruction.AnswerLimit != nil && *instruction.AnswerLimit == 1 {
+		return fmt.Errorf("instruction %d: %s", index+1, ErrExclusiveWithSingleSelect)
+	}
+
+	// At least one non-exclusive option is required when using exclusive options
+	if nonExclusiveCount == 0 {
+		return fmt.Errorf("instruction %d: %s", index+1, ErrNoNonExclusiveOptions)
+	}
+
 	return nil
 }

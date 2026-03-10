@@ -156,6 +156,52 @@ func validatePayload(payload model.CreateAITaskBuilderCollection) error {
 		return errors.New(ErrTaskStepsRequired)
 	}
 
+	// Validate page items
+	for pageIdx, page := range payload.CollectionItems {
+		for itemIdx, item := range page.PageItems {
+			if err := validatePageItemExclusiveOptions(item, pageIdx, itemIdx); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+// validatePageItemExclusiveOptions validates exclusive option constraints for a page item
+func validatePageItemExclusiveOptions(item model.CollectionInstruction, pageIdx, itemIdx int) error {
+	// Only validate for multiple choice types
+	if item.Type != string(model.InstructionTypeMultipleChoice) &&
+		item.Type != string(model.InstructionTypeMultipleChoiceWithFreeText) {
+		return nil
+	}
+
+	// Count exclusive and non-exclusive options
+	exclusiveCount := 0
+	nonExclusiveCount := 0
+	for _, option := range item.Options {
+		if option.Exclusive {
+			exclusiveCount++
+		} else {
+			nonExclusiveCount++
+		}
+	}
+
+	// No exclusive options, nothing to validate
+	if exclusiveCount == 0 {
+		return nil
+	}
+
+	// Exclusive options are not allowed with single select (answer_limit == 1)
+	if item.AnswerLimit != nil && *item.AnswerLimit == 1 {
+		return fmt.Errorf("page %d, item %d: %s", pageIdx+1, itemIdx+1, ErrExclusiveWithSingleSelect)
+	}
+
+	// At least one non-exclusive option is required when using exclusive options
+	if nonExclusiveCount == 0 {
+		return fmt.Errorf("page %d, item %d: %s", pageIdx+1, itemIdx+1, ErrNoNonExclusiveOptions)
+	}
+
 	return nil
 }
 

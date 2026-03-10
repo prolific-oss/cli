@@ -119,7 +119,51 @@ func validateTemplate(opts UpdateOptions) (model.UpdateCollection, error) {
 		if len(page.PageItems) == 0 {
 			return updatePayload, fmt.Errorf("page at index %d: %s", i, ErrPageItemsRequired)
 		}
+
+		// Validate exclusive options for each page item
+		for j, item := range page.PageItems {
+			if err := validateUpdatePageItemExclusiveOptions(item, i, j); err != nil {
+				return updatePayload, err
+			}
+		}
 	}
 
 	return updatePayload, nil
+}
+
+// validateUpdatePageItemExclusiveOptions validates exclusive option constraints for a page item
+func validateUpdatePageItemExclusiveOptions(item model.PageInstruction, pageIdx, itemIdx int) error {
+	// Only validate for multiple choice types
+	if item.Type != model.InstructionTypeMultipleChoice &&
+		item.Type != model.InstructionTypeMultipleChoiceWithFreeText {
+		return nil
+	}
+
+	// Count exclusive and non-exclusive options
+	exclusiveCount := 0
+	nonExclusiveCount := 0
+	for _, option := range item.Options {
+		if option.Exclusive {
+			exclusiveCount++
+		} else {
+			nonExclusiveCount++
+		}
+	}
+
+	// No exclusive options, nothing to validate
+	if exclusiveCount == 0 {
+		return nil
+	}
+
+	// Exclusive options are not allowed with single select (answer_limit == 1)
+	if item.AnswerLimit == 1 {
+		return fmt.Errorf("page %d, item %d: %s", pageIdx+1, itemIdx+1, ErrExclusiveWithSingleSelect)
+	}
+
+	// At least one non-exclusive option is required when using exclusive options
+	if nonExclusiveCount == 0 {
+		return fmt.Errorf("page %d, item %d: %s", pageIdx+1, itemIdx+1, ErrNoNonExclusiveOptions)
+	}
+
+	return nil
 }

@@ -26,6 +26,31 @@
     ]
   },
   {
+    "type": "multiple_choice",
+    "created_by": "Sean",
+    "description": "Which medications are you currently taking? Select all that apply.",
+    "answer_limit": -1,
+    "options": [
+      {
+        "label": "Aspirin",
+        "value": "aspirin"
+      },
+      {
+        "label": "Ibuprofen",
+        "value": "ibuprofen"
+      },
+      {
+        "label": "Paracetamol",
+        "value": "paracetamol"
+      },
+      {
+        "label": "None of the above",
+        "value": "none",
+        "exclusive": true
+      }
+    ]
+  },
+  {
     "type": "multiple_choice_with_free_text",
     "created_by": "Sean",
     "description": "Which of the following best describes the sentiment?",

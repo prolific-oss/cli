@@ -59,9 +59,10 @@ type TaskDetails struct {
 
 // InstructionOption represents an option for multiple choice instructions.
 type InstructionOption struct {
-	Label   string `json:"label"`
-	Value   string `json:"value"`
-	Heading string `json:"heading,omitempty"`
+	Label     string `json:"label"`
+	Value     string `json:"value"`
+	Heading   string `json:"heading,omitempty"`
+	Exclusive bool   `json:"exclusive,omitempty"`
 }
 
 // UnitPosition represents the position of the unit relative to the text input.

@@ -72,9 +72,10 @@ const (
 
 // InstructionOption represents an option for multiple choice instructions
 type InstructionOption struct {
-	Label   string `json:"label"`
-	Value   string `json:"value"`
-	Heading string `json:"heading,omitempty"`
+	Label     string `json:"label"`
+	Value     string `json:"value"`
+	Heading   string `json:"heading,omitempty"`
+	Exclusive bool   `json:"exclusive,omitempty"`
 }
 
 // UnitOption represents a unit option for free_text_with_unit instructions
