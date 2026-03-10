@@ -48,9 +48,10 @@ linters:
         text: "G70[235]"
         path: 'docs/scripts/'
       # scripts/changelog/ is an internal CLI tool for release automation.
-      # Taint analysis on stderr output is a false positive.
+      # G703 path traversal is guarded by resolvePath(); G705 stderr taint
+      # is a false positive.
       - linters: [gosec]
-        text: "G705"
+        text: "G70[35]"
         path: 'scripts/changelog/'
     paths:
       - third_party$
