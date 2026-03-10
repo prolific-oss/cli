@@ -6,6 +6,7 @@ import (
 	"io"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/model"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -133,36 +134,21 @@ func validateTemplate(opts UpdateOptions) (model.UpdateCollection, error) {
 
 // validateUpdatePageItemExclusiveOptions validates exclusive option constraints for a page item
 func validateUpdatePageItemExclusiveOptions(item model.PageInstruction, pageIdx, itemIdx int) error {
-	// Only validate for multiple choice types
-	if item.Type != model.InstructionTypeMultipleChoice &&
-		item.Type != model.InstructionTypeMultipleChoiceWithFreeText {
-		return nil
+	// Convert options to shared input format
+	options := make([]shared.OptionInput, len(item.Options))
+	for i, opt := range item.Options {
+		options[i] = shared.OptionInput{Exclusive: opt.Exclusive}
 	}
 
-	// Count exclusive and non-exclusive options
-	exclusiveCount := 0
-	nonExclusiveCount := 0
-	for _, option := range item.Options {
-		if option.Exclusive {
-			exclusiveCount++
-		} else {
-			nonExclusiveCount++
-		}
-	}
+	// PageInstruction uses int for AnswerLimit (0 means not set)
+	errMsg := shared.ValidateExclusiveOptionsWithIntLimit(
+		options,
+		item.AnswerLimit,
+		string(item.Type),
+	)
 
-	// No exclusive options, nothing to validate
-	if exclusiveCount == 0 {
-		return nil
-	}
-
-	// Exclusive options are not allowed with single select (answer_limit == 1)
-	if item.AnswerLimit == 1 {
-		return fmt.Errorf("page %d, item %d: %s", pageIdx+1, itemIdx+1, ErrExclusiveWithSingleSelect)
-	}
-
-	// At least one non-exclusive option is required when using exclusive options
-	if nonExclusiveCount == 0 {
-		return fmt.Errorf("page %d, item %d: %s", pageIdx+1, itemIdx+1, ErrNoNonExclusiveOptions)
+	if errMsg != "" {
+		return fmt.Errorf("page %d, item %d: %s", pageIdx+1, itemIdx+1, errMsg)
 	}
 
 	return nil

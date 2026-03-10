@@ -13,6 +13,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/collection"
+	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/mock_client"
 	"github.com/prolific-oss/cli/model"
 )
@@ -1130,7 +1131,7 @@ func TestNewCreateCollectionCommandExclusiveWithSingleSelect(t *testing.T) {
 		t.Fatal("expected an error; got nil")
 	}
 
-	if !strings.Contains(err.Error(), collection.ErrExclusiveWithSingleSelect) {
+	if !strings.Contains(err.Error(), shared.ErrExclusiveWithSingleSelect) {
 		t.Fatalf("expected error about exclusive with single select; got %s", err.Error())
 	}
 }
@@ -1178,7 +1179,7 @@ func TestNewCreateCollectionCommandAllOptionsExclusive(t *testing.T) {
 		t.Fatal("expected an error; got nil")
 	}
 
-	if !strings.Contains(err.Error(), collection.ErrNoNonExclusiveOptions) {
+	if !strings.Contains(err.Error(), shared.ErrNoNonExclusiveOptions) {
 		t.Fatalf("expected error about no non-exclusive options; got %s", err.Error())
 	}
 }

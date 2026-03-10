@@ -10,6 +10,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/prolific-oss/cli/cmd/collection"
+	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/mock_client"
 	"github.com/prolific-oss/cli/model"
 )
@@ -859,7 +860,7 @@ func TestUpdateCollectionExclusiveWithSingleSelect(t *testing.T) {
 		t.Fatal("expected an error; got nil")
 	}
 
-	if err.Error() != "page 1, item 1: "+collection.ErrExclusiveWithSingleSelect {
+	if err.Error() != "page 1, item 1: "+shared.ErrExclusiveWithSingleSelect {
 		t.Fatalf("expected error about exclusive with single select; got %s", err.Error())
 	}
 }
@@ -905,7 +906,7 @@ func TestUpdateCollectionAllOptionsExclusive(t *testing.T) {
 		t.Fatal("expected an error; got nil")
 	}
 
-	if err.Error() != "page 1, item 1: "+collection.ErrNoNonExclusiveOptions {
+	if err.Error() != "page 1, item 1: "+shared.ErrNoNonExclusiveOptions {
 		t.Fatalf("expected error about no non-exclusive options; got %s", err.Error())
 	}
 }

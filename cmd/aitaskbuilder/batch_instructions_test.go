@@ -12,6 +12,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/aitaskbuilder"
+	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/mock_client"
 	"github.com/prolific-oss/cli/model"
 )
@@ -910,7 +911,7 @@ func TestNewBatchInstructionsCommandExclusiveWithSingleSelect(t *testing.T) {
 		t.Fatal("expected an error; got nil")
 	}
 
-	if !strings.Contains(err.Error(), aitaskbuilder.ErrExclusiveWithSingleSelect) {
+	if !strings.Contains(err.Error(), shared.ErrExclusiveWithSingleSelect) {
 		t.Fatalf("expected error about exclusive with single select; got %s", err.Error())
 	}
 }
@@ -949,7 +950,7 @@ func TestNewBatchInstructionsCommandAllOptionsExclusive(t *testing.T) {
 		t.Fatal("expected an error; got nil")
 	}
 
-	if !strings.Contains(err.Error(), aitaskbuilder.ErrNoNonExclusiveOptions) {
+	if !strings.Contains(err.Error(), shared.ErrNoNonExclusiveOptions) {
 		t.Fatalf("expected error about no non-exclusive options; got %s", err.Error())
 	}
 }

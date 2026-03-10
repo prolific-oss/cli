@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/model"
 	"github.com/spf13/cobra"
 )
@@ -335,36 +336,20 @@ func validateInstructionOptions(instruction client.Instruction, index int) error
 
 // validateExclusiveOptions validates exclusive option constraints
 func validateExclusiveOptions(instruction client.Instruction, index int) error {
-	// Only validate for multiple choice types
-	if instruction.Type != client.InstructionTypeMultipleChoice &&
-		instruction.Type != client.InstructionTypeMultipleChoiceWithFreeText {
-		return nil
+	// Convert options to shared input format
+	options := make([]shared.OptionInput, len(instruction.Options))
+	for i, opt := range instruction.Options {
+		options[i] = shared.OptionInput{Exclusive: opt.Exclusive}
 	}
 
-	// Count exclusive and non-exclusive options
-	exclusiveCount := 0
-	nonExclusiveCount := 0
-	for _, option := range instruction.Options {
-		if option.Exclusive {
-			exclusiveCount++
-		} else {
-			nonExclusiveCount++
-		}
-	}
+	errMsg := shared.ValidateExclusiveOptions(shared.ExclusiveOptionsInput{
+		Options:     options,
+		AnswerLimit: instruction.AnswerLimit,
+		TypeStr:     string(instruction.Type),
+	})
 
-	// No exclusive options, nothing to validate
-	if exclusiveCount == 0 {
-		return nil
-	}
-
-	// Exclusive options are not allowed with single select (answer_limit == 1)
-	if instruction.AnswerLimit != nil && *instruction.AnswerLimit == 1 {
-		return fmt.Errorf("instruction %d: %s", index+1, ErrExclusiveWithSingleSelect)
-	}
-
-	// At least one non-exclusive option is required when using exclusive options
-	if nonExclusiveCount == 0 {
-		return fmt.Errorf("instruction %d: %s", index+1, ErrNoNonExclusiveOptions)
+	if errMsg != "" {
+		return fmt.Errorf("instruction %d: %s", index+1, errMsg)
 	}
 
 	return nil
