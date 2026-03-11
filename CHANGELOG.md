@@ -4,6 +4,18 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+## 0.0.61
+
+### Study
+
+- Add study update command with JSON template support
+
+### Collections
+
+- Add exclusive option field to multiple choice instructions
+- Extract shared exclusive options validation logic
+- Remove exclusive options validation from CLI
+
 ## 0.0.60
 
 - Maintenance and dependency updates
