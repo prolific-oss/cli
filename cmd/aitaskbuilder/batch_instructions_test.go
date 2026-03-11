@@ -12,7 +12,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/aitaskbuilder"
-	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/mock_client"
 	"github.com/prolific-oss/cli/model"
 )
@@ -873,85 +872,6 @@ func TestNewBatchInstructionsCommandWithExclusiveOptionMultiSelect(t *testing.T)
 	expectedOutput := "Successfully added 1 instruction(s) to batch " + batchID
 	if !strings.Contains(buf.String(), expectedOutput) {
 		t.Fatalf("expected output to contain '%s'; got %s", expectedOutput, buf.String())
-	}
-}
-
-func TestNewBatchInstructionsCommandExclusiveWithSingleSelect(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	c := mock_client.NewMockAPI(ctrl)
-
-	batchID := "01954894-65b3-779e-aaf6-348698e12351"
-
-	var buf bytes.Buffer
-	writer := bufio.NewWriter(&buf)
-
-	cmd := aitaskbuilder.NewBatchInstructionsCommand(c, writer)
-
-	// exclusive option with answer_limit=1 (single select) should fail
-	instructionsJSON := `[{
-		"type": "multiple_choice",
-		"created_by": "Sean",
-		"description": "Select a medication.",
-		"answer_limit": 1,
-		"options": [
-			{"label": "Aspirin", "value": "aspirin"},
-			{"label": "Ibuprofen", "value": "ibuprofen"},
-			{"label": "None of the above", "value": "none", "exclusive": true}
-		]
-	}]`
-
-	cmd.SetArgs([]string{
-		"-b", batchID,
-		"-j", instructionsJSON,
-	})
-
-	err := cmd.Execute()
-	if err == nil {
-		t.Fatal("expected an error; got nil")
-	}
-
-	if !strings.Contains(err.Error(), shared.ErrExclusiveWithSingleSelect) {
-		t.Fatalf("expected error about exclusive with single select; got %s", err.Error())
-	}
-}
-
-func TestNewBatchInstructionsCommandAllOptionsExclusive(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	c := mock_client.NewMockAPI(ctrl)
-
-	batchID := "01954894-65b3-779e-aaf6-348698e12352"
-
-	var buf bytes.Buffer
-	writer := bufio.NewWriter(&buf)
-
-	cmd := aitaskbuilder.NewBatchInstructionsCommand(c, writer)
-
-	// All options are exclusive - should fail
-	instructionsJSON := `[{
-		"type": "multiple_choice",
-		"created_by": "Sean",
-		"description": "Select medications.",
-		"answer_limit": -1,
-		"options": [
-			{"label": "None of the above", "value": "none", "exclusive": true},
-			{"label": "Not sure", "value": "not_sure", "exclusive": true}
-		]
-	}]`
-
-	cmd.SetArgs([]string{
-		"-b", batchID,
-		"-j", instructionsJSON,
-	})
-
-	err := cmd.Execute()
-	if err == nil {
-		t.Fatal("expected an error; got nil")
-	}
-
-	if !strings.Contains(err.Error(), shared.ErrNoNonExclusiveOptions) {
-		t.Fatalf("expected error about no non-exclusive options; got %s", err.Error())
 	}
 }
 

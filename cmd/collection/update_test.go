@@ -10,7 +10,6 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/prolific-oss/cli/cmd/collection"
-	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/mock_client"
 	"github.com/prolific-oss/cli/model"
 )
@@ -815,98 +814,5 @@ func TestUpdateCollectionWithExclusiveOptionMultiSelect(t *testing.T) {
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
-	}
-}
-
-func TestUpdateCollectionExclusiveWithSingleSelect(t *testing.T) {
-	collectionID := testUpdateCollectionID
-
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	c := mock_client.NewMockAPI(ctrl)
-
-	configContent := `{
-  "name": "Collection With Exclusive Error",
-  "collection_items": [
-    {
-      "order": 0,
-      "page_items": [
-        {
-          "type": "multiple_choice",
-          "description": "Select a medication.",
-          "order": 0,
-          "answer_limit": 1,
-          "options": [
-            {"label": "Aspirin", "value": "aspirin"},
-            {"label": "Ibuprofen", "value": "ibuprofen"},
-            {"label": "None of the above", "value": "none", "exclusive": true}
-          ]
-        }
-      ]
-    }
-  ]
-}`
-
-	configFile := createTempConfigFile(t, configContent, ".json")
-
-	var b bytes.Buffer
-	writer := bufio.NewWriter(&b)
-
-	cmd := collection.NewUpdateCommand(c, writer)
-	cmd.SetArgs([]string{collectionID, "-t", configFile})
-	err := cmd.Execute()
-
-	if err == nil {
-		t.Fatal("expected an error; got nil")
-	}
-
-	if err.Error() != "page 1, item 1: "+shared.ErrExclusiveWithSingleSelect {
-		t.Fatalf("expected error about exclusive with single select; got %s", err.Error())
-	}
-}
-
-func TestUpdateCollectionAllOptionsExclusive(t *testing.T) {
-	collectionID := testUpdateCollectionID
-
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	c := mock_client.NewMockAPI(ctrl)
-
-	configContent := `{
-  "name": "Collection With All Exclusive Options",
-  "collection_items": [
-    {
-      "order": 0,
-      "page_items": [
-        {
-          "type": "multiple_choice",
-          "description": "Select medications.",
-          "order": 0,
-          "answer_limit": -1,
-          "options": [
-            {"label": "None of the above", "value": "none", "exclusive": true},
-            {"label": "Not sure", "value": "not_sure", "exclusive": true}
-          ]
-        }
-      ]
-    }
-  ]
-}`
-
-	configFile := createTempConfigFile(t, configContent, ".json")
-
-	var b bytes.Buffer
-	writer := bufio.NewWriter(&b)
-
-	cmd := collection.NewUpdateCommand(c, writer)
-	cmd.SetArgs([]string{collectionID, "-t", configFile})
-	err := cmd.Execute()
-
-	if err == nil {
-		t.Fatal("expected an error; got nil")
-	}
-
-	if err.Error() != "page 1, item 1: "+shared.ErrNoNonExclusiveOptions {
-		t.Fatalf("expected error about no non-exclusive options; got %s", err.Error())
 	}
 }

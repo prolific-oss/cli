@@ -13,7 +13,6 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/collection"
-	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/mock_client"
 	"github.com/prolific-oss/cli/model"
 )
@@ -1084,102 +1083,5 @@ func TestNewCreateCollectionCommandWithExclusiveOptionMultiSelect(t *testing.T) 
 	writer.Flush()
 	if !strings.Contains(b.String(), "Collection created successfully!") {
 		t.Fatalf("expected success message; got %s", b.String())
-	}
-}
-
-func TestNewCreateCollectionCommandExclusiveWithSingleSelect(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	c := mock_client.NewMockAPI(ctrl)
-
-	tmpDir := t.TempDir()
-	templateFile := filepath.Join(tmpDir, "collection.json")
-	templateContent := fmt.Sprintf(`{
-  "workspace_id": "%s",
-  "name": "test-collection-exclusive-error",
-  "task_details": %s,
-  "collection_items": [
-    {
-      "order": 0,
-      "page_items": [
-        {
-          "order": 0,
-          "type": "multiple_choice",
-          "description": "Select a medication.",
-          "answer_limit": 1,
-          "options": [
-            {"label": "Aspirin", "value": "aspirin"},
-            {"label": "Ibuprofen", "value": "ibuprofen"},
-            {"label": "None of the above", "value": "none", "exclusive": true}
-          ]
-        }
-      ]
-    }
-  ]
-}`, testWorkspaceID, taskDetails)
-
-	err := os.WriteFile(templateFile, []byte(templateContent), 0600)
-	if err != nil {
-		t.Fatalf("failed to create temporary file: %s", err.Error())
-	}
-
-	cmd := collection.NewCreateCollectionCommand(c, os.Stdout)
-	cmd.SetArgs([]string{"-t", templateFile})
-	err = cmd.Execute()
-
-	if err == nil {
-		t.Fatal("expected an error; got nil")
-	}
-
-	if !strings.Contains(err.Error(), shared.ErrExclusiveWithSingleSelect) {
-		t.Fatalf("expected error about exclusive with single select; got %s", err.Error())
-	}
-}
-
-func TestNewCreateCollectionCommandAllOptionsExclusive(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	c := mock_client.NewMockAPI(ctrl)
-
-	tmpDir := t.TempDir()
-	templateFile := filepath.Join(tmpDir, "collection.json")
-	templateContent := fmt.Sprintf(`{
-  "workspace_id": "%s",
-  "name": "test-collection-all-exclusive",
-  "task_details": %s,
-  "collection_items": [
-    {
-      "order": 0,
-      "page_items": [
-        {
-          "order": 0,
-          "type": "multiple_choice",
-          "description": "Select medications.",
-          "answer_limit": -1,
-          "options": [
-            {"label": "None of the above", "value": "none", "exclusive": true},
-            {"label": "Not sure", "value": "not_sure", "exclusive": true}
-          ]
-        }
-      ]
-    }
-  ]
-}`, testWorkspaceID, taskDetails)
-
-	err := os.WriteFile(templateFile, []byte(templateContent), 0600)
-	if err != nil {
-		t.Fatalf("failed to create temporary file: %s", err.Error())
-	}
-
-	cmd := collection.NewCreateCollectionCommand(c, os.Stdout)
-	cmd.SetArgs([]string{"-t", templateFile})
-	err = cmd.Execute()
-
-	if err == nil {
-		t.Fatal("expected an error; got nil")
-	}
-
-	if !strings.Contains(err.Error(), shared.ErrNoNonExclusiveOptions) {
-		t.Fatalf("expected error about no non-exclusive options; got %s", err.Error())
 	}
 }

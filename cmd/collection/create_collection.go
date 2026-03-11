@@ -156,36 +156,6 @@ func validatePayload(payload model.CreateAITaskBuilderCollection) error {
 		return errors.New(ErrTaskStepsRequired)
 	}
 
-	// Validate page items
-	for pageIdx, page := range payload.CollectionItems {
-		for itemIdx, item := range page.PageItems {
-			if err := validatePageItemExclusiveOptions(item, pageIdx, itemIdx); err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
-}
-
-// validatePageItemExclusiveOptions validates exclusive option constraints for a page item
-func validatePageItemExclusiveOptions(item model.CollectionInstruction, pageIdx, itemIdx int) error {
-	// Convert options to shared input format
-	options := make([]shared.OptionInput, len(item.Options))
-	for i, opt := range item.Options {
-		options[i] = shared.OptionInput{Exclusive: opt.Exclusive}
-	}
-
-	errMsg := shared.ValidateExclusiveOptions(shared.ExclusiveOptionsInput{
-		Options:     options,
-		AnswerLimit: item.AnswerLimit,
-		TypeStr:     item.Type,
-	})
-
-	if errMsg != "" {
-		return fmt.Errorf("page %d, item %d: %s", pageIdx+1, itemIdx+1, errMsg)
-	}
-
 	return nil
 }
 

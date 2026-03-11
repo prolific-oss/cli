@@ -8,7 +8,6 @@ import (
 	"os"
 
 	"github.com/prolific-oss/cli/client"
-	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/model"
 	"github.com/spf13/cobra"
 )
@@ -324,32 +323,6 @@ func validateInstructionOptions(instruction client.Instruction, index int) error
 		if instruction.Type == client.InstructionTypeMultipleChoiceWithFreeText && option.Heading == "" {
 			return fmt.Errorf("instruction %d, option %d: heading is required for type 'multiple_choice_with_free_text'", index+1, j+1)
 		}
-	}
-
-	// Validate exclusive options
-	if err := validateExclusiveOptions(instruction, index); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// validateExclusiveOptions validates exclusive option constraints
-func validateExclusiveOptions(instruction client.Instruction, index int) error {
-	// Convert options to shared input format
-	options := make([]shared.OptionInput, len(instruction.Options))
-	for i, opt := range instruction.Options {
-		options[i] = shared.OptionInput{Exclusive: opt.Exclusive}
-	}
-
-	errMsg := shared.ValidateExclusiveOptions(shared.ExclusiveOptionsInput{
-		Options:     options,
-		AnswerLimit: instruction.AnswerLimit,
-		TypeStr:     string(instruction.Type),
-	})
-
-	if errMsg != "" {
-		return fmt.Errorf("instruction %d: %s", index+1, errMsg)
 	}
 
 	return nil

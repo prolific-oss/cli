@@ -6,7 +6,6 @@ import (
 	"io"
 
 	"github.com/prolific-oss/cli/client"
-	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/model"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -120,36 +119,7 @@ func validateTemplate(opts UpdateOptions) (model.UpdateCollection, error) {
 		if len(page.PageItems) == 0 {
 			return updatePayload, fmt.Errorf("page at index %d: %s", i, ErrPageItemsRequired)
 		}
-
-		// Validate exclusive options for each page item
-		for j, item := range page.PageItems {
-			if err := validateUpdatePageItemExclusiveOptions(item, i, j); err != nil {
-				return updatePayload, err
-			}
-		}
 	}
 
 	return updatePayload, nil
-}
-
-// validateUpdatePageItemExclusiveOptions validates exclusive option constraints for a page item
-func validateUpdatePageItemExclusiveOptions(item model.PageInstruction, pageIdx, itemIdx int) error {
-	// Convert options to shared input format
-	options := make([]shared.OptionInput, len(item.Options))
-	for i, opt := range item.Options {
-		options[i] = shared.OptionInput{Exclusive: opt.Exclusive}
-	}
-
-	// PageInstruction uses int for AnswerLimit (0 means not set)
-	errMsg := shared.ValidateExclusiveOptionsWithIntLimit(
-		options,
-		item.AnswerLimit,
-		string(item.Type),
-	)
-
-	if errMsg != "" {
-		return fmt.Errorf("page %d, item %d: %s", pageIdx+1, itemIdx+1, errMsg)
-	}
-
-	return nil
 }
