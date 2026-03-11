@@ -14,6 +14,8 @@ import (
 	"github.com/prolific-oss/cli/model"
 )
 
+const testUpdateCollectionID = "550e8400-e29b-41d4-a716-446655440000"
+
 func TestNewUpdateCommand(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -34,7 +36,7 @@ func TestNewUpdateCommand(t *testing.T) {
 }
 
 func TestUpdateCollection(t *testing.T) {
-	collectionID := "550e8400-e29b-41d4-a716-446655440000"
+	collectionID := testUpdateCollectionID
 	pageID := "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
 
 	tests := []struct {
@@ -550,7 +552,7 @@ func TestUpdateCollectionInvalidConfigFile(t *testing.T) {
 }
 
 func TestUpdateCollectionExactPayload(t *testing.T) {
-	collectionID := "550e8400-e29b-41d4-a716-446655440000"
+	collectionID := testUpdateCollectionID
 	pageID := "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
 
 	ctrl := gomock.NewController(t)
@@ -736,4 +738,81 @@ func createTempConfigFile(t *testing.T, content string, ext string) string {
 	})
 
 	return tmpFile.Name()
+}
+
+func TestUpdateCollectionWithExclusiveOptionMultiSelect(t *testing.T) {
+	collectionID := testUpdateCollectionID
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	configContent := `{
+  "name": "Collection With Exclusive Options",
+  "collection_items": [
+    {
+      "order": 0,
+      "page_items": [
+        {
+          "type": "multiple_choice",
+          "description": "Select all medications you are taking.",
+          "order": 0,
+          "answer_limit": -1,
+          "options": [
+            {"label": "Aspirin", "value": "aspirin"},
+            {"label": "Ibuprofen", "value": "ibuprofen"},
+            {"label": "None of the above", "value": "none", "exclusive": true}
+          ]
+        }
+      ]
+    }
+  ]
+}`
+
+	expectedPayload := model.UpdateCollection{
+		Name: "Collection With Exclusive Options",
+		CollectionItems: []model.Page{
+			{
+				Order: 0,
+				PageItems: []model.PageInstruction{
+					{
+						Type:        model.InstructionTypeMultipleChoice,
+						Description: "Select all medications you are taking.",
+						Order:       0,
+						AnswerLimit: -1,
+						Options: []model.MultipleChoiceOption{
+							{Label: "Aspirin", Value: "aspirin"},
+							{Label: "Ibuprofen", Value: "ibuprofen"},
+							{Label: "None of the above", Value: "none", Exclusive: true},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	c.EXPECT().
+		UpdateCollection(collectionID, gomock.Eq(expectedPayload)).
+		Return(&model.Collection{
+			ID:        collectionID,
+			Name:      "Collection With Exclusive Options",
+			CreatedAt: time.Now(),
+			CreatedBy: "user123",
+			ItemCount: 1,
+		}, nil).
+		Times(1)
+
+	configFile := createTempConfigFile(t, configContent, ".json")
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := collection.NewUpdateCommand(c, writer)
+	cmd.SetArgs([]string{collectionID, "-t", configFile})
+	err := cmd.Execute()
+	writer.Flush()
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 }

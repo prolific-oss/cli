@@ -1014,3 +1014,74 @@ func TestNewCreateCollectionCommandRequiresTaskSteps(t *testing.T) {
 		t.Fatalf("expected error to contain '%s', got '%s'", expected, err.Error())
 	}
 }
+
+func TestNewCreateCollectionCommandWithExclusiveOptionMultiSelect(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	tmpDir := t.TempDir()
+	templateFile := filepath.Join(tmpDir, "collection.json")
+	templateContent := fmt.Sprintf(`{
+  "workspace_id": "%s",
+  "name": "test-collection-exclusive",
+  "task_details": %s,
+  "collection_items": [
+    {
+      "order": 0,
+      "page_items": [
+        {
+          "order": 0,
+          "type": "multiple_choice",
+          "description": "Select all medications you are taking.",
+          "answer_limit": -1,
+          "options": [
+            {"label": "Aspirin", "value": "aspirin"},
+            {"label": "Ibuprofen", "value": "ibuprofen"},
+            {"label": "None of the above", "value": "none", "exclusive": true}
+          ]
+        }
+      ]
+    }
+  ]
+}`, testWorkspaceID, taskDetails)
+
+	err := os.WriteFile(templateFile, []byte(templateContent), 0600)
+	if err != nil {
+		t.Fatalf("failed to create temporary file: %s", err.Error())
+	}
+
+	response := client.CreateAITaskBuilderCollectionResponse{
+		ID:            "collection-exclusive-123",
+		Name:          "test-collection-exclusive",
+		WorkspaceID:   testWorkspaceID,
+		SchemaVersion: 1,
+		CreatedBy:     "user-456",
+		CollectionItems: []model.CollectionPage{
+			{
+				Order:     0,
+				PageItems: []model.CollectionPageItem{},
+			},
+		},
+	}
+
+	c.EXPECT().
+		CreateAITaskBuilderCollection(gomock.Any()).
+		Return(&response, nil)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := collection.NewCreateCollectionCommand(c, writer)
+	cmd.SetArgs([]string{"-t", templateFile})
+
+	err = cmd.Execute()
+	if err != nil {
+		t.Fatalf("expected no error; got %s", err.Error())
+	}
+
+	writer.Flush()
+	if !strings.Contains(b.String(), "Collection created successfully!") {
+		t.Fatalf("expected success message; got %s", b.String())
+	}
+}
