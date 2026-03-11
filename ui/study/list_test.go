@@ -14,7 +14,7 @@ import (
 )
 
 // testCredPoolID is a test fixture representing a credential pool ID in the format {workspace_id}_{uuid}
-const testCredPoolID = "679271425fe00981084a5f58_a856d700-c495-11f0-adce-338d4126f6e8" //nolint:gosec
+const testCredPoolID = "679271425fe00981084a5f58_a856d700-c495-11f0-adce-338d4126f6e8"
 
 func TestCsvRendererRendersInCsvFormat(t *testing.T) {
 	ctrl := gomock.NewController(t)

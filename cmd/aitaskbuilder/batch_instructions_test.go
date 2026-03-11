@@ -797,3 +797,157 @@ func TestNewBatchInstructionsCommandFreeTextWithUnitPrefixPosition(t *testing.T)
 		t.Fatalf("expected output to contain '%s'; got %s", expectedOutput, buf.String())
 	}
 }
+
+func TestNewBatchInstructionsCommandWithExclusiveOptionMultiSelect(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	batchID := "01954894-65b3-779e-aaf6-348698e12350"
+
+	response := client.CreateAITaskBuilderInstructionsResponse{
+		model.Instruction{
+			ID:          "inst-exc-1",
+			Type:        "multiple_choice",
+			BatchID:     batchID,
+			CreatedBy:   "Sean",
+			CreatedAt:   "2024-09-18T07:50:15.055Z",
+			Description: "Select all medications you are taking.",
+			Options: []model.InstructionOption{
+				{Label: "Aspirin", Value: "aspirin"},
+				{Label: "Ibuprofen", Value: "ibuprofen"},
+				{Label: "None of the above", Value: "none", Exclusive: true},
+			},
+		},
+	}
+
+	answerLimit := -1
+	instructions := client.CreateAITaskBuilderInstructionsPayload{
+		Instructions: []client.Instruction{
+			{
+				Type:        "multiple_choice",
+				CreatedBy:   "Sean",
+				Description: "Select all medications you are taking.",
+				AnswerLimit: &answerLimit,
+				Options: []client.InstructionOption{
+					{Label: "Aspirin", Value: "aspirin"},
+					{Label: "Ibuprofen", Value: "ibuprofen"},
+					{Label: "None of the above", Value: "none", Exclusive: true},
+				},
+			},
+		},
+	}
+
+	c.EXPECT().CreateAITaskBuilderInstructions(batchID, instructions).Return(&response, nil)
+
+	var buf bytes.Buffer
+	writer := bufio.NewWriter(&buf)
+
+	cmd := aitaskbuilder.NewBatchInstructionsCommand(c, writer)
+
+	instructionsJSON := `[{
+		"type": "multiple_choice",
+		"created_by": "Sean",
+		"description": "Select all medications you are taking.",
+		"answer_limit": -1,
+		"options": [
+			{"label": "Aspirin", "value": "aspirin"},
+			{"label": "Ibuprofen", "value": "ibuprofen"},
+			{"label": "None of the above", "value": "none", "exclusive": true}
+		]
+	}]`
+
+	cmd.SetArgs([]string{
+		"-b", batchID,
+		"-j", instructionsJSON,
+	})
+
+	err := cmd.Execute()
+	if err != nil {
+		t.Fatalf("expected no error; got %s", err.Error())
+	}
+
+	writer.Flush()
+
+	expectedOutput := "Successfully added 1 instruction(s) to batch " + batchID
+	if !strings.Contains(buf.String(), expectedOutput) {
+		t.Fatalf("expected output to contain '%s'; got %s", expectedOutput, buf.String())
+	}
+}
+
+func TestNewBatchInstructionsCommandExclusiveWithMultipleChoiceWithFreeText(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	batchID := "01954894-65b3-779e-aaf6-348698e12353"
+
+	response := client.CreateAITaskBuilderInstructionsResponse{
+		model.Instruction{
+			ID:          "inst-exc-2",
+			Type:        "multiple_choice_with_free_text",
+			BatchID:     batchID,
+			CreatedBy:   "Sean",
+			CreatedAt:   "2024-09-18T07:50:15.055Z",
+			Description: "Which symptoms do you have?",
+			Options: []model.InstructionOption{
+				{Label: "Headache", Value: "headache", Heading: "Describe your headache"},
+				{Label: "Fever", Value: "fever", Heading: "Describe your fever"},
+				{Label: "None of the above", Value: "none", Heading: "Any other comments", Exclusive: true},
+			},
+		},
+	}
+
+	answerLimit := -1
+	instructions := client.CreateAITaskBuilderInstructionsPayload{
+		Instructions: []client.Instruction{
+			{
+				Type:        "multiple_choice_with_free_text",
+				CreatedBy:   "Sean",
+				Description: "Which symptoms do you have?",
+				AnswerLimit: &answerLimit,
+				Options: []client.InstructionOption{
+					{Label: "Headache", Value: "headache", Heading: "Describe your headache"},
+					{Label: "Fever", Value: "fever", Heading: "Describe your fever"},
+					{Label: "None of the above", Value: "none", Heading: "Any other comments", Exclusive: true},
+				},
+			},
+		},
+	}
+
+	c.EXPECT().CreateAITaskBuilderInstructions(batchID, instructions).Return(&response, nil)
+
+	var buf bytes.Buffer
+	writer := bufio.NewWriter(&buf)
+
+	cmd := aitaskbuilder.NewBatchInstructionsCommand(c, writer)
+
+	instructionsJSON := `[{
+		"type": "multiple_choice_with_free_text",
+		"created_by": "Sean",
+		"description": "Which symptoms do you have?",
+		"answer_limit": -1,
+		"options": [
+			{"label": "Headache", "value": "headache", "heading": "Describe your headache"},
+			{"label": "Fever", "value": "fever", "heading": "Describe your fever"},
+			{"label": "None of the above", "value": "none", "heading": "Any other comments", "exclusive": true}
+		]
+	}]`
+
+	cmd.SetArgs([]string{
+		"-b", batchID,
+		"-j", instructionsJSON,
+	})
+
+	err := cmd.Execute()
+	if err != nil {
+		t.Fatalf("expected no error; got %s", err.Error())
+	}
+
+	writer.Flush()
+
+	expectedOutput := "Successfully added 1 instruction(s) to batch " + batchID
+	if !strings.Contains(buf.String(), expectedOutput) {
+		t.Fatalf("expected output to contain '%s'; got %s", expectedOutput, buf.String())
+	}
+}

@@ -7,6 +7,7 @@ GOOS ?=
 ARCH ?=
 OUT_PATH=$(BUILD_DIR)/$(NAME)-$(GOOS)-$(GOARCH)
 GIT_RELEASE ?= $(shell git rev-parse --short HEAD)
+VERSION = $(GIT_RELEASE:v%=%)
 
 .PHONY: explain
 explain:
@@ -38,6 +39,7 @@ clean: ## Clean build artifacts and dependencies
 .PHONY: install
 install: install-binary ## Install dependencies and the prolific binary
 	cp scripts/hooks/pre-commit .git/hooks/pre-commit
+	cp scripts/hooks/commit-msg .git/hooks/commit-msg
 	go install github.com/golang/mock/mockgen@master
 	go install github.com/securego/gosec/v2/cmd/gosec@latest
 	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
@@ -73,14 +75,14 @@ build: ## Build the application
 .PHONY: static
 static: ## Build the application
 	CGO_ENABLED=0 go build \
-		-ldflags "-extldflags -static -X github.com/$(GIT_ORG)/$(NAME)/version.GITCOMMIT=$(GIT_RELEASE)" \
+		-ldflags "-extldflags -static -X github.com/$(GIT_ORG)/cli/version.GITCOMMIT=$(VERSION)" \
 		-o $(NAME) ./cmd/prolific
 
 .PHONY: static-named
 static-named: ## Build the application with named outputs
 	GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 \
 		go build \
-		-ldflags "-extldflags -static -X github.com/$(GIT_ORG)/$(NAME)/version.GITCOMMIT=$(GIT_RELEASE)" \
+		-ldflags "-extldflags -static -X github.com/$(GIT_ORG)/cli/version.GITCOMMIT=$(VERSION)" \
 		-o $(OUT_PATH) ./cmd/prolific
 
 	md5sum $(OUT_PATH) > $(OUT_PATH).md5 || md5 $(OUT_PATH) > $(OUT_PATH).md5
@@ -104,6 +106,17 @@ all: clean install build test
 
 .PHONY: static-all ## Run everything
 static-all: clean install static test
+
+.PHONY: changelog
+changelog: ## Generate grouped changelog for a release (Usage: make changelog VERSION=0.0.61)
+	@if [ -z "$(VERSION)" ]; then echo "Usage: make changelog VERSION=0.0.61"; exit 1; fi
+	git cliff $$(git describe --tags --abbrev=0)..HEAD --tag v$(VERSION) --strip header --config cliff.toml -o CLIFF_NOTES.md
+	go run ./scripts/changelog transform --input CLIFF_NOTES.md --output CLIFF_NOTES.md
+	go run ./scripts/changelog extract --section next --strip-comments > MANUAL_NOTES.md
+	go run ./scripts/changelog merge --manual MANUAL_NOTES.md --generated CLIFF_NOTES.md --output RELEASE_NOTES.md
+	go run ./scripts/changelog update --version "$(VERSION)" --notes RELEASE_NOTES.md
+	@rm -f CLIFF_NOTES.md MANUAL_NOTES.md RELEASE_NOTES.md
+	@echo "CHANGELOG.md updated for v$(VERSION)"
 
 .PHONY: docker-build
 docker-build: ## Build the docker image

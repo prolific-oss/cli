@@ -52,11 +52,22 @@ const (
 	ContentBlockTypeImage    InstructionType = "image"
 )
 
+// ContentFormat represents the format of rich text content
+type ContentFormat string
+
+const (
+	// ContentFormatHTML means the content is HTML
+	ContentFormatHTML ContentFormat = "html"
+	// ContentFormatMarkdown means the content is Markdown, converted to HTML server-side
+	ContentFormatMarkdown ContentFormat = "markdown"
+)
+
 // MultipleChoiceOption represents an option for multiple choice instructions
 type MultipleChoiceOption struct {
-	Label   string `json:"label" yaml:"label" mapstructure:"label"`
-	Value   string `json:"value" yaml:"value" mapstructure:"value"`
-	Heading string `json:"heading,omitempty" yaml:"heading,omitempty" mapstructure:"heading"` // Required for multiple_choice_with_free_text
+	Label     string `json:"label" yaml:"label" mapstructure:"label"`
+	Value     string `json:"value" yaml:"value" mapstructure:"value"`
+	Heading   string `json:"heading,omitempty" yaml:"heading,omitempty" mapstructure:"heading"` // Required for multiple_choice_with_free_text
+	Exclusive bool   `json:"exclusive,omitempty" yaml:"exclusive,omitempty" mapstructure:"exclusive"`
 }
 
 // UnitOption represents a unit option for free_text_with_unit instructions
@@ -98,7 +109,8 @@ type PageInstruction struct {
 	MaxFileCount      *int     `json:"max_file_count,omitempty" yaml:"max_file_count,omitempty" mapstructure:"max_file_count"`
 
 	// Content block fields - for rich_text type
-	Content string `json:"content,omitempty" yaml:"content,omitempty" mapstructure:"content"`
+	Content       string        `json:"content,omitempty" yaml:"content,omitempty" mapstructure:"content"`
+	ContentFormat ContentFormat `json:"content_format,omitempty" yaml:"content_format,omitempty" mapstructure:"content_format"`
 
 	// Content block fields - for image type
 	URL     string `json:"url,omitempty" yaml:"url,omitempty" mapstructure:"url"`

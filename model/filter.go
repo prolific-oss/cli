@@ -2,13 +2,13 @@ package model
 
 // Filter holds information about the filter that makes up a filter set
 type Filter struct {
-	ID                string            `json:"id" mapstructure:"id"`
+	ID                string            `json:"id,omitempty" mapstructure:"id"`
 	FilterID          string            `json:"filter_id" mapstructure:"filter_id"`
-	FilterTitle       string            `json:"title" mapstructure:"title"`
-	FilterDescription string            `json:"description" mapstructure:"description"`
-	Question          string            `json:"question" mapstructure:"question"`
-	Type              string            `json:"type" mapstructure:"type"`
-	DataType          string            `json:"data_type" mapstructure:"data_type"`
+	FilterTitle       string            `json:"title,omitempty" mapstructure:"title"`
+	FilterDescription string            `json:"description,omitempty" mapstructure:"description"`
+	Question          string            `json:"question,omitempty" mapstructure:"question"`
+	Type              string            `json:"type,omitempty" mapstructure:"type"`
+	DataType          string            `json:"data_type,omitempty" mapstructure:"data_type"`
 	Min               any               `json:"min,omitempty" mapstructure:"min"`
 	Max               any               `json:"max,omitempty" mapstructure:"max"`
 	Choices           map[string]string `json:"choices,omitempty" mapstructure:"choices"`

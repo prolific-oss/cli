@@ -395,45 +395,69 @@ Templates support both JSON and YAML formats.
 
 ## Git Workflow
 
-### Pre-commit Hook
+### Git Hooks
 
-Located at `scripts/hooks/pre-commit`, automatically runs:
+Installed via `make install`. Hook scripts live in `scripts/hooks/`.
+
+#### Pre-commit (`scripts/hooks/pre-commit`)
+
+Automatically runs before each commit:
 
 1. `make lint` - Lints all Go code
 2. `make test` - Runs test suite
 3. `make lint-dockerfile` - Lints Dockerfile (if changed)
 
-Installed via `make install`.
+#### Commit-msg (`scripts/hooks/commit-msg`)
+
+Enforces [Conventional Commits](https://www.conventionalcommits.org/) format on commit messages:
+
+```
+<type>(<scope>): <description>
+```
+
+- **Types:** `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `ci`, `build`, `perf`, `style`, `revert`
+- **Scope** is optional (e.g. `fix: thing` and `fix(DCP-123): thing` are both valid)
+- Merge commits and fixup/squash prefixes are automatically skipped
 
 ### Branch and Release Strategy
 
 - Main branch: `main`
 - Clean status expected (no uncommitted changes)
-- Releases tagged with version numbers (e.g., `0.0.56`)
+- Releases tagged with version numbers (e.g., `v0.0.60`)
+
+#### Release flow
+
+1. Run `make changelog VERSION=0.0.60` to generate grouped release notes
+2. Create a PR with the updated `CHANGELOG.md`, get it reviewed, and merge to `main`
+3. Create a GitHub Release with a matching tag (e.g., `v0.0.60`), using the changelog entry as the release description
+4. The `release.yml` workflow builds and uploads binaries automatically
 
 ## Changelog Conventions
 
-From `.github/copilot-instructions.md:43-50`:
+Changelog entries are generated from conventional commits by [git-cliff](https://git-cliff.org/). The configuration lives in `cliff.toml`, and a Go tool in `scripts/changelog/` groups entries by subcommand area.
 
-When creating a release:
+### Manual release notes
 
-1. Use last git tag and summarize commits since
-2. Update `CHANGELOG.md` with new version
-3. Format:
-   - `## next` for unreleased changes
-   - `## x.y.z` for released versions
-   - Bullet points for changes
-   - **No dates** - just version numbers
-
-Example:
+To include hand-written notes in the next release, add them under the `## next` section in `CHANGELOG.md`:
 
 ```markdown
-## 0.0.56
+## next
 
-- Add Apache 2 License.
-- Add `aitaskbuilder` command to the root of the application.
-- Bump the project to Go 1.26.
+- My manual release note here
 ```
+
+At release time `make changelog` merges any `## next` content with the generated notes and resets the section.
+
+### What gets included
+
+Only user-facing commit types appear in the changelog:
+- `feat` → **Features**, `fix` → **Bug Fixes**, `docs` → **Documentation**, `perf` → **Performance**, `refactor` → **Refactoring**, `revert` → **Reverts**, `test` → **Testing**
+- `chore`, `ci`, `build`, `style` are **skipped** (internal housekeeping)
+
+### Format
+
+- `## x.y.z` for released versions (no dates)
+- Grouped by subcommand area with bold scope prefix
 
 ## CI/CD
 

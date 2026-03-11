@@ -2,7 +2,47 @@
 
 ## next
 
-- Bump Go version to 1.26.
+<!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
+
+## 0.0.61
+
+### Study
+
+- Add study update command with JSON template support
+
+### Collections
+
+- Add exclusive option field to multiple choice instructions
+- Extract shared exclusive options validation logic
+- Remove exclusive options validation from CLI
+
+## 0.0.60
+
+- Maintenance and dependency updates
+
+## 0.0.59
+
+### AI Task Builder
+
+- **Add `content_format` field for rich text:**
+  - Support `content_format` on collection rich text content blocks (e.g. `html`, `markdown`)
+  - Add typed `ContentFormat` constant and constants matching API (html/markdown)
+  - Collection create/update and examples (JSON/YAML) support the new field
+- **Create Collection study as draft:**
+  - Add `--draft` / `-d` flag to `aitaskbuilder collection publish` to create studies in draft/unpublished status without immediately publishing
+  - Reassign `-d` shorthand from `--description` to `--draft`; `--description` remains long-form only
+
+### Study Creation
+
+- **Fix filter serialization (DCP-2449):**
+  - Add `omitempty` to `Filter` struct fields so unused fields (title, description, question, type, data_type) are not sent as empty strings
+  - Enables direct filter configuration (e.g. custom_allowlist) in study creation requests without API rejection
+
+### Developer Experience
+
+- Bump Go version to 1.26 across the project (go.mod, CI, Docker)
+- Bump `slackapi/slack-github-action` from 2.0.0 to 2.1.1
+- Configure gosec in `.golangci.yml` for taint analysis false positives (G702–G705); add targeted nolint where needed
 
 ## 0.0.58
 
@@ -412,3 +452,4 @@ Initial release of the `prolific` application.
 - Ability to get your user account details.
 - Ability to list and filter studies.
 - Ability to render details about a study, and the submissions.
+

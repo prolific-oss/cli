@@ -59,9 +59,10 @@ type TaskDetails struct {
 
 // InstructionOption represents an option for multiple choice instructions.
 type InstructionOption struct {
-	Label   string `json:"label"`
-	Value   string `json:"value"`
-	Heading string `json:"heading,omitempty"`
+	Label     string `json:"label"`
+	Value     string `json:"value"`
+	Heading   string `json:"heading,omitempty"`
+	Exclusive bool   `json:"exclusive,omitempty"`
 }
 
 // UnitPosition represents the position of the unit relative to the text input.
@@ -204,7 +205,8 @@ type CollectionPageItem struct {
 	MaxFileCount      *int     `json:"max_file_count,omitempty" mapstructure:"max_file_count"`
 
 	// Content block fields (for rich_text)
-	Content string `json:"content,omitempty" mapstructure:"content"`
+	Content       string        `json:"content,omitempty" mapstructure:"content"`
+	ContentFormat ContentFormat `json:"content_format,omitempty" mapstructure:"content_format"`
 
 	// Content block fields (for image)
 	URL     string `json:"url,omitempty" mapstructure:"url"`

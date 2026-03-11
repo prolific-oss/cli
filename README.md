@@ -201,21 +201,30 @@ If any arguments are omitted, Claude will ask for them interactively.
 
 ## Release Process
 
-Releases are managed via GitHub Releases and automated CI/CD.
+Releases are managed via GitHub Releases with changelog generation powered by [git-cliff](https://git-cliff.org/).
 
-### 1. Update CHANGELOG.md
+### 1. Generate changelog
 
-Add your changes to the `CHANGELOG.md` file under a new version section (e.g., `## 0.0.58`).
+```bash
+make changelog VERSION=0.0.60
+```
 
-### 2. Create a GitHub Release
+This generates grouped release notes from conventional commits, merges any hand-written notes from the `## next` section of `CHANGELOG.md`, and updates the changelog file.
+
+### 2. Create a release PR
+
+Create a PR with the updated `CHANGELOG.md`, get it reviewed, and merge to `main`.
+
+### 3. Create a GitHub Release
 
 1. Go to [Releases](https://github.com/prolific-oss/cli/releases)
 2. Click "Draft a new release"
-3. Create a new tag matching the version (e.g., `v0.0.58`)
+3. Create a new tag matching the version (e.g., `v0.0.60`)
 4. Title the release with the version number
-5. Publish the release
+5. Copy the release notes from the new `CHANGELOG.md` entry into the release description
+6. Publish the release
 
-### 3. Automated Build
+### 4. Automated Build
 
 The release workflow automatically:
 
