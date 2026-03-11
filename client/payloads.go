@@ -23,6 +23,11 @@ type SendGroupMessagePayload struct {
 	StudyID            string `json:"study_id,omitempty"`
 }
 
+// RequestSubmissionReturnPayload represents the JSON payload for requesting a submission return.
+type RequestSubmissionReturnPayload struct {
+	Reasons []string `json:"request_return_reasons"`
+}
+
 // CreateAITaskBuilderDatasetPayload represents the request for creating a dataset
 type CreateAITaskBuilderDatasetPayload struct {
 	Name        string `json:"name"`

@@ -678,6 +678,21 @@ func (mr *MockAPIMockRecorder) PayBonusPayments(id interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PayBonusPayments", reflect.TypeOf((*MockAPI)(nil).PayBonusPayments), id)
 }
 
+// RequestSubmissionReturn mocks base method.
+func (m *MockAPI) RequestSubmissionReturn(ID string, reasons []string) (*client.RequestSubmissionReturnResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RequestSubmissionReturn", ID, reasons)
+	ret0, _ := ret[0].(*client.RequestSubmissionReturnResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RequestSubmissionReturn indicates an expected call of RequestSubmissionReturn.
+func (mr *MockAPIMockRecorder) RequestSubmissionReturn(ID, reasons interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RequestSubmissionReturn", reflect.TypeOf((*MockAPI)(nil).RequestSubmissionReturn), ID, reasons)
+}
+
 // SendGroupMessage mocks base method.
 func (m *MockAPI) SendGroupMessage(participantGroupID, body string, studyID *string) error {
 	m.ctrl.T.Helper()

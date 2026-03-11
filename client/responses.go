@@ -90,6 +90,14 @@ type ListFiltersResponse struct {
 	*JSONAPIMeta
 }
 
+// RequestSubmissionReturnResponse is the response for requesting a submission return.
+type RequestSubmissionReturnResponse struct {
+	ID              string  `json:"id"`
+	Status          string  `json:"status"`
+	Participant     string  `json:"participant"`
+	ReturnRequested *string `json:"return_requested"`
+}
+
 // TransitionStudyResponse is the response for transitioning a study to another status.
 type TransitionStudyResponse struct {
 	ID                      string   `json:"id"`

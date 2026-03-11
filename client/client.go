@@ -37,6 +37,7 @@ type API interface {
 	GetStudies(status, projectID string) (*ListStudiesResponse, error)
 	GetStudy(ID string) (*model.Study, error)
 	GetSubmissions(ID string, limit, offset int) (*ListSubmissionsResponse, error)
+	RequestSubmissionReturn(ID string, reasons []string) (*RequestSubmissionReturnResponse, error)
 	TransitionStudy(ID, action string) (*TransitionStudyResponse, error)
 	UpdateStudy(ID string, study any) (*model.Study, error)
 	GetStudyCredentialsUsageReportCSV(ID string) (string, error)
@@ -304,6 +305,23 @@ func (c *Client) GetSubmissions(ID string, limit, offset int) (*ListSubmissionsR
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// RequestSubmissionReturn requests a participant to return a submission.
+func (c *Client) RequestSubmissionReturn(ID string, reasons []string) (*RequestSubmissionReturnResponse, error) {
+	var response RequestSubmissionReturnResponse
+
+	payload := RequestSubmissionReturnPayload{
+		Reasons: reasons,
+	}
+
+	url := fmt.Sprintf("/api/v1/submissions/%s/request-return/", ID)
+	_, err := c.Execute(http.MethodPost, url, payload, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to request submission return: %s", err)
 	}
 
 	return &response, nil
