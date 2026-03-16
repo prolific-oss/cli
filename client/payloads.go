@@ -83,10 +83,18 @@ type InstructionOption struct {
 	Exclusive bool   `json:"exclusive,omitempty"`
 }
 
+// ValidationRule represents min/max validation for free_text and free_text_with_unit instructions.
+type ValidationRule struct {
+	Type string   `json:"type"`
+	Min  *float64 `json:"min"`
+	Max  *float64 `json:"max"`
+}
+
 // UnitOption represents a unit option for free_text_with_unit instructions
 type UnitOption struct {
-	Label string `json:"label"`
-	Value string `json:"value"`
+	Label      string          `json:"label"`
+	Value      string          `json:"value"`
+	Validation *ValidationRule `json:"validation,omitempty"`
 }
 
 // Instruction represents a single instruction in the request payload
@@ -101,6 +109,7 @@ type Instruction struct {
 	UnitPosition         string              `json:"unit_position,omitempty"`
 	HelperText           string              `json:"helper_text,omitempty"`
 	PlaceholderTextInput string              `json:"placeholder_text_input,omitempty"`
+	Validation           *ValidationRule     `json:"validation,omitempty"`
 	AcceptedFileTypes    []string            `json:"accepted_file_types,omitempty"`
 	MaxFileSizeMB        *float64            `json:"max_file_size_mb,omitempty"`
 	MinFileCount         *int                `json:"min_file_count,omitempty"`

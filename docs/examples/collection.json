@@ -19,7 +19,12 @@
         {
           "order": 1,
           "type": "free_text",
-          "description": "How was your experience completing this task?"
+          "description": "How was your experience completing this task?",
+          "validation": {
+            "type": "string",
+            "min": 10,
+            "max": 500
+          }
         },
         {
           "order": 2,
@@ -46,11 +51,13 @@
           "unit_options": [
             {
               "label": "KG",
-              "value": "kg"
+              "value": "kg",
+              "validation": { "type": "number", "min": 20, "max": 300 }
             },
             {
               "label": "Pounds",
-              "value": "lbs"
+              "value": "lbs",
+              "validation": { "type": "number", "min": 44, "max": 660 }
             }
           ],
           "default_unit": "kg",

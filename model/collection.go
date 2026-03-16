@@ -70,10 +70,18 @@ type MultipleChoiceOption struct {
 	Exclusive bool   `json:"exclusive,omitempty" yaml:"exclusive,omitempty" mapstructure:"exclusive"`
 }
 
+// ValidationRule represents min/max validation for free_text and free_text_with_unit instructions.
+type ValidationRule struct {
+	Type string   `json:"type" yaml:"type" mapstructure:"type"`
+	Min  *float64 `json:"min" yaml:"min" mapstructure:"min"`
+	Max  *float64 `json:"max" yaml:"max" mapstructure:"max"`
+}
+
 // UnitOption represents a unit option for free_text_with_unit instructions
 type UnitOption struct {
-	Label string `json:"label" yaml:"label" mapstructure:"label"`
-	Value string `json:"value" yaml:"value" mapstructure:"value"`
+	Label      string          `json:"label" yaml:"label" mapstructure:"label"`
+	Value      string          `json:"value" yaml:"value" mapstructure:"value"`
+	Validation *ValidationRule `json:"validation,omitempty" yaml:"validation,omitempty" mapstructure:"validation"`
 }
 
 // PageInstruction represents a single page item within a collection page.
@@ -89,8 +97,9 @@ type PageInstruction struct {
 	Description string `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description"`
 
 	// Optional - for free_text and free_text_with_unit types
-	PlaceholderTextInput string `json:"placeholder_text_input,omitempty" yaml:"placeholder_text_input,omitempty" mapstructure:"placeholder_text_input"`
-	HelperText           string `json:"helper_text,omitempty" yaml:"helper_text,omitempty" mapstructure:"helper_text"`
+	PlaceholderTextInput string          `json:"placeholder_text_input,omitempty" yaml:"placeholder_text_input,omitempty" mapstructure:"placeholder_text_input"`
+	HelperText           string          `json:"helper_text,omitempty" yaml:"helper_text,omitempty" mapstructure:"helper_text"`
+	Validation           *ValidationRule `json:"validation,omitempty" yaml:"validation,omitempty" mapstructure:"validation"`
 
 	// Optional - for multiple_choice and multiple_choice_with_free_text types
 	AnswerLimit     int                    `json:"answer_limit,omitempty" yaml:"answer_limit,omitempty" mapstructure:"answer_limit"`
