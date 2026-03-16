@@ -3,7 +3,12 @@
     "type": "free_text",
     "created_by": "Sean",
     "description": "Please explain your reasoning for the choice you made above.",
-    "placeholder_text_input": "Enter your explanation here..."
+    "placeholder_text_input": "Enter your explanation here...",
+    "validation": {
+      "type": "string",
+      "min": 10,
+      "max": 500
+    }
   },
   {
     "type": "multiple_choice",
@@ -82,11 +87,13 @@
     "unit_options": [
       {
         "label": "°C",
-        "value": "celsius"
+        "value": "celsius",
+        "validation": { "type": "number", "min": 30, "max": 45 }
       },
       {
         "label": "°F",
-        "value": "fahrenheit"
+        "value": "fahrenheit",
+        "validation": { "type": "number", "min": 86, "max": 113 }
       }
     ],
     "default_unit": "celsius",

@@ -89,6 +89,7 @@ type Instruction struct {
 	UnitPosition         UnitPosition        `json:"unit_position,omitempty"`
 	HelperText           string              `json:"helper_text,omitempty"`
 	PlaceholderTextInput string              `json:"placeholder_text_input,omitempty"`
+	Validation           *ValidationRule     `json:"validation,omitempty"`
 	AcceptedFileTypes    []string            `json:"accepted_file_types,omitempty"`
 	MaxFileSizeMB        *float64            `json:"max_file_size_mb,omitempty"`
 	MinFileCount         *int                `json:"min_file_count,omitempty"`
@@ -192,6 +193,7 @@ type CollectionPageItem struct {
 	PlaceholderTextInput string              `json:"placeholder_text_input,omitempty" mapstructure:"placeholder_text_input"`
 	DisableDropdown      *bool               `json:"disable_dropdown,omitempty" mapstructure:"disable_dropdown"`
 	HelperText           string              `json:"helper_text,omitempty" mapstructure:"helper_text"`
+	Validation           *ValidationRule     `json:"validation,omitempty" mapstructure:"validation"`
 
 	// Unit fields (for free_text_with_unit)
 	UnitOptions  []UnitOption `json:"unit_options,omitempty" mapstructure:"unit_options"`
