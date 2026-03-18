@@ -67,32 +67,19 @@ List commands use a strategy pattern with multiple renderers:
 
 List commands **must** support the `-n` (non-interactive) flag for scripting.
 
-## Testing
-
-All tests use gomock with `mock_client.NewMockAPI`. Prefer table-driven tests.
+## Testing Pattern
 
 ```go
-func TestCommand(t *testing.T) {
-    ctrl := gomock.NewController(t)
-    defer ctrl.Finish()
-    c := mock_client.NewMockAPI(ctrl)
+ctrl := gomock.NewController(t)
+defer ctrl.Finish()
+c := mock_client.NewMockAPI(ctrl)
+c.EXPECT().Method().Return(response, nil)
 
-    c.EXPECT().GetWorkspaces(
-        client.DefaultRecordLimit,
-        client.DefaultRecordOffset,
-    ).Return(&response, nil).AnyTimes()
-
-    var b bytes.Buffer
-    writer := bufio.NewWriter(&b)
-
-    cmd := workspace.NewListCommand("workspaces", c, writer)
-    _ = cmd.RunE(cmd, nil)
-
-    writer.Flush() // CRITICAL: must flush before assertions
-
-    actual := b.String()
-    // assertions against actual
-}
+var b bytes.Buffer
+w := bufio.NewWriter(&b)
+cmd := NewCommand(c, w)
+_ = cmd.RunE(cmd, nil)
+w.Flush()  // Required before assertions
 ```
 
 ## Code Style & Linting
@@ -159,6 +146,9 @@ Reference `cmd/study/` or `cmd/workspace/` for complete examples.
 
 ## Reference
 
-- `DEVELOPMENT.md` — comprehensive development guide with full directory structure, UI rendering helpers, study templates, and CI/CD workflows
-- `.github/copilot-instructions.md` — GitHub Copilot-specific instructions
-- `docs/examples/` — study template examples (JSON/YAML)
+Read `DEVELOPMENT.md` when implementing new commands or debugging test patterns. It covers:
+
+- Full directory structure and file naming
+- UI rendering helpers (`ui/ui.go`)
+- Study templates (`docs/examples/`)
+- CI/CD workflows
