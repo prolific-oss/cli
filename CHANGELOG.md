@@ -4,6 +4,13 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+## 0.0.62
+
+### Core
+
+- Add submission request-return command
+- Add min/max validation for free_text and free_text_with_unit instructions
+
 ## 0.0.61
 
 ### Study
