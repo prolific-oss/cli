@@ -1,6 +1,6 @@
 # Prolific CLI
 
-Go CLI for the Prolific research platform — used by researchers to manage studies, participants, and data collection via the Prolific API. Module: `github.com/prolific-oss/cli`. Binary: `prolific`. Go 1.26.
+Go CLI for the Prolific research platform — used by researchers to manage studies, participants, and data collection via the Prolific API. Module: `github.com/prolific-oss/cli`. Binary: `prolific`.
 
 **Stack**: Cobra (CLI framework), Bubbletea (TUI), Viper (configuration).
 
