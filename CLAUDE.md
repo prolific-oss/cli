@@ -28,23 +28,11 @@ make all            # Full workflow: clean, install, build, test
 
 ## Architecture
 
-```
-cmd/                 Cobra commands (one package per API resource, e.g. study/, workspace/, project/)
-  ├── {resource}/    Each resource gets its own package with {action}.go files
-  ├── shared/        Shared command utilities
-  └── root.go        Main CLI initialization and command registration
-client/              API interface and HTTP client
-  ├── client.go      API interface (50+ methods)
-  ├── payloads.go    Request payload structs
-  └── responses.go   Response types
-model/               Domain models (one package per entity)
-ui/                  Rendering layer
-  ├── ui.go          Common helpers (headings, money, dates, counters)
-  └── {resource}/    Per-resource renderers
-mock_client/         Generated mocks (do not edit manually)
-version/             Build-time version info
-docs/examples/       Study templates (JSON/YAML)
-```
+- `cmd/` - Cobra commands (one package per resource)
+- `client/client.go` - API interface and HTTP client
+- `model/` - Domain models
+- `ui/` - Rendering (interactive/non-interactive/CSV)
+- `mock_client/` - Generated mocks
 
 ## Code Patterns
 
