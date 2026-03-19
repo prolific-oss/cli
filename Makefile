@@ -110,7 +110,12 @@ static-all: clean install static test
 .PHONY: changelog
 changelog: ## Generate grouped changelog for a release (Usage: make changelog VERSION=0.0.61)
 	@if [ -z "$(VERSION)" ]; then echo "Usage: make changelog VERSION=0.0.61"; exit 1; fi
-	git cliff $$(git describe --tags --abbrev=0)..HEAD --tag v$(VERSION) --strip header --config cliff.toml -o CLIFF_NOTES.md
+	@command -v git-cliff >/dev/null 2>&1 || { \
+ 		echo "Error: git-cliff is required to generate the changelog but was not found in PATH."; \
+ 		echo "Please install git-cliff (run `brew install git-cliff` or see https://git-cliff.org/docs/installation/) and try again."; \
+ 		exit 1; \
+ 	}
+	git-cliff $$(git describe --tags --abbrev=0)..HEAD --tag v$(VERSION) --strip header --config cliff.toml -o CLIFF_NOTES.md
 	go run ./scripts/changelog transform --input CLIFF_NOTES.md --output CLIFF_NOTES.md
 	go run ./scripts/changelog extract --section next --strip-comments > MANUAL_NOTES.md
 	go run ./scripts/changelog merge --manual MANUAL_NOTES.md --generated CLIFF_NOTES.md --output RELEASE_NOTES.md
