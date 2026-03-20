@@ -184,6 +184,7 @@ Config file: `$HOME/.config/prolific-oss/prolific.yaml`
 
 ## Related Documentation
 
+- `CONTRIBUTING.md` — Contributor guidelines and PR process
 - `DEVELOPMENT.md` — comprehensive development guide
 - `CLAUDE.md` — Claude Code-specific instructions
 - `.github/copilot-instructions.md` — GitHub Copilot instructions

@@ -199,6 +199,10 @@ If any arguments are omitted, Claude will ask for them interactively.
 3. Implements model, client, command, UI renderers, mocks, and tests
 4. Verifies with `make test` and `make lint`
 
+## Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on how to get started.
+
 ## Release Process
 
 Releases are managed via GitHub Releases with changelog generation powered by [git-cliff](https://git-cliff.org/).
