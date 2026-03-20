@@ -6,7 +6,7 @@ Welcome! The Prolific CLI is an open source command-line tool for the [Prolific]
 
 - [Code of Conduct](#code-of-conduct)
 - [Ways to Contribute](#ways-to-contribute)
-- [Questions & Discussions](#questions--discussions)
+- [Questions](#questions)
 - [Discuss Before You Code](#discuss-before-you-code)
 - [Reporting Bugs](#reporting-bugs)
 - [Suggesting Features](#suggesting-features)
@@ -35,9 +35,9 @@ There are many ways to help:
 
 If you're new to open source, we're happy to mentor you through your first contribution. Just mention it in your issue or PR and we'll provide extra guidance.
 
-## Questions & Discussions
+## Questions
 
-Use [GitHub Discussions](https://github.com/prolific-oss/cli/discussions) for questions, ideas, and general conversation. Keep [Issues](https://github.com/prolific-oss/cli/issues) for bug reports and feature requests.
+Use [GitHub Issues](https://github.com/prolific-oss/cli/issues) for questions, bug reports, and feature requests.
 
 ## Discuss Before You Code
 
@@ -57,7 +57,7 @@ The more detail you provide, the faster we can help.
 
 ## Suggesting Features
 
-[Open an issue](https://github.com/prolific-oss/cli/issues/new) to suggest features (issue templates coming soon). Describe your use case, reference existing commands or API endpoints where relevant, and wait for discussion before opening a PR.
+[Open an issue](https://github.com/prolific-oss/cli/issues/new) to suggest features (issue templates coming soon). Describe your use case, reference existing commands or API endpoints where relevant, and wait for feedback before opening a PR.
 
 ## Your First Contribution
 
