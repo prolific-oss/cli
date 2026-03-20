@@ -59,6 +59,8 @@ type API interface {
 	GetWorkspaces(limit, offset int) (*ListWorkspacesResponse, error)
 	CreateWorkspace(workspace model.Workspace) (*CreateWorkspacesResponse, error)
 
+	CreateInvitation(invitation model.CreateInvitation) (*CreateInvitationResponse, error)
+
 	GetProjects(workspaceID string, limit, offset int) (*ListProjectsResponse, error)
 	CreateProject(workspaceID string, project model.Project) (*CreateProjectResponse, error)
 	GetProject(ID string) (*model.Project, error)
@@ -525,6 +527,24 @@ func (c *Client) CreateWorkspace(workspace model.Workspace) (*CreateWorkspacesRe
 	if httpResponse.StatusCode != http.StatusCreated {
 		body, _ := io.ReadAll(httpResponse.Body)
 		return nil, fmt.Errorf("unable to create workspace: %v", string(body))
+	}
+
+	return &response, nil
+}
+
+// CreateInvitation will create invitations for the given email addresses
+func (c *Client) CreateInvitation(invitation model.CreateInvitation) (*CreateInvitationResponse, error) {
+	var response CreateInvitationResponse
+
+	url := "/api/v1/invitations/"
+	httpResponse, err := c.Execute(http.MethodPost, url, invitation, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unable to create invitation: %v", string(body))
 	}
 
 	return &response, nil

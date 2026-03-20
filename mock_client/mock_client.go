@@ -139,6 +139,21 @@ func (mr *MockAPIMockRecorder) CreateCredentialPool(credentials, workspaceID int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCredentialPool", reflect.TypeOf((*MockAPI)(nil).CreateCredentialPool), credentials, workspaceID)
 }
 
+// CreateInvitation mocks base method.
+func (m *MockAPI) CreateInvitation(invitation model.CreateInvitation) (*client.CreateInvitationResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateInvitation", invitation)
+	ret0, _ := ret[0].(*client.CreateInvitationResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateInvitation indicates an expected call of CreateInvitation.
+func (mr *MockAPIMockRecorder) CreateInvitation(invitation interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateInvitation", reflect.TypeOf((*MockAPI)(nil).CreateInvitation), invitation)
+}
+
 // CreateProject mocks base method.
 func (m *MockAPI) CreateProject(workspaceID string, project model.Project) (*client.CreateProjectResponse, error) {
 	m.ctrl.T.Helper()
