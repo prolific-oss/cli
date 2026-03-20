@@ -9,6 +9,8 @@
 - **API Client**: Custom HTTP client in `client/client.go`
 - **License**: Apache 2.0
 
+> **New contributor?** Start with [CONTRIBUTING.md](CONTRIBUTING.md) for an overview of how to contribute, then return here for detailed development guidance.
+
 ## Prerequisites & Setup
 
 ### Installing Go
