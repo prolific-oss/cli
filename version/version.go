@@ -18,20 +18,17 @@ func Get() string {
 		return GITCOMMIT
 	}
 	if info, ok := debug.ReadBuildInfo(); ok {
-		if v := versionFromBuildInfo(info); v != "" {
-			return v
+		if version := versionFromBuildInfo(info); version != "" {
+			return version
 		}
 	}
 	return GITCOMMIT
 }
 
-// versionFromBuildInfo extracts a clean release version from build info,
-// stripping the v prefix to match the ldflags convention. Returns empty string
-// for pseudo-versions (vX.Y.Z-TIMESTAMP-HASH), "(devel)", or empty values.
 func versionFromBuildInfo(info *debug.BuildInfo) string {
-	v := strings.TrimPrefix(info.Main.Version, "v")
-	if v == "" || v == "(devel)" || strings.Contains(v, "-") {
+	version := strings.TrimPrefix(info.Main.Version, "v")
+	if version == "" || version == "(devel)" || strings.Contains(version, "-") {
 		return ""
 	}
-	return v
+	return version
 }
