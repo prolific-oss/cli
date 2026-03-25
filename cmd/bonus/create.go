@@ -127,7 +127,7 @@ func renderInteractiveOutput(resp *client.CreateBonusPaymentsResponse, csvBonuse
 	fmt.Fprintf(tw, "%s\t%s\n", "───────────", "──────")
 
 	// Echo per-participant breakdown from input data
-	for _, line := range strings.Split(csvBonuses, "\n") {
+	for line := range strings.SplitSeq(csvBonuses, "\n") {
 		if line == "" {
 			continue
 		}

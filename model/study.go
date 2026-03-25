@@ -148,11 +148,11 @@ type CreateStudy struct {
 	// Data collection ID: Project/collection/batch ID for data collection
 	DataCollectionID string `json:"data_collection_id,omitempty" mapstructure:"data_collection_id"`
 	// Data collection metadata: Configuration parameters (optional dict)
-	DataCollectionMetadata map[string]interface{} `json:"data_collection_metadata,omitempty" mapstructure:"data_collection_metadata"`
+	DataCollectionMetadata map[string]any `json:"data_collection_metadata,omitempty" mapstructure:"data_collection_metadata"`
 	SubmissionsConfig      struct {
 		MaxSubmissionsPerParticipant int `json:"max_submissions_per_participant,omitempty" mapstructure:"max_submissions_per_participant"`
 		MaxConcurrentSubmissions     int `json:"max_concurrent_submissions,omitempty" mapstructure:"max_concurrent_submissions"`
-	} `json:"submissions_config,omitempty" mapstructure:"submissions_config"`
+	} `json:"submissions_config" mapstructure:"submissions_config"`
 	EligibilityRequirements []struct {
 		Attributes []struct {
 			ID    string `json:"id" mapstructure:"id"`
@@ -171,9 +171,9 @@ type CreateStudy struct {
 
 // CompletionCode represents a study completion code with its type and actions.
 type CompletionCode struct {
-	Code     string                   `json:"code" mapstructure:"code"`
-	CodeType string                   `json:"code_type" mapstructure:"code_type"`
-	Actions  []map[string]interface{} `json:"actions" mapstructure:"actions"`
+	Code     string           `json:"code" mapstructure:"code"`
+	CodeType string           `json:"code_type" mapstructure:"code_type"`
+	Actions  []map[string]any `json:"actions" mapstructure:"actions"`
 }
 
 // UpdateStudy represents the model we will send back to Prolific to update

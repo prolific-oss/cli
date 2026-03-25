@@ -10,7 +10,7 @@ type Requirement struct {
 	ID              string                 `json:"id"`
 	Type            string                 `json:"type"`
 	Attributes      []RequirementAttribute `json:"attributes,omitempty"`
-	Query           RequirementQuestion    `json:"query,omitempty"`
+	Query           RequirementQuestion    `json:"query"`
 	Cls             string                 `json:"_cls"`
 	Category        string                 `json:"category"`
 	Subcategory     any                    `json:"subcategory"`

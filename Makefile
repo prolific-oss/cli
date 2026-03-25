@@ -55,6 +55,10 @@ format: ## Format all Go code
 	gofmt -w .
 	goimports -w .
 
+.PHONY: fix
+fix: ## Auto-migrate to modern Go syntax
+	go fix ./...
+
 .PHONY: format-changed
 format-changed: ## Format only changed Go files
 	@git diff --name-only HEAD | grep '\.go$$' | xargs -r gofmt -w

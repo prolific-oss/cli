@@ -2,6 +2,7 @@ package study
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -95,12 +96,12 @@ func RenderStudy(study model.Study) string {
 	content += fmt.Sprintln(ui.RenderHeading("Filters"))
 
 	filterCount := 0
-	filterContent := ""
+	var filterContent strings.Builder
 	for _, filter := range study.Filters {
-		filterContent += fmt.Sprintf("\n%s\n", filter.FilterID)
+		filterContent.WriteString(fmt.Sprintf("\n%s\n", filter.FilterID))
 
 		for _, value := range filter.SelectedValues {
-			filterContent += fmt.Sprintf("- %s\n", value)
+			filterContent.WriteString(fmt.Sprintf("- %s\n", value))
 		}
 		filterCount++
 	}
@@ -108,7 +109,7 @@ func RenderStudy(study model.Study) string {
 	if filterCount == 0 {
 		content += fmt.Sprintln("No filters are defined for this study.")
 	} else {
-		content += filterContent
+		content += filterContent.String()
 	}
 
 	content += ui.RenderApplicationLink("study", GetStudyPath(study.ID))

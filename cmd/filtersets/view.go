@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/pkg/browser"
 	"github.com/prolific-oss/cli/client"
@@ -68,52 +69,53 @@ func renderProject(client client.API, opts ViewOptions, w io.Writer) error {
 		return browser.OpenURL(GetFilterSetURL(filterSet.WorkspaceID, opts.Args[0]))
 	}
 
-	content := fmt.Sprintln(ui.RenderHeading(filterSet.Name))
+	var content strings.Builder
+	content.WriteString(fmt.Sprintln(ui.RenderHeading(filterSet.Name)))
 
-	content += "\n"
-	content += fmt.Sprintf("Organisation:               %v\n", filterSet.OrganisationID)
-	content += fmt.Sprintf("Workspace:                  %v\n", filterSet.WorkspaceID)
-	content += fmt.Sprintf("Version:                    %v\n", filterSet.Version)
-	content += fmt.Sprintf("Eligible participant count: %v\n", filterSet.EligibleParticipantCount)
-	content += fmt.Sprintf("Locked:                     %v\n", filterSet.IsLocked)
-	content += fmt.Sprintf("Deleted:                    %v\n", filterSet.IsDeleted)
+	content.WriteString("\n")
+	content.WriteString(fmt.Sprintf("Organisation:               %v\n", filterSet.OrganisationID))
+	content.WriteString(fmt.Sprintf("Workspace:                  %v\n", filterSet.WorkspaceID))
+	content.WriteString(fmt.Sprintf("Version:                    %v\n", filterSet.Version))
+	content.WriteString(fmt.Sprintf("Eligible participant count: %v\n", filterSet.EligibleParticipantCount))
+	content.WriteString(fmt.Sprintf("Locked:                     %v\n", filterSet.IsLocked))
+	content.WriteString(fmt.Sprintf("Deleted:                    %v\n", filterSet.IsDeleted))
 
-	content += ui.RenderSectionMarker()
+	content.WriteString(ui.RenderSectionMarker())
 
 	filterLength := len(filterSet.Filters)
 	for _, filter := range filterSet.Filters {
 		filterLength--
-		content += fmt.Sprintf("Filter ID: %v", filter.FilterID)
+		content.WriteString(fmt.Sprintf("Filter ID: %v", filter.FilterID))
 
 		if len(filter.SelectedValues) > 0 {
-			content += "\nSelected values:"
+			content.WriteString("\nSelected values:")
 			for _, value := range filter.SelectedValues {
-				content += fmt.Sprintf("\n- %v", value)
+				content.WriteString(fmt.Sprintf("\n- %v", value))
 			}
 		}
 
 		if filter.SelectedRange.Lower != nil || filter.SelectedRange.Upper != nil {
-			content += "\nSelected range:"
+			content.WriteString("\nSelected range:")
 
 			if filter.SelectedRange.Upper != nil {
-				content += fmt.Sprintf("\n- Upper: %v", filter.SelectedRange.Upper)
+				content.WriteString(fmt.Sprintf("\n- Upper: %v", filter.SelectedRange.Upper))
 			}
 
 			if filter.SelectedRange.Lower != nil {
-				content += fmt.Sprintf("\n- Lower: %v", filter.SelectedRange.Lower)
+				content.WriteString(fmt.Sprintf("\n- Lower: %v", filter.SelectedRange.Lower))
 			}
 		}
 
 		if filterLength > 0 {
-			content += "\n\n"
+			content.WriteString("\n\n")
 		}
 	}
 
 	if len(filterSet.Filters) == 0 {
-		content += "No filters"
+		content.WriteString("No filters")
 	}
 
-	fmt.Fprintln(w, content)
+	fmt.Fprintln(w, content.String())
 	fmt.Fprintln(w, ui.RenderApplicationLink("filter set", GetFilterSetPath(filterSet.WorkspaceID, filterSet.ID)))
 
 	return nil
