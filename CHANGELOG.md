@@ -4,6 +4,10 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+## 0.0.63
+
+- Maintenance and dependency updates
+
 ## 0.0.62
 
 ### Core
@@ -459,4 +463,3 @@ Initial release of the `prolific` application.
 - Ability to get your user account details.
 - Ability to list and filter studies.
 - Ability to render details about a study, and the submissions.
-
