@@ -53,6 +53,9 @@ linters:
       - linters: [gosec]
         text: "G70[35]"
         path: 'scripts/changelog/'
+      # QF1012 Use fmt.Fprintf(...) clashes with go fix patterns
+      - linters: [staticcheck]
+        text: "QF1012"
     paths:
       - third_party$
       - builtin$
