@@ -2,6 +2,7 @@ package requirement
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -60,33 +61,34 @@ func (lv ListView) View() string {
 
 // RenderRequirement will provide a more indepth view of the requirement.
 func RenderRequirement(req model.Requirement) string {
-	content := fmt.Sprintln(ui.RenderHeading(req.Title()))
+	var content strings.Builder
+	content.WriteString(fmt.Sprintln(ui.RenderHeading(req.Title())))
 
-	content += fmt.Sprintf("ID:                 %s\n", req.ID)
-	content += fmt.Sprintf("CLS (_cls):         %s\n", req.Cls)
-	content += fmt.Sprintf("Category:           %s\n", req.Category)
+	content.WriteString(fmt.Sprintf("ID:                 %s\n", req.ID))
+	content.WriteString(fmt.Sprintf("CLS (_cls):         %s\n", req.Cls))
+	content.WriteString(fmt.Sprintf("Category:           %s\n", req.Category))
 	if req.Subcategory != nil {
-		content += fmt.Sprintf("Subcategory:        %s\n", req.Subcategory)
+		content.WriteString(fmt.Sprintf("Subcategory:        %s\n", req.Subcategory))
 	}
 
-	content += ui.RenderSectionMarker()
+	content.WriteString(ui.RenderSectionMarker())
 
-	content += fmt.Sprintln(ui.RenderHeading("Query"))
-	content += fmt.Sprintf("ID:                 %s\n", req.Query.ID)
-	content += fmt.Sprintf("Question:           %s\n", req.Query.Question)
-	content += fmt.Sprintf("Title:              %s\n", req.Query.Title)
-	content += fmt.Sprintf("Description:        %s\n", req.Query.Description)
+	content.WriteString(fmt.Sprintln(ui.RenderHeading("Query")))
+	content.WriteString(fmt.Sprintf("ID:                 %s\n", req.Query.ID))
+	content.WriteString(fmt.Sprintf("Question:           %s\n", req.Query.Question))
+	content.WriteString(fmt.Sprintf("Title:              %s\n", req.Query.Title))
+	content.WriteString(fmt.Sprintf("Description:        %s\n", req.Query.Description))
 
-	content += ui.RenderSectionMarker()
+	content.WriteString(ui.RenderSectionMarker())
 
-	content += fmt.Sprintln(ui.RenderHeading("Attributes"))
+	content.WriteString(fmt.Sprintln(ui.RenderHeading("Attributes")))
 	for _, attribute := range req.Attributes {
-		content += fmt.Sprintf("Name:               %v\n", attribute.Name)
-		content += fmt.Sprintf("Label:              %v\n", attribute.Label)
-		content += fmt.Sprintf("Index:              %v\n", attribute.Index)
-		content += fmt.Sprintf("Value:              %v\n", attribute.Value)
-		content += "\n"
+		content.WriteString(fmt.Sprintf("Name:               %v\n", attribute.Name))
+		content.WriteString(fmt.Sprintf("Label:              %v\n", attribute.Label))
+		content.WriteString(fmt.Sprintf("Index:              %v\n", attribute.Index))
+		content.WriteString(fmt.Sprintf("Value:              %v\n", attribute.Value))
+		content.WriteString("\n")
 	}
 
-	return fmt.Sprintln(content)
+	return fmt.Sprintln(content.String())
 }

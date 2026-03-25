@@ -3,6 +3,7 @@ package filter
 import (
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -61,20 +62,21 @@ func (lv ListView) View() string {
 
 // RenderFilter will provide a more indepth view of the filter.
 func RenderFilter(filter model.Filter) string {
-	content := fmt.Sprintln(ui.RenderHeading(filter.Title()))
+	var content strings.Builder
+	content.WriteString(fmt.Sprintln(ui.RenderHeading(filter.Title())))
 
-	content += fmt.Sprintf("ID:                %s\n", filter.FilterID)
-	content += fmt.Sprintf("Filter ID:         %s\n", filter.FilterID)
-	content += fmt.Sprintf("Title:             %s\n", filter.Title())
-	content += fmt.Sprintf("Question:          %s\n", filter.Question)
-	content += fmt.Sprintf("Description:       %s\n", filter.Description())
-	content += fmt.Sprintf("Type:              %s\n", filter.Type)
-	content += fmt.Sprintf("Data Type:         %s\n", filter.DataType)
-	content += fmt.Sprintf("Min:               %v\n", filter.Min)
-	content += fmt.Sprintf("Max:               %v\n", filter.Max)
+	content.WriteString(fmt.Sprintf("ID:                %s\n", filter.FilterID))
+	content.WriteString(fmt.Sprintf("Filter ID:         %s\n", filter.FilterID))
+	content.WriteString(fmt.Sprintf("Title:             %s\n", filter.Title()))
+	content.WriteString(fmt.Sprintf("Question:          %s\n", filter.Question))
+	content.WriteString(fmt.Sprintf("Description:       %s\n", filter.Description()))
+	content.WriteString(fmt.Sprintf("Type:              %s\n", filter.Type))
+	content.WriteString(fmt.Sprintf("Data Type:         %s\n", filter.DataType))
+	content.WriteString(fmt.Sprintf("Min:               %v\n", filter.Min))
+	content.WriteString(fmt.Sprintf("Max:               %v\n", filter.Max))
 
 	if len(filter.Choices) > 0 {
-		content += "Choices:\n"
+		content.WriteString("Choices:\n")
 
 		// Ensure ordering
 		keys := make([]string, 0, len(filter.Choices))
@@ -84,9 +86,9 @@ func RenderFilter(filter model.Filter) string {
 		sort.Strings(keys)
 
 		for _, k := range keys {
-			content += fmt.Sprintf("  %s: %s\n", k, filter.Choices[k])
+			content.WriteString(fmt.Sprintf("  %s: %s\n", k, filter.Choices[k]))
 		}
 	}
 
-	return fmt.Sprintln(content)
+	return fmt.Sprintln(content.String())
 }

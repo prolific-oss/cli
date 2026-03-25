@@ -343,7 +343,7 @@ func gitDiffTree(hash string) ([]string, error) {
 		return nil, fmt.Errorf("git diff-tree %s: %w", hash, err)
 	}
 	var files []string
-	for _, line := range strings.Split(strings.TrimSpace(string(out)), "\n") {
+	for line := range strings.SplitSeq(strings.TrimSpace(string(out)), "\n") {
 		if line != "" {
 			files = append(files, line)
 		}
@@ -382,7 +382,7 @@ func TransformChangelog(input string, diffTreeFn func(string) ([]string, error))
 	}
 	grouped := make(map[string][]entry)
 
-	for _, line := range strings.Split(input, "\n") {
+	for line := range strings.SplitSeq(input, "\n") {
 		parsed, ok := ParseMarkerLine(line)
 		if !ok {
 			continue
