@@ -6,23 +6,23 @@ import (
 	"strings"
 )
 
-// GITCOMMIT is injected at build time via -ldflags (e.g. "0.0.62").
+// Version is injected at build time via -ldflags (e.g. "0.0.62").
 // Defaults to "dev" when not set.
-var GITCOMMIT string = "dev"
+var Version string = "dev"
 
 // Get returns the CLI version. It prefers the value injected via ldflags,
 // then falls back to the Go module version embedded in the binary (e.g. when
 // installed via `go install github.com/prolific-oss/cli/...@vX.Y.Z`).
 func Get() string {
-	if GITCOMMIT != "dev" {
-		return GITCOMMIT
+	if Version != "dev" {
+		return Version
 	}
 	if info, ok := debug.ReadBuildInfo(); ok {
 		if version := versionFromBuildInfo(info); version != "" {
 			return version
 		}
 	}
-	return GITCOMMIT
+	return Version
 }
 
 func versionFromBuildInfo(info *debug.BuildInfo) string {

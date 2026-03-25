@@ -29,18 +29,18 @@ func TestVersionFromBuildInfo(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	original := GITCOMMIT
-	defer func() { GITCOMMIT = original }()
+	original := Version
+	defer func() { Version = original }()
 
-	t.Run("returns GITCOMMIT when set via ldflags", func(t *testing.T) {
-		GITCOMMIT = "0.0.62"
+	t.Run("returns Version when set via ldflags", func(t *testing.T) {
+		Version = "0.0.62"
 		if got := Get(); got != "0.0.62" {
 			t.Errorf("Get() = %q, want %q", got, "0.0.62")
 		}
 	})
 
-	t.Run("returns dev when GITCOMMIT is unset and no build info", func(t *testing.T) {
-		GITCOMMIT = "dev"
+	t.Run("returns dev when Version is unset and no build info", func(t *testing.T) {
+		Version = "dev"
 		// Can't mock debug.ReadBuildInfo, but we can verify dev is the fallback
 		// when versionFromBuildInfo returns empty (covered by TestVersionFromBuildInfo)
 		got := Get()
