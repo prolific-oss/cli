@@ -326,6 +326,16 @@ type ListCollectionsResponse struct {
 	*JSONAPIMeta
 }
 
+// CollectionExportResponse is the response for the collection export endpoints.
+// For POST (initiate): Status is "generating" (ExportID set) or "complete" (URL/ExpiresAt set).
+// For GET (poll): Status is "generating", "complete", or "failed".
+type CollectionExportResponse struct {
+	Status    string `json:"status"`
+	ExportID  string `json:"export_id,omitempty"`
+	URL       string `json:"url,omitempty"`
+	ExpiresAt string `json:"expires_at,omitempty"`
+}
+
 // CreateBonusPaymentsResponse is the response for creating bonus payments.
 // Monetary fields are returned by the API as floats in minor currency units
 // (e.g., 100.0 = £1.00). Divide by 100 before display via ui.RenderMoney().

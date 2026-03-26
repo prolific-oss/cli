@@ -49,6 +49,8 @@ type API interface {
 
 	GetCollections(workspaceID string, limit, offset int) (*ListCollectionsResponse, error)
 	GetCollection(ID string) (*model.Collection, error)
+	InitiateCollectionExport(collectionID string) (*CollectionExportResponse, error)
+	GetCollectionExportStatus(collectionID, exportID string) (*CollectionExportResponse, error)
 	UpdateCollection(ID string, collection model.UpdateCollection) (*model.Collection, error)
 
 	GetHooks(workspaceID string, enabled bool, limit, offset int) (*ListHooksResponse, error)
@@ -398,6 +400,35 @@ func (c *Client) GetCollection(ID string) (*model.Collection, error) {
 	if httpResponse.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(httpResponse.Body)
 		return nil, fmt.Errorf("unable to get collection: %v", string(body))
+	}
+
+	return &response, nil
+}
+
+// InitiateCollectionExport starts a collection export job via POST.
+// Returns "generating" + ExportID (202) if a new job was enqueued,
+// or "complete" + URL immediately (200) if a valid export already exists.
+func (c *Client) InitiateCollectionExport(collectionID string) (*CollectionExportResponse, error) {
+	var response CollectionExportResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/collections/%s/export", collectionID)
+	_, err := c.Execute(http.MethodPost, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// GetCollectionExportStatus polls the status of an in-progress export job.
+// Returns "generating", "complete" (with URL), or "failed".
+func (c *Client) GetCollectionExportStatus(collectionID, exportID string) (*CollectionExportResponse, error) {
+	var response CollectionExportResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/collections/%s/export/%s", collectionID, exportID)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
 
 	return &response, nil

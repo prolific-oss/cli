@@ -334,6 +334,21 @@ func (mr *MockAPIMockRecorder) GetCollection(ID interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCollection", reflect.TypeOf((*MockAPI)(nil).GetCollection), ID)
 }
 
+// GetCollectionExportStatus mocks base method.
+func (m *MockAPI) GetCollectionExportStatus(collectionID, exportID string) (*client.CollectionExportResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCollectionExportStatus", collectionID, exportID)
+	ret0, _ := ret[0].(*client.CollectionExportResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCollectionExportStatus indicates an expected call of GetCollectionExportStatus.
+func (mr *MockAPIMockRecorder) GetCollectionExportStatus(collectionID, exportID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCollectionExportStatus", reflect.TypeOf((*MockAPI)(nil).GetCollectionExportStatus), collectionID, exportID)
+}
+
 // GetCollections mocks base method.
 func (m *MockAPI) GetCollections(workspaceID string, limit, offset int) (*client.ListCollectionsResponse, error) {
 	m.ctrl.T.Helper()
@@ -647,6 +662,21 @@ func (m *MockAPI) GetWorkspaces(limit, offset int) (*client.ListWorkspacesRespon
 func (mr *MockAPIMockRecorder) GetWorkspaces(limit, offset interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkspaces", reflect.TypeOf((*MockAPI)(nil).GetWorkspaces), limit, offset)
+}
+
+// InitiateCollectionExport mocks base method.
+func (m *MockAPI) InitiateCollectionExport(collectionID string) (*client.CollectionExportResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InitiateCollectionExport", collectionID)
+	ret0, _ := ret[0].(*client.CollectionExportResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// InitiateCollectionExport indicates an expected call of InitiateCollectionExport.
+func (mr *MockAPIMockRecorder) InitiateCollectionExport(collectionID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitiateCollectionExport", reflect.TypeOf((*MockAPI)(nil).InitiateCollectionExport), collectionID)
 }
 
 // ListCredentialPools mocks base method.
