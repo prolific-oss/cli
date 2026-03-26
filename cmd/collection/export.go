@@ -1,10 +1,12 @@
 package collection
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 
@@ -26,6 +28,10 @@ const (
 // pollSleep is the sleep function used between export status polls.
 // Replaced in tests via SetPollSleepForTesting to avoid real delays.
 var pollSleep func(time.Duration) = time.Sleep
+
+// downloadClient is the HTTP client used to fetch the export ZIP.
+// Replaced in tests via SetDownloadClientForTesting to supply a TLS-aware client.
+var downloadClient = http.DefaultClient
 
 // ExportOptions is the options for the collection export command.
 type ExportOptions struct {
@@ -147,8 +153,24 @@ func downloadExport(url, outputPath string, w io.Writer) error {
 	return nil
 }
 
-func downloadFile(url, outputPath string) error {
-	resp, err := http.Get(url) //nolint:noctx,gosec
+func downloadFile(rawURL, outputPath string) error {
+	parsed, err := url.Parse(rawURL)
+	if err != nil {
+		return fmt.Errorf("invalid download URL: %w", err)
+	}
+	if parsed.Scheme != "https" {
+		return fmt.Errorf("download URL must use HTTPS, got %q", parsed.Scheme)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), exportTimeout)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create download request: %w", err)
+	}
+
+	resp, err := downloadClient.Do(req)
 	if err != nil {
 		return err
 	}

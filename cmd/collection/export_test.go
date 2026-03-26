@@ -20,6 +20,19 @@ import (
 
 const testExportID = "export-job-uuid-123"
 
+// newZIPServer creates a TLS test server that returns the given bytes as a
+// download response. Tests must inject srv.Client() via SetDownloadClientForTesting
+// so that the HTTPS scheme check passes and the self-signed cert is trusted.
+func newZIPServer(t *testing.T, content []byte) *httptest.Server {
+	t.Helper()
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write(content)
+	}))
+	t.Cleanup(srv.Close)
+	return srv
+}
+
 func TestNewExportCommand(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -54,16 +67,13 @@ func TestExportCommandRequiresCollectionID(t *testing.T) {
 // TestExportCommandImmediateComplete covers the case where POST returns
 // status "complete" immediately (server has a valid cached export).
 func TestExportCommandImmediateComplete(t *testing.T) {
+	zipContent := []byte("PK\x03\x04fake zip content")
+	srv := newZIPServer(t, zipContent)
+	defer collection.SetDownloadClientForTesting(srv.Client())()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockClient := mock_client.NewMockAPI(ctrl)
-
-	zipContent := []byte("PK\x03\x04fake zip content")
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write(zipContent)
-	}))
-	defer srv.Close()
 
 	mockClient.
 		EXPECT().
@@ -109,16 +119,13 @@ func TestExportCommandImmediateComplete(t *testing.T) {
 func TestExportCommandPollingToComplete(t *testing.T) {
 	defer collection.SetPollSleepForTesting(func(time.Duration) {})()
 
+	zipContent := []byte("PK\x03\x04fake zip content")
+	srv := newZIPServer(t, zipContent)
+	defer collection.SetDownloadClientForTesting(srv.Client())()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockClient := mock_client.NewMockAPI(ctrl)
-
-	zipContent := []byte("PK\x03\x04fake zip content")
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write(zipContent)
-	}))
-	defer srv.Close()
 
 	mockClient.EXPECT().
 		InitiateCollectionExport(gomock.Eq(testCollectionID)).
@@ -219,16 +226,13 @@ func TestExportCommandInitiateError(t *testing.T) {
 }
 
 func TestExportCommandDefaultOutputPath(t *testing.T) {
+	zipContent := []byte("PK\x03\x04fake zip content")
+	srv := newZIPServer(t, zipContent)
+	defer collection.SetDownloadClientForTesting(srv.Client())()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockClient := mock_client.NewMockAPI(ctrl)
-
-	zipContent := []byte("PK\x03\x04fake zip content")
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write(zipContent)
-	}))
-	defer srv.Close()
 
 	mockClient.EXPECT().
 		InitiateCollectionExport(gomock.Eq(testCollectionID)).
