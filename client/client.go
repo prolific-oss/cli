@@ -65,6 +65,7 @@ type API interface {
 
 	GetParticipantGroups(workspaceID string, limit, offset int) (*ListParticipantGroupsResponse, error)
 	GetParticipantGroup(groupID string) (*ViewParticipantGroupResponse, error)
+	RemoveParticipantsFromGroup(groupID string, participantIDs []string) (*ViewParticipantGroupResponse, error)
 
 	GetFilters() (*ListFiltersResponse, error)
 
@@ -592,6 +593,20 @@ func (c *Client) GetParticipantGroup(groupID string) (*ViewParticipantGroupRespo
 
 	url := fmt.Sprintf("/api/v1/participant-groups/%s/participants/", groupID)
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// RemoveParticipantsFromGroup removes one or more participants from a participant group.
+func (c *Client) RemoveParticipantsFromGroup(groupID string, participantIDs []string) (*ViewParticipantGroupResponse, error) {
+	var response ViewParticipantGroupResponse
+
+	payload := RemoveParticipantsFromGroupPayload{ParticipantIDs: participantIDs}
+	url := fmt.Sprintf("/api/v1/participant-groups/%s/participants/", groupID)
+	_, err := c.Execute(http.MethodDelete, url, payload, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}

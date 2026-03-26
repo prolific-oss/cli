@@ -15,6 +15,12 @@ type BulkSendMessagePayload struct {
 	StudyID string   `json:"study_id"`
 }
 
+// RemoveParticipantsFromGroupPayload represents the JSON payload for
+// removing participants from a participant group.
+type RemoveParticipantsFromGroupPayload struct {
+	ParticipantIDs []string `json:"participant_ids"`
+}
+
 // SendGroupMessagePayload represents the JSON payload for
 // sending a message to a participant group.
 type SendGroupMessagePayload struct {
