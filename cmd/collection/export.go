@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/prolific-oss/cli/client"
@@ -180,12 +181,30 @@ func downloadFile(rawURL, outputPath string) error {
 		return fmt.Errorf("download request failed with status %d", resp.StatusCode)
 	}
 
-	f, err := os.Create(outputPath)
+	// Write to a temp file in the same directory so the final rename is
+	// guaranteed to be on the same filesystem (cross-device renames fail).
+	// The temp file is removed on any error to avoid leaving partial ZIPs.
+	tmp, err := os.CreateTemp(filepath.Dir(outputPath), ".export-download-*")
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create temp file: %w", err)
 	}
-	defer f.Close()
+	tmpPath := tmp.Name()
 
-	_, err = io.Copy(f, resp.Body)
-	return err
+	_, copyErr := io.Copy(tmp, resp.Body)
+	closeErr := tmp.Close()
+
+	if copyErr != nil || closeErr != nil {
+		_ = os.Remove(tmpPath)
+		if copyErr != nil {
+			return fmt.Errorf("failed to write download: %w", copyErr)
+		}
+		return fmt.Errorf("failed to close temp file: %w", closeErr)
+	}
+
+	if err := os.Rename(tmpPath, outputPath); err != nil {
+		_ = os.Remove(tmpPath)
+		return fmt.Errorf("failed to move download into place: %w", err)
+	}
+
+	return nil
 }
