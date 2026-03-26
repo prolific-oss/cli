@@ -59,7 +59,7 @@ func NewRootCommand() *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:     ApplicationName,
 		Short:   "CLI application for retrieving data from the Prolific Platform",
-		Version: version.GITCOMMIT,
+		Version: version.Get(),
 	}
 
 	cmd.PersistentFlags().StringVar(&cfgFile, "config", "", fmt.Sprintf("config file (default is $HOME/.config/prolific-oss/%s.yaml)", ApplicationName))

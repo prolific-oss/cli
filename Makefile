@@ -75,14 +75,14 @@ build: ## Build the application
 .PHONY: static
 static: ## Build the application
 	CGO_ENABLED=0 go build \
-		-ldflags "-extldflags -static -X github.com/$(GIT_ORG)/cli/version.GITCOMMIT=$(VERSION)" \
+		-ldflags "-extldflags -static -X github.com/$(GIT_ORG)/cli/version.Version=$(VERSION)" \
 		-o $(NAME) ./cmd/prolific
 
 .PHONY: static-named
 static-named: ## Build the application with named outputs
 	GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 \
 		go build \
-		-ldflags "-extldflags -static -X github.com/$(GIT_ORG)/cli/version.GITCOMMIT=$(VERSION)" \
+		-ldflags "-extldflags -static -X github.com/$(GIT_ORG)/cli/version.Version=$(VERSION)" \
 		-o $(OUT_PATH) ./cmd/prolific
 
 	md5sum $(OUT_PATH) > $(OUT_PATH).md5 || md5 $(OUT_PATH) > $(OUT_PATH).md5

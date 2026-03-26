@@ -583,7 +583,7 @@ Update dependencies with `go get` and run `go mod tidy`.
 Version is injected at build time via `-ldflags`:
 
 ```bash
--X github.com/prolific-oss/cli/version.GITCOMMIT=$(GIT_RELEASE)
+-X github.com/prolific-oss/cli/version.Version=$(GIT_RELEASE)
 ```
 
 Stored in `version/version.go` and displayed in root command.
