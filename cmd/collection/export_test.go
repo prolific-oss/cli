@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/prolific-oss/cli/client"
@@ -106,6 +107,8 @@ func TestExportCommandImmediateComplete(t *testing.T) {
 // TestExportCommandPollingToComplete covers the normal async flow:
 // POST returns "generating", then GET eventually returns "complete".
 func TestExportCommandPollingToComplete(t *testing.T) {
+	defer collection.SetPollSleepForTesting(func(time.Duration) {})()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockClient := mock_client.NewMockAPI(ctrl)
@@ -161,6 +164,8 @@ func TestExportCommandPollingToComplete(t *testing.T) {
 }
 
 func TestExportCommandFailedStatus(t *testing.T) {
+	defer collection.SetPollSleepForTesting(func(time.Duration) {})()
+
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockClient := mock_client.NewMockAPI(ctrl)

@@ -23,6 +23,10 @@ const (
 	exportStatusFailed     = "failed"
 )
 
+// pollSleep is the sleep function used between export status polls.
+// Replaced in tests via SetPollSleepForTesting to avoid real delays.
+var pollSleep func(time.Duration) = time.Sleep
+
 // ExportOptions is the options for the collection export command.
 type ExportOptions struct {
 	Args   []string
@@ -114,7 +118,7 @@ func exportCollection(c client.API, opts ExportOptions, w io.Writer) error {
 		}
 
 		fmt.Fprint(w, ".")
-		time.Sleep(exportPollInterval)
+		pollSleep(exportPollInterval)
 
 		pollResult, err := c.GetCollectionExportStatus(collectionID, exportID)
 		if err != nil {
