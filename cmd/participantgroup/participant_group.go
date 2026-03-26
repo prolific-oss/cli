@@ -29,6 +29,7 @@ Participant groups allow you do the following:
 	cmd.AddCommand(
 		NewListCommand("list", client, w),
 		NewViewCommand("view", client, w),
+		NewRemoveCommand("remove", client, w),
 	)
 	return cmd
 }
