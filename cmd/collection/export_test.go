@@ -267,8 +267,12 @@ func TestExportCommandDefaultOutputPath(t *testing.T) {
 		t.Fatalf("expected no error, got: %v", err)
 	}
 
-	expectedPath := testCollectionID + "-export.zip"
-	if _, err := os.Stat(expectedPath); os.IsNotExist(err) {
-		t.Fatalf("expected default output file %q to be created", expectedPath)
+	// The default filename includes a timestamp, so match by prefix/suffix.
+	matches, err := filepath.Glob(testCollectionID + "-export-*.zip")
+	if err != nil {
+		t.Fatalf("glob failed: %v", err)
+	}
+	if len(matches) == 0 {
+		t.Fatalf("expected a default output file matching %s-export-*.zip to be created", testCollectionID)
 	}
 }

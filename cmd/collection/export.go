@@ -62,7 +62,7 @@ the resulting ZIP file. The archive contains:
 The export is generated asynchronously. This command will poll until the
 archive is ready and then download it automatically.`,
 		Example: `
-Export a collection to the default filename (<collection-id>-export.zip):
+Export a collection to the default filename (<collection-id>-export-<timestamp>.zip):
 
 $ prolific collection export 5f8e3c2a-1d4b-4e6f-9a7c-2b0d8f3e1c5a
 
@@ -78,7 +78,7 @@ $ prolific collection export 5f8e3c2a-1d4b-4e6f-9a7c-2b0d8f3e1c5a --output /tmp/
 			}
 
 			if opts.Output == "" {
-				opts.Output = fmt.Sprintf("%s-export.zip", opts.Args[0])
+				opts.Output = fmt.Sprintf("%s-export-%s.zip", opts.Args[0], time.Now().Format("20060102-150405"))
 			}
 
 			return exportCollection(c, opts, w)
