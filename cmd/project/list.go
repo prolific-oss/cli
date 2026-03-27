@@ -56,8 +56,8 @@ $ prolific project list -w 61a65c06b084910b3f0c00d5 -l 1 -o 2
 
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "Filter projects by workspace.")
-	flags.IntVarP(&opts.Limit, "limit", "l", client.DefaultRecordLimit, "Limit the number of workspaces returned")
-	flags.IntVarP(&opts.Offset, "offset", "o", client.DefaultRecordOffset, "The number of workspaces to offset")
+	flags.IntVarP(&opts.Limit, "limit", "l", client.DefaultRecordLimit, "Limit the number of projects returned")
+	flags.IntVarP(&opts.Offset, "offset", "o", client.DefaultRecordOffset, "The number of projects to offset")
 
 	return cmd
 }
