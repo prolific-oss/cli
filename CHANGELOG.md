@@ -4,6 +4,12 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+## 0.0.66
+
+### Templates
+
+- Add template list and view commands for browsing embedded study and collection examples
+
 ## 0.0.65
 
 ### Filters
