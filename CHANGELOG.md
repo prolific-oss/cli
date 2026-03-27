@@ -4,6 +4,12 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+## 0.0.64
+
+### Collections
+
+- Add collection export command
+
 ## 0.0.63
 
 - Maintenance and dependency updates
