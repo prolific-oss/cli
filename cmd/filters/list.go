@@ -7,11 +7,13 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/prolific-oss/cli/client"
-	"github.com/prolific-oss/cli/ui/filter"
+	filterui "github.com/prolific-oss/cli/ui/filter"
 	"github.com/spf13/cobra"
 )
 
 func NewListCommand(client client.API, w io.Writer) *cobra.Command {
+	var nonInteractive bool
+
 	cmd := &cobra.Command{
 		Use:   "filters",
 		Short: "List all filters available for your study",
@@ -28,9 +30,14 @@ There are two types of filters:
   pre-defined choices.
 - A range type filter allows you to select an upper and / or a lower bound for
   a given participant attribute.`,
-		Example: ``,
+		Example: `
+List all filters in an interactive, searchable interface
+$ prolific filters
+
+List all filters in a non-interactive format for scripting or AI agents
+$ prolific filters -n`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			err := renderList(client)
+			err := renderList(client, w, nonInteractive)
 			if err != nil {
 				return fmt.Errorf("error: %s", err.Error())
 			}
@@ -39,22 +46,32 @@ There are two types of filters:
 		},
 	}
 
+	flags := cmd.Flags()
+	flags.BoolVarP(&nonInteractive, "non-interactive", "n", false, "Render the filter details straight to the terminal.")
+
 	return cmd
 }
 
-func renderList(client client.API) error {
+func renderList(client client.API, w io.Writer, nonInteractive bool) error {
 	filters, err := client.GetFilters()
 	if err != nil {
 		return err
 	}
 
-	var items []list.Item
-
-	for _, filter := range filters.Results {
-		items = append(items, filter)
+	if nonInteractive {
+		for _, f := range filters.Results {
+			fmt.Fprintln(w, filterui.RenderFilter(f))
+		}
+		return nil
 	}
 
-	lv := filter.ListView{
+	var items []list.Item
+
+	for _, f := range filters.Results {
+		items = append(items, f)
+	}
+
+	lv := filterui.ListView{
 		List:   list.New(items, list.NewDefaultDelegate(), 0, 0),
 		Client: client,
 	}
