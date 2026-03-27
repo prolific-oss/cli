@@ -782,18 +782,18 @@ func (mr *MockAPIMockRecorder) UpdateCollection(ID, collection interface{}) *gom
 }
 
 // UpdateCredentialPool mocks base method.
-func (m *MockAPI) UpdateCredentialPool(credentialPoolID, credentials, workspaceID string) (*client.CredentialPoolResponse, error) {
+func (m *MockAPI) UpdateCredentialPool(credentialPoolID, credentials string) (*client.CredentialPoolResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateCredentialPool", credentialPoolID, credentials, workspaceID)
+	ret := m.ctrl.Call(m, "UpdateCredentialPool", credentialPoolID, credentials)
 	ret0, _ := ret[0].(*client.CredentialPoolResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateCredentialPool indicates an expected call of UpdateCredentialPool.
-func (mr *MockAPIMockRecorder) UpdateCredentialPool(credentialPoolID, credentials, workspaceID interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) UpdateCredentialPool(credentialPoolID, credentials interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCredentialPool", reflect.TypeOf((*MockAPI)(nil).UpdateCredentialPool), credentialPoolID, credentials, workspaceID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCredentialPool", reflect.TypeOf((*MockAPI)(nil).UpdateCredentialPool), credentialPoolID, credentials)
 }
 
 // UpdateStudy mocks base method.

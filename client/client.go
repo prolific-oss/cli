@@ -41,7 +41,7 @@ type API interface {
 	UpdateStudy(ID string, study any) (*model.Study, error)
 	GetStudyCredentialsUsageReportCSV(ID string) (string, error)
 	CreateCredentialPool(credentials string, workspaceID string) (*CredentialPoolResponse, error)
-	UpdateCredentialPool(credentialPoolID string, credentials string, workspaceID string) (*CredentialPoolResponse, error)
+	UpdateCredentialPool(credentialPoolID string, credentials string) (*CredentialPoolResponse, error)
 	ListCredentialPools(workspaceID string) (*ListCredentialPoolsResponse, error)
 
 	GetCampaigns(workspaceID string, limit, offset int) (*ListCampaignsResponse, error)
@@ -1022,7 +1022,7 @@ func (c *Client) CreateCredentialPool(credentials string, workspaceID string) (*
 
 // UpdateCredentialPool updates an existing credential pool with new credentials.
 // credentials should be a comma-separated string with newlines between entries.
-func (c *Client) UpdateCredentialPool(credentialPoolID string, credentials string, workspaceID string) (*CredentialPoolResponse, error) {
+func (c *Client) UpdateCredentialPool(credentialPoolID string, credentials string) (*CredentialPoolResponse, error) {
 	var response CredentialPoolResponse
 
 	payload := UpdateCredentialPoolPayload{
