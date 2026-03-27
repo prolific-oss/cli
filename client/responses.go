@@ -77,13 +77,6 @@ type ListSubmissionsResponse struct {
 	*JSONAPIMeta
 }
 
-// ListRequirementsResponse is the response for the requirements request.
-type ListRequirementsResponse struct {
-	Results []model.Requirement `json:"results"`
-	*JSONAPILinks
-	*JSONAPIMeta
-}
-
 type ListFiltersResponse struct {
 	Results []model.Filter `json:"results"`
 	*JSONAPILinks

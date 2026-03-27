@@ -364,21 +364,6 @@ func (mr *MockAPIMockRecorder) GetCollections(workspaceID, limit, offset interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCollections", reflect.TypeOf((*MockAPI)(nil).GetCollections), workspaceID, limit, offset)
 }
 
-// GetEligibilityRequirements mocks base method.
-func (m *MockAPI) GetEligibilityRequirements() (*client.ListRequirementsResponse, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEligibilityRequirements")
-	ret0, _ := ret[0].(*client.ListRequirementsResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetEligibilityRequirements indicates an expected call of GetEligibilityRequirements.
-func (mr *MockAPIMockRecorder) GetEligibilityRequirements() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEligibilityRequirements", reflect.TypeOf((*MockAPI)(nil).GetEligibilityRequirements))
-}
-
 // GetEvents mocks base method.
 func (m *MockAPI) GetEvents(subscriptionID string, limit, offset int) (*client.ListHookEventsResponse, error) {
 	m.ctrl.T.Helper()
