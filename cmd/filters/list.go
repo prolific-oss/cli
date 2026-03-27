@@ -3,15 +3,25 @@ package filters
 import (
 	"fmt"
 	"io"
+	"text/tabwriter"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/ui"
 	"github.com/prolific-oss/cli/ui/filter"
 	"github.com/spf13/cobra"
 )
 
+// ListOptions are the options for the list filters command.
+type ListOptions struct {
+	Args           []string
+	NonInteractive bool
+}
+
 func NewListCommand(client client.API, w io.Writer) *cobra.Command {
+	var opts ListOptions
+
 	cmd := &cobra.Command{
 		Use:   "filters",
 		Short: "List all filters available for your study",
@@ -30,7 +40,15 @@ There are two types of filters:
   a given participant attribute.`,
 		Example: ``,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			err := renderList(client)
+			opts.Args = args
+
+			var err error
+			if opts.NonInteractive {
+				err = renderNonInteractive(client, w)
+			} else {
+				err = renderInteractive(client)
+			}
+
 			if err != nil {
 				return fmt.Errorf("error: %s", err.Error())
 			}
@@ -39,10 +57,13 @@ There are two types of filters:
 		},
 	}
 
+	flags := cmd.Flags()
+	flags.BoolVarP(&opts.NonInteractive, "non-interactive", "n", false, "Render the list details straight to the terminal.")
+
 	return cmd
 }
 
-func renderList(client client.API) error {
+func renderInteractive(client client.API) error {
 	filters, err := client.GetFilters()
 	if err != nil {
 		return err
@@ -66,4 +87,50 @@ func renderList(client client.API) error {
 	}
 
 	return nil
+}
+
+func renderNonInteractive(client client.API, w io.Writer) error {
+	filters, err := client.GetFilters()
+	if err != nil {
+		return err
+	}
+
+	tw := tabwriter.NewWriter(w, 0, 1, 1, ' ', 0)
+	fmt.Fprintf(tw, "%s\t%s\t%s\t%s\n", "Title", "FilterID", "Type", "DataType")
+
+	for _, f := range filters.Results {
+		dataType := formatDataType(f.DataType, f.Min, f.Max)
+		fmt.Fprintf(tw, "%s\t%s\t%s\t%s\n", f.Title(), f.FilterID, f.Type, dataType)
+	}
+
+	_ = tw.Flush()
+
+	total := len(filters.Results)
+	if filters.JSONAPIMeta != nil {
+		total = filters.JSONAPIMeta.Meta.Count
+	}
+	fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(filters.Results), total))
+
+	return nil
+}
+
+// formatDataType returns the data type string, appending range bounds in
+// parentheses when present, e.g. "integer (18–100)", "integer (min: 18)".
+func formatDataType(dataType string, min, max any) string {
+	hasMin := min != nil
+	hasMax := max != nil
+
+	if hasMin && hasMax {
+		return fmt.Sprintf("%s (%v\u2013%v)", dataType, min, max)
+	}
+
+	if hasMin {
+		return fmt.Sprintf("%s (min: %v)", dataType, min)
+	}
+
+	if hasMax {
+		return fmt.Sprintf("%s (max: %v)", dataType, max)
+	}
+
+	return dataType
 }
