@@ -33,7 +33,6 @@ type API interface {
 
 	CreateStudy(model.CreateStudy) (*model.Study, error)
 	DuplicateStudy(ID string) (*model.Study, error)
-	GetEligibilityRequirements() (*ListRequirementsResponse, error)
 	GetStudies(status, projectID string) (*ListStudiesResponse, error)
 	GetStudy(ID string) (*model.Study, error)
 	GetSubmissions(ID string, limit, offset int) (*ListSubmissionsResponse, error)
@@ -324,19 +323,6 @@ func (c *Client) RequestSubmissionReturn(ID string, reasons []string) (*RequestS
 	_, err := c.Execute(http.MethodPost, url, payload, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to request submission return: %s", err)
-	}
-
-	return &response, nil
-}
-
-// GetEligibilityRequirements will return requirement data.
-func (c *Client) GetEligibilityRequirements() (*ListRequirementsResponse, error) {
-	var response ListRequirementsResponse
-
-	url := "/api/v1/eligibility-requirements/"
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
-	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
 
 	return &response, nil
