@@ -50,7 +50,7 @@ user3@example.com,p4ssw0rd3`,
 				return err
 			}
 
-			response, err := client.UpdateCredentialPool(credentialPoolID, credentials, "")
+			response, err := client.UpdateCredentialPool(credentialPoolID, credentials)
 			if err != nil {
 				return err
 			}
