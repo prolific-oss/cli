@@ -37,7 +37,12 @@ $ prolific filters
 List all filters in a non-interactive format for scripting or AI agents
 $ prolific filters -n`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			err := renderList(client, w, nonInteractive)
+			var err error
+			if nonInteractive {
+				err = renderNonInteractiveList(client, w)
+			} else {
+				err = renderInteractiveList(client)
+			}
 			if err != nil {
 				return fmt.Errorf("error: %s", err.Error())
 			}
@@ -52,17 +57,23 @@ $ prolific filters -n`,
 	return cmd
 }
 
-func renderList(client client.API, w io.Writer, nonInteractive bool) error {
+func renderNonInteractiveList(client client.API, w io.Writer) error {
 	filters, err := client.GetFilters()
 	if err != nil {
 		return err
 	}
 
-	if nonInteractive {
-		for _, f := range filters.Results {
-			fmt.Fprintln(w, filterui.RenderFilter(f))
-		}
-		return nil
+	for _, f := range filters.Results {
+		fmt.Fprintln(w, filterui.RenderFilter(f))
+	}
+
+	return nil
+}
+
+func renderInteractiveList(client client.API) error {
+	filters, err := client.GetFilters()
+	if err != nil {
+		return err
 	}
 
 	var items []list.Item
