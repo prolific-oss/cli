@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -29,8 +30,9 @@ var studyTemplate = model.CreateStudy{
 	DeviceCompatibility:     []string{"desktop", "tablet", "mobile"},
 	PeripheralRequirements:  []string{"audio", "camera", "download", "microphone"},
 	SubmissionsConfig: struct {
-		MaxSubmissionsPerParticipant int `json:"max_submissions_per_participant,omitempty" mapstructure:"max_submissions_per_participant"`
-		MaxConcurrentSubmissions     int `json:"max_concurrent_submissions,omitempty" mapstructure:"max_concurrent_submissions"`
+		MaxSubmissionsPerParticipant int      `json:"max_submissions_per_participant,omitempty" mapstructure:"max_submissions_per_participant"`
+		MaxConcurrentSubmissions     int      `json:"max_concurrent_submissions,omitempty" mapstructure:"max_concurrent_submissions"`
+		AutoRejectionCategories      []string `json:"auto_rejection_categories,omitempty" mapstructure:"auto_rejection_categories"`
 	}{
 		MaxSubmissionsPerParticipant: -1,
 		MaxConcurrentSubmissions:     0,
@@ -99,6 +101,42 @@ func TestCreateCommandHandlesFailureToReadConfig(t *testing.T) {
 	expected := "error: open broken-path.json: no such file or directory"
 	if err.Error() != expected {
 		t.Fatalf("expected %s, got %s", expected, err.Error())
+	}
+}
+
+func TestCreateCommandHandlesFailureToUnmarshalConfig(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	f, err := os.CreateTemp(t.TempDir(), "*.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { f.Close() })
+	// reward must be float64; a mapping causes Unmarshal to fail
+	if _, err = f.WriteString("reward:\n  not: a number\n"); err != nil {
+		t.Fatal(err)
+	}
+	if err := f.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := study.NewCreateCommand(c, writer)
+	_ = cmd.Flags().Set("template-path", f.Name())
+
+	err = cmd.RunE(cmd, nil)
+	writer.Flush()
+
+	if err == nil {
+		t.Fatal("expected an error, got nil")
+	}
+
+	if !strings.Contains(err.Error(), "'reward' expected type 'float64'") {
+		t.Fatalf("unexpected error: %s", err.Error())
 	}
 }
 

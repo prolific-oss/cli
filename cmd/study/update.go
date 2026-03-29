@@ -88,7 +88,7 @@ func updateStudy(client client.API, opts UpdateOptions, stdin io.Reader, w io.Wr
 		}
 	}
 
-	var payload map[string]interface{}
+	var payload map[string]any
 	if err := json.Unmarshal(data, &payload); err != nil {
 		return fmt.Errorf("error parsing JSON template: %s", err.Error())
 	}

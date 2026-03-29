@@ -3,7 +3,6 @@ package study
 import (
 	"fmt"
 	"io"
-	"log"
 
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/model"
@@ -137,7 +136,7 @@ func createStudy(client client.API, opts CreateOptions, w io.Writer) error {
 	var s model.CreateStudy
 	err = v.Unmarshal(&s)
 	if err != nil {
-		log.Fatalf("unable to map %s to study model: %s", opts.TemplatePath, err)
+		return fmt.Errorf("unable to map %s to study model: %s", opts.TemplatePath, err)
 	}
 
 	study, err := client.CreateStudy(s)

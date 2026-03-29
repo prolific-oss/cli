@@ -129,7 +129,7 @@ func TestNewUpdateCommandUpdatesStudyFromFile(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	studyID := "11223344"
-	expectedPayload := map[string]interface{}{
+	expectedPayload := map[string]any{
 		"internal_name":          "Updated Study",
 		"total_available_places": float64(150),
 	}
@@ -173,7 +173,7 @@ func TestNewUpdateCommandUpdatesStudyFromStdin(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	studyID := "11223344"
-	expectedPayload := map[string]interface{}{
+	expectedPayload := map[string]any{
 		"internal_name": "Stdin Update",
 	}
 
@@ -244,7 +244,7 @@ func TestNewUpdateCommandOutputsJSON(t *testing.T) {
 
 	writer.Flush()
 
-	var result map[string]interface{}
+	var result map[string]any
 	if err := json.Unmarshal(b.Bytes(), &result); err != nil {
 		t.Fatalf("expected valid JSON output, got error: %v\noutput: %s", err, b.String())
 	}

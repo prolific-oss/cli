@@ -13,7 +13,8 @@ type Filter struct {
 	Max               any               `json:"max,omitempty" mapstructure:"max"`
 	Choices           map[string]string `json:"choices,omitempty" mapstructure:"choices"`
 	SelectedValues    []string          `json:"selected_values,omitempty" mapstructure:"selected_values"`
-	SelectedRange     FilterRange       `json:"selected_range,omitempty" mapstructure:"selected_range"`
+	SelectedRange     FilterRange       `json:"selected_range" mapstructure:"selected_range"`
+	Weightings        map[string]any    `json:"weightings,omitempty" mapstructure:"weightings"`
 }
 
 // FilterRange holds the lower and upper bounds of a filter

@@ -17,6 +17,7 @@
       ]
     }
   ],
+  "study_type": "QUOTA",
   "device_compatibility": ["mobile", "desktop", "tablet"],
   "peripheral_requirements": [],
   "estimated_completion_time": 1,
