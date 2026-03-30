@@ -7,7 +7,6 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/prolific-oss/cli/client"
-	filterui "github.com/prolific-oss/cli/ui/filter"
 	"github.com/spf13/cobra"
 )
 
@@ -64,7 +63,7 @@ func renderNonInteractiveList(client client.API, w io.Writer) error {
 	}
 
 	for _, f := range filters.Results {
-		fmt.Fprintln(w, filterui.RenderFilter(f))
+		fmt.Fprintln(w, RenderFilter(f))
 	}
 
 	return nil
@@ -82,7 +81,7 @@ func renderInteractiveList(client client.API) error {
 		items = append(items, f)
 	}
 
-	lv := filterui.ListView{
+	lv := ListView{
 		List:   list.New(items, list.NewDefaultDelegate(), 0, 0),
 		Client: client,
 	}

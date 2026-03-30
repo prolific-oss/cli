@@ -1,4 +1,4 @@
-package filter_test
+package filters
 
 import (
 	"strings"
@@ -6,7 +6,6 @@ import (
 
 	"github.com/acarl005/stripansi"
 	"github.com/prolific-oss/cli/model"
-	"github.com/prolific-oss/cli/ui/filter"
 )
 
 func TestRenderFilter(t *testing.T) {
@@ -25,7 +24,7 @@ func TestRenderFilter(t *testing.T) {
 		SelectedRange:     model.FilterRange{Lower: 1, Upper: 10},
 	}
 
-	actual := filter.RenderFilter(record)
+	actual := RenderFilter(record)
 
 	expected := `filtertitle
 ID:filter-id

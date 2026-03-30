@@ -7,6 +7,7 @@ import (
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/model"
@@ -172,4 +173,51 @@ func filterByUnderpaying(studies client.ListStudiesResponse) *client.ListStudies
 
 	studies.Results = filtered
 	return &studies
+}
+
+// ListView is responsible for presenting a list view to the user.
+type ListView struct {
+	List    list.Model
+	Studies map[string]model.Study
+	Study   *model.Study
+	Client  client.API
+}
+
+// Init will initialise the view.
+func (lv ListView) Init() tea.Cmd {
+	return nil
+}
+
+// Update will update the view.
+func (lv ListView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		if msg.String() == "ctrl+c" {
+			return lv, tea.Quit
+		}
+
+		if msg.String() == "enter" {
+			i, ok := lv.List.SelectedItem().(model.Study)
+			if ok {
+				lv.Study = &i
+			}
+			return lv, tea.Quit
+		}
+
+	case tea.WindowSizeMsg:
+		h, v := lipgloss.NewStyle().GetFrameSize()
+		lv.List.SetSize(msg.Width-h, msg.Height-v)
+	}
+
+	var cmd tea.Cmd
+	lv.List, cmd = lv.List.Update(msg)
+	return lv, cmd
+}
+
+// View will render the view.
+func (lv ListView) View() string {
+	if lv.Study != nil {
+		return RenderStudy(*lv.Study)
+	}
+	return lv.List.View()
 }
