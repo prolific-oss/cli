@@ -2,8 +2,6 @@ name: Main
 
 permissions:
   contents: write
-  issues: write
-  pull-requests: write
 
 on:
   push:
@@ -27,17 +25,12 @@ jobs:
     timeout-minutes: 5
     permissions:
       contents: write
-      issues: write
-      pull-requests: write
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Release
-        uses: cycjimmy/semantic-release-action@v6
+        uses: go-semantic-release/action@v1
         with:
-          branch: main
-          semantic_version: 24.2.3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}

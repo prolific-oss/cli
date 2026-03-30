@@ -424,12 +424,12 @@ Enforces [Conventional Commits](https://www.conventionalcommits.org/) format on 
 ### Branch and Release Strategy
 
 - Main branch: `main`
-- Releases are fully automated via semantic-release on every push to `main`
+- Releases are fully automated via [go-semantic-release](https://go-semantic-release.xyz/) on every push to `main`
 
 #### Release flow
 
 1. Merge a PR with `feat:` or `fix:` commits to `main`
-2. `main.yml` runs quality checks, then semantic-release:
+2. `main.yml` runs quality checks, then go-semantic-release:
    - Analyzes commits since the last tag to determine the version bump
    - Creates a git tag (e.g., `v0.0.67`) and publishes a GitHub Release with auto-generated notes
 3. `release.yml` triggers on the published release and builds binaries for all platforms, uploading them as release assets
@@ -467,7 +467,7 @@ GitHub Actions workflows in `.github/workflows/`:
 ### `main.yml` (runs on push to `main`)
 
 1. Calls `go.yml` as a reusable workflow for quality checks
-2. Runs semantic-release to determine version, create a git tag, and publish a GitHub Release
+2. Runs go-semantic-release to determine version, create a git tag, and publish a GitHub Release
 
 ### `release.yml` (triggered by a published GitHub Release)
 

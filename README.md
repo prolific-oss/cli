@@ -205,7 +205,7 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ## Release Process
 
-Releases are fully automated via [semantic-release](https://semantic-release.gitbook.io/) on every push to `main`.
+Releases are fully automated via [go-semantic-release](https://go-semantic-release.xyz/) on every push to `main`.
 
 Merging a PR with `feat:` or `fix:` commits will automatically:
 
