@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -25,7 +26,12 @@ func (r TableRenderer[T]) Render(items []T, fields string, w io.Writer) error {
 
 	for _, item := range items {
 		for _, field := range fieldList {
-			fmt.Fprintf(tw, "%v\t", reflect.ValueOf(item).FieldByName(strings.Trim(field, " ")))
+			v := reflect.ValueOf(item).FieldByName(strings.Trim(field, " "))
+			if !v.IsValid() {
+				fmt.Fprintf(tw, "\t")
+				continue
+			}
+			fmt.Fprintf(tw, "%v\t", v)
 		}
 		fmt.Fprint(tw, "\n")
 	}
@@ -36,27 +42,31 @@ func (r TableRenderer[T]) Render(items []T, fields string, w io.Writer) error {
 // CsvRenderer renders a slice of items as CSV using reflection for field access.
 type CsvRenderer[T any] struct{}
 
-// Render writes items as CSV to w. Values containing commas are wrapped in double quotes.
+// Render writes items as CSV to w.
 func (r CsvRenderer[T]) Render(items []T, fields string, w io.Writer) error {
 	fieldList := splitFields(fields)
 
-	for _, field := range fieldList {
-		fmt.Fprintf(w, "%s,", strings.Trim(field, " "))
+	cw := csv.NewWriter(w)
+
+	if err := cw.Write(fieldList); err != nil {
+		return err
 	}
-	fmt.Fprint(w, "\n")
 
 	for _, item := range items {
-		for _, field := range fieldList {
-			value := fmt.Sprintf("%v", reflect.ValueOf(item).FieldByName(strings.Trim(field, " ")))
-			if strings.Contains(value, ",") {
-				value = fmt.Sprintf("%q", value)
+		row := make([]string, len(fieldList))
+		for i, field := range fieldList {
+			v := reflect.ValueOf(item).FieldByName(field)
+			if v.IsValid() {
+				row[i] = fmt.Sprintf("%v", v)
 			}
-			fmt.Fprintf(w, "%s,", value)
 		}
-		fmt.Fprint(w, "\n")
+		if err := cw.Write(row); err != nil {
+			return err
+		}
 	}
 
-	return nil
+	cw.Flush()
+	return cw.Error()
 }
 
 // JSONRenderer renders a slice of items as indented JSON.

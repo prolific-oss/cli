@@ -41,9 +41,7 @@ func TestCsvRendererRendersInCsvFormat(t *testing.T) {
 
 	writer.Flush()
 
-	expected := `ID,Name,Status,
-1234,"My first, standard, sample",active,
-`
+	expected := "ID,Name,Status\n1234,\"My first, standard, sample\",active\n"
 
 	if b.String() != expected {
 		t.Fatalf("expected '%v', got '%v'", expected, b.String())
@@ -78,9 +76,7 @@ func TestCsvRendererRendersInCsvFormatRespectingFieldOrder(t *testing.T) {
 
 	writer.Flush()
 
-	expected := `ID,Status,
-1234,active,
-`
+	expected := "ID,Status\n1234,active\n"
 
 	if b.String() != expected {
 		t.Fatalf("expected '%v', got '%v'", expected, b.String())
@@ -116,9 +112,7 @@ func TestCsvRendererRendersCredentialPoolID(t *testing.T) {
 
 	writer.Flush()
 
-	expected := `ID,Name,CredentialPoolID,
-1234,Study with credential pool,679271425fe00981084a5f58_a856d700-c495-11f0-adce-338d4126f6e8,
-`
+	expected := "ID,Name,CredentialPoolID\n1234,Study with credential pool,679271425fe00981084a5f58_a856d700-c495-11f0-adce-338d4126f6e8\n"
 
 	if b.String() != expected {
 		t.Fatalf("expected '%v', got '%v'", expected, b.String())
