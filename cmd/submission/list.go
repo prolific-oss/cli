@@ -105,6 +105,7 @@ The fields you can use are
 				if err := r.Render(submissions.Results, fields, w); err != nil {
 					return fmt.Errorf("error: %s", err)
 				}
+				fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(submissions.Results), submissions.Meta.Count))
 			default:
 				r := ui.TableRenderer[model.Submission]{}
 				if err := r.Render(submissions.Results, fields, w); err != nil {

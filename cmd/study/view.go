@@ -6,7 +6,7 @@ import (
 
 	"github.com/pkg/browser"
 	"github.com/prolific-oss/cli/client"
-	studyui "github.com/prolific-oss/cli/ui/study"
+
 	"github.com/spf13/cobra"
 )
 
@@ -33,7 +33,7 @@ $ prolific study view 64395e9c2332b8a59a65d51e`,
 			opts.Args = args
 
 			if opts.Web {
-				return browser.OpenURL(studyui.GetStudyURL(opts.Args[0]))
+				return browser.OpenURL(GetStudyURL(opts.Args[0]))
 			}
 
 			study, err := client.GetStudy(args[0])
@@ -41,7 +41,7 @@ $ prolific study view 64395e9c2332b8a59a65d51e`,
 				return fmt.Errorf("error: %s", err.Error())
 			}
 
-			fmt.Fprintln(w, studyui.RenderStudy(*study))
+			fmt.Fprintln(w, RenderStudy(*study))
 
 			return nil
 		},

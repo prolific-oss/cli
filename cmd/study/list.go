@@ -5,11 +5,12 @@ import (
 	"io"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/list"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/model"
 	"github.com/prolific-oss/cli/ui"
-	studyui "github.com/prolific-oss/cli/ui/study"
 	"github.com/spf13/cobra"
 )
 
@@ -129,9 +130,21 @@ The fields you can use are
 					return fmt.Errorf("error: %s", err)
 				}
 			default:
-				r := &studyui.InteractiveRenderer{}
-				if err := r.Render(client, *studies, w); err != nil {
-					return fmt.Errorf("error: %s", err)
+				var items []list.Item
+				studyMap := make(map[string]model.Study)
+				for _, s := range studies.Results {
+					items = append(items, s)
+					studyMap[s.ID] = s
+				}
+				lv := ListView{
+					List:    list.New(items, list.NewDefaultDelegate(), 0, 0),
+					Studies: studyMap,
+					Client:  client,
+				}
+				lv.List.Title = "My studies"
+				p := tea.NewProgram(lv)
+				if _, err := p.Run(); err != nil {
+					return fmt.Errorf("cannot render studies: %s", err)
 				}
 			}
 
@@ -142,7 +155,7 @@ The fields you can use are
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.Status, "status", "s", model.StatusAll, fmt.Sprintf("The status you want to filter on: %s.", strings.Join(model.StudyListStatus, ", ")))
 	flags.BoolVarP(&opts.Underpaying, "underpaying", "u", false, "Filter by underpaying studies.")
-	flags.StringVarP(&opts.Fields, "fields", "f", "", "Comma separated list of fields you want to display in non-interactive/csv mode.")
+	flags.StringVarP(&opts.Fields, "fields", "f", "", "Comma separated list of fields you want to display in table or csv mode.")
 	flags.StringVarP(&opts.ProjectID, "project", "p", "", "Get studies for a given project ID.")
 	shared.AddOutputFlags(cmd, &opts.Output)
 
