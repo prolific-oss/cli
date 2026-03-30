@@ -1,8 +1,5 @@
 name: Main
 
-permissions:
-  contents: write
-
 on:
   push:
     branches:
