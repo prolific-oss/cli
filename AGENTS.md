@@ -32,7 +32,7 @@ cmd/                 Cobra commands (one package per API resource)
   ├── shared/        Shared utilities
   └── root.go        Main CLI initialization and command registration
 client/              API interface and HTTP client
-  ├── client.go      API interface (60+ methods) and Client implementation
+  ├── client.go      API interface and Client implementation
   ├── payloads.go    Request payload structs
   └── responses.go   Response types
 model/               Domain models (one package per entity)
@@ -71,15 +71,17 @@ The parent command is registered in `cmd/root.go`.
 
 ### Action Command Signature
 
-Action commands use dependency injection. Most take `client` and `w`; list-style commands that are also registered directly on the root also take a `commandName` string:
+Action commands use dependency injection. All take `client` and `w`; some also take a `commandName` string when the `Use` field is set dynamically by the caller rather than hardcoded in the function:
 
 ```go
-// Standard action command
+// Command with a hardcoded Use string
 func New{Action}Command(client client.API, w io.Writer) *cobra.Command
 
-// List commands registered at root level also take a name
-func NewListCommand(commandName string, client client.API, w io.Writer) *cobra.Command
+// Command where the caller supplies the Use string
+func New{Action}Command(commandName string, client client.API, w io.Writer) *cobra.Command
 ```
+
+Follow whichever pattern the existing commands in the same package use.
 
 ### Options Struct
 
@@ -98,15 +100,15 @@ type {Action}Options struct {
 - `cmd/{resource}/{action}.go` — command implementation
 - `cmd/{resource}/{action}_test.go` — tests
 
-### Error Wrapping in RunE
+### Error Formatting in RunE
 
-Wrap errors consistently in `RunE`:
+Prefix errors consistently in `RunE` using `fmt.Errorf` with `%s` and `err` directly (not `err.Error()`, which is redundant). Note this does not wrap the error for `errors.Is`/`errors.As` — that is the established pattern in this codebase:
 
 ```go
 RunE: func(cmd *cobra.Command, args []string) error {
     result, err := client.SomeMethod(args[0])
     if err != nil {
-        return fmt.Errorf("error: %s", err.Error())
+        return fmt.Errorf("error: %s", err)
     }
     // ...
     return nil
@@ -214,7 +216,7 @@ The pre-commit hook (installed by `make install`) runs `make lint` and `make tes
 2. If a parent grouping command doesn't exist for the resource:
   - Create `cmd/{resource}/{resource}.go`
   - Implement `New{Resource}Command(client client.API, w io.Writer) *cobra.Command`
-3. Implement the action as `New{Action}Command(client client.API, w io.Writer) *cobra.Command` at `cmd/{resource}/{action}.go
+3. Implement the action as `New{Action}Command(client client.API, w io.Writer) *cobra.Command` at `cmd/{resource}/{action}.go`
 4. Define an options struct with cobra flag bindings per action
 5. Write tests in `{action}_test.go` using the gomock pattern above
 6. Register the parent command in `cmd/root.go`
@@ -250,7 +252,7 @@ To include hand-written notes in the next release, add them under `## next` in `
 - Support the `-n` (non-interactive) flag on list commands
 - Use dependency injection (`client.API`, `io.Writer`) in command constructors
 - Call `writer.Flush()` before test assertions
-- Wrap errors in `RunE` with `fmt.Errorf("error: %s", err.Error())`
+- Prefix errors in `RunE` with `fmt.Errorf("error: %s", err)`
 
 **Never do:**
 - Hardcode API tokens — use `PROLIFIC_TOKEN` environment variable
