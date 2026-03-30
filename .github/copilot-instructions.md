@@ -15,7 +15,7 @@
 ## Features & Conventions
 
 - All user-facing strings should be clear and concise.
-- Keep the codebase well-documented and update the `CHANGELOG.md` for every release.
+- Keep the codebase well-documented.
 
 ## Testing
 
@@ -32,19 +32,10 @@
 ## Pull Requests
 
 - Ensure all tests pass before submitting a PR.
-- Update documentation and changelog as needed.
+- Update documentation as needed.
 - Keep PRs focused and well-described.
 
 ## Misc
 
 - Use the `main.go` entrypoint for CLI execution.
 - Dockerfile and Makefile are provided for builds and CI.
-
-## Changelog
-
-- When asked to create a release, use the last git tag and summarise the commits since.
-- Increment the version in the `CHANGELOG.md` file and define a new heading.
-- Follow the format in `CHANGELOG.md` for consistency, for example:
-  - `## next` for the next version.
-  - `## x.y.z` for previous versions, with bullet points for changes.
-  - Do not use the date in the changelog, just the version number.

@@ -46,13 +46,7 @@ linters:
       # and writes to stderr. Taint analysis rules are false positives here.
       - linters: [gosec]
         text: "G70[235]"
-        path: 'docs/scripts/'
-      # scripts/changelog/ is an internal CLI tool for release automation.
-      # G703 path traversal is guarded by resolvePath(); G705 stderr taint
-      # is a false positive.
-      - linters: [gosec]
-        text: "G70[35]"
-        path: 'scripts/changelog/'
+        path: "docs/scripts/"
       # QF1012 Use fmt.Fprintf(...) clashes with go fix patterns
       - linters: [staticcheck]
         text: "QF1012"

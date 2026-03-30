@@ -424,37 +424,27 @@ Enforces [Conventional Commits](https://www.conventionalcommits.org/) format on 
 ### Branch and Release Strategy
 
 - Main branch: `main`
-- Clean status expected (no uncommitted changes)
-- Releases tagged with version numbers (e.g., `v0.0.60`)
+- Releases are fully automated via semantic-release on every push to `main`
 
 #### Release flow
 
-1. Run `make changelog VERSION=0.0.60` to generate grouped release notes
-2. Create a PR with the updated `CHANGELOG.md`, get it reviewed, and merge to `main`
-3. Create a GitHub Release with a matching tag (e.g., `v0.0.60`), using the changelog entry as the release description
-4. The `release.yml` workflow builds and uploads binaries automatically
+1. Merge a PR with `feat:` or `fix:` commits to `main`
+2. `main.yml` runs quality checks, then semantic-release:
+   - Analyzes commits since the last tag to determine the version bump
+   - Creates a git tag (e.g., `v0.0.67`) and publishes a GitHub Release with auto-generated notes
+3. `release.yml` triggers on the published release and builds binaries for all platforms, uploading them as release assets
+4. `docker.yml` triggers on the new tag and publishes the Docker image
 
-## Changelog Conventions
+If only `chore:`, `test:`, `ci:` etc. commits are merged, no release is created.
 
-Changelog entries are generated from conventional commits by [git-cliff](https://git-cliff.org/). The configuration lives in `cliff.toml`, and a Go tool in `scripts/changelog/` groups entries by subcommand area.
+#### Version bump rules
 
-### Manual release notes
-
-To include hand-written notes in the next release, add them under the `## next` section in `CHANGELOG.md`:
-
-```markdown
-## next
-
-- My manual release note here
-```
-
-At release time `make changelog` merges any `## next` content with the generated notes and resets the section.
-
-### What gets included
-
-Only user-facing commit types appear in the changelog:
-- `feat` → **Features**, `fix` → **Bug Fixes**, `docs` → **Documentation**, `perf` → **Performance**, `refactor` → **Refactoring**, `revert` → **Reverts**, `test` → **Testing**
-- `chore`, `ci`, `build`, `style` are **skipped** (internal housekeeping)
+| Commit type | Bump |
+|-------------|------|
+| `feat:` | minor |
+| `fix:`, `perf:`, `refactor:`, etc. | patch |
+| `feat!:` or `BREAKING CHANGE:` footer | major |
+| `chore:`, `ci:`, `test:`, `docs:` | none |
 
 ### Format
 
@@ -465,7 +455,7 @@ Only user-facing commit types appear in the changelog:
 
 GitHub Actions workflows in `.github/workflows/`:
 
-### `go.yml` (runs on every push)
+### `go.yml` (runs on every push; reusable by `main.yml`)
 
 1. Setup Go 1.26.x
 2. `make install` - Get dependencies
@@ -474,13 +464,18 @@ GitHub Actions workflows in `.github/workflows/`:
 5. `make build`
 6. `make test`
 
-### `docker.yml`
+### `main.yml` (runs on push to `main`)
 
-Builds and pushes Docker images.
+1. Calls `go.yml` as a reusable workflow for quality checks
+2. Runs semantic-release to determine version, create a git tag, and publish a GitHub Release
 
-### `release.yml`
+### `release.yml` (triggered by a published GitHub Release)
 
-Handles release automation.
+Builds binaries for all platforms and uploads them as release assets.
+
+### `docker.yml` (triggered by `v*.*.*` tags)
+
+Builds and pushes Docker images to Docker Hub.
 
 ## Common Patterns
 
@@ -634,7 +629,7 @@ Uses `github.com/pkg/browser` package.
 - **Follow existing patterns** - look at similar commands for reference
 - **Test output capture**: Remember to `Flush()` the writer in tests
 - **Check linter** before committing: `make lint`
-- **Update CHANGELOG.md** when adding features or fixing bugs
+- **Use conventional commits** — `feat:` and `fix:` trigger automated releases
 - **Use dependency injection** - pass `client.API` and `io.Writer` to commands
 - **Consider interactive vs non-interactive** modes for list commands
 - **Look at examples** in `docs/examples/` for study template structure

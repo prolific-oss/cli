@@ -205,34 +205,13 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ## Release Process
 
-Releases are managed via GitHub Releases with changelog generation powered by [git-cliff](https://git-cliff.org/).
+Releases are fully automated via [semantic-release](https://semantic-release.gitbook.io/) on every push to `main`.
 
-### 1. Generate changelog
+Merging a PR with `feat:` or `fix:` commits will automatically:
 
-```bash
-make changelog VERSION=0.0.60
-```
+1. Determine the next version based on commit types
+2. Create a git tag and publish a GitHub Release with generated notes
+3. Build and upload binaries for all platforms (darwin, linux, windows, freebsd)
+4. Publish a Docker image
 
-This generates grouped release notes from conventional commits, merges any hand-written notes from the `## next` section of `CHANGELOG.md`, and updates the changelog file.
-
-### 2. Create a release PR
-
-Create a PR with the updated `CHANGELOG.md`, get it reviewed, and merge to `main`.
-
-### 3. Create a GitHub Release
-
-1. Go to [Releases](https://github.com/prolific-oss/cli/releases)
-2. Click "Draft a new release"
-3. Create a new tag matching the version (e.g., `v0.0.60`)
-4. Title the release with the version number
-5. Copy the release notes from the new `CHANGELOG.md` entry into the release description
-6. Publish the release
-
-### 4. Automated Build
-
-The release workflow automatically:
-
-- Builds binaries for multiple platforms (darwin, linux, windows, freebsd)
-- Uploads binaries to the GitHub Release as assets
-
-Users can then download binaries from the release page or use `go install`.
+No manual steps required. See [DEVELOPMENT.md](DEVELOPMENT.md) for the full CI/CD breakdown and version bump rules.
