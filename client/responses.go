@@ -313,6 +313,11 @@ type ListCredentialPoolsResponse struct {
 	CredentialPools []CredentialPoolSummary `json:"credential_pools"`
 }
 
+// CreateInvitationResponse is the response for creating invitations.
+type CreateInvitationResponse struct {
+	Invitations []model.Invitation `json:"invitations"`
+}
+
 // ListCollectionsResponse is the response for the collections API.
 type ListCollectionsResponse struct {
 	Results []model.Collection `json:"results"`
