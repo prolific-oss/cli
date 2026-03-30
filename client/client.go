@@ -39,6 +39,7 @@ type API interface {
 	RequestSubmissionReturn(ID string, reasons []string) (*RequestSubmissionReturnResponse, error)
 	TransitionStudy(ID, action string) (*TransitionStudyResponse, error)
 	UpdateStudy(ID string, study any) (*model.Study, error)
+	GetStudySubmissionCounts(ID string) (*model.SubmissionCounts, error)
 	GetStudyCredentialsUsageReportCSV(ID string) (string, error)
 	CreateCredentialPool(credentials string, workspaceID string) (*CredentialPoolResponse, error)
 	UpdateCredentialPool(credentialPoolID string, credentials string, workspaceID string) (*CredentialPoolResponse, error)
@@ -293,6 +294,24 @@ func (c *Client) GetStudy(ID string) (*model.Study, error) {
 	if httpResponse.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(httpResponse.Body)
 		return nil, fmt.Errorf("unable to get study: %v", string(body))
+	}
+
+	return &response, nil
+}
+
+// GetStudySubmissionCounts returns submission counts grouped by status for a study.
+func (c *Client) GetStudySubmissionCounts(ID string) (*model.SubmissionCounts, error) {
+	var response model.SubmissionCounts
+
+	url := fmt.Sprintf("/api/v1/studies/%s/submissions/counts/", ID)
+	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unable to get submission counts: %v", string(body))
 	}
 
 	return &response, nil
