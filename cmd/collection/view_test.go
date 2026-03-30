@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/prolific-oss/cli/cmd/collection"
 	"github.com/prolific-oss/cli/config"
-	"github.com/prolific-oss/cli/ui/collection"
 )
 
 func TestGetCollectionPreviewPath(t *testing.T) {

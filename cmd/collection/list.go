@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/charmbracelet/bubbles/list"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/model"
 	"github.com/prolific-oss/cli/ui"
-	collectionui "github.com/prolific-oss/cli/ui/collection"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -104,7 +105,7 @@ The fields you can use are:
 					return fmt.Errorf("error: %s", err)
 				}
 			default:
-				r := &collectionui.InteractiveRenderer{}
+				r := &InteractiveRenderer{}
 				if err := r.Render(c, *collections, w); err != nil {
 					return fmt.Errorf("error: %s", err)
 				}
@@ -122,4 +123,33 @@ The fields you can use are:
 	shared.AddOutputFlags(cmd, &opts.Output)
 
 	return cmd
+}
+
+// InteractiveRenderer runs the bubbles UI framework to provide a rich
+// UI experience for the user.
+type InteractiveRenderer struct{}
+
+// Render will render the list in an interactive manner.
+func (r *InteractiveRenderer) Render(c client.API, collections client.ListCollectionsResponse, w io.Writer) error {
+	var items []list.Item
+	collectionMap := make(map[string]model.Collection)
+
+	for _, collection := range collections.Results {
+		items = append(items, collection)
+		collectionMap[collection.ID] = collection
+	}
+
+	lv := ListView{
+		List:        list.New(items, list.NewDefaultDelegate(), 0, 0),
+		Collections: collectionMap,
+		Client:      c,
+	}
+	lv.List.Title = "Collections"
+
+	p := tea.NewProgram(lv)
+	if _, err := p.Run(); err != nil {
+		return fmt.Errorf("cannot render collections: %s", err)
+	}
+
+	return nil
 }
