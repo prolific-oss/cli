@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/charmbracelet/bubbles/list"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/model"
@@ -106,12 +109,17 @@ The fields you can use are
 					return fmt.Errorf("error: %s", err)
 				}
 				fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(submissions.Results), submissions.Meta.Count))
-			default:
+			case "table":
 				r := ui.TableRenderer[model.Submission]{}
 				if err := r.Render(submissions.Results, fields, w); err != nil {
 					return fmt.Errorf("error: %s", err)
 				}
 				fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(submissions.Results), submissions.Meta.Count))
+			default:
+				r := &InteractiveRenderer{}
+				if err := r.Render(*submissions, w); err != nil {
+					return fmt.Errorf("error: %s", err)
+				}
 			}
 
 			return nil
@@ -126,4 +134,94 @@ The fields you can use are
 	shared.AddOutputFlags(cmd, &opts.Output)
 
 	return cmd
+}
+
+// InteractiveRenderer runs the Bubbletea UI framework to provide a rich
+// UI experience for the user.
+type InteractiveRenderer struct{}
+
+// Render builds the item list and launches the interactive TUI.
+func (r *InteractiveRenderer) Render(submissions client.ListSubmissionsResponse, w io.Writer) error {
+	var items []list.Item
+	submissionMap := make(map[string]model.Submission)
+
+	for _, s := range submissions.Results {
+		items = append(items, s)
+		submissionMap[s.ID] = s
+	}
+
+	lv := ListView{
+		List:        list.New(items, list.NewDefaultDelegate(), 0, 0),
+		Submissions: submissionMap,
+	}
+	lv.List.Title = "Submissions"
+
+	p := tea.NewProgram(lv)
+	if _, err := p.Run(); err != nil {
+		return fmt.Errorf("cannot render submissions: %s", err)
+	}
+
+	return nil
+}
+
+// ListView presents an interactive list of submissions using the Bubbletea TUI.
+type ListView struct {
+	List        list.Model
+	Submissions map[string]model.Submission
+	Submission  *model.Submission
+}
+
+// Init initialises the view.
+func (lv ListView) Init() tea.Cmd {
+	return nil
+}
+
+// Update handles TUI messages and key events.
+func (lv ListView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		if msg.String() == "ctrl+c" {
+			return lv, tea.Quit
+		}
+
+		if msg.String() == "enter" {
+			i, ok := lv.List.SelectedItem().(model.Submission)
+			if ok {
+				lv.Submission = &i
+			}
+			return lv, tea.Quit
+		}
+
+	case tea.WindowSizeMsg:
+		h, v := lipgloss.NewStyle().GetFrameSize()
+		lv.List.SetSize(msg.Width-h, msg.Height-v)
+	}
+
+	var cmd tea.Cmd
+	lv.List, cmd = lv.List.Update(msg)
+	return lv, cmd
+}
+
+// View renders the current state of the TUI.
+func (lv ListView) View() string {
+	if lv.Submission != nil {
+		return RenderSubmission(*lv.Submission)
+	}
+	return lv.List.View()
+}
+
+// RenderSubmission produces a detailed view of a single submission.
+func RenderSubmission(s model.Submission) string {
+	content := fmt.Sprintln(ui.RenderHeading("Submission"))
+	content += fmt.Sprintf("ID:             %s\n", s.ID)
+	content += fmt.Sprintf("Participant ID: %s\n", s.ParticipantID)
+	content += fmt.Sprintf("Status:         %s\n", s.Status)
+	content += fmt.Sprintf("Study code:     %s\n", s.StudyCode)
+	content += fmt.Sprintf("Started at:     %s\n", s.StartedAt)
+	content += fmt.Sprintf("Completed at:   %s\n", s.CompletedAt)
+	content += fmt.Sprintf("Time taken:     %ds\n", s.TimeTaken)
+	content += fmt.Sprintf("Reward:         %d\n", s.Reward)
+	content += fmt.Sprintf("Is complete:    %v\n", s.IsComplete)
+	content += fmt.Sprintf("Star awarded:   %v\n", s.StarAwarded)
+	return content
 }

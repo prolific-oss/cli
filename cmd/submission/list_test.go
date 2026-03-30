@@ -77,6 +77,7 @@ func TestNewSubmissionCommandCallsAPI(t *testing.T) {
 	_ = cmd.Flags().Set("study", studyID)
 	_ = cmd.Flags().Set("limit", strconv.Itoa(client.DefaultRecordLimit))
 	_ = cmd.Flags().Set("offset", strconv.Itoa(client.DefaultRecordOffset))
+	_ = cmd.Flags().Set("table", "true")
 	_ = cmd.RunE(cmd, []string{studyID})
 
 	writer.Flush()
@@ -93,5 +94,39 @@ Showing 1 record of 10
 
 	if actual != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, actual)
+	}
+}
+
+func TestRenderSubmission(t *testing.T) {
+	submissionStart, _ := time.Parse("2006-01-02 15:04", "2022-07-24 08:04")
+	completedAt, _ := time.Parse("2006-01-02 15:04", "2022-07-24 08:30")
+
+	s := model.Submission{
+		ID:            "sub-1",
+		ParticipantID: "participant-42",
+		Status:        "APPROVED",
+		StudyCode:     "ABC123",
+		StartedAt:     submissionStart,
+		CompletedAt:   completedAt,
+		TimeTaken:     120,
+		Reward:        500,
+		IsComplete:    true,
+		StarAwarded:   false,
+	}
+
+	result := submission.RenderSubmission(s)
+
+	checks := []string{
+		"sub-1",
+		"participant-42",
+		"APPROVED",
+		"ABC123",
+		"120s",
+	}
+
+	for _, want := range checks {
+		if !strings.Contains(stripansi.Strip(result), want) {
+			t.Fatalf("expected RenderSubmission output to contain %q, got:\n%s", want, result)
+		}
 	}
 }
