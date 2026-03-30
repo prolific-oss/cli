@@ -4,6 +4,26 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+## 0.0.66
+
+### Templates
+
+- Add template list and view commands for browsing embedded study and collection examples
+
+## 0.0.65
+
+### Filters
+
+- Add non-interactive mode to filters command
+- Split renderList into interactive and non-interactive functions
+
+### Core
+
+- Add missing fields to study and filter models
+- Align weightings keys with selected_values in example
+- Handle unknown currency code in RenderMoney without panic
+- Remove the `requirements` command which is no longer supported
+
 ## 0.0.64
 
 ### Collections

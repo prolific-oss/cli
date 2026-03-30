@@ -33,7 +33,6 @@ type API interface {
 
 	CreateStudy(model.CreateStudy) (*model.Study, error)
 	DuplicateStudy(ID string) (*model.Study, error)
-	GetEligibilityRequirements() (*ListRequirementsResponse, error)
 	GetStudies(status, projectID string) (*ListStudiesResponse, error)
 	GetStudy(ID string) (*model.Study, error)
 	GetSubmissions(ID string, limit, offset int) (*ListSubmissionsResponse, error)
@@ -42,7 +41,7 @@ type API interface {
 	UpdateStudy(ID string, study any) (*model.Study, error)
 	GetStudyCredentialsUsageReportCSV(ID string) (string, error)
 	CreateCredentialPool(credentials string, workspaceID string) (*CredentialPoolResponse, error)
-	UpdateCredentialPool(credentialPoolID string, credentials string, workspaceID string) (*CredentialPoolResponse, error)
+	UpdateCredentialPool(credentialPoolID string, credentials string) (*CredentialPoolResponse, error)
 	ListCredentialPools(workspaceID string) (*ListCredentialPoolsResponse, error)
 
 	GetCampaigns(workspaceID string, limit, offset int) (*ListCampaignsResponse, error)
@@ -324,19 +323,6 @@ func (c *Client) RequestSubmissionReturn(ID string, reasons []string) (*RequestS
 	_, err := c.Execute(http.MethodPost, url, payload, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to request submission return: %s", err)
-	}
-
-	return &response, nil
-}
-
-// GetEligibilityRequirements will return requirement data.
-func (c *Client) GetEligibilityRequirements() (*ListRequirementsResponse, error) {
-	var response ListRequirementsResponse
-
-	url := "/api/v1/eligibility-requirements/"
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
-	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
 
 	return &response, nil
@@ -1036,7 +1022,7 @@ func (c *Client) CreateCredentialPool(credentials string, workspaceID string) (*
 
 // UpdateCredentialPool updates an existing credential pool with new credentials.
 // credentials should be a comma-separated string with newlines between entries.
-func (c *Client) UpdateCredentialPool(credentialPoolID string, credentials string, workspaceID string) (*CredentialPoolResponse, error) {
+func (c *Client) UpdateCredentialPool(credentialPoolID string, credentials string) (*CredentialPoolResponse, error) {
 	var response CredentialPoolResponse
 
 	payload := UpdateCredentialPoolPayload{

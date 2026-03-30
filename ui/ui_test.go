@@ -29,6 +29,11 @@ func TestRenderMoney(t *testing.T) {
 		amount:   80001.01,
 		currency: "USD",
 		expected: "$80001.01",
+	}, {
+		name:     "Unknown currency code falls back to raw amount",
+		amount:   5.00,
+		currency: "ZZZ",
+		expected: "5.00",
 	}}
 
 	for _, tc := range tt {

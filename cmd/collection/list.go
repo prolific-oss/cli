@@ -10,6 +10,7 @@ import (
 	"github.com/prolific-oss/cli/ui"
 	collectionui "github.com/prolific-oss/cli/ui/collection"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // defaultListFields is the default fields shown when the user has not specified --fields.
@@ -114,7 +115,7 @@ The fields you can use are:
 	}
 
 	flags := cmd.Flags()
-	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", "", "The workspace ID to list collections for (required).")
+	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "The workspace ID to list collections for (required).")
 	flags.StringVarP(&opts.Fields, "fields", "f", "", "Comma separated list of fields you want to display in table/csv mode.")
 	flags.IntVar(&opts.Limit, "limit", client.DefaultRecordLimit, "Limit the number of results returned.")
 	flags.IntVar(&opts.Offset, "offset", client.DefaultRecordOffset, "Offset for pagination.")

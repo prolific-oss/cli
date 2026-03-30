@@ -21,9 +21,9 @@ import (
 	"github.com/prolific-oss/cli/cmd/message"
 	"github.com/prolific-oss/cli/cmd/participantgroup"
 	"github.com/prolific-oss/cli/cmd/project"
-	requirement "github.com/prolific-oss/cli/cmd/requirements"
 	"github.com/prolific-oss/cli/cmd/study"
 	"github.com/prolific-oss/cli/cmd/submission"
+	"github.com/prolific-oss/cli/cmd/template"
 	"github.com/prolific-oss/cli/cmd/user"
 	"github.com/prolific-oss/cli/cmd/workspace"
 	"github.com/prolific-oss/cli/version"
@@ -80,10 +80,10 @@ func NewRootCommand() *cobra.Command {
 		message.NewMessageCommand(&client, w),
 		participantgroup.NewParticipantCommand(&client, w),
 		project.NewProjectCommand(&client, w),
-		requirement.NewListCommand(&client, w),
 		study.NewListCommand("studies", &client, w),
 		study.NewStudyCommand(&client, w),
 		submission.NewSubmissionCommand(&client, w),
+		template.NewTemplateCommand(w),
 		user.NewMeCommand(&client, w),
 		workspace.NewWorkspaceCommand(&client, w),
 	)
