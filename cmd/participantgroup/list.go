@@ -9,6 +9,7 @@ import (
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/ui"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // ListOptions is the options for the listing participant groups command.
@@ -48,7 +49,7 @@ $ prolific participant list -w 6261321e223a605c7a4f7623
 	}
 
 	flags := cmd.Flags()
-	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", "", "Filter participant groups by workspace.")
+	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "Filter participant groups by workspace.")
 	flags.IntVarP(&opts.Limit, "limit", "l", client.DefaultRecordLimit, "Limit the number of participant groups returned")
 	flags.IntVarP(&opts.Offset, "offset", "o", client.DefaultRecordOffset, "The number of participant groups to offset")
 

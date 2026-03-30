@@ -43,7 +43,7 @@ func NewTransitionCommand(client client.API, w io.Writer) *cobra.Command {
 
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.Action, "action", "a", "", fmt.Sprintf("Transition a study, it can be one of %s", strings.Join(model.TransitionList, ", ")))
-	flags.BoolVarP(&opts.Silent, "silent", "s", false, "Silently create the study. It will not render the study once created.")
+	flags.BoolVarP(&opts.Silent, "silent", "s", false, "Silently transition the study. It will not render the study after transitioning.")
 
 	return cmd
 }

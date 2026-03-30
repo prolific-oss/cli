@@ -9,6 +9,7 @@ import (
 	"github.com/prolific-oss/cli/ui"
 	"github.com/prolific-oss/cli/ui/collection"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // ListOptions is the options for the listing collections command.
@@ -86,7 +87,6 @@ The fields you can use are:
 				Limit:       opts.Limit,
 				Offset:      opts.Offset,
 			}, w)
-
 			if err != nil {
 				if shared.IsFeatureNotEnabledError(err) {
 					ui.RenderFeatureAccessMessage(FeatureNameAITBCollection, FeatureContactURLAITBCollection)
@@ -100,7 +100,7 @@ The fields you can use are:
 	}
 
 	flags := cmd.Flags()
-	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", "", "The workspace ID to list collections for (required).")
+	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "The workspace ID to list collections for (required).")
 	flags.BoolVarP(&opts.NonInteractive, "non-interactive", "n", false, "Render the list details straight to the terminal.")
 	flags.BoolVar(&opts.Json, "json", false, "Render the list details in JSON format for machine-readable output.")
 	flags.BoolVarP(&opts.Csv, "csv", "c", false, "Render the list details in a CSV format.")
