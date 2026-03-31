@@ -180,6 +180,11 @@ type ListFilterSetsResponse struct {
 	*JSONAPIMeta
 }
 
+// CreateFilterSetResponse is the response for creating a filter set.
+type CreateFilterSetResponse struct {
+	model.FilterSet
+}
+
 // ListMessagesResponse is the response for the list messages endpoint.
 type ListMessagesResponse struct {
 	Results []model.Message `json:"results"`
