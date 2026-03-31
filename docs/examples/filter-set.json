@@ -1,0 +1,14 @@
+{
+  "workspace_id": "644aaabfaf6bbc363b9d47c6",
+  "name": "Ambidextrous teenagers",
+  "filters": [
+    {
+      "filter_id": "handedness",
+      "selected_values": ["ambidextrous"]
+    },
+    {
+      "filter_id": "age",
+      "selected_values": ["19-22"]
+    }
+  ]
+}

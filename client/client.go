@@ -74,6 +74,7 @@ type API interface {
 
 	GetFilterSets(workspaceID string, limit, offset int) (*ListFilterSetsResponse, error)
 	GetFilterSet(ID string) (*model.FilterSet, error)
+	CreateFilterSet(filterSet model.FilterSet) (*CreateFilterSetResponse, error)
 
 	GetMessages(userID *string, createdAfter *string) (*ListMessagesResponse, error)
 	SendMessage(body, recipientID, studyID string) error
@@ -692,6 +693,19 @@ func (c *Client) GetFilterSet(ID string) (*model.FilterSet, error) {
 
 	if httpResponse.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("status code was %v, so therefore unable to get filter set: %v", httpResponse.StatusCode, ID)
+	}
+
+	return &response, nil
+}
+
+// CreateFilterSet will create a new filter set
+func (c *Client) CreateFilterSet(filterSet model.FilterSet) (*CreateFilterSetResponse, error) {
+	var response CreateFilterSetResponse
+
+	url := "/api/v1/filter-sets/"
+	_, err := c.Execute(http.MethodPost, url, filterSet, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
 
 	return &response, nil

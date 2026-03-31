@@ -139,6 +139,21 @@ func (mr *MockAPIMockRecorder) CreateCredentialPool(credentials, workspaceID int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCredentialPool", reflect.TypeOf((*MockAPI)(nil).CreateCredentialPool), credentials, workspaceID)
 }
 
+// CreateFilterSet mocks base method.
+func (m *MockAPI) CreateFilterSet(filterSet model.FilterSet) (*client.CreateFilterSetResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateFilterSet", filterSet)
+	ret0, _ := ret[0].(*client.CreateFilterSetResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateFilterSet indicates an expected call of CreateFilterSet.
+func (mr *MockAPIMockRecorder) CreateFilterSet(filterSet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFilterSet", reflect.TypeOf((*MockAPI)(nil).CreateFilterSet), filterSet)
+}
+
 // CreateInvitation mocks base method.
 func (m *MockAPI) CreateInvitation(invitation model.CreateInvitation) (*client.CreateInvitationResponse, error) {
 	m.ctrl.T.Helper()
