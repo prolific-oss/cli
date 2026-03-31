@@ -22,6 +22,7 @@ type CountsView struct {
 	studyID        string
 	client         client.API
 	submissions    []model.Submission
+	totalCount     int
 	fetched        bool
 	loading        bool
 	err            error
@@ -40,6 +41,7 @@ func NewCountsView(items []list.Item, studyID string, c client.API) CountsView {
 
 type submissionsFetchedMsg struct {
 	submissions []model.Submission
+	totalCount  int
 	err         error
 }
 
@@ -49,7 +51,14 @@ func fetchSubmissions(c client.API, studyID string) tea.Cmd {
 		if err != nil {
 			return submissionsFetchedMsg{err: err}
 		}
-		return submissionsFetchedMsg{submissions: resp.Results}
+		totalCount := len(resp.Results)
+		if resp.JSONAPIMeta != nil {
+			totalCount = resp.Meta.Count
+		}
+		return submissionsFetchedMsg{
+			submissions: resp.Results,
+			totalCount:  totalCount,
+		}
 	}
 }
 
@@ -68,6 +77,7 @@ func (cv CountsView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return cv, tea.Quit
 		}
 		cv.submissions = msg.submissions
+		cv.totalCount = msg.totalCount
 		cv.fetched = true
 		cv.buildSubmissionList()
 		return cv, nil
@@ -141,11 +151,6 @@ func (cv CountsView) View() string {
 	return cv.countsList.View()
 }
 
-// SelectedSubmission returns the submission selected by the user, or nil.
-func (cv CountsView) SelectedSubmission() *model.Submission {
-	return cv.selectedSub
-}
-
 func (cv *CountsView) buildSubmissionList() {
 	filtered := FilterSubmissionsByStatus(cv.submissions, cv.drillStatus)
 	var items []list.Item
@@ -153,7 +158,13 @@ func (cv *CountsView) buildSubmissionList() {
 		items = append(items, sub)
 	}
 	l := list.New(items, list.NewDefaultDelegate(), 0, 0)
-	l.Title = fmt.Sprintf("Submissions - %s", cv.drillStatus)
+
+	title := fmt.Sprintf("Submissions - %s", cv.drillStatus)
+	if cv.totalCount > len(cv.submissions) {
+		title += fmt.Sprintf(" (showing from first %d of %d total submissions)", len(cv.submissions), cv.totalCount)
+	}
+	l.Title = title
+
 	cv.submissionList = &l
 }
 
