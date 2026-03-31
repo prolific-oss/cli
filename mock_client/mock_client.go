@@ -140,7 +140,7 @@ func (mr *MockAPIMockRecorder) CreateCredentialPool(credentials, workspaceID int
 }
 
 // CreateFilterSet mocks base method.
-func (m *MockAPI) CreateFilterSet(filterSet model.FilterSet) (*client.CreateFilterSetResponse, error) {
+func (m *MockAPI) CreateFilterSet(filterSet model.CreateFilterSet) (*client.CreateFilterSetResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateFilterSet", filterSet)
 	ret0, _ := ret[0].(*client.CreateFilterSetResponse)

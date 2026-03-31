@@ -1,14 +1,14 @@
 {
-  "workspace_id": "644aaabfaf6bbc363b9d47c6",
-  "name": "Ambidextrous teenagers",
+  "workspace_id": "67890abcdef12345678901234",
+  "name": "UK English speakers",
   "filters": [
     {
-      "filter_id": "handedness",
-      "selected_values": ["ambidextrous"]
+      "filter_id": "current-country-of-residence",
+      "selected_values": ["0"]
     },
     {
-      "filter_id": "age",
-      "selected_values": ["19-22"]
+      "filter_id": "first-language_old",
+      "selected_values": ["0"]
     }
   ]
 }

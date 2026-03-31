@@ -74,7 +74,7 @@ type API interface {
 
 	GetFilterSets(workspaceID string, limit, offset int) (*ListFilterSetsResponse, error)
 	GetFilterSet(ID string) (*model.FilterSet, error)
-	CreateFilterSet(filterSet model.FilterSet) (*CreateFilterSetResponse, error)
+	CreateFilterSet(filterSet model.CreateFilterSet) (*CreateFilterSetResponse, error)
 
 	GetMessages(userID *string, createdAfter *string) (*ListMessagesResponse, error)
 	SendMessage(body, recipientID, studyID string) error
@@ -699,7 +699,7 @@ func (c *Client) GetFilterSet(ID string) (*model.FilterSet, error) {
 }
 
 // CreateFilterSet will create a new filter set
-func (c *Client) CreateFilterSet(filterSet model.FilterSet) (*CreateFilterSetResponse, error) {
+func (c *Client) CreateFilterSet(filterSet model.CreateFilterSet) (*CreateFilterSetResponse, error) {
 	var response CreateFilterSetResponse
 
 	url := "/api/v1/filter-sets/"

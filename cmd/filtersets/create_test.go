@@ -74,7 +74,18 @@ func TestNewCreateCommandSuccess(t *testing.T) {
 	c.
 		EXPECT().
 		CreateFilterSet(gomock.Any()).
-		Return(&response, nil).
+		DoAndReturn(func(fs model.CreateFilterSet) (*client.CreateFilterSetResponse, error) {
+			if fs.Name != "Test filter set" {
+				t.Errorf("expected name 'Test filter set'; got '%s'", fs.Name)
+			}
+			if fs.WorkspaceID != "ws123" {
+				t.Errorf("expected workspace_id 'ws123'; got '%s'", fs.WorkspaceID)
+			}
+			if len(fs.Filters) != 1 || fs.Filters[0].FilterID != "handedness" {
+				t.Errorf("expected 1 filter with filter_id 'handedness'; got %+v", fs.Filters)
+			}
+			return &response, nil
+		}).
 		Times(1)
 
 	var b bytes.Buffer
@@ -122,9 +133,9 @@ func TestNewCreateCommandWithNameOverride(t *testing.T) {
 	c.
 		EXPECT().
 		CreateFilterSet(gomock.Any()).
-		DoAndReturn(func(fs model.FilterSet) (*client.CreateFilterSetResponse, error) {
+		DoAndReturn(func(fs model.CreateFilterSet) (*client.CreateFilterSetResponse, error) {
 			if fs.Name != "Overridden name" {
-				t.Fatalf("expected name 'Overridden name'; got '%s'", fs.Name)
+				t.Errorf("expected name 'Overridden name'; got '%s'", fs.Name)
 			}
 			return &response, nil
 		}).
@@ -143,6 +154,61 @@ func TestNewCreateCommandWithNameOverride(t *testing.T) {
 	writer.Flush()
 
 	expected := "Created filter set: fs-002 (eligible participants: 100)\n"
+	actual := b.String()
+	if actual != expected {
+		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, actual)
+	}
+}
+
+func TestNewCreateCommandWithWorkspaceOverride(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	templatePath := writeTemplateFile(t, `{
+		"workspace_id": "original-ws",
+		"name": "Test",
+		"filters": [
+			{
+				"filter_id": "age",
+				"selected_values": ["19-22"]
+			}
+		]
+	}`)
+
+	response := client.CreateFilterSetResponse{
+		FilterSet: model.FilterSet{
+			ID:                       "fs-003",
+			Name:                     "Test",
+			WorkspaceID:              "overridden-ws",
+			EligibleParticipantCount: 200,
+		},
+	}
+
+	c.
+		EXPECT().
+		CreateFilterSet(gomock.Any()).
+		DoAndReturn(func(fs model.CreateFilterSet) (*client.CreateFilterSetResponse, error) {
+			if fs.WorkspaceID != "overridden-ws" {
+				t.Errorf("expected workspace_id 'overridden-ws'; got '%s'", fs.WorkspaceID)
+			}
+			return &response, nil
+		}).
+		Times(1)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := filtersets.NewCreateCommand("create", c, writer)
+	cmd.SetArgs([]string{"-t", templatePath, "-w", "overridden-ws"})
+	err := cmd.Execute()
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	writer.Flush()
+
+	expected := "Created filter set: fs-003 (eligible participants: 200)\n"
 	actual := b.String()
 	if actual != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, actual)

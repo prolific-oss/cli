@@ -74,10 +74,16 @@ func createFilterSet(client client.API, opts CreateOptions, w io.Writer) error {
 		return err
 	}
 
-	var fs model.FilterSet
+	var fs model.CreateFilterSet
 	err = v.Unmarshal(&fs)
 	if err != nil {
 		return fmt.Errorf("unable to map %s to filter set model: %s", opts.TemplatePath, err)
+	}
+
+	for i := range fs.Filters {
+		if fs.Filters[i].SelectedRange != nil && fs.Filters[i].SelectedRange.Lower == nil && fs.Filters[i].SelectedRange.Upper == nil {
+			fs.Filters[i].SelectedRange = nil
+		}
 	}
 
 	if opts.Name != "" {

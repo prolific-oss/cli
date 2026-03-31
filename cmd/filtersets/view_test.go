@@ -113,13 +113,13 @@ func TestNewViewCommandHandlesFiltersInTheSet(t *testing.T) {
 			},
 			{
 				FilterID: "777",
-				SelectedRange: model.FilterRange{
+				SelectedRange: &model.FilterRange{
 					Lower: 1,
 				},
 			},
 			{
 				FilterID: "888",
-				SelectedRange: model.FilterRange{
+				SelectedRange: &model.FilterRange{
 					Upper: 10,
 				},
 			},
