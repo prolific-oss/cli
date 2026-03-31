@@ -34,7 +34,7 @@ func TestNewSubmissionCountsCommand(t *testing.T) {
 	}
 }
 
-func TestSubmissionCountsCommand(t *testing.T) {
+func TestSubmissionCountsNonInteractive(t *testing.T) {
 	studyID := "64395e9c2332b8a59a65d51e"
 
 	tests := []struct {
@@ -100,7 +100,8 @@ func TestSubmissionCountsCommand(t *testing.T) {
 			writer := bufio.NewWriter(&b)
 
 			cmd := study.NewSubmissionCountsCommand(c, writer)
-			err := cmd.RunE(cmd, []string{tt.studyID})
+			cmd.SetArgs([]string{tt.studyID, "-n"})
+			err := cmd.Execute()
 			writer.Flush()
 
 			if tt.expectedError != "" {
@@ -160,7 +161,8 @@ func TestSubmissionCountsRendersCorrectValues(t *testing.T) {
 	writer := bufio.NewWriter(&b)
 
 	cmd := study.NewSubmissionCountsCommand(c, writer)
-	_ = cmd.RunE(cmd, []string{studyID})
+	cmd.SetArgs([]string{studyID, "-n"})
+	_ = cmd.Execute()
 	writer.Flush()
 
 	actual := b.String()

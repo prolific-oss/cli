@@ -5,6 +5,7 @@
 package model
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -31,6 +32,17 @@ type Submission struct {
 	StarAwarded   bool   `json:"star_awarded"`
 	BonusPayments []any  `json:"bonus_payments"`
 	IP            string `json:"ip"`
+}
+
+// FilterValue implements list.Item for bubbletea.
+func (s Submission) FilterValue() string { return s.ParticipantID }
+
+// Title implements list.Item for bubbletea.
+func (s Submission) Title() string { return s.ParticipantID }
+
+// Description implements list.Item for bubbletea.
+func (s Submission) Description() string {
+	return fmt.Sprintf("%s - %s - %ds", s.Status, s.StudyCode, s.TimeTaken)
 }
 
 // Workspace represents the workspace model
