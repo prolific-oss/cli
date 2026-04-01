@@ -28,7 +28,7 @@ $ prolific study demographic-export 64395e9c2332b8a59a65d51e`,
 				return fmt.Errorf("error: %s", err.Error())
 			}
 
-			fmt.Fprintln(w, response.ID)
+			fmt.Fprintf(w, "Export %s triggered (status: %s)\n", response.ID, response.Status)
 
 			return nil
 		},

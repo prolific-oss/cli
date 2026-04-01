@@ -482,9 +482,13 @@ func (c *Client) ExportDemographics(ID string) (*DemographicExportResponse, erro
 	var response DemographicExportResponse
 
 	url := fmt.Sprintf("/api/v1/studies/%s/demographic-export/", ID)
-	_, err := c.Execute(http.MethodPost, url, nil, &response)
+	httpResponse, err := c.Execute(http.MethodPost, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: expected 200, got %d", httpResponse.StatusCode)
 	}
 
 	return &response, nil
@@ -501,8 +505,7 @@ func (c *Client) TestStudy(ID string) (*model.Study, error) {
 	}
 
 	if httpResponse.StatusCode != http.StatusCreated {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unable to create test study: %v", string(body))
+		return nil, fmt.Errorf("unexpected status code: expected 201, got %d", httpResponse.StatusCode)
 	}
 
 	return &response, nil

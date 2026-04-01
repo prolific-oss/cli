@@ -58,7 +58,7 @@ func TestDemographicExportCallsClient(t *testing.T) {
 	_ = cmd.RunE(cmd, []string{studyID})
 	writer.Flush()
 
-	expected := fmt.Sprintf("%s\n", response.ID)
+	expected := fmt.Sprintf("Export %s triggered (status: %s)\n", response.ID, response.Status)
 	actual := b.String()
 
 	if actual != expected {
