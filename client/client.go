@@ -69,6 +69,7 @@ type API interface {
 
 	GetParticipantGroups(workspaceID string, limit, offset int) (*ListParticipantGroupsResponse, error)
 	GetParticipantGroup(groupID string) (*ViewParticipantGroupResponse, error)
+	CreateParticipantGroup(group model.CreateParticipantGroup) (*CreateParticipantGroupResponse, error)
 
 	GetFilters() (*ListFiltersResponse, error)
 
@@ -649,6 +650,19 @@ func (c *Client) GetParticipantGroup(groupID string) (*ViewParticipantGroupRespo
 
 	url := fmt.Sprintf("/api/v1/participant-groups/%s/participants/", groupID)
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// CreateParticipantGroup will create a new participant group
+func (c *Client) CreateParticipantGroup(group model.CreateParticipantGroup) (*CreateParticipantGroupResponse, error) {
+	var response CreateParticipantGroupResponse
+
+	url := "/api/v1/participant-groups/"
+	_, err := c.Execute(http.MethodPost, url, group, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
