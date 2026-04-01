@@ -209,19 +209,3 @@ func (lv ListView) View() string {
 	}
 	return lv.List.View()
 }
-
-// RenderSubmission produces a detailed view of a single submission.
-func RenderSubmission(s model.Submission) string {
-	content := fmt.Sprintln(ui.RenderHeading("Submission"))
-	content += fmt.Sprintf("ID:             %s\n", s.ID)
-	content += fmt.Sprintf("Participant ID: %s\n", s.ParticipantID)
-	content += fmt.Sprintf("Status:         %s\n", s.Status)
-	content += fmt.Sprintf("Study code:     %s\n", s.StudyCode)
-	content += fmt.Sprintf("Started at:     %s\n", s.StartedAt)
-	content += fmt.Sprintf("Completed at:   %s\n", s.CompletedAt)
-	content += fmt.Sprintf("Time taken:     %ds\n", s.TimeTaken)
-	content += fmt.Sprintf("Reward:         %d\n", s.Reward)
-	content += fmt.Sprintf("Is complete:    %v\n", s.IsComplete)
-	content += fmt.Sprintf("Star awarded:   %v\n", s.StarAwarded)
-	return content
-}

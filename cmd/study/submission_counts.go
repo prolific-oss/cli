@@ -7,14 +7,18 @@ import (
 	"io"
 	"text/tabwriter"
 
+	"github.com/charmbracelet/bubbles/list"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/cmd/submission"
 	"github.com/prolific-oss/cli/model"
 	"github.com/spf13/cobra"
 )
 
 // SubmissionCountsOptions is the options for the submission-counts command.
 type SubmissionCountsOptions struct {
-	JSON bool
+	JSON           bool
+	NonInteractive bool
 }
 
 // NewSubmissionCountsCommand creates a new `study submission-counts` command to
@@ -27,14 +31,19 @@ func NewSubmissionCountsCommand(client client.API, w io.Writer) *cobra.Command {
 		Short: "Get submission counts by status for a study",
 		Long:  `Retrieve a summary of submission counts grouped by status for a given study`,
 		Example: `
-To get submission counts for a study:
+To get submission counts for a study (interactive):
 $ prolific study submission-counts 64395e9c2332b8a59a65d51e
+
+To get submission counts as a table:
+$ prolific study submission-counts 64395e9c2332b8a59a65d51e -n
 
 To get submission counts as JSON:
 $ prolific study submission-counts 64395e9c2332b8a59a65d51e --json`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			counts, err := client.GetStudySubmissionCounts(args[0])
+			studyID := args[0]
+
+			counts, err := client.GetStudySubmissionCounts(studyID)
 			if err != nil {
 				return err
 			}
@@ -45,8 +54,29 @@ $ prolific study submission-counts 64395e9c2332b8a59a65d51e --json`,
 					return err
 				}
 				fmt.Fprintln(w, string(data))
-			} else {
+				return nil
+			}
+
+			if opts.NonInteractive {
 				fmt.Fprint(w, renderSubmissionCounts(counts))
+				return nil
+			}
+
+			countItems := counts.ToItems()
+			if len(countItems) == 0 {
+				fmt.Fprintln(w, "No submissions found for this study.")
+				return nil
+			}
+
+			var items []list.Item
+			for _, item := range countItems {
+				items = append(items, item)
+			}
+
+			cv := submission.NewCountsView(items, studyID, client)
+			p := tea.NewProgram(cv)
+			if _, err := p.Run(); err != nil {
+				return fmt.Errorf("cannot render submission counts: %s", err)
 			}
 
 			return nil
@@ -55,6 +85,7 @@ $ prolific study submission-counts 64395e9c2332b8a59a65d51e --json`,
 
 	flags := cmd.Flags()
 	flags.BoolVar(&opts.JSON, "json", false, "Output as JSON")
+	flags.BoolVarP(&opts.NonInteractive, "non-interactive", "n", false, "Render as a table")
 
 	return cmd
 }

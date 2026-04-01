@@ -32,7 +32,7 @@ func (s Submission) FilterValue() string { return s.ParticipantID }
 // Title is the primary display string in the Bubbletea list view.
 func (s Submission) Title() string { return s.ParticipantID }
 
-// Description is the secondary display string in the Bubbletea list view.
+// Description implements list.Item for bubbletea.
 func (s Submission) Description() string {
-	return fmt.Sprintf("%s - %ds", s.Status, s.TimeTaken)
+	return fmt.Sprintf("%s - %s - %ds", s.Status, s.StudyCode, s.TimeTaken)
 }

@@ -21,7 +21,7 @@ func TestRenderFilter(t *testing.T) {
 		Max:               10,
 		Choices:           map[string]string{"choice1": "Choice 1", "choice2": "Choice 2"},
 		SelectedValues:    []string{"choice1"},
-		SelectedRange:     model.FilterRange{Lower: 1, Upper: 10},
+		SelectedRange:     &model.FilterRange{Lower: 1, Upper: 10},
 	}
 
 	actual := RenderFilter(record)
