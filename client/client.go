@@ -41,6 +41,8 @@ type API interface {
 	UpdateStudy(ID string, study any) (*model.Study, error)
 	GetStudySubmissionCounts(ID string) (*model.SubmissionCounts, error)
 	GetStudyCredentialsUsageReportCSV(ID string) (string, error)
+	ExportDemographics(ID string) (*DemographicExportResponse, error)
+	TestStudy(ID string) (*model.Study, error)
 	CreateCredentialPool(credentials string, workspaceID string) (*CredentialPoolResponse, error)
 	UpdateCredentialPool(credentialPoolID string, credentials string) (*CredentialPoolResponse, error)
 	ListCredentialPools(workspaceID string) (*ListCredentialPoolsResponse, error)
@@ -473,6 +475,37 @@ func (c *Client) GetStudyCredentialsUsageReportCSV(ID string) (string, error) {
 	}
 
 	return string(responseBody), nil
+}
+
+// ExportDemographics triggers a demographic data export for all submissions in a study.
+func (c *Client) ExportDemographics(ID string) (*DemographicExportResponse, error) {
+	var response DemographicExportResponse
+
+	url := fmt.Sprintf("/api/v1/studies/%s/demographic-export/", ID)
+	_, err := c.Execute(http.MethodPost, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// TestStudy creates a test run of a study to validate configuration before going live.
+func (c *Client) TestStudy(ID string) (*model.Study, error) {
+	var response model.Study
+
+	url := fmt.Sprintf("/api/v1/studies/%s/test-study/", ID)
+	httpResponse, err := c.Execute(http.MethodPost, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unable to create test study: %v", string(body))
+	}
+
+	return &response, nil
 }
 
 // GetHooks will return the subscriptions to event types for current user.

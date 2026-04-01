@@ -229,6 +229,21 @@ func (mr *MockAPIMockRecorder) DuplicateStudy(ID interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DuplicateStudy", reflect.TypeOf((*MockAPI)(nil).DuplicateStudy), ID)
 }
 
+// ExportDemographics mocks base method.
+func (m *MockAPI) ExportDemographics(ID string) (*client.DemographicExportResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExportDemographics", ID)
+	ret0, _ := ret[0].(*client.DemographicExportResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExportDemographics indicates an expected call of ExportDemographics.
+func (mr *MockAPIMockRecorder) ExportDemographics(ID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportDemographics", reflect.TypeOf((*MockAPI)(nil).ExportDemographics), ID)
+}
+
 // GetAITaskBuilderBatch mocks base method.
 func (m *MockAPI) GetAITaskBuilderBatch(batchID string) (*client.GetAITaskBuilderBatchResponse, error) {
 	m.ctrl.T.Helper()
@@ -794,6 +809,21 @@ func (m *MockAPI) SetupAITaskBuilderBatch(batchID, datasetID string, tasksPerGro
 func (mr *MockAPIMockRecorder) SetupAITaskBuilderBatch(batchID, datasetID, tasksPerGroup interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetupAITaskBuilderBatch", reflect.TypeOf((*MockAPI)(nil).SetupAITaskBuilderBatch), batchID, datasetID, tasksPerGroup)
+}
+
+// TestStudy mocks base method.
+func (m *MockAPI) TestStudy(ID string) (*model.Study, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TestStudy", ID)
+	ret0, _ := ret[0].(*model.Study)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TestStudy indicates an expected call of TestStudy.
+func (mr *MockAPIMockRecorder) TestStudy(ID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TestStudy", reflect.TypeOf((*MockAPI)(nil).TestStudy), ID)
 }
 
 // TransitionStudy mocks base method.
