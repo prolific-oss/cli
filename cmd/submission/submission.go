@@ -22,6 +22,8 @@ commands allow you to manage those submissions.
 	cmd.AddCommand(
 		NewListCommand(client, w),
 		NewRequestReturnCommand(client, w),
+		NewTransitionCommand(client, w),
+		NewBulkApproveCommand(client, w),
 	)
 	return cmd
 }

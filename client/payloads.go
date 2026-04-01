@@ -48,6 +48,28 @@ type UpdateHookPayload struct {
 	IsEnabled *bool   `json:"is_enabled,omitempty"`
 }
 
+// CompletionCodeData represents the data for a dynamic payment completion code.
+type CompletionCodeData struct {
+	PercentageOfReward   float64 `json:"percentage_of_reward"`
+	MessageToParticipant string  `json:"message_to_participant,omitempty"`
+}
+
+// TransitionSubmissionPayload represents the JSON payload for transitioning a submission.
+type TransitionSubmissionPayload struct {
+	Action             string              `json:"action"`
+	Message            string              `json:"message,omitempty"`
+	RejectionCategory  string              `json:"rejection_category,omitempty"`
+	CompletionCode     string              `json:"completion_code,omitempty"`
+	CompletionCodeData *CompletionCodeData `json:"completion_code_data,omitempty"`
+}
+
+// BulkApproveSubmissionsPayload represents the JSON payload for bulk approving submissions.
+type BulkApproveSubmissionsPayload struct {
+	SubmissionIDs  []string `json:"submission_ids,omitempty"`
+	StudyID        string   `json:"study_id,omitempty"`
+	ParticipantIDs []string `json:"participant_ids,omitempty"`
+}
+
 // CreateAITaskBuilderDatasetPayload represents the request for creating a dataset
 type CreateAITaskBuilderDatasetPayload struct {
 	Name        string `json:"name"`
