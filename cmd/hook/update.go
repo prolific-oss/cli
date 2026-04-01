@@ -30,13 +30,13 @@ You can update the event type, target URL, or enable/disable the subscription.
 All fields are optional; only the flags you provide will be updated.`,
 		Example: `
 Disable a subscription:
-$ prolific hook update sub-id-123 --disable
+$ prolific hook update 6261321e223a605c7a4f7564 --disable
 
 Update the target URL:
-$ prolific hook update sub-id-123 -u https://example.com/api/v2/hook/
+$ prolific hook update 6261321e223a605c7a4f7564 -u https://example.com/api/v2/hook/
 
 Update event type and re-enable:
-$ prolific hook update sub-id-123 -e study.status.change --enable`,
+$ prolific hook update 6261321e223a605c7a4f7564 -e study.status.change --enable`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if opts.Enable && opts.Disable {

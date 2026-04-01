@@ -60,6 +60,7 @@ type API interface {
 	CreateHookSubscription(payload CreateHookPayload) (*model.Hook, string, error)
 	ConfirmHookSubscription(subscriptionID, secret string) (*model.Hook, error)
 	UpdateHookSubscription(subscriptionID string, payload UpdateHookPayload) (*model.Hook, error)
+	DeleteHookSubscription(subscriptionID string) error
 
 	GetWorkspaces(limit, offset int) (*ListWorkspacesResponse, error)
 	CreateWorkspace(workspace model.Workspace) (*CreateWorkspacesResponse, error)
@@ -588,6 +589,22 @@ func (c *Client) UpdateHookSubscription(subscriptionID string, payload UpdateHoo
 
 	return &response, nil
 }
+
+// DeleteHookSubscription deletes a hook subscription by ID.
+func (c *Client) DeleteHookSubscription(subscriptionID string) error {
+	url := fmt.Sprintf("/api/v1/hooks/subscriptions/%s/", subscriptionID)
+	httpResponse, err := c.Execute(http.MethodDelete, url, nil, nil)
+	if err != nil {
+		return fmt.Errorf("unable to delete hook subscription %s: %s", subscriptionID, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("unable to delete hook subscription %s, status code: %v", subscriptionID, httpResponse.StatusCode)
+	}
+
+	return nil
+}
+
 func (c *Client) GetWorkspaces(limit, offset int) (*ListWorkspacesResponse, error) {
 	var response ListWorkspacesResponse
 

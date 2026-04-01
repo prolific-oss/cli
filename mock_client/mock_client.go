@@ -230,6 +230,20 @@ func (mr *MockAPIMockRecorder) CreateWorkspace(workspace interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWorkspace", reflect.TypeOf((*MockAPI)(nil).CreateWorkspace), workspace)
 }
 
+// DeleteHookSubscription mocks base method.
+func (m *MockAPI) DeleteHookSubscription(subscriptionID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteHookSubscription", subscriptionID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteHookSubscription indicates an expected call of DeleteHookSubscription.
+func (mr *MockAPIMockRecorder) DeleteHookSubscription(subscriptionID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteHookSubscription", reflect.TypeOf((*MockAPI)(nil).DeleteHookSubscription), subscriptionID)
+}
+
 // DuplicateStudy mocks base method.
 func (m *MockAPI) DuplicateStudy(ID string) (*model.Study, error) {
 	m.ctrl.T.Helper()
