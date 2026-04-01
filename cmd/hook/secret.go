@@ -7,7 +7,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	clientpkg "github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/client"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -20,7 +20,7 @@ type ListSecretOptions struct {
 
 // NewListSecretCommand creates a new `hook secrets` command to give you details about
 // your secrets.
-func NewListSecretCommand(commandName string, client clientpkg.API, w io.Writer) *cobra.Command {
+func NewListSecretCommand(commandName string, c client.API, w io.Writer) *cobra.Command {
 	var opts ListSecretOptions
 
 	cmd := &cobra.Command{
@@ -28,7 +28,7 @@ func NewListSecretCommand(commandName string, client clientpkg.API, w io.Writer)
 		Short: "List your hook secrets",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
-			err := renderSecrets(client, opts, w)
+			err := renderSecrets(c, opts, w)
 			if err != nil {
 				return fmt.Errorf("error: %s", err.Error())
 			}
@@ -52,7 +52,7 @@ type CreateSecretOptions struct {
 // NewCreateSecretCommand creates a new `hook create-secret` command to generate a secret
 // for verifying webhook request signatures. If a secret already exists for the workspace,
 // it will be replaced.
-func NewCreateSecretCommand(client clientpkg.API, w io.Writer) *cobra.Command {
+func NewCreateSecretCommand(c client.API, w io.Writer) *cobra.Command {
 	var opts CreateSecretOptions
 
 	cmd := &cobra.Command{
@@ -79,7 +79,7 @@ $ prolific hook create-secret -w 63722982f9cc073ecc730f6b --delete-old-secret
 				return nil
 			}
 
-			secret, err := client.CreateHookSecret(clientpkg.CreateSecretPayload{
+			secret, err := c.CreateHookSecret(client.CreateSecretPayload{
 				WorkspaceID: opts.WorkspaceID,
 			})
 			if err != nil {
@@ -126,8 +126,8 @@ func confirmSecretCreation(deleteOldSecret bool, r io.Reader, w io.Writer) (bool
 }
 
 // renderSecrets will show all of the secrets in a given workspace.
-func renderSecrets(client clientpkg.API, opts ListSecretOptions, w io.Writer) error {
-	secrets, err := client.GetHookSecrets(opts.WorkspaceID)
+func renderSecrets(c client.API, opts ListSecretOptions, w io.Writer) error {
+	secrets, err := c.GetHookSecrets(opts.WorkspaceID)
 	if err != nil {
 		return err
 	}

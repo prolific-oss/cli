@@ -38,6 +38,8 @@ $ prolific hook create -w 63722982f9cc073ecc730f6b -e study.status.change -u htt
 				TargetURL:   opts.TargetURL,
 			}
 
+			// The secret here is a one-time secret used for confirming the subscription received via X-Hook-Secret header,
+			// and is not the same as the hook secret used for signing webhook requests.
 			hook, secret, err := c.CreateHookSubscription(payload)
 			if err != nil {
 				return fmt.Errorf("error: %s", err.Error())
