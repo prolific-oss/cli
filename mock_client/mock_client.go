@@ -199,6 +199,21 @@ func (mr *MockAPIMockRecorder) CreateStudy(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateStudy", reflect.TypeOf((*MockAPI)(nil).CreateStudy), arg0)
 }
 
+// CreateSurvey mocks base method.
+func (m *MockAPI) CreateSurvey(survey model.CreateSurvey) (*client.CreateSurveyResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateSurvey", survey)
+	ret0, _ := ret[0].(*client.CreateSurveyResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateSurvey indicates an expected call of CreateSurvey.
+func (mr *MockAPIMockRecorder) CreateSurvey(survey interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSurvey", reflect.TypeOf((*MockAPI)(nil).CreateSurvey), survey)
+}
+
 // CreateWorkspace mocks base method.
 func (m *MockAPI) CreateWorkspace(workspace model.Workspace) (*client.CreateWorkspacesResponse, error) {
 	m.ctrl.T.Helper()
@@ -212,6 +227,20 @@ func (m *MockAPI) CreateWorkspace(workspace model.Workspace) (*client.CreateWork
 func (mr *MockAPIMockRecorder) CreateWorkspace(workspace interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWorkspace", reflect.TypeOf((*MockAPI)(nil).CreateWorkspace), workspace)
+}
+
+// DeleteSurvey mocks base method.
+func (m *MockAPI) DeleteSurvey(ID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteSurvey", ID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteSurvey indicates an expected call of DeleteSurvey.
+func (mr *MockAPIMockRecorder) DeleteSurvey(ID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSurvey", reflect.TypeOf((*MockAPI)(nil).DeleteSurvey), ID)
 }
 
 // DuplicateStudy mocks base method.
@@ -662,6 +691,36 @@ func (m *MockAPI) GetSubmissions(ID string, limit, offset int) (*client.ListSubm
 func (mr *MockAPIMockRecorder) GetSubmissions(ID, limit, offset interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubmissions", reflect.TypeOf((*MockAPI)(nil).GetSubmissions), ID, limit, offset)
+}
+
+// GetSurvey mocks base method.
+func (m *MockAPI) GetSurvey(ID string) (*model.Survey, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSurvey", ID)
+	ret0, _ := ret[0].(*model.Survey)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSurvey indicates an expected call of GetSurvey.
+func (mr *MockAPIMockRecorder) GetSurvey(ID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSurvey", reflect.TypeOf((*MockAPI)(nil).GetSurvey), ID)
+}
+
+// GetSurveys mocks base method.
+func (m *MockAPI) GetSurveys(researcherID string, limit, offset int) (*client.ListSurveysResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSurveys", researcherID, limit, offset)
+	ret0, _ := ret[0].(*client.ListSurveysResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSurveys indicates an expected call of GetSurveys.
+func (mr *MockAPIMockRecorder) GetSurveys(researcherID, limit, offset interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSurveys", reflect.TypeOf((*MockAPI)(nil).GetSurveys), researcherID, limit, offset)
 }
 
 // GetUnreadMessages mocks base method.

@@ -76,6 +76,11 @@ type API interface {
 	GetFilterSet(ID string) (*model.FilterSet, error)
 	CreateFilterSet(filterSet model.CreateFilterSet) (*CreateFilterSetResponse, error)
 
+	GetSurveys(researcherID string, limit, offset int) (*ListSurveysResponse, error)
+	GetSurvey(ID string) (*model.Survey, error)
+	CreateSurvey(survey model.CreateSurvey) (*CreateSurveyResponse, error)
+	DeleteSurvey(ID string) error
+
 	GetMessages(userID *string, createdAfter *string) (*ListMessagesResponse, error)
 	SendMessage(body, recipientID, studyID string) error
 	GetUnreadMessages() (*ListUnreadMessagesResponse, error)
@@ -709,6 +714,64 @@ func (c *Client) CreateFilterSet(filterSet model.CreateFilterSet) (*CreateFilter
 	}
 
 	return &response, nil
+}
+
+// GetSurveys will return the surveys for a researcher
+func (c *Client) GetSurveys(researcherID string, limit, offset int) (*ListSurveysResponse, error) {
+	var response ListSurveysResponse
+
+	url := fmt.Sprintf("/api/v1/surveys/?researcher_id=%s&limit=%v&offset=%v", researcherID, limit, offset)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// GetSurvey will return the survey for the given survey ID
+func (c *Client) GetSurvey(ID string) (*model.Survey, error) {
+	var response model.Survey
+
+	url := fmt.Sprintf("/api/v1/surveys/%s/", ID)
+	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("status code was %v, so therefore unable to get survey: %v", httpResponse.StatusCode, ID)
+	}
+
+	return &response, nil
+}
+
+// CreateSurvey will create a new survey
+func (c *Client) CreateSurvey(survey model.CreateSurvey) (*CreateSurveyResponse, error) {
+	var response CreateSurveyResponse
+
+	url := "/api/v1/surveys/"
+	_, err := c.Execute(http.MethodPost, url, survey, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// DeleteSurvey will delete the survey with the given ID
+func (c *Client) DeleteSurvey(ID string) error {
+	url := fmt.Sprintf("/api/v1/surveys/%s/", ID)
+	httpResponse, err := c.Execute(http.MethodDelete, url, nil, nil)
+	if err != nil {
+		return fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		return fmt.Errorf("status code was %v, so therefore unable to delete survey: %v", httpResponse.StatusCode, ID)
+	}
+
+	return nil
 }
 
 // UpdateCollection will update a collection with the given ID
