@@ -55,6 +55,7 @@ type API interface {
 	GetHooks(workspaceID string, enabled bool, limit, offset int) (*ListHooksResponse, error)
 	GetHookEventTypes() (*ListHookEventTypesResponse, error)
 	GetHookSecrets(workspaceID string) (*ListSecretsResponse, error)
+	CreateHookSecret(payload CreateSecretPayload) (*model.Secret, error)
 	GetEvents(subscriptionID string, limit, offset int) (*ListHookEventsResponse, error)
 	CreateHookSubscription(payload CreateHookPayload) (*model.Hook, string, error)
 	ConfirmHookSubscription(subscriptionID, secret string) (*model.Hook, error)
@@ -495,6 +496,19 @@ func (c *Client) GetHookSecrets(workspaceID string) (*ListSecretsResponse, error
 
 	url := fmt.Sprintf("/api/v1/hooks/secrets/?workspace_id=%s", workspaceID)
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// CreateHookSecret will create (or replace) a secret for a Workspace.
+func (c *Client) CreateHookSecret(payload CreateSecretPayload) (*model.Secret, error) {
+	var response model.Secret
+
+	const url = "/api/v1/hooks/secrets/"
+	_, err := c.Execute(http.MethodPost, url, payload, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}

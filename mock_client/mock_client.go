@@ -154,6 +154,21 @@ func (mr *MockAPIMockRecorder) CreateCredentialPool(credentials, workspaceID int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCredentialPool", reflect.TypeOf((*MockAPI)(nil).CreateCredentialPool), credentials, workspaceID)
 }
 
+// CreateHookSecret mocks base method.
+func (m *MockAPI) CreateHookSecret(payload client.CreateSecretPayload) (*model.Secret, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateHookSecret", payload)
+	ret0, _ := ret[0].(*model.Secret)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateHookSecret indicates an expected call of CreateHookSecret.
+func (mr *MockAPIMockRecorder) CreateHookSecret(payload interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateHookSecret", reflect.TypeOf((*MockAPI)(nil).CreateHookSecret), payload)
+}
+
 // CreateHookSubscription mocks base method.
 func (m *MockAPI) CreateHookSubscription(payload client.CreateHookPayload) (*model.Hook, string, error) {
 	m.ctrl.T.Helper()

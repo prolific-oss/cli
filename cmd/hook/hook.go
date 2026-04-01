@@ -25,6 +25,7 @@ in the the Prolific Platform.`,
 		NewEventListCommand("events", client, w),
 		NewCreateSubscriptionCommand(client, w),
 		NewUpdateSubscriptionCommand(client, w),
+		NewCreateSecretCommand(client, w),
 	)
 
 	return cmd

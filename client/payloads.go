@@ -35,6 +35,11 @@ type CreateHookPayload struct {
 	WorkspaceID string `json:"workspace_id"`
 }
 
+// CreateSecretPayload represents the JSON payload for creating a hook secret.
+type CreateSecretPayload struct {
+	WorkspaceID string `json:"workspace_id"`
+}
+
 // UpdateHookPayload represents the JSON payload for updating a hook subscription.
 // All fields are optional; only non-nil fields are sent in the request.
 type UpdateHookPayload struct {
