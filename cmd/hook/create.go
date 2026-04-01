@@ -66,6 +66,7 @@ $ prolific hook create -w 63722982f9cc073ecc730f6b -e study.status.change -u htt
 	flags.StringVarP(&opts.EventType, "event-type", "e", "", "The event type to subscribe to (required)")
 	flags.StringVarP(&opts.TargetURL, "target-url", "u", "", "The URL to notify when the event is triggered (required)")
 
+	_ = cmd.MarkFlagRequired("workspace")
 	_ = cmd.MarkFlagRequired("event-type")
 	_ = cmd.MarkFlagRequired("target-url")
 

@@ -549,7 +549,7 @@ func (c *Client) CreateHookSubscription(payload CreateHookPayload) (*model.Hook,
 	return &response, secret, nil
 }
 
-// ConfirmWebhookSubscription confirms a webhook subscription using the secret
+// ConfirmHookSubscription confirms a webhook subscription using the secret
 // returned in the X-Hook-Secret header when the subscription was created.
 func (c *Client) ConfirmHookSubscription(subscriptionID, secret string) (*model.Hook, error) {
 	var response model.Hook
