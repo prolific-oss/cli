@@ -39,6 +39,7 @@ type API interface {
 	RequestSubmissionReturn(ID string, reasons []string) (*RequestSubmissionReturnResponse, error)
 	TransitionStudy(ID, action string) (*TransitionStudyResponse, error)
 	UpdateStudy(ID string, study any) (*model.Study, error)
+	GetStudySubmissionCounts(ID string) (*model.SubmissionCounts, error)
 	GetStudyCredentialsUsageReportCSV(ID string) (string, error)
 	CreateCredentialPool(credentials string, workspaceID string) (*CredentialPoolResponse, error)
 	UpdateCredentialPool(credentialPoolID string, credentials string) (*CredentialPoolResponse, error)
@@ -65,17 +66,21 @@ type API interface {
 	GetWorkspaces(limit, offset int) (*ListWorkspacesResponse, error)
 	CreateWorkspace(workspace model.Workspace) (*CreateWorkspacesResponse, error)
 
+	CreateInvitation(invitation model.CreateInvitation) (*CreateInvitationResponse, error)
+
 	GetProjects(workspaceID string, limit, offset int) (*ListProjectsResponse, error)
 	CreateProject(workspaceID string, project model.Project) (*CreateProjectResponse, error)
 	GetProject(ID string) (*model.Project, error)
 
 	GetParticipantGroups(workspaceID string, limit, offset int) (*ListParticipantGroupsResponse, error)
 	GetParticipantGroup(groupID string) (*ViewParticipantGroupResponse, error)
+	CreateParticipantGroup(group model.CreateParticipantGroup) (*CreateParticipantGroupResponse, error)
 
 	GetFilters() (*ListFiltersResponse, error)
 
 	GetFilterSets(workspaceID string, limit, offset int) (*ListFilterSetsResponse, error)
 	GetFilterSet(ID string) (*model.FilterSet, error)
+	CreateFilterSet(filterSet model.CreateFilterSet) (*CreateFilterSetResponse, error)
 
 	GetMessages(userID *string, createdAfter *string) (*ListMessagesResponse, error)
 	SendMessage(body, recipientID, studyID string) error
@@ -298,6 +303,24 @@ func (c *Client) GetStudy(ID string) (*model.Study, error) {
 	if httpResponse.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(httpResponse.Body)
 		return nil, fmt.Errorf("unable to get study: %v", string(body))
+	}
+
+	return &response, nil
+}
+
+// GetStudySubmissionCounts returns submission counts grouped by status for a study.
+func (c *Client) GetStudySubmissionCounts(ID string) (*model.SubmissionCounts, error) {
+	var response model.SubmissionCounts
+
+	url := fmt.Sprintf("/api/v1/studies/%s/submissions/counts/", ID)
+	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unable to get submission counts: %v", string(body))
 	}
 
 	return &response, nil
@@ -639,6 +662,24 @@ func (c *Client) CreateWorkspace(workspace model.Workspace) (*CreateWorkspacesRe
 	return &response, nil
 }
 
+// CreateInvitation will create invitations for the given email addresses
+func (c *Client) CreateInvitation(invitation model.CreateInvitation) (*CreateInvitationResponse, error) {
+	var response CreateInvitationResponse
+
+	url := "/api/v1/invitations/"
+	httpResponse, err := c.Execute(http.MethodPost, url, invitation, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unable to create invitation: %v", string(body))
+	}
+
+	return &response, nil
+}
+
 // GetProjects will return the projects for the given workspace ID
 func (c *Client) GetProjects(workspaceID string, limit, offset int) (*ListProjectsResponse, error) {
 	var response ListProjectsResponse
@@ -708,6 +749,19 @@ func (c *Client) GetParticipantGroup(groupID string) (*ViewParticipantGroupRespo
 	return &response, nil
 }
 
+// CreateParticipantGroup will create a new participant group
+func (c *Client) CreateParticipantGroup(group model.CreateParticipantGroup) (*CreateParticipantGroupResponse, error) {
+	var response CreateParticipantGroupResponse
+
+	url := "/api/v1/participant-groups/"
+	_, err := c.Execute(http.MethodPost, url, group, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
 func (c *Client) GetFilters() (*ListFiltersResponse, error) {
 	var response ListFiltersResponse
 
@@ -745,6 +799,19 @@ func (c *Client) GetFilterSet(ID string) (*model.FilterSet, error) {
 
 	if httpResponse.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("status code was %v, so therefore unable to get filter set: %v", httpResponse.StatusCode, ID)
+	}
+
+	return &response, nil
+}
+
+// CreateFilterSet will create a new filter set
+func (c *Client) CreateFilterSet(filterSet model.CreateFilterSet) (*CreateFilterSetResponse, error) {
+	var response CreateFilterSetResponse
+
+	url := "/api/v1/filter-sets/"
+	_, err := c.Execute(http.MethodPost, url, filterSet, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
 
 	return &response, nil

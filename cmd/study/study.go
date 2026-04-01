@@ -24,6 +24,7 @@ func NewStudyCommand(client client.API, w io.Writer) *cobra.Command {
 		NewSetCredentialPoolCommand(client, w),
 		NewTransitionCommand(client, w),
 		NewCredentialsReportCommand(client, w),
+		NewSubmissionCountsCommand(client, w),
 	)
 	return cmd
 }

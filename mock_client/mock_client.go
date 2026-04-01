@@ -154,6 +154,21 @@ func (mr *MockAPIMockRecorder) CreateCredentialPool(credentials, workspaceID int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCredentialPool", reflect.TypeOf((*MockAPI)(nil).CreateCredentialPool), credentials, workspaceID)
 }
 
+// CreateFilterSet mocks base method.
+func (m *MockAPI) CreateFilterSet(filterSet model.CreateFilterSet) (*client.CreateFilterSetResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateFilterSet", filterSet)
+	ret0, _ := ret[0].(*client.CreateFilterSetResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateFilterSet indicates an expected call of CreateFilterSet.
+func (mr *MockAPIMockRecorder) CreateFilterSet(filterSet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFilterSet", reflect.TypeOf((*MockAPI)(nil).CreateFilterSet), filterSet)
+}
+
 // CreateHookSecret mocks base method.
 func (m *MockAPI) CreateHookSecret(payload client.CreateSecretPayload) (*model.Secret, error) {
 	m.ctrl.T.Helper()
@@ -183,6 +198,36 @@ func (m *MockAPI) CreateHookSubscription(payload client.CreateHookPayload) (*mod
 func (mr *MockAPIMockRecorder) CreateHookSubscription(payload interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateHookSubscription", reflect.TypeOf((*MockAPI)(nil).CreateHookSubscription), payload)
+}
+
+// CreateInvitation mocks base method.
+func (m *MockAPI) CreateInvitation(invitation model.CreateInvitation) (*client.CreateInvitationResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateInvitation", invitation)
+	ret0, _ := ret[0].(*client.CreateInvitationResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateInvitation indicates an expected call of CreateInvitation.
+func (mr *MockAPIMockRecorder) CreateInvitation(invitation interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateInvitation", reflect.TypeOf((*MockAPI)(nil).CreateInvitation), invitation)
+}
+
+// CreateParticipantGroup mocks base method.
+func (m *MockAPI) CreateParticipantGroup(group model.CreateParticipantGroup) (*client.CreateParticipantGroupResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateParticipantGroup", group)
+	ret0, _ := ret[0].(*client.CreateParticipantGroupResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateParticipantGroup indicates an expected call of CreateParticipantGroup.
+func (mr *MockAPIMockRecorder) CreateParticipantGroup(group interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateParticipantGroup", reflect.TypeOf((*MockAPI)(nil).CreateParticipantGroup), group)
 }
 
 // CreateProject mocks base method.
@@ -662,6 +707,21 @@ func (m *MockAPI) GetStudyCredentialsUsageReportCSV(ID string) (string, error) {
 func (mr *MockAPIMockRecorder) GetStudyCredentialsUsageReportCSV(ID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStudyCredentialsUsageReportCSV", reflect.TypeOf((*MockAPI)(nil).GetStudyCredentialsUsageReportCSV), ID)
+}
+
+// GetStudySubmissionCounts mocks base method.
+func (m *MockAPI) GetStudySubmissionCounts(ID string) (*model.SubmissionCounts, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetStudySubmissionCounts", ID)
+	ret0, _ := ret[0].(*model.SubmissionCounts)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetStudySubmissionCounts indicates an expected call of GetStudySubmissionCounts.
+func (mr *MockAPIMockRecorder) GetStudySubmissionCounts(ID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStudySubmissionCounts", reflect.TypeOf((*MockAPI)(nil).GetStudySubmissionCounts), ID)
 }
 
 // GetSubmissions mocks base method.

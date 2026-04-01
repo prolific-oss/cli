@@ -94,7 +94,7 @@ func renderProject(client client.API, opts ViewOptions, w io.Writer) error {
 			}
 		}
 
-		if filter.SelectedRange.Lower != nil || filter.SelectedRange.Upper != nil {
+		if filter.SelectedRange != nil && (filter.SelectedRange.Lower != nil || filter.SelectedRange.Upper != nil) {
 			content.WriteString("\nSelected range:")
 
 			if filter.SelectedRange.Upper != nil {

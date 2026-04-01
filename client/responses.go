@@ -169,6 +169,11 @@ type ListParticipantGroupsResponse struct {
 	*JSONAPIMeta
 }
 
+// CreateParticipantGroupResponse is the response for creating a participant group.
+type CreateParticipantGroupResponse struct {
+	model.ParticipantGroup
+}
+
 // ViewParticipantGroupResponse is the list of members in a group.
 type ViewParticipantGroupResponse struct {
 	Results []model.ParticipantGroupMembership `json:"results"`
@@ -178,6 +183,11 @@ type ListFilterSetsResponse struct {
 	Results []model.FilterSet `json:"results"`
 	*JSONAPILinks
 	*JSONAPIMeta
+}
+
+// CreateFilterSetResponse is the response for creating a filter set.
+type CreateFilterSetResponse struct {
+	model.FilterSet
 }
 
 // ListMessagesResponse is the response for the list messages endpoint.
@@ -311,6 +321,11 @@ type CredentialPoolSummary struct {
 // ListCredentialPoolsResponse is the response for listing credential pools.
 type ListCredentialPoolsResponse struct {
 	CredentialPools []CredentialPoolSummary `json:"credential_pools"`
+}
+
+// CreateInvitationResponse is the response for creating invitations.
+type CreateInvitationResponse struct {
+	Invitations []model.Invitation `json:"invitations"`
 }
 
 // ListCollectionsResponse is the response for the collections API.
