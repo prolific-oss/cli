@@ -169,6 +169,11 @@ type ListParticipantGroupsResponse struct {
 	*JSONAPIMeta
 }
 
+// CreateParticipantGroupResponse is the response for creating a participant group.
+type CreateParticipantGroupResponse struct {
+	model.ParticipantGroup
+}
+
 // ViewParticipantGroupResponse is the list of members in a group.
 type ViewParticipantGroupResponse struct {
 	Results []model.ParticipantGroupMembership `json:"results"`
