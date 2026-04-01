@@ -4,11 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"strings"
 
 	"github.com/prolific-oss/cli/client"
-	"github.com/prolific-oss/cli/model"
-	"github.com/prolific-oss/cli/ui"
 	"github.com/spf13/cobra"
 )
 
@@ -60,44 +57,7 @@ func renderSurvey(client client.API, opts ViewOptions, w io.Writer) error {
 		return err
 	}
 
-	var content strings.Builder
-	content.WriteString(fmt.Sprintln(ui.RenderHeading(survey.Title)))
-
-	content.WriteString(fmt.Sprintf("ID:            %v\n", survey.ID))
-	content.WriteString(fmt.Sprintf("Researcher:    %v\n", survey.ResearcherID))
-	content.WriteString(fmt.Sprintf("Date Created:  %v\n", survey.DateCreated.Format("2006-01-02 15:04:05")))
-	content.WriteString(fmt.Sprintf("Date Modified: %v\n", survey.DateModified.Format("2006-01-02 15:04:05")))
-
-	if len(survey.Sections) > 0 {
-		content.WriteString(ui.RenderSectionMarker())
-		for i, section := range survey.Sections {
-			content.WriteString(fmt.Sprintf("Section: %s\n", section.Title))
-			renderQuestions(&content, section.Questions)
-			if i < len(survey.Sections)-1 {
-				content.WriteString("\n")
-			}
-		}
-	}
-
-	if len(survey.Questions) > 0 {
-		content.WriteString(ui.RenderSectionMarker())
-		renderQuestions(&content, survey.Questions)
-	}
-
-	if len(survey.Sections) == 0 && len(survey.Questions) == 0 {
-		content.WriteString("\nNo questions defined\n")
-	}
-
-	fmt.Fprint(w, content.String())
+	fmt.Fprint(w, renderSurveyString(*survey))
 
 	return nil
-}
-
-func renderQuestions(content *strings.Builder, questions []model.SurveyQuestion) {
-	for _, q := range questions {
-		content.WriteString(fmt.Sprintf("  Question: %s (%s)\n", q.Title, q.Type))
-		for _, a := range q.Answers {
-			content.WriteString(fmt.Sprintf("    - %s\n", a.Value))
-		}
-	}
 }

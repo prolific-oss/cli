@@ -1,7 +1,6 @@
 package survey
 
 import (
-	"errors"
 	"fmt"
 	"io"
 
@@ -47,10 +46,6 @@ $ prolific survey delete 6261321e223a605c7a4f7678
 }
 
 func deleteSurvey(client client.API, opts DeleteOptions, w io.Writer) error {
-	if len(opts.Args) < 1 || opts.Args[0] == "" {
-		return errors.New("please provide a survey ID")
-	}
-
 	err := client.DeleteSurvey(opts.Args[0])
 	if err != nil {
 		return err

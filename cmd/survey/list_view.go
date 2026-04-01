@@ -7,17 +7,14 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/model"
 	"github.com/prolific-oss/cli/ui"
 )
 
 // SurveyListView is responsible for presenting a list view to the user.
 type SurveyListView struct {
-	List    list.Model
-	Surveys map[string]model.Survey
-	Survey  *model.Survey
-	Client  client.API
+	List   list.Model
+	Survey *model.Survey
 }
 
 // Init will initialise the view.
@@ -60,7 +57,7 @@ func (lv SurveyListView) View() string {
 	return lv.List.View()
 }
 
-// renderSurveyString produces a detailed view of the selected survey as a string.
+// renderSurveyString produces a detailed view of a survey as a string.
 func renderSurveyString(s model.Survey) string {
 	var content strings.Builder
 	content.WriteString(fmt.Sprintln(ui.RenderHeading(s.Title)))
@@ -74,12 +71,7 @@ func renderSurveyString(s model.Survey) string {
 		content.WriteString(ui.RenderSectionMarker())
 		for i, section := range s.Sections {
 			content.WriteString(fmt.Sprintf("Section: %s\n", section.Title))
-			for _, q := range section.Questions {
-				content.WriteString(fmt.Sprintf("  Question: %s (%s)\n", q.Title, q.Type))
-				for _, a := range q.Answers {
-					content.WriteString(fmt.Sprintf("    - %s\n", a.Value))
-				}
-			}
+			renderQuestions(&content, section.Questions)
 			if i < len(s.Sections)-1 {
 				content.WriteString("\n")
 			}
@@ -88,12 +80,7 @@ func renderSurveyString(s model.Survey) string {
 
 	if len(s.Questions) > 0 {
 		content.WriteString(ui.RenderSectionMarker())
-		for _, q := range s.Questions {
-			content.WriteString(fmt.Sprintf("  Question: %s (%s)\n", q.Title, q.Type))
-			for _, a := range q.Answers {
-				content.WriteString(fmt.Sprintf("    - %s\n", a.Value))
-			}
-		}
+		renderQuestions(&content, s.Questions)
 	}
 
 	if len(s.Sections) == 0 && len(s.Questions) == 0 {
@@ -101,4 +88,13 @@ func renderSurveyString(s model.Survey) string {
 	}
 
 	return content.String()
+}
+
+func renderQuestions(content *strings.Builder, questions []model.SurveyQuestion) {
+	for _, q := range questions {
+		content.WriteString(fmt.Sprintf("  Question: %s (%s)\n", q.Title, q.Type))
+		for _, a := range q.Answers {
+			content.WriteString(fmt.Sprintf("    - %s\n", a.Value))
+		}
+	}
 }

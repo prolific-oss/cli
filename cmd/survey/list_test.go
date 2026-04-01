@@ -33,14 +33,15 @@ func TestNewListCommand(t *testing.T) {
 
 func TestListSurveys(t *testing.T) {
 	tests := []struct {
-		name           string
-		args           []string
-		meReturn       *client.MeResponse
-		meError        error
-		surveysReturn  *client.ListSurveysResponse
-		surveysError   error
-		expectedOutput string
-		expectedError  string
+		name             string
+		args             []string
+		meReturn         *client.MeResponse
+		meError          error
+		surveysReturn    *client.ListSurveysResponse
+		surveysError     error
+		expectedOutput   string
+		expectedContains []string
+		expectedError    string
 	}{
 		{
 			name:     "table output",
@@ -74,6 +75,7 @@ func TestListSurveys(t *testing.T) {
 					},
 				},
 			},
+			expectedContains: []string{"6ba7b810-9dad-11d1-80b4-00c04fd430c8", "Screening Survey"},
 		},
 		{
 			name:          "GetMe error",
@@ -128,17 +130,17 @@ func TestListSurveys(t *testing.T) {
 				t.Fatalf("unexpected error: %v", err)
 			}
 
+			actual := b.String()
+
 			if tt.expectedOutput != "" {
-				actual := b.String()
 				if actual != tt.expectedOutput {
 					t.Fatalf("expected\n'%s'\ngot\n'%s'\n", tt.expectedOutput, actual)
 				}
 			}
 
-			if tt.name == "json output" {
-				actual := b.String()
-				if !bytes.Contains([]byte(actual), []byte("6ba7b810-9dad-11d1-80b4-00c04fd430c8")) {
-					t.Fatalf("expected JSON output to contain survey ID, got:\n%s", actual)
+			for _, expected := range tt.expectedContains {
+				if !bytes.Contains([]byte(actual), []byte(expected)) {
+					t.Errorf("expected output to contain '%s', got:\n%s", expected, actual)
 				}
 			}
 		})

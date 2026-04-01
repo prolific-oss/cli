@@ -95,17 +95,13 @@ type InteractiveRenderer struct{}
 // Render will render the survey list in an interactive manner.
 func (r *InteractiveRenderer) Render(c client.API, surveys client.ListSurveysResponse, w io.Writer) error {
 	var items []list.Item
-	surveyMap := make(map[string]model.Survey)
 
 	for _, s := range surveys.Results {
 		items = append(items, model.SurveyListItem{Survey: s})
-		surveyMap[s.ID] = s
 	}
 
 	lv := SurveyListView{
-		List:    list.New(items, list.NewDefaultDelegate(), 0, 0),
-		Surveys: surveyMap,
-		Client:  c,
+		List: list.New(items, list.NewDefaultDelegate(), 0, 0),
 	}
 	lv.List.Title = "Surveys"
 
