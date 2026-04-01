@@ -5,45 +5,12 @@
 package model
 
 import (
-	"fmt"
 	"time"
 )
 
 // DefaultCurrency is set to GBP if we cannot figure out what currency to
 // render based on other factors.
 const DefaultCurrency string = "GBP"
-
-// Submission represents a submission to a study from a participant.
-type Submission struct {
-	ID            string    `json:"id"`
-	ParticipantID string    `json:"participant_id"`
-	StartedAt     time.Time `json:"started_at"`
-	CompletedAt   time.Time `json:"completed_at"`
-	IsComplete    bool      `json:"is_complete"`
-	TimeTaken     int       `json:"time_taken"`
-	Reward        int       `json:"reward"`
-	Status        string    `json:"status"`
-	Strata        struct {
-		DateOfBirth         string `json:"date of birth"`
-		EthnicitySimplified string `json:"ethnicity (simplified)"`
-		Sex                 string `json:"sex"`
-	} `json:"strata"`
-	StudyCode     string `json:"study_code"`
-	StarAwarded   bool   `json:"star_awarded"`
-	BonusPayments []any  `json:"bonus_payments"`
-	IP            string `json:"ip"`
-}
-
-// FilterValue implements list.Item for bubbletea.
-func (s Submission) FilterValue() string { return s.ParticipantID }
-
-// Title implements list.Item for bubbletea.
-func (s Submission) Title() string { return s.ParticipantID }
-
-// Description implements list.Item for bubbletea.
-func (s Submission) Description() string {
-	return fmt.Sprintf("%s - %s - %ds", s.Status, s.StudyCode, s.TimeTaken)
-}
 
 // Workspace represents the workspace model
 type Workspace struct {

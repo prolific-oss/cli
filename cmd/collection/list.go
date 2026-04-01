@@ -4,24 +4,27 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/charmbracelet/bubbles/list"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/shared"
+	"github.com/prolific-oss/cli/model"
 	"github.com/prolific-oss/cli/ui"
-	"github.com/prolific-oss/cli/ui/collection"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
+// defaultListFields is the default fields shown when the user has not specified --fields.
+const defaultListFields = "ID,Name,ItemCount"
+
 // ListOptions is the options for the listing collections command.
 type ListOptions struct {
-	Args           []string
-	Csv            bool
-	Json           bool
-	Fields         string
-	NonInteractive bool
-	WorkspaceID    string
-	Limit          int
-	Offset         int
+	Args        []string
+	Fields      string
+	Output      shared.OutputOptions
+	WorkspaceID string
+	Limit       int
+	Offset      int
 }
 
 // NewListCommand creates a new `collection list` command to give you details about
@@ -42,18 +45,20 @@ interface. When you have found the collection you want to look into in more
 detail, press enter.
 $ prolific collection list -w <workspace-id>
 
-You can provide a non-interactive experience, if you want to get details in the
-terminal, or into another application
-$ prolific collection list -w <workspace-id> -n
+You can output as a table, useful for terminal, or into another application
+$ prolific collection list -w <workspace-id> --table
+$ prolific collection list -w <workspace-id> -t
 
-You can render the results as JSON for machine-readable output
-$ prolific collection list -w <workspace-id> --json
-
-You can render the results as a CSV format
+You can output as CSV
+$ prolific collection list -w <workspace-id> --csv
 $ prolific collection list -w <workspace-id> -c
 
-You can specify the fields you want to render in either the non-interactive or CSV
-view
+You can output as JSON
+$ prolific collection list -w <workspace-id> --json
+$ prolific collection list -w <workspace-id> -j
+
+You can specify the fields you want to render in table or CSV output
+$ prolific collection list -w <workspace-id> -f ID,Name,ItemCount -t
 $ prolific collection list -w <workspace-id> -f ID,Name,ItemCount -c
 
 The fields you can use are:
@@ -69,24 +74,7 @@ The fields you can use are:
 				return fmt.Errorf("workspace ID is required")
 			}
 
-			renderer := collection.ListRenderer{}
-
-			if opts.Json {
-				renderer.SetStrategy(&collection.JSONRenderer{})
-			} else if opts.Csv {
-				renderer.SetStrategy(&collection.CsvRenderer{})
-			} else if opts.NonInteractive {
-				renderer.SetStrategy(&collection.NonInteractiveRenderer{})
-			} else {
-				renderer.SetStrategy(&collection.InteractiveRenderer{})
-			}
-
-			err := renderer.Render(c, collection.ListUsedOptions{
-				WorkspaceID: opts.WorkspaceID,
-				Fields:      opts.Fields,
-				Limit:       opts.Limit,
-				Offset:      opts.Offset,
-			}, w)
+			collections, err := c.GetCollections(opts.WorkspaceID, opts.Limit, opts.Offset)
 			if err != nil {
 				if shared.IsFeatureNotEnabledError(err) {
 					ui.RenderFeatureAccessMessage(FeatureNameAITBCollection, FeatureContactURLAITBCollection)
@@ -95,18 +83,73 @@ The fields you can use are:
 				return fmt.Errorf("error: %s", err.Error())
 			}
 
+			format := shared.ResolveFormat(opts.Output)
+			fields := opts.Fields
+			if fields == "" {
+				fields = defaultListFields
+			}
+			switch format {
+			case "json":
+				r := ui.JSONRenderer[model.Collection]{}
+				if err := r.Render(collections.Results, w); err != nil {
+					return fmt.Errorf("error: %s", err)
+				}
+			case "csv":
+				r := ui.CsvRenderer[model.Collection]{}
+				if err := r.Render(collections.Results, fields, w); err != nil {
+					return fmt.Errorf("error: %s", err)
+				}
+			case "table":
+				r := ui.TableRenderer[model.Collection]{}
+				if err := r.Render(collections.Results, fields, w); err != nil {
+					return fmt.Errorf("error: %s", err)
+				}
+			default:
+				r := &InteractiveRenderer{}
+				if err := r.Render(c, *collections, w); err != nil {
+					return fmt.Errorf("error: %s", err)
+				}
+			}
+
 			return nil
 		},
 	}
 
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "The workspace ID to list collections for (required).")
-	flags.BoolVarP(&opts.NonInteractive, "non-interactive", "n", false, "Render the list details straight to the terminal.")
-	flags.BoolVar(&opts.Json, "json", false, "Render the list details in JSON format for machine-readable output.")
-	flags.BoolVarP(&opts.Csv, "csv", "c", false, "Render the list details in a CSV format.")
-	flags.StringVarP(&opts.Fields, "fields", "f", "", "Comma separated list of fields you want to display in non-interactive/csv mode.")
+	flags.StringVarP(&opts.Fields, "fields", "f", "", "Comma separated list of fields you want to display in table/csv mode.")
 	flags.IntVar(&opts.Limit, "limit", client.DefaultRecordLimit, "Limit the number of results returned.")
 	flags.IntVar(&opts.Offset, "offset", client.DefaultRecordOffset, "Offset for pagination.")
+	shared.AddOutputFlags(cmd, &opts.Output)
 
 	return cmd
+}
+
+// InteractiveRenderer runs the bubbles UI framework to provide a rich
+// UI experience for the user.
+type InteractiveRenderer struct{}
+
+// Render will render the list in an interactive manner.
+func (r *InteractiveRenderer) Render(c client.API, collections client.ListCollectionsResponse, w io.Writer) error {
+	var items []list.Item
+	collectionMap := make(map[string]model.Collection)
+
+	for _, collection := range collections.Results {
+		items = append(items, collection)
+		collectionMap[collection.ID] = collection
+	}
+
+	lv := ListView{
+		List:        list.New(items, list.NewDefaultDelegate(), 0, 0),
+		Collections: collectionMap,
+		Client:      c,
+	}
+	lv.List.Title = "Collections"
+
+	p := tea.NewProgram(lv)
+	if _, err := p.Run(); err != nil {
+		return fmt.Errorf("cannot render collections: %s", err)
+	}
+
+	return nil
 }
