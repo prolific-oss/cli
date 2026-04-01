@@ -6,7 +6,7 @@ import (
 
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/model"
-	studyui "github.com/prolific-oss/cli/ui/study"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -157,7 +157,7 @@ func createStudy(client client.API, opts CreateOptions, w io.Writer) error {
 	}
 
 	if !opts.Silent {
-		fmt.Fprintln(w, studyui.RenderStudy(*study))
+		fmt.Fprintln(w, RenderStudy(*study))
 	}
 
 	return nil

@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/prolific-oss/cli/cmd/submission"
 	"github.com/prolific-oss/cli/model"
-	"github.com/prolific-oss/cli/ui/submission"
 )
 
 func TestFilterSubmissionsByStatus(t *testing.T) {
@@ -47,7 +47,7 @@ func TestFilterSubmissionsByStatusCaseInsensitive(t *testing.T) {
 	}
 }
 
-func TestRenderSubmission(t *testing.T) {
+func TestRenderSubmissionWithCount(t *testing.T) {
 	sub := model.Submission{
 		ID:            "sub-123",
 		ParticipantID: "part-456",

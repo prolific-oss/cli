@@ -10,8 +10,8 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/cmd/submission"
 	"github.com/prolific-oss/cli/model"
-	submissionui "github.com/prolific-oss/cli/ui/submission"
 	"github.com/spf13/cobra"
 )
 
@@ -73,7 +73,7 @@ $ prolific study submission-counts 64395e9c2332b8a59a65d51e --json`,
 				items = append(items, item)
 			}
 
-			cv := submissionui.NewCountsView(items, studyID, client)
+			cv := submission.NewCountsView(items, studyID, client)
 			p := tea.NewProgram(cv)
 			if _, err := p.Run(); err != nil {
 				return fmt.Errorf("cannot render submission counts: %s", err)

@@ -7,9 +7,9 @@ import (
 
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/shared"
+	cmdStudy "github.com/prolific-oss/cli/cmd/study"
 	"github.com/prolific-oss/cli/model"
 	"github.com/prolific-oss/cli/ui"
-	studyui "github.com/prolific-oss/cli/ui/study"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -188,9 +188,9 @@ func publishCollection(c client.API, opts PublishOptions, w io.Writer) error {
 	}
 
 	if opts.Draft {
-		fmt.Fprintln(w, studyui.RenderStudy(*study))
+		fmt.Fprintln(w, cmdStudy.RenderStudy(*study))
 		fmt.Fprintf(w, "\nStudy created in draft status. Study ID: %s\n", study.ID)
-		fmt.Fprintf(w, "Study URL: %s\n", studyui.GetStudyURL(study.ID))
+		fmt.Fprintf(w, "Study URL: %s\n", cmdStudy.GetStudyURL(study.ID))
 		fmt.Fprintln(w, "\nTo publish this study, run:")
 		fmt.Fprintf(w, "  prolific study transition %s -a PUBLISH\n", study.ID)
 		return nil
@@ -208,8 +208,8 @@ func publishCollection(c client.API, opts PublishOptions, w io.Writer) error {
 		return fmt.Errorf("failed to get study details: %s", err.Error())
 	}
 
-	fmt.Fprintln(w, studyui.RenderStudy(*study))
-	fmt.Fprintf(w, "\nStudy URL: %s\n", studyui.GetStudyURL(study.ID))
+	fmt.Fprintln(w, cmdStudy.RenderStudy(*study))
+	fmt.Fprintf(w, "\nStudy URL: %s\n", cmdStudy.GetStudyURL(study.ID))
 
 	return nil
 }
