@@ -767,7 +767,7 @@ func (c *Client) DeleteSurvey(ID string) error {
 		return fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
 
-	if httpResponse.StatusCode != http.StatusOK {
+	if httpResponse.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("status code was %v, so therefore unable to delete survey: %v", httpResponse.StatusCode, ID)
 	}
 
