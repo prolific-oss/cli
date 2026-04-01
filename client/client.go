@@ -56,6 +56,9 @@ type API interface {
 	GetHookEventTypes() (*ListHookEventTypesResponse, error)
 	GetHookSecrets(workspaceID string) (*ListSecretsResponse, error)
 	GetEvents(subscriptionID string, limit, offset int) (*ListHookEventsResponse, error)
+	CreateHookSubscription(payload CreateHookPayload) (*model.Hook, string, error)
+	ConfirmHookSubscription(subscriptionID, secret string) (*model.Hook, error)
+	UpdateHookSubscription(subscriptionID string, payload UpdateHookPayload) (*model.Hook, error)
 
 	GetWorkspaces(limit, offset int) (*ListWorkspacesResponse, error)
 	CreateWorkspace(workspace model.Workspace) (*CreateWorkspacesResponse, error)
@@ -512,7 +515,65 @@ func (c *Client) GetEvents(subscriptionID string, limit, offset int) (*ListHookE
 	return &response, nil
 }
 
-// GetWorkspaces will return you the workspaces you can see
+// CreateHookSubscription will create a new hook subscription for a workspace.
+// It returns the hook, the X-Hook-Secret header value needed to confirm the subscription, and any error.
+func (c *Client) CreateHookSubscription(payload CreateHookPayload) (*model.Hook, string, error) {
+	var response model.Hook
+
+	url := "/api/v1/hooks/subscriptions/"
+	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
+	if err != nil {
+		return nil, "", fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusCreated {
+		return nil, "", fmt.Errorf("unable to create hook subscription, status code: %v", httpResponse.StatusCode)
+	}
+
+	secret := httpResponse.Header.Get("X-Hook-Secret")
+	return &response, secret, nil
+}
+
+// ConfirmWebhookSubscription confirms a webhook subscription using the secret
+// returned in the X-Hook-Secret header when the subscription was created.
+func (c *Client) ConfirmHookSubscription(subscriptionID, secret string) (*model.Hook, error) {
+	var response model.Hook
+
+	payload := struct {
+		Secret string `json:"secret"`
+	}{
+		Secret: secret,
+	}
+
+	url := fmt.Sprintf("/api/v1/hooks/subscriptions/%s/", subscriptionID)
+	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to confirm webhook subscription %s: %s", subscriptionID, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unable to confirm webhook subscription %s, status code: %v", subscriptionID, httpResponse.StatusCode)
+	}
+
+	return &response, nil
+}
+
+// UpdateHookSubscription updates an existing webhook subscription.
+func (c *Client) UpdateHookSubscription(subscriptionID string, payload UpdateHookPayload) (*model.Hook, error) {
+	var response model.Hook
+
+	url := fmt.Sprintf("/api/v1/hooks/subscriptions/%s/", subscriptionID)
+	httpResponse, err := c.Execute(http.MethodPatch, url, payload, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to update hook subscription %s: %s", subscriptionID, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unable to update hook subscription %s, status code: %v", subscriptionID, httpResponse.StatusCode)
+	}
+
+	return &response, nil
+}
 func (c *Client) GetWorkspaces(limit, offset int) (*ListWorkspacesResponse, error) {
 	var response ListWorkspacesResponse
 

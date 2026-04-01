@@ -28,6 +28,21 @@ type RequestSubmissionReturnPayload struct {
 	Reasons []string `json:"request_return_reasons"`
 }
 
+// CreateHookPayload represents the JSON payload for creating a hook subscription.
+type CreateHookPayload struct {
+	EventType   string `json:"event_type"`
+	TargetURL   string `json:"target_url"`
+	WorkspaceID string `json:"workspace_id"`
+}
+
+// UpdateHookPayload represents the JSON payload for updating a hook subscription.
+// All fields are optional; only non-nil fields are sent in the request.
+type UpdateHookPayload struct {
+	EventType *string `json:"event_type,omitempty"`
+	TargetURL *string `json:"target_url,omitempty"`
+	IsEnabled *bool   `json:"is_enabled,omitempty"`
+}
+
 // CreateAITaskBuilderDatasetPayload represents the request for creating a dataset
 type CreateAITaskBuilderDatasetPayload struct {
 	Name        string `json:"name"`
