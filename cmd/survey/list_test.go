@@ -34,6 +34,7 @@ func TestNewListCommand(t *testing.T) {
 func TestListSurveys(t *testing.T) {
 	tests := []struct {
 		name           string
+		args           []string
 		meReturn       *client.MeResponse
 		meError        error
 		surveysReturn  *client.ListSurveysResponse
@@ -42,7 +43,8 @@ func TestListSurveys(t *testing.T) {
 		expectedError  string
 	}{
 		{
-			name:     "successful list",
+			name:     "table output",
+			args:     []string{"--table"},
 			meReturn: &client.MeResponse{ID: testResearcherID},
 			surveysReturn: &client.ListSurveysResponse{
 				Results: []model.Survey{
@@ -58,20 +60,30 @@ func TestListSurveys(t *testing.T) {
 					},
 				},
 			},
-			expectedOutput: `ID                                   Title            Date Created
-6ba7b810-9dad-11d1-80b4-00c04fd430c8 Screening Survey 2026-01-15
-7ca8c921-0ebe-22e2-91c5-11d15ge541d9 Follow-up Survey 2026-02-20
-
-Showing 2 records of 2
-`,
+			expectedOutput: "ID                                   Title            DateCreated                   \n6ba7b810-9dad-11d1-80b4-00c04fd430c8 Screening Survey 2026-01-15 00:00:00 +0000 UTC \n7ca8c921-0ebe-22e2-91c5-11d15ge541d9 Follow-up Survey 2026-02-20 00:00:00 +0000 UTC \n",
+		},
+		{
+			name:     "json output",
+			args:     []string{"--json"},
+			meReturn: &client.MeResponse{ID: testResearcherID},
+			surveysReturn: &client.ListSurveysResponse{
+				Results: []model.Survey{
+					{
+						ID:    "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+						Title: "Screening Survey",
+					},
+				},
+			},
 		},
 		{
 			name:          "GetMe error",
+			args:          []string{"--table"},
 			meError:       errors.New("authentication failed"),
 			expectedError: "error: authentication failed",
 		},
 		{
 			name:          "GetSurveys error",
+			args:          []string{"--table"},
 			meReturn:      &client.MeResponse{ID: testResearcherID},
 			surveysError:  errors.New("something went wrong"),
 			expectedError: "error: something went wrong",
@@ -100,7 +112,8 @@ Showing 2 records of 2
 			writer := bufio.NewWriter(&b)
 
 			cmd := survey.NewListCommand("list", c, writer)
-			err := cmd.RunE(cmd, nil)
+			cmd.SetArgs(tt.args)
+			err := cmd.Execute()
 
 			writer.Flush()
 
@@ -115,9 +128,18 @@ Showing 2 records of 2
 				t.Fatalf("unexpected error: %v", err)
 			}
 
-			actual := b.String()
-			if actual != tt.expectedOutput {
-				t.Fatalf("expected\n'%s'\ngot\n'%s'\n", tt.expectedOutput, actual)
+			if tt.expectedOutput != "" {
+				actual := b.String()
+				if actual != tt.expectedOutput {
+					t.Fatalf("expected\n'%s'\ngot\n'%s'\n", tt.expectedOutput, actual)
+				}
+			}
+
+			if tt.name == "json output" {
+				actual := b.String()
+				if !bytes.Contains([]byte(actual), []byte("6ba7b810-9dad-11d1-80b4-00c04fd430c8")) {
+					t.Fatalf("expected JSON output to contain survey ID, got:\n%s", actual)
+				}
 			}
 		})
 	}

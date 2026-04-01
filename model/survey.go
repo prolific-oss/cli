@@ -16,14 +16,20 @@ type Survey struct {
 	Questions    []SurveyQuestion `json:"questions,omitempty"`
 }
 
+// SurveyListItem wraps a Survey to satisfy the bubbletea list.DefaultItem interface
+// without conflicting with the Survey.Title field.
+type SurveyListItem struct {
+	Survey
+}
+
 // FilterValue implements the bubbletea list.Item interface.
-func (s Survey) FilterValue() string { return s.Title }
+func (s SurveyListItem) FilterValue() string { return s.Survey.Title }
 
-// Title returns the title for the bubbletea list.Item interface.
-func (s Survey) ListTitle() string { return s.Title }
+// Title implements the bubbletea list.DefaultItem interface.
+func (s SurveyListItem) Title() string { return s.Survey.Title }
 
-// Description returns a description for the bubbletea list.Item interface.
-func (s Survey) ListDescription() string {
+// Description implements the bubbletea list.DefaultItem interface.
+func (s SurveyListItem) Description() string {
 	return fmt.Sprintf("ID: %s - created %s", s.ID, s.DateCreated.Format("2006-01-02"))
 }
 
