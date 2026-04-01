@@ -7,7 +7,7 @@ import (
 
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/model"
-	studyui "github.com/prolific-oss/cli/ui/study"
+
 	"github.com/spf13/cobra"
 )
 
@@ -64,7 +64,7 @@ func transitionStudy(client client.API, opts TransitionOptions, w io.Writer) err
 			return err
 		}
 
-		fmt.Fprintln(w, studyui.RenderStudy(*study))
+		fmt.Fprintln(w, RenderStudy(*study))
 	}
 
 	return nil

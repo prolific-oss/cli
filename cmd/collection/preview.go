@@ -9,7 +9,6 @@ import (
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/ui"
-	collectionui "github.com/prolific-oss/cli/ui/collection"
 	"github.com/spf13/cobra"
 )
 
@@ -71,7 +70,7 @@ $ prolific collection preview 123456789
 			}
 
 			// Build the preview URL and display it
-			previewURL := collectionui.GetCollectionPreviewURL(collectionID)
+			previewURL := GetCollectionPreviewURL(collectionID)
 			fmt.Fprintln(w, "Opening collection preview in browser...")
 			fmt.Fprintln(w)
 			fmt.Fprintln(w, previewURL)

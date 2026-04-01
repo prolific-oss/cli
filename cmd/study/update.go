@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/prolific-oss/cli/client"
-	studyui "github.com/prolific-oss/cli/ui/study"
+
 	"github.com/spf13/cobra"
 )
 
@@ -113,7 +113,7 @@ func updateStudy(client client.API, opts UpdateOptions, stdin io.Reader, w io.Wr
 		return encoder.Encode(study)
 	}
 
-	fmt.Fprintln(w, studyui.RenderStudy(*study))
+	fmt.Fprintln(w, RenderStudy(*study))
 
 	return nil
 }
