@@ -49,7 +49,7 @@ func TestCreateParticipantCallsClient(t *testing.T) {
 		EXPECT().
 		CreateTestParticipant(gomock.Eq(email)).
 		Return(&response, nil).
-		MaxTimes(1)
+		Times(1)
 
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
@@ -82,7 +82,7 @@ func TestCreateParticipantHandlesApiErrors(t *testing.T) {
 		EXPECT().
 		CreateTestParticipant(gomock.Eq(email)).
 		Return(nil, errors.New("email already registered")).
-		MaxTimes(1)
+		Times(1)
 
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
