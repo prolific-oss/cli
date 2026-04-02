@@ -537,9 +537,13 @@ func (c *Client) CreateHookSecret(payload CreateSecretPayload) (*model.Secret, e
 	var response model.Secret
 
 	const url = "/api/v1/hooks/secrets/"
-	_, err := c.Execute(http.MethodPost, url, payload, &response)
+	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusCreated {
+		return nil, fmt.Errorf("unable to create hook secret: %v", httpResponse.StatusCode)
 	}
 
 	return &response, nil
