@@ -338,6 +338,16 @@ type CreateSurveyResponse struct {
 	model.Survey
 }
 
+// ListSurveyResponsesResponse is the response for listing survey responses.
+type ListSurveyResponsesResponse struct {
+	Results []model.SurveyResponse `json:"results"`
+}
+
+// CreateSurveyResponseResponse is the response for creating a survey response.
+type CreateSurveyResponseResponse struct {
+	model.SurveyResponse
+}
+
 // ListCollectionsResponse is the response for the collections API.
 type ListCollectionsResponse struct {
 	Results []model.Collection `json:"results"`

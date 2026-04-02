@@ -1,0 +1,13 @@
+{
+  "participant_id": "60d5a0b1e4b0f5a0c8d3e4f5",
+  "submission_id": "61e6b1c2f5c1g6b1d9e4f5g6",
+  "questions": [
+    {
+      "question_id": "q-handedness",
+      "question_title": "What is your handedness?",
+      "answers": [
+        {"answer_id": "a-right", "value": "Right"}
+      ]
+    }
+  ]
+}
