@@ -823,7 +823,8 @@ func (c *Client) CreateTestParticipant(email string) (*CreateTestParticipantResp
 	}
 
 	if httpResponse.StatusCode != http.StatusCreated {
-		return nil, fmt.Errorf("unexpected status code: expected 201, got %d", httpResponse.StatusCode)
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unable to create test participant (status %d): %s", httpResponse.StatusCode, string(body))
 	}
 
 	return &response, nil

@@ -31,7 +31,7 @@ $ prolific researcher create-participant -e test@example.com`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			response, err := client.CreateTestParticipant(email)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return err
 			}
 
 			fmt.Fprintf(w, "Created test participant: %s\n", response.ParticipantID)

@@ -91,7 +91,7 @@ func TestCreateParticipantHandlesApiErrors(t *testing.T) {
 	_ = cmd.Flags().Set("email", email)
 	err := cmd.RunE(cmd, nil)
 
-	expected := "error: email already registered"
+	expected := "email already registered"
 	if err.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())
 	}
