@@ -83,6 +83,17 @@ type ListFiltersResponse struct {
 	*JSONAPIMeta
 }
 
+// TransitionSubmissionResponse is the response for transitioning a submission.
+type TransitionSubmissionResponse struct {
+	ID          string  `json:"id"`
+	CompletedAt *string `json:"completed_at"`
+	EnteredCode *string `json:"entered_code"`
+	Participant string  `json:"participant"`
+	StartedAt   string  `json:"started_at"`
+	Status      string  `json:"status"`
+	StudyID     string  `json:"study_id"`
+}
+
 // RequestSubmissionReturnResponse is the response for requesting a submission return.
 type RequestSubmissionReturnResponse struct {
 	ID              string  `json:"id"`
@@ -304,6 +315,12 @@ type SetupAITaskBuilderBatchResponse struct {
 // ResponseMeta contains metadata about the response.
 type ResponseMeta struct {
 	Count int `json:"count"`
+}
+
+// TestStudyResponse is the response for creating a test run of a study.
+type TestStudyResponse struct {
+	StudyID  string `json:"study_id"`
+	StudyURL string `json:"study_url"`
 }
 
 // CredentialPoolResponse is the response for creating or updating a credential pool.

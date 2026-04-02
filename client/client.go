@@ -37,10 +37,14 @@ type API interface {
 	GetStudy(ID string) (*model.Study, error)
 	GetSubmissions(ID string, limit, offset int) (*ListSubmissionsResponse, error)
 	RequestSubmissionReturn(ID string, reasons []string) (*RequestSubmissionReturnResponse, error)
+	TransitionSubmission(ID string, payload TransitionSubmissionPayload) (*TransitionSubmissionResponse, error)
+	BulkApproveSubmissions(payload BulkApproveSubmissionsPayload) error
 	TransitionStudy(ID, action string) (*TransitionStudyResponse, error)
 	UpdateStudy(ID string, study any) (*model.Study, error)
 	GetStudySubmissionCounts(ID string) (*model.SubmissionCounts, error)
 	GetStudyCredentialsUsageReportCSV(ID string) (string, error)
+	ExportDemographics(ID string) (string, error)
+	TestStudy(ID string) (*TestStudyResponse, error)
 	CreateCredentialPool(credentials string, workspaceID string) (*CredentialPoolResponse, error)
 	UpdateCredentialPool(credentialPoolID string, credentials string) (*CredentialPoolResponse, error)
 	ListCredentialPools(workspaceID string) (*ListCredentialPoolsResponse, error)
@@ -368,6 +372,30 @@ func (c *Client) RequestSubmissionReturn(ID string, reasons []string) (*RequestS
 	return &response, nil
 }
 
+// TransitionSubmission will transition a submission to a new state.
+func (c *Client) TransitionSubmission(ID string, payload TransitionSubmissionPayload) (*TransitionSubmissionResponse, error) {
+	var response TransitionSubmissionResponse
+
+	url := fmt.Sprintf("/api/v1/submissions/%s/transition/", ID)
+	_, err := c.Execute(http.MethodPost, url, payload, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to transition submission: %s", err)
+	}
+
+	return &response, nil
+}
+
+// BulkApproveSubmissions will bulk approve multiple submissions.
+func (c *Client) BulkApproveSubmissions(payload BulkApproveSubmissionsPayload) error {
+	url := "/api/v1/submissions/bulk-approve/"
+	_, err := c.Execute(http.MethodPost, url, payload, nil)
+	if err != nil {
+		return fmt.Errorf("unable to bulk approve submissions: %s", err)
+	}
+
+	return nil
+}
+
 // TransitionStudy will move the study status to a desired state.
 func (c *Client) TransitionStudy(ID, action string) (*TransitionStudyResponse, error) {
 	var response TransitionStudyResponse
@@ -491,6 +519,39 @@ func (c *Client) GetStudyCredentialsUsageReportCSV(ID string) (string, error) {
 	}
 
 	return string(responseBody), nil
+}
+
+// ExportDemographics triggers a demographic data export for all submissions in a study.
+func (c *Client) ExportDemographics(ID string) (string, error) {
+	url := fmt.Sprintf("/api/v1/studies/%s/demographic-export/", ID)
+	httpResponse, err := c.Execute(http.MethodPost, url, nil, nil)
+	if err != nil {
+		return "", fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	responseBody, err := io.ReadAll(httpResponse.Body)
+	if err != nil {
+		return "", fmt.Errorf("unable to read response body: %w", err)
+	}
+
+	return string(responseBody), nil
+}
+
+// TestStudy creates a test run of a study to validate configuration before going live.
+func (c *Client) TestStudy(ID string) (*TestStudyResponse, error) {
+	var response TestStudyResponse
+
+	url := fmt.Sprintf("/api/v1/studies/%s/test-study/", ID)
+	httpResponse, err := c.Execute(http.MethodPost, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: expected 200, got %d", httpResponse.StatusCode)
+	}
+
+	return &response, nil
 }
 
 // GetHooks will return the subscriptions to event types for current user.
