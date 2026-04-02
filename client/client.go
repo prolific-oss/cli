@@ -79,6 +79,7 @@ type API interface {
 	GetParticipantGroups(workspaceID string, limit, offset int) (*ListParticipantGroupsResponse, error)
 	GetParticipantGroup(groupID string) (*ViewParticipantGroupResponse, error)
 	CreateParticipantGroup(group model.CreateParticipantGroup) (*CreateParticipantGroupResponse, error)
+	RemoveParticipantGroupMembers(groupID string, participantIDs []string) error
 
 	GetFilters() (*ListFiltersResponse, error)
 
@@ -830,6 +831,20 @@ func (c *Client) CreateParticipantGroup(group model.CreateParticipantGroup) (*Cr
 	}
 
 	return &response, nil
+}
+
+func (c *Client) RemoveParticipantGroupMembers(groupID string, participantIDs []string) error {
+	payload := RemoveParticipantGroupMembersPayload{
+		ParticipantIDs: participantIDs,
+	}
+
+	url := fmt.Sprintf("/api/v1/participant-groups/%s/participants/", groupID)
+	_, err := c.Execute(http.MethodDelete, url, payload, nil)
+	if err != nil {
+		return fmt.Errorf("unable to remove participants from group %s: %s", groupID, err)
+	}
+
+	return nil
 }
 
 func (c *Client) GetFilters() (*ListFiltersResponse, error) {

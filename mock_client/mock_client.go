@@ -901,6 +901,20 @@ func (mr *MockAPIMockRecorder) PayBonusPayments(id interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PayBonusPayments", reflect.TypeOf((*MockAPI)(nil).PayBonusPayments), id)
 }
 
+// RemoveParticipantGroupMembers mocks base method.
+func (m *MockAPI) RemoveParticipantGroupMembers(groupID string, participantIDs []string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveParticipantGroupMembers", groupID, participantIDs)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveParticipantGroupMembers indicates an expected call of RemoveParticipantGroupMembers.
+func (mr *MockAPIMockRecorder) RemoveParticipantGroupMembers(groupID, participantIDs interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveParticipantGroupMembers", reflect.TypeOf((*MockAPI)(nil).RemoveParticipantGroupMembers), groupID, participantIDs)
+}
+
 // RequestSubmissionReturn mocks base method.
 func (m *MockAPI) RequestSubmissionReturn(ID string, reasons []string) (*client.RequestSubmissionReturnResponse, error) {
 	m.ctrl.T.Helper()
