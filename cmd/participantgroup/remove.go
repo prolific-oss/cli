@@ -79,12 +79,12 @@ func removeParticipants(c client.API, opts RemoveOptions, w io.Writer) error {
 		return fmt.Errorf("you must provide at least one participant ID via --participant-id or --file")
 	}
 
-	err := c.RemoveParticipantGroupMembers(groupID, opts.ParticipantIDs)
+	response, err := c.RemoveParticipantGroupMembers(groupID, opts.ParticipantIDs)
 	if err != nil {
 		return err
 	}
 
-	fmt.Fprintf(w, "Removed %d participant(s) from group %s\n", len(opts.ParticipantIDs), groupID)
+	fmt.Fprintf(w, "Removed %d participant(s) from group %s (%d remaining)\n", len(opts.ParticipantIDs), groupID, len(response.Results))
 
 	return nil
 }

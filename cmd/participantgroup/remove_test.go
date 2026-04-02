@@ -9,11 +9,21 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/participantgroup"
 	"github.com/prolific-oss/cli/mock_client"
+	"github.com/prolific-oss/cli/model"
 )
 
 const removeSuccessGroupID = "group-1"
+
+func removeResponse(remaining ...string) *client.ViewParticipantGroupResponse {
+	memberships := make([]model.ParticipantGroupMembership, len(remaining))
+	for i, id := range remaining {
+		memberships[i] = model.ParticipantGroupMembership{ParticipantID: id}
+	}
+	return &client.ViewParticipantGroupResponse{Results: memberships}
+}
 
 func TestNewRemoveCommand(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -97,7 +107,7 @@ func TestRemoveCommandRemovesByInlineIDs(t *testing.T) {
 			gomock.Eq(removeSuccessGroupID),
 			gomock.Eq([]string{"part-1", "part-2"}),
 		).
-		Return(nil).
+		Return(removeResponse("remaining-1"), nil).
 		MaxTimes(1)
 
 	var b bytes.Buffer
@@ -114,7 +124,7 @@ func TestRemoveCommandRemovesByInlineIDs(t *testing.T) {
 
 	writer.Flush()
 
-	expected := "Removed 2 participant(s) from group group-1\n"
+	expected := "Removed 2 participant(s) from group group-1 (1 remaining)\n"
 	if b.String() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, b.String())
 	}
@@ -131,7 +141,7 @@ func TestRemoveCommandRemovesByFile(t *testing.T) {
 			gomock.Eq(removeSuccessGroupID),
 			gomock.Eq([]string{"part-1", "part-2", "part-3"}),
 		).
-		Return(nil).
+		Return(removeResponse(), nil).
 		MaxTimes(1)
 
 	dir := t.TempDir()
@@ -153,7 +163,7 @@ func TestRemoveCommandRemovesByFile(t *testing.T) {
 
 	writer.Flush()
 
-	expected := "Removed 3 participant(s) from group group-1\n"
+	expected := "Removed 3 participant(s) from group group-1 (0 remaining)\n"
 	if b.String() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, b.String())
 	}
@@ -167,7 +177,7 @@ func TestRemoveCommandReturnsErrorIfRemoveFails(t *testing.T) {
 	c.
 		EXPECT().
 		RemoveParticipantGroupMembers(gomock.Any(), gomock.Any()).
-		Return(errors.New("api error")).
+		Return(nil, errors.New("api error")).
 		MaxTimes(1)
 
 	var b bytes.Buffer
@@ -199,7 +209,7 @@ func TestRemoveCommandFileSkipsBlankLines(t *testing.T) {
 			gomock.Eq(removeSuccessGroupID),
 			gomock.Eq([]string{"part-1", "part-2"}),
 		).
-		Return(nil).
+		Return(removeResponse("remaining-1", "remaining-2"), nil).
 		MaxTimes(1)
 
 	dir := t.TempDir()
