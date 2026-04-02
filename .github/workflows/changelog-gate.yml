@@ -1,13 +1,10 @@
 name: Changelog gate
 
-# When a PR title includes [run-release], require CHANGELOG.md to be part of the PR diff.
-# Pushes to non-main branches: if there is no open PR, the job passes. If there is one,
-# the same rules apply (covers push-only workflows before a PR exists).
+# Runs on pull_request: opened (PR created), synchronize (new commits pushed to the PR
+# branch), reopened, edited (title/body). No bare `push` trigger — pushes before a PR
+# exists have no PR metadata to validate.
 
 on:
-  push:
-    branches-ignore:
-      - main
   pull_request:
     types:
       - opened
@@ -20,66 +17,19 @@ permissions:
   pull-requests: read
 
 concurrency:
-  group: changelog-gate-${{ github.repository }}-${{ github.head_ref || github.ref }}
+  group: changelog-gate-${{ github.repository }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
   require-changelog-if-run-release:
+    if: github.head_ref != 'main'
     runs-on: ubuntu-latest
     steps:
-      - name: Resolve PR for this branch
-        id: meta
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const skip = () => {
-              core.setOutput('skip', 'true');
-            };
-            const proceed = (number, title) => {
-              core.setOutput('skip', 'false');
-              core.setOutput('number', String(number));
-              core.setOutput('title', title);
-            };
-
-            if (context.eventName === 'pull_request') {
-              const pr = context.payload.pull_request;
-              if (pr.head.ref === 'main') {
-                skip();
-                return;
-              }
-              proceed(pr.number, pr.title);
-              return;
-            }
-
-            if (context.eventName === 'push') {
-              const branch = context.ref.replace('refs/heads/', '');
-              const { data: prs } = await github.rest.pulls.list({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                state: 'open',
-                head: `${context.repo.owner}:${branch}`,
-                per_page: 10,
-              });
-              if (prs.length === 0) {
-                skip();
-                return;
-              }
-              proceed(prs[0].number, prs[0].title);
-              return;
-            }
-
-            skip();
-
-      - name: Skip (no open PR or source branch is main)
-        if: steps.meta.outputs.skip == 'true'
-        run: echo "Changelog gate does not apply for this run."
-
       - name: Require CHANGELOG.md when title has [run-release]
-        if: steps.meta.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ steps.meta.outputs.number }}
-          PR_TITLE: ${{ steps.meta.outputs.title }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
           set -euo pipefail
           if ! printf '%s' "${PR_TITLE}" | grep -Fq '[run-release]'; then
