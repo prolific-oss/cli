@@ -169,6 +169,11 @@ type ListParticipantGroupsResponse struct {
 	*JSONAPIMeta
 }
 
+// CreateParticipantGroupResponse is the response for creating a participant group.
+type CreateParticipantGroupResponse struct {
+	model.ParticipantGroup
+}
+
 // ViewParticipantGroupResponse is the list of members in a group.
 type ViewParticipantGroupResponse struct {
 	Results []model.ParticipantGroupMembership `json:"results"`
@@ -327,6 +332,16 @@ type ListCredentialPoolsResponse struct {
 // CreateInvitationResponse is the response for creating invitations.
 type CreateInvitationResponse struct {
 	Invitations []model.Invitation `json:"invitations"`
+}
+
+// ListSurveysResponse is the response for the surveys API.
+type ListSurveysResponse struct {
+	Results []model.Survey `json:"results"`
+}
+
+// CreateSurveyResponse is the response for creating a survey.
+type CreateSurveyResponse struct {
+	model.Survey
 }
 
 // ListCollectionsResponse is the response for the collections API.
