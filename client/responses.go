@@ -328,6 +328,16 @@ type CreateInvitationResponse struct {
 	Invitations []model.Invitation `json:"invitations"`
 }
 
+// ListSurveysResponse is the response for the surveys API.
+type ListSurveysResponse struct {
+	Results []model.Survey `json:"results"`
+}
+
+// CreateSurveyResponse is the response for creating a survey.
+type CreateSurveyResponse struct {
+	model.Survey
+}
+
 // ListCollectionsResponse is the response for the collections API.
 type ListCollectionsResponse struct {
 	Results []model.Collection `json:"results"`
