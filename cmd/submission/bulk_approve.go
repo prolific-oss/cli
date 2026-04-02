@@ -3,6 +3,8 @@ package submission
 import (
 	"fmt"
 	"io"
+	"os"
+	"strings"
 
 	"github.com/prolific-oss/cli/client"
 	"github.com/spf13/cobra"
@@ -13,6 +15,7 @@ type BulkApproveOptions struct {
 	SubmissionIDs  []string
 	StudyID        string
 	ParticipantIDs []string
+	File           string
 }
 
 // NewBulkApproveCommand creates a new `submission bulk-approve` command.
@@ -26,12 +29,21 @@ func NewBulkApproveCommand(c client.API, w io.Writer) *cobra.Command {
 
 You can approve submissions in two ways:
 
-1. By submission IDs: provide one or more --submission-id flags
-2. By study and participant IDs: provide a --study flag and one or more --participant-id flags
+1. By submission IDs: provide one or more --submission-id flags or a file with --file
+2. By study and participant IDs: provide a --study flag with --participant-id flags or a file with --file
+
+When using --file, the file should contain one ID per line. By default, IDs are
+treated as submission IDs. Use --study together with --file to treat IDs as
+participant IDs instead.
 
 The approval is processed asynchronously.`,
-		Example: `  prolific submission bulk-approve -i <submission_id> -i <submission_id>
-  prolific submission bulk-approve -s <study_id> -p <participant_id> -p <participant_id>`,
+		Example: `  # Approve by submission IDs
+  prolific submission bulk-approve -i <submission_id> -i <submission_id>
+  prolific submission bulk-approve -f submissions.csv
+
+  # Approve by study and participant IDs
+  prolific submission bulk-approve -s <study_id> -p <participant_id> -p <participant_id>
+  prolific submission bulk-approve -s <study_id> -f participants.csv`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			err := bulkApproveSubmissions(c, opts, w)
 			if err != nil {
@@ -44,8 +56,9 @@ The approval is processed asynchronously.`,
 
 	flags := cmd.Flags()
 	flags.StringArrayVarP(&opts.SubmissionIDs, "submission-id", "i", nil, "Submission ID to approve (can be specified multiple times)")
-	flags.StringVarP(&opts.StudyID, "study", "s", "", "Study ID (required with --participant-id)")
+	flags.StringVarP(&opts.StudyID, "study", "s", "", "Study ID (required with --participant-id, optional with --file)")
 	flags.StringArrayVarP(&opts.ParticipantIDs, "participant-id", "p", nil, "Participant ID to approve (can be specified multiple times, requires --study)")
+	flags.StringVarP(&opts.File, "file", "f", "", "Path to a file containing one ID per line")
 
 	return cmd
 }
@@ -53,6 +66,25 @@ The approval is processed asynchronously.`,
 func bulkApproveSubmissions(c client.API, opts BulkApproveOptions, w io.Writer) error {
 	hasSubmissionIDs := len(opts.SubmissionIDs) > 0
 	hasParticipantIDs := len(opts.ParticipantIDs) > 0
+	hasFile := opts.File != ""
+
+	if hasFile && (hasSubmissionIDs || hasParticipantIDs) {
+		return fmt.Errorf("cannot use --file together with --submission-id or --participant-id")
+	}
+
+	if hasFile {
+		ids, err := parseIDFile(opts.File)
+		if err != nil {
+			return err
+		}
+		if opts.StudyID != "" {
+			opts.ParticipantIDs = ids
+		} else {
+			opts.SubmissionIDs = ids
+		}
+		hasSubmissionIDs = len(opts.SubmissionIDs) > 0
+		hasParticipantIDs = len(opts.ParticipantIDs) > 0
+	}
 
 	if hasSubmissionIDs && (hasParticipantIDs || opts.StudyID != "") {
 		return fmt.Errorf("cannot use --submission-id together with --study or --participant-id")
@@ -60,9 +92,9 @@ func bulkApproveSubmissions(c client.API, opts BulkApproveOptions, w io.Writer) 
 
 	if !hasSubmissionIDs && !hasParticipantIDs {
 		if opts.StudyID != "" {
-			return fmt.Errorf("--participant-id is required when using --study")
+			return fmt.Errorf("--participant-id or --file is required when using --study")
 		}
-		return fmt.Errorf("you must provide either --submission-id or --study and --participant-id")
+		return fmt.Errorf("you must provide either --submission-id, --study and --participant-id, or --file")
 	}
 
 	if hasParticipantIDs && opts.StudyID == "" {
@@ -83,4 +115,31 @@ func bulkApproveSubmissions(c client.API, opts BulkApproveOptions, w io.Writer) 
 	fmt.Fprintln(w, "The request to bulk approve has been made successfully.")
 
 	return nil
+}
+
+func parseIDFile(filePath string) ([]string, error) {
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("unable to read file: %w", err)
+	}
+
+	content := strings.TrimRight(string(data), "\n\r ")
+	if content == "" {
+		return nil, fmt.Errorf("file is empty: %s", filePath)
+	}
+
+	var ids []string
+	for _, line := range strings.Split(content, "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		ids = append(ids, line)
+	}
+
+	if len(ids) == 0 {
+		return nil, fmt.Errorf("no valid entries found in file: %s", filePath)
+	}
+
+	return ids, nil
 }
