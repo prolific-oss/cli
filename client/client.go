@@ -78,6 +78,8 @@ type API interface {
 	GetParticipantGroup(groupID string) (*ViewParticipantGroupResponse, error)
 	CreateParticipantGroup(group model.CreateParticipantGroup) (*CreateParticipantGroupResponse, error)
 
+	CreateTestParticipant(email string) (*CreateTestParticipantResponse, error)
+
 	GetFilters() (*ListFiltersResponse, error)
 
 	GetFilterSets(workspaceID string, limit, offset int) (*ListFilterSetsResponse, error)
@@ -801,6 +803,27 @@ func (c *Client) CreateParticipantGroup(group model.CreateParticipantGroup) (*Cr
 	_, err := c.Execute(http.MethodPost, url, group, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// CreateTestParticipant creates a test participant for the researcher with the given email.
+func (c *Client) CreateTestParticipant(email string) (*CreateTestParticipantResponse, error) {
+	var response CreateTestParticipantResponse
+
+	payload := struct {
+		Email string `json:"email"`
+	}{Email: email}
+
+	url := "/api/v1/researchers/participants/"
+	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusCreated {
+		return nil, fmt.Errorf("unexpected status code: expected 201, got %d", httpResponse.StatusCode)
 	}
 
 	return &response, nil

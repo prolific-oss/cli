@@ -230,6 +230,21 @@ func (mr *MockAPIMockRecorder) CreateParticipantGroup(group interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateParticipantGroup", reflect.TypeOf((*MockAPI)(nil).CreateParticipantGroup), group)
 }
 
+// CreateTestParticipant mocks base method.
+func (m *MockAPI) CreateTestParticipant(email string) (*client.CreateTestParticipantResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateTestParticipant", email)
+	ret0, _ := ret[0].(*client.CreateTestParticipantResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateTestParticipant indicates an expected call of CreateTestParticipant.
+func (mr *MockAPIMockRecorder) CreateTestParticipant(email interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTestParticipant", reflect.TypeOf((*MockAPI)(nil).CreateTestParticipant), email)
+}
+
 // CreateProject mocks base method.
 func (m *MockAPI) CreateProject(workspaceID string, project model.Project) (*client.CreateProjectResponse, error) {
 	m.ctrl.T.Helper()
