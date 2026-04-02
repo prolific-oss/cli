@@ -35,6 +35,20 @@ func (m *MockAPI) EXPECT() *MockAPIMockRecorder {
 	return m.recorder
 }
 
+// BulkApproveSubmissions mocks base method.
+func (m *MockAPI) BulkApproveSubmissions(payload client.BulkApproveSubmissionsPayload) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BulkApproveSubmissions", payload)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BulkApproveSubmissions indicates an expected call of BulkApproveSubmissions.
+func (mr *MockAPIMockRecorder) BulkApproveSubmissions(payload interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BulkApproveSubmissions", reflect.TypeOf((*MockAPI)(nil).BulkApproveSubmissions), payload)
+}
+
 // BulkSendMessage mocks base method.
 func (m *MockAPI) BulkSendMessage(ids []string, body, studyID string) error {
 	m.ctrl.T.Helper()
@@ -973,6 +987,21 @@ func (m *MockAPI) TransitionStudy(ID, action string) (*client.TransitionStudyRes
 func (mr *MockAPIMockRecorder) TransitionStudy(ID, action interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransitionStudy", reflect.TypeOf((*MockAPI)(nil).TransitionStudy), ID, action)
+}
+
+// TransitionSubmission mocks base method.
+func (m *MockAPI) TransitionSubmission(ID string, payload client.TransitionSubmissionPayload) (*client.TransitionSubmissionResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TransitionSubmission", ID, payload)
+	ret0, _ := ret[0].(*client.TransitionSubmissionResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TransitionSubmission indicates an expected call of TransitionSubmission.
+func (mr *MockAPIMockRecorder) TransitionSubmission(ID, payload interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransitionSubmission", reflect.TypeOf((*MockAPI)(nil).TransitionSubmission), ID, payload)
 }
 
 // UpdateCollection mocks base method.
