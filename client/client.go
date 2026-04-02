@@ -37,6 +37,8 @@ type API interface {
 	GetStudy(ID string) (*model.Study, error)
 	GetSubmissions(ID string, limit, offset int) (*ListSubmissionsResponse, error)
 	RequestSubmissionReturn(ID string, reasons []string) (*RequestSubmissionReturnResponse, error)
+	TransitionSubmission(ID string, payload TransitionSubmissionPayload) (*TransitionSubmissionResponse, error)
+	BulkApproveSubmissions(payload BulkApproveSubmissionsPayload) error
 	TransitionStudy(ID, action string) (*TransitionStudyResponse, error)
 	UpdateStudy(ID string, study any) (*model.Study, error)
 	GetStudySubmissionCounts(ID string) (*model.SubmissionCounts, error)
@@ -363,6 +365,30 @@ func (c *Client) RequestSubmissionReturn(ID string, reasons []string) (*RequestS
 	}
 
 	return &response, nil
+}
+
+// TransitionSubmission will transition a submission to a new state.
+func (c *Client) TransitionSubmission(ID string, payload TransitionSubmissionPayload) (*TransitionSubmissionResponse, error) {
+	var response TransitionSubmissionResponse
+
+	url := fmt.Sprintf("/api/v1/submissions/%s/transition/", ID)
+	_, err := c.Execute(http.MethodPost, url, payload, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to transition submission: %s", err)
+	}
+
+	return &response, nil
+}
+
+// BulkApproveSubmissions will bulk approve multiple submissions.
+func (c *Client) BulkApproveSubmissions(payload BulkApproveSubmissionsPayload) error {
+	url := "/api/v1/submissions/bulk-approve/"
+	_, err := c.Execute(http.MethodPost, url, payload, nil)
+	if err != nil {
+		return fmt.Errorf("unable to bulk approve submissions: %s", err)
+	}
+
+	return nil
 }
 
 // TransitionStudy will move the study status to a desired state.
