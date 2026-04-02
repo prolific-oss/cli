@@ -81,6 +81,8 @@ type API interface {
 	CreateParticipantGroup(group model.CreateParticipantGroup) (*CreateParticipantGroupResponse, error)
 	RemoveParticipantGroupMembers(groupID string, participantIDs []string) (*ViewParticipantGroupResponse, error)
 
+	CreateTestParticipant(email string) (*CreateTestParticipantResponse, error)
+
 	GetFilters() (*ListFiltersResponse, error)
 
 	GetFilterSets(workspaceID string, limit, offset int) (*ListFilterSetsResponse, error)
@@ -846,6 +848,28 @@ func (c *Client) RemoveParticipantGroupMembers(groupID string, participantIDs []
 	}
 	if httpResponse.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("unable to remove participants from group %s, status code: %v", groupID, httpResponse.StatusCode)
+	}
+
+	return &response, nil
+}
+
+// CreateTestParticipant creates a test participant for the researcher with the given email.
+func (c *Client) CreateTestParticipant(email string) (*CreateTestParticipantResponse, error) {
+	var response CreateTestParticipantResponse
+
+	payload := struct {
+		Email string `json:"email"`
+	}{Email: email}
+
+	url := "/api/v1/researchers/participants/"
+	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unable to create test participant (status %d): %s", httpResponse.StatusCode, string(body))
 	}
 
 	return &response, nil
