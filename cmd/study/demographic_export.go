@@ -23,12 +23,12 @@ To trigger a demographic export for a study:
 $ prolific study demographic-export 64395e9c2332b8a59a65d51e`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			response, err := client.ExportDemographics(args[0])
+			csvData, err := client.ExportDemographics(args[0])
 			if err != nil {
 				return fmt.Errorf("error: %s", err.Error())
 			}
 
-			fmt.Fprintf(w, "Export %s triggered (status: %s)\n", response.ID, response.Status)
+			fmt.Fprint(w, csvData)
 
 			return nil
 		},

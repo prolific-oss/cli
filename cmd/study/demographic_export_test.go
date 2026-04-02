@@ -4,12 +4,10 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"fmt"
 	"os"
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/study"
 	"github.com/prolific-oss/cli/mock_client"
 )
@@ -40,15 +38,12 @@ func TestDemographicExportCallsClient(t *testing.T) {
 
 	studyID := "11223344"
 
-	response := client.DemographicExportResponse{
-		ID:     "export-5566",
-		Status: "generating",
-	}
+	csvData := "Submission id,Participant id,Status\n123,456,APPROVED\n"
 
 	c.
 		EXPECT().
 		ExportDemographics(gomock.Eq(studyID)).
-		Return(&response, nil).
+		Return(csvData, nil).
 		AnyTimes()
 
 	var b bytes.Buffer
@@ -58,7 +53,7 @@ func TestDemographicExportCallsClient(t *testing.T) {
 	_ = cmd.RunE(cmd, []string{studyID})
 	writer.Flush()
 
-	expected := fmt.Sprintf("Export %s triggered (status: %s)\n", response.ID, response.Status)
+	expected := csvData
 	actual := b.String()
 
 	if actual != expected {
@@ -76,7 +71,7 @@ func TestDemographicExportHandlesApiErrors(t *testing.T) {
 	c.
 		EXPECT().
 		ExportDemographics(gomock.Eq(studyID)).
-		Return(nil, errors.New("export failed")).
+		Return("", errors.New("export failed")).
 		AnyTimes()
 
 	var b bytes.Buffer

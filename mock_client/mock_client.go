@@ -230,10 +230,10 @@ func (mr *MockAPIMockRecorder) DuplicateStudy(ID interface{}) *gomock.Call {
 }
 
 // ExportDemographics mocks base method.
-func (m *MockAPI) ExportDemographics(ID string) (*client.DemographicExportResponse, error) {
+func (m *MockAPI) ExportDemographics(ID string) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ExportDemographics", ID)
-	ret0, _ := ret[0].(*client.DemographicExportResponse)
+	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -812,10 +812,10 @@ func (mr *MockAPIMockRecorder) SetupAITaskBuilderBatch(batchID, datasetID, tasks
 }
 
 // TestStudy mocks base method.
-func (m *MockAPI) TestStudy(ID string) (*model.Study, error) {
+func (m *MockAPI) TestStudy(ID string) (*client.TestStudyResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TestStudy", ID)
-	ret0, _ := ret[0].(*model.Study)
+	ret0, _ := ret[0].(*client.TestStudyResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

@@ -41,8 +41,8 @@ type API interface {
 	UpdateStudy(ID string, study any) (*model.Study, error)
 	GetStudySubmissionCounts(ID string) (*model.SubmissionCounts, error)
 	GetStudyCredentialsUsageReportCSV(ID string) (string, error)
-	ExportDemographics(ID string) (*DemographicExportResponse, error)
-	TestStudy(ID string) (*model.Study, error)
+	ExportDemographics(ID string) (string, error)
+	TestStudy(ID string) (*TestStudyResponse, error)
 	CreateCredentialPool(credentials string, workspaceID string) (*CredentialPoolResponse, error)
 	UpdateCredentialPool(credentialPoolID string, credentials string) (*CredentialPoolResponse, error)
 	ListCredentialPools(workspaceID string) (*ListCredentialPoolsResponse, error)
@@ -478,25 +478,24 @@ func (c *Client) GetStudyCredentialsUsageReportCSV(ID string) (string, error) {
 }
 
 // ExportDemographics triggers a demographic data export for all submissions in a study.
-func (c *Client) ExportDemographics(ID string) (*DemographicExportResponse, error) {
-	var response DemographicExportResponse
-
+func (c *Client) ExportDemographics(ID string) (string, error) {
 	url := fmt.Sprintf("/api/v1/studies/%s/demographic-export/", ID)
-	httpResponse, err := c.Execute(http.MethodPost, url, nil, &response)
+	httpResponse, err := c.Execute(http.MethodPost, url, nil, nil)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return "", fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
 
-	if httpResponse.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: expected 200, got %d", httpResponse.StatusCode)
+	responseBody, err := io.ReadAll(httpResponse.Body)
+	if err != nil {
+		return "", fmt.Errorf("unable to read response body: %w", err)
 	}
 
-	return &response, nil
+	return string(responseBody), nil
 }
 
 // TestStudy creates a test run of a study to validate configuration before going live.
-func (c *Client) TestStudy(ID string) (*model.Study, error) {
-	var response model.Study
+func (c *Client) TestStudy(ID string) (*TestStudyResponse, error) {
+	var response TestStudyResponse
 
 	url := fmt.Sprintf("/api/v1/studies/%s/test-study/", ID)
 	httpResponse, err := c.Execute(http.MethodPost, url, nil, &response)
@@ -504,8 +503,8 @@ func (c *Client) TestStudy(ID string) (*model.Study, error) {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
 
-	if httpResponse.StatusCode != http.StatusCreated {
-		return nil, fmt.Errorf("unexpected status code: expected 201, got %d", httpResponse.StatusCode)
+	if httpResponse.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: expected 200, got %d", httpResponse.StatusCode)
 	}
 
 	return &response, nil

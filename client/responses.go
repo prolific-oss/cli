@@ -301,10 +301,10 @@ type ResponseMeta struct {
 	Count int `json:"count"`
 }
 
-// DemographicExportResponse is the response for triggering a demographic data export.
-type DemographicExportResponse struct {
-	ID     string `json:"id"`
-	Status string `json:"status"`
+// TestStudyResponse is the response for creating a test run of a study.
+type TestStudyResponse struct {
+	StudyID  string `json:"study_id"`
+	StudyURL string `json:"study_url"`
 }
 
 // CredentialPoolResponse is the response for creating or updating a credential pool.

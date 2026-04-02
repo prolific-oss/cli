@@ -9,9 +9,9 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/study"
 	"github.com/prolific-oss/cli/mock_client"
-	"github.com/prolific-oss/cli/model"
 )
 
 func TestNewTestStudyCommand(t *testing.T) {
@@ -40,23 +40,15 @@ func TestTestStudyCallsClient(t *testing.T) {
 
 	studyID := "55667788"
 
-	actualStudy := model.Study{
-		ID:                      "8888888",
-		Name:                    "Test run of survey",
-		InternalName:            "Survey test run",
-		Desc:                    "A test run to validate the survey configuration.",
-		ExternalStudyURL:        "https://survey.example.com?participant={{%PROLIFIC_PID%}}",
-		TotalAvailablePlaces:    5,
-		EstimatedCompletionTime: 15,
-		MaximumAllowedTime:      20,
-		Reward:                  200,
-		DeviceCompatibility:     []string{"desktop"},
+	response := client.TestStudyResponse{
+		StudyID:  "8888888",
+		StudyURL: "https://app.prolific.com/researcher/workspaces/studies/8888888",
 	}
 
 	c.
 		EXPECT().
 		TestStudy(gomock.Eq(studyID)).
-		Return(&actualStudy, nil).
+		Return(&response, nil).
 		AnyTimes()
 
 	var b bytes.Buffer
@@ -66,7 +58,7 @@ func TestTestStudyCallsClient(t *testing.T) {
 	_ = cmd.RunE(cmd, []string{studyID})
 	writer.Flush()
 
-	expected := fmt.Sprintf("%s\n", actualStudy.ID)
+	expected := fmt.Sprintf("Test study %s created: %s\n", response.StudyID, response.StudyURL)
 	actual := b.String()
 
 	if actual != expected {
