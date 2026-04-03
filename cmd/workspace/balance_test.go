@@ -38,8 +38,8 @@ func TestNewBalanceCommandCallsAPI(t *testing.T) {
 	workspaceID := "abc123"
 
 	response := client.WorkspaceBalanceResponse{
-		CurrencyCode: "USD",
-		TotalBalance: 1428,
+		CurrencyCode:     "USD",
+		TotalBalance:     1428,
 		AvailableBalance: 1428,
 	}
 	response.BalanceBreakdown.Rewards = 1428
