@@ -22,6 +22,7 @@ studies, team members and funds.
 	cmd.AddCommand(
 		NewListCommand("list", client, w),
 		NewCreateCommand("create", client, w),
+		NewBalanceCommand("balance", client, w),
 	)
 	return cmd
 }

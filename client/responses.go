@@ -122,6 +122,23 @@ type TransitionStudyResponse struct {
 	Status                  string   `json:"status"`
 }
 
+// WorkspaceBalanceResponse is the response for the workspace balance endpoint.
+type WorkspaceBalanceResponse struct {
+	CurrencyCode string `json:"currency_code"`
+	TotalBalance int    `json:"total_balance"`
+	BalanceBreakdown struct {
+		Rewards int `json:"rewards"`
+		Fees    int `json:"fees"`
+		VAT     int `json:"vat"`
+	} `json:"balance_breakdown"`
+	AvailableBalance int `json:"available_balance"`
+	AvailableBalanceBreakdown struct {
+		Rewards int `json:"rewards"`
+		Fees    int `json:"fees"`
+		VAT     int `json:"vat"`
+	} `json:"available_balance_breakdown"`
+}
+
 // ListCampaignsResponse is the response for the campaigns request.
 type ListCampaignsResponse struct {
 	Results []model.Campaign `json:"results"`
