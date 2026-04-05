@@ -482,6 +482,36 @@ func (mr *MockAPIMockRecorder) GetAITaskBuilderTasks(batchID interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAITaskBuilderTasks", reflect.TypeOf((*MockAPI)(nil).GetAITaskBuilderTasks), batchID)
 }
 
+// GetBatchExportStatus mocks base method.
+func (m *MockAPI) GetBatchExportStatus(batchID, exportID string) (*client.BatchExportResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetBatchExportStatus", batchID, exportID)
+	ret0, _ := ret[0].(*client.BatchExportResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetBatchExportStatus indicates an expected call of GetBatchExportStatus.
+func (mr *MockAPIMockRecorder) GetBatchExportStatus(batchID, exportID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBatchExportStatus", reflect.TypeOf((*MockAPI)(nil).GetBatchExportStatus), batchID, exportID)
+}
+
+// InitiateBatchExport mocks base method.
+func (m *MockAPI) InitiateBatchExport(batchID string) (*client.BatchExportResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InitiateBatchExport", batchID)
+	ret0, _ := ret[0].(*client.BatchExportResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// InitiateBatchExport indicates an expected call of InitiateBatchExport.
+func (mr *MockAPIMockRecorder) InitiateBatchExport(batchID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitiateBatchExport", reflect.TypeOf((*MockAPI)(nil).InitiateBatchExport), batchID)
+}
+
 // GetCampaigns mocks base method.
 func (m *MockAPI) GetCampaigns(workspaceID string, limit, offset int) (*client.ListCampaignsResponse, error) {
 	m.ctrl.T.Helper()

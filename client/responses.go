@@ -376,6 +376,16 @@ type CollectionExportResponse struct {
 	ExpiresAt string `json:"expires_at,omitempty"`
 }
 
+// BatchExportResponse is the response for the batch export endpoints.
+// For POST (initiate): Status is "generating" (ExportID set) or "complete" (URL/ExpiresAt set).
+// For GET (poll): Status is "generating", "complete", or "failed".
+type BatchExportResponse struct {
+	Status    string `json:"status"`
+	ExportID  string `json:"export_id,omitempty"`
+	URL       string `json:"url,omitempty"`
+	ExpiresAt string `json:"expires_at,omitempty"`
+}
+
 // CreateBonusPaymentsResponse is the response for creating bonus payments.
 // Monetary fields are returned by the API as floats in minor currency units
 // (e.g., 100.0 = £1.00). Divide by 100 before display via ui.RenderMoney().

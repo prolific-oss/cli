@@ -113,6 +113,8 @@ type API interface {
 	GetAITaskBuilderBatches(workspaceID string) (*GetAITaskBuilderBatchesResponse, error)
 	GetAITaskBuilderResponses(batchID string) (*GetAITaskBuilderResponsesResponse, error)
 	GetAITaskBuilderTasks(batchID string) (*GetAITaskBuilderTasksResponse, error)
+	InitiateBatchExport(batchID string) (*BatchExportResponse, error)
+	GetBatchExportStatus(batchID, exportID string) (*BatchExportResponse, error)
 	GetAITaskBuilderDatasetStatus(datasetID string) (*GetAITaskBuilderDatasetStatusResponse, error)
 	GetAITaskBuilderDatasetUploadURL(datasetID, fileName string) (*GetAITaskBuilderDatasetUploadURLResponse, error)
 }
@@ -1190,6 +1192,45 @@ func (c *Client) GetAITaskBuilderTasks(batchID string) (*GetAITaskBuilderTasksRe
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
+	return &response, nil
+}
+
+// InitiateBatchExport starts a batch export job via POST.
+// Returns "generating" + ExportID (202) if a new job was enqueued,
+// or "complete" + URL immediately (200) if a valid export already exists.
+func (c *Client) InitiateBatchExport(batchID string) (*BatchExportResponse, error) {
+	var response BatchExportResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/export", batchID)
+	httpResponse, err := c.Execute(http.MethodPost, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK && httpResponse.StatusCode != http.StatusAccepted {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+	}
+
+	return &response, nil
+}
+
+// GetBatchExportStatus polls the status of an in-progress batch export job.
+// Returns "generating", "complete" (with URL), or "failed".
+func (c *Client) GetBatchExportStatus(batchID, exportID string) (*BatchExportResponse, error) {
+	var response BatchExportResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/export/%s", batchID, exportID)
+	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+	}
+
 	return &response, nil
 }
 
