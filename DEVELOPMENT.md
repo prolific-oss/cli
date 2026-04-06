@@ -441,6 +441,20 @@ Two CI gates guard the PR:
 
 Changelog entries are generated from conventional commits by [git-cliff](https://git-cliff.org/). The configuration lives in `cliff.toml`, and a Go tool in `scripts/changelog/` groups entries by subcommand area.
 
+### Versioning
+
+This project uses [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PATCH`). While the project is pre-1.0, all releases use `0.0.x`.
+
+| Change | Version bump | Example |
+|--------|-------------|---------|
+| Breaking change to an existing command (flag removed, output format changed) | `MINOR` (`0.0.x` → `0.1.0`) | Removing a flag, changing JSON output shape |
+| New command or flag | `PATCH` | Adding `study delete` |
+| Bug fix, docs, refactor, CI | `PATCH` | Fixing a nil-pointer crash |
+
+**Pre-1.0 note:** `MAJOR` stays at `0` until the API and command surface are considered stable. `MINOR` bumps signal breaking changes for the duration of `0.x`.
+
+The version is passed to `make changelog VERSION=x.y.z` — there is no automated bump calculation; the release author decides based on the table above.
+
 ### Manual release notes
 
 To include hand-written notes in the next release, add them under the `## next` section in `CHANGELOG.md`:
