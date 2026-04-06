@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
   finalize-release:
@@ -15,16 +14,14 @@ jobs:
       github.event.pull_request.merged == true &&
       contains(github.event.pull_request.title, '[run-release]')
     runs-on: ubuntu-latest
-    outputs:
-      tag: ${{ steps.version.outputs.tag }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6.3.0
         with:
           go-version-file: go.mod
 
@@ -61,12 +58,3 @@ jobs:
           gh release create "$TAG" \
             --title "$TAG" \
             --notes-file RELEASE_NOTES.md
-
-  build-release:
-    needs: finalize-release
-    if: needs.finalize-release.result == 'success'
-    uses: ./.github/workflows/release.yml
-    with:
-      tag: ${{ needs.finalize-release.outputs.tag }}
-    permissions:
-      contents: write

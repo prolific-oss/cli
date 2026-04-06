@@ -3,23 +3,15 @@ name: Release
 on:
   release:
     types: [published]
-  workflow_call:
-    inputs:
-      tag:
-        required: true
-        type: string
+
+permissions:
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
     name: Build
     steps:
-      - name: Determine tag
-        id: tag
-        run: |
-          TAG="${{ inputs.tag || github.event.release.tag_name }}"
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-
       - name: Set up Go
         uses: actions/setup-go@v6.3.0
         with:
@@ -28,7 +20,7 @@ jobs:
       - name: Check out code into the Go module directory
         uses: actions/checkout@v6
         with:
-          ref: ${{ steps.tag.outputs.tag }}
+          ref: ${{ github.event.release.tag_name }}
 
       - name: Get dependencies
         run: |
@@ -59,7 +51,7 @@ jobs:
 
             echo "\n\nBuilding binary for ${GOOS}/${ARCH}\n"
 
-            GIT_RELEASE=${{ steps.tag.outputs.tag }} GOOS=${GOOS} GOARCH=${ARCH} make static-named
+            GIT_RELEASE=${{ github.event.release.tag_name }} GOOS=${GOOS} GOARCH=${ARCH} make static-named
           done
 
-          gh release upload ${{ steps.tag.outputs.tag }} build/*
+          gh release upload ${{ github.event.release.tag_name }} build/*

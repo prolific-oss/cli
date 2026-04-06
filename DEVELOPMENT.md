@@ -430,9 +430,12 @@ Enforces [Conventional Commits](https://www.conventionalcommits.org/) format on 
 #### Release flow
 
 1. Run `make changelog VERSION=0.0.60` to generate grouped release notes
-2. Create a PR with the updated `CHANGELOG.md`, get it reviewed, and merge to `main`
-3. Create a GitHub Release with a matching tag (e.g., `v0.0.60`), using the changelog entry as the release description
-4. The `release.yml` workflow builds and uploads binaries automatically
+2. Create a PR with the updated `CHANGELOG.md` and include `[run-release]` in the PR title (e.g. `chore: release v0.0.60 [run-release]`)
+3. Get the PR reviewed and merge to `main` — CI automatically creates the git tag, GitHub Release, and uploads binaries
+
+Two CI gates guard the PR:
+- **`changelog-gate.yml`** — fails if `CHANGELOG.md` is not modified when `[run-release]` is present
+- **`release-tag-gate.yml`** — fails on common `[run-release]` misspellings or wrong casing
 
 ## Changelog Conventions
 
@@ -478,9 +481,24 @@ GitHub Actions workflows in `.github/workflows/`:
 
 Builds and pushes Docker images.
 
+### `changelog-gate.yml`
+
+Runs on pull request events. Fails if the PR title contains `[run-release]` but `CHANGELOG.md` is not modified.
+
+### `release-tag-gate.yml`
+
+Runs on pull request events. Validates that `[run-release]` is spelled and cased correctly in the PR title. Catches common typos and wrong separators so that the release is not silently skipped.
+
+### `create-release.yml`
+
+Runs when a PR is merged to `main` with `[run-release]` in the title. Uses `go run ./scripts/changelog extract-version` to read the version from the top-most `## x.y.z` section in `CHANGELOG.md`, then:
+
+1. Creates and pushes a `vx.y.z` annotated tag
+2. Creates a GitHub Release with the matching changelog entry as notes — publishing it immediately, which triggers `release.yml` via the `release: published` event
+
 ### `release.yml`
 
-Handles release automation.
+Builds binaries when a GitHub Release is published. Triggered by the `release: published` event (including releases created by `create-release.yml`). Builds for darwin, linux, windows, and freebsd, then uploads assets to the release.
 
 ## Common Patterns
 
