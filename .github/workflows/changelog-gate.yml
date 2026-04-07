@@ -1,0 +1,43 @@
+name: Changelog gate
+
+# Runs on pull_request: opened (PR created), synchronize (new commits pushed to the PR
+# branch), reopened, edited (title/body). No bare `push` trigger — pushes before a PR
+# exists have no PR metadata to validate.
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - edited
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: changelog-gate-${{ github.repository }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  require-changelog-if-run-release:
+    if: github.head_ref != 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require CHANGELOG.md when title has [run-release]
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          set -euo pipefail
+          if ! printf '%s' "${PR_TITLE}" | grep -Fq '[run-release]'; then
+            echo "PR title does not include [run-release]; check passed."
+            exit 0
+          fi
+          if ! gh pr view "${PR_NUMBER}" --json files -q '.files[].path' | grep -Fxq 'CHANGELOG.md'; then
+            echo "::error::PR title includes [run-release] but CHANGELOG.md is not modified in this PR. Run \`make changelog VERSION=x.y.z\` (or edit CHANGELOG.md) and push before merging."
+            exit 1
+          fi
+          echo "CHANGELOG.md is included in this PR; check passed."
