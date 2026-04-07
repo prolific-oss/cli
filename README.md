@@ -217,22 +217,20 @@ This generates grouped release notes from conventional commits, merges any hand-
 
 ### 2. Create a release PR
 
-Create a PR with the updated `CHANGELOG.md`, get it reviewed, and merge to `main`.
+Create a PR with the updated `CHANGELOG.md` and include `[run-release]` in the PR title (e.g. `chore: release v0.0.60 [run-release]`).
 
-### 3. Create a GitHub Release
+Two CI gates will validate the PR:
 
-1. Go to [Releases](https://github.com/prolific-oss/cli/releases)
-2. Click "Draft a new release"
-3. Create a new tag matching the version (e.g., `v0.0.60`)
-4. Title the release with the version number
-5. Copy the release notes from the new `CHANGELOG.md` entry into the release description
-6. Publish the release
+- **Changelog gate** — confirms `CHANGELOG.md` is modified when `[run-release]` is present.
+- **Release tag gate** — catches common misspellings or wrong casing of `[run-release]`.
 
-### 4. Automated Build
+### 3. Merge to trigger the release
 
-The release workflow automatically:
+Once the PR is approved and merged to `main`, CI automatically:
 
-- Builds binaries for multiple platforms (darwin, linux, windows, freebsd)
-- Uploads binaries to the GitHub Release as assets
+1. Extracts the version from the latest `## x.y.z` section in `CHANGELOG.md`
+2. Creates and pushes a `vx.y.z` git tag
+3. Creates a GitHub Release with the changelog entry as release notes
+4. Builds binaries for multiple platforms (darwin, linux, windows, freebsd) and uploads them to the release
 
 Users can then download binaries from the release page or use `go install`.
