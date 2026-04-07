@@ -68,6 +68,7 @@ type API interface {
 	DeleteHookSubscription(subscriptionID string) error
 
 	GetWorkspaces(limit, offset int) (*ListWorkspacesResponse, error)
+	GetWorkspaceBalance(workspaceID string) (*WorkspaceBalanceResponse, error)
 	CreateWorkspace(workspace model.Workspace) (*CreateWorkspacesResponse, error)
 
 	CreateInvitation(invitation model.CreateInvitation) (*CreateInvitationResponse, error)
@@ -714,6 +715,19 @@ func (c *Client) GetWorkspaces(limit, offset int) (*ListWorkspacesResponse, erro
 
 	if httpResponse.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("status code was %v, so therefore unable to get workspaces", httpResponse.StatusCode)
+	}
+
+	return &response, nil
+}
+
+// GetWorkspaceBalance will return the balance for a workspace.
+func (c *Client) GetWorkspaceBalance(workspaceID string) (*WorkspaceBalanceResponse, error) {
+	var response WorkspaceBalanceResponse
+
+	url := fmt.Sprintf("/api/v1/workspaces/%s/balance/", workspaceID)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
 
 	return &response, nil

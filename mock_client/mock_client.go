@@ -244,21 +244,6 @@ func (mr *MockAPIMockRecorder) CreateParticipantGroup(group interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateParticipantGroup", reflect.TypeOf((*MockAPI)(nil).CreateParticipantGroup), group)
 }
 
-// CreateTestParticipant mocks base method.
-func (m *MockAPI) CreateTestParticipant(email string) (*client.CreateTestParticipantResponse, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateTestParticipant", email)
-	ret0, _ := ret[0].(*client.CreateTestParticipantResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CreateTestParticipant indicates an expected call of CreateTestParticipant.
-func (mr *MockAPIMockRecorder) CreateTestParticipant(email interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTestParticipant", reflect.TypeOf((*MockAPI)(nil).CreateTestParticipant), email)
-}
-
 // CreateProject mocks base method.
 func (m *MockAPI) CreateProject(workspaceID string, project model.Project) (*client.CreateProjectResponse, error) {
 	m.ctrl.T.Helper()
@@ -302,6 +287,21 @@ func (m *MockAPI) CreateSurvey(survey model.CreateSurvey) (*client.CreateSurveyR
 func (mr *MockAPIMockRecorder) CreateSurvey(survey interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSurvey", reflect.TypeOf((*MockAPI)(nil).CreateSurvey), survey)
+}
+
+// CreateTestParticipant mocks base method.
+func (m *MockAPI) CreateTestParticipant(email string) (*client.CreateTestParticipantResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateTestParticipant", email)
+	ret0, _ := ret[0].(*client.CreateTestParticipantResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateTestParticipant indicates an expected call of CreateTestParticipant.
+func (mr *MockAPIMockRecorder) CreateTestParticipant(email interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTestParticipant", reflect.TypeOf((*MockAPI)(nil).CreateTestParticipant), email)
 }
 
 // CreateWorkspace mocks base method.
@@ -885,6 +885,21 @@ func (m *MockAPI) GetUnreadMessages() (*client.ListUnreadMessagesResponse, error
 func (mr *MockAPIMockRecorder) GetUnreadMessages() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUnreadMessages", reflect.TypeOf((*MockAPI)(nil).GetUnreadMessages))
+}
+
+// GetWorkspaceBalance mocks base method.
+func (m *MockAPI) GetWorkspaceBalance(workspaceID string) (*client.WorkspaceBalanceResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetWorkspaceBalance", workspaceID)
+	ret0, _ := ret[0].(*client.WorkspaceBalanceResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetWorkspaceBalance indicates an expected call of GetWorkspaceBalance.
+func (mr *MockAPIMockRecorder) GetWorkspaceBalance(workspaceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkspaceBalance", reflect.TypeOf((*MockAPI)(nil).GetWorkspaceBalance), workspaceID)
 }
 
 // GetWorkspaces mocks base method.
