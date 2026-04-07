@@ -70,6 +70,11 @@ type BulkApproveSubmissionsPayload struct {
 	ParticipantIDs []string `json:"participant_ids,omitempty"`
 }
 
+// RemoveParticipantGroupMembersPayload represents the JSON payload for removing participants from a group.
+type RemoveParticipantGroupMembersPayload struct {
+	ParticipantIDs []string `json:"participant_ids"`
+}
+
 // CreateAITaskBuilderDatasetPayload represents the request for creating a dataset
 type CreateAITaskBuilderDatasetPayload struct {
 	Name        string `json:"name"`

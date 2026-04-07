@@ -244,6 +244,21 @@ func (mr *MockAPIMockRecorder) CreateParticipantGroup(group interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateParticipantGroup", reflect.TypeOf((*MockAPI)(nil).CreateParticipantGroup), group)
 }
 
+// CreateTestParticipant mocks base method.
+func (m *MockAPI) CreateTestParticipant(email string) (*client.CreateTestParticipantResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateTestParticipant", email)
+	ret0, _ := ret[0].(*client.CreateTestParticipantResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateTestParticipant indicates an expected call of CreateTestParticipant.
+func (mr *MockAPIMockRecorder) CreateTestParticipant(email interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTestParticipant", reflect.TypeOf((*MockAPI)(nil).CreateTestParticipant), email)
+}
+
 // CreateProject mocks base method.
 func (m *MockAPI) CreateProject(workspaceID string, project model.Project) (*client.CreateProjectResponse, error) {
 	m.ctrl.T.Helper()
@@ -899,6 +914,21 @@ func (m *MockAPI) PayBonusPayments(id string) error {
 func (mr *MockAPIMockRecorder) PayBonusPayments(id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PayBonusPayments", reflect.TypeOf((*MockAPI)(nil).PayBonusPayments), id)
+}
+
+// RemoveParticipantGroupMembers mocks base method.
+func (m *MockAPI) RemoveParticipantGroupMembers(groupID string, participantIDs []string) (*client.ViewParticipantGroupResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveParticipantGroupMembers", groupID, participantIDs)
+	ret0, _ := ret[0].(*client.ViewParticipantGroupResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RemoveParticipantGroupMembers indicates an expected call of RemoveParticipantGroupMembers.
+func (mr *MockAPIMockRecorder) RemoveParticipantGroupMembers(groupID, participantIDs interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveParticipantGroupMembers", reflect.TypeOf((*MockAPI)(nil).RemoveParticipantGroupMembers), groupID, participantIDs)
 }
 
 // RequestSubmissionReturn mocks base method.

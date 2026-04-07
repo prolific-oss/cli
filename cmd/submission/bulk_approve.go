@@ -3,10 +3,9 @@ package submission
 import (
 	"fmt"
 	"io"
-	"os"
-	"strings"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/spf13/cobra"
 )
 
@@ -73,7 +72,7 @@ func bulkApproveSubmissions(c client.API, opts BulkApproveOptions, w io.Writer) 
 	}
 
 	if hasFile {
-		ids, err := parseIDFile(opts.File)
+		ids, err := shared.ParseIDFile(opts.File)
 		if err != nil {
 			return err
 		}
@@ -115,31 +114,4 @@ func bulkApproveSubmissions(c client.API, opts BulkApproveOptions, w io.Writer) 
 	fmt.Fprintln(w, "The request to bulk approve has been made successfully.")
 
 	return nil
-}
-
-func parseIDFile(filePath string) ([]string, error) {
-	data, err := os.ReadFile(filePath)
-	if err != nil {
-		return nil, fmt.Errorf("unable to read file: %w", err)
-	}
-
-	content := strings.TrimRight(string(data), "\n\r ")
-	if content == "" {
-		return nil, fmt.Errorf("file is empty: %s", filePath)
-	}
-
-	var ids []string
-	for _, line := range strings.Split(content, "\n") {
-		line = strings.TrimSpace(line)
-		if line == "" {
-			continue
-		}
-		ids = append(ids, line)
-	}
-
-	if len(ids) == 0 {
-		return nil, fmt.Errorf("no valid entries found in file: %s", filePath)
-	}
-
-	return ids, nil
 }

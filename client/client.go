@@ -79,6 +79,9 @@ type API interface {
 	GetParticipantGroups(workspaceID string, limit, offset int) (*ListParticipantGroupsResponse, error)
 	GetParticipantGroup(groupID string) (*ViewParticipantGroupResponse, error)
 	CreateParticipantGroup(group model.CreateParticipantGroup) (*CreateParticipantGroupResponse, error)
+	RemoveParticipantGroupMembers(groupID string, participantIDs []string) (*ViewParticipantGroupResponse, error)
+
+	CreateTestParticipant(email string) (*CreateTestParticipantResponse, error)
 
 	GetFilters() (*ListFiltersResponse, error)
 
@@ -827,6 +830,46 @@ func (c *Client) CreateParticipantGroup(group model.CreateParticipantGroup) (*Cr
 	_, err := c.Execute(http.MethodPost, url, group, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+func (c *Client) RemoveParticipantGroupMembers(groupID string, participantIDs []string) (*ViewParticipantGroupResponse, error) {
+	payload := RemoveParticipantGroupMembersPayload{
+		ParticipantIDs: participantIDs,
+	}
+	var response ViewParticipantGroupResponse
+
+	url := fmt.Sprintf("/api/v1/participant-groups/%s/participants/", groupID)
+	httpResponse, err := c.Execute(http.MethodDelete, url, payload, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to remove participants from group %s: %s", groupID, err)
+	}
+	if httpResponse.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unable to remove participants from group %s, status code: %v", groupID, httpResponse.StatusCode)
+	}
+
+	return &response, nil
+}
+
+// CreateTestParticipant creates a test participant for the researcher with the given email.
+func (c *Client) CreateTestParticipant(email string) (*CreateTestParticipantResponse, error) {
+	var response CreateTestParticipantResponse
+
+	payload := struct {
+		Email string `json:"email"`
+	}{Email: email}
+
+	url := "/api/v1/researchers/participants/"
+	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unable to create test participant (status %d): %s", httpResponse.StatusCode, string(body))
 	}
 
 	return &response, nil

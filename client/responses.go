@@ -340,6 +340,11 @@ type ListCredentialPoolsResponse struct {
 	CredentialPools []CredentialPoolSummary `json:"credential_pools"`
 }
 
+// CreateTestParticipantResponse is the response for creating a test participant.
+type CreateTestParticipantResponse struct {
+	ParticipantID string `json:"participant_id"`
+}
+
 // CreateInvitationResponse is the response for creating invitations.
 type CreateInvitationResponse struct {
 	Invitations []model.Invitation `json:"invitations"`
