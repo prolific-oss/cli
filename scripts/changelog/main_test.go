@@ -6,6 +6,113 @@ import (
 	"testing"
 )
 
+func TestExtractReleaseVersion(t *testing.T) {
+	tests := []struct {
+		name    string
+		content string
+		want    string
+		wantOK  bool
+	}{
+		{
+			name: "first semver after next",
+			content: `# CHANGELOG
+
+## next
+
+Notes.
+
+## 0.0.66
+
+### Core
+
+- Fix
+`,
+			want:   "0.0.66",
+			wantOK: true,
+		},
+		{
+			name: "semver without next section",
+			content: `# CHANGELOG
+
+## 1.0.0
+
+- Initial
+`,
+			want:   "1.0.0",
+			wantOK: true,
+		},
+		{
+			name: "skips non-semver headings before semver",
+			content: `# CHANGELOG
+
+## next
+
+## Unreleased stuff
+
+## 2.3.4
+
+- x
+`,
+			want:   "2.3.4",
+			wantOK: true,
+		},
+		{
+			name:    "heading with trailing space trimmed",
+			content: "## next\n\n## 9.8.7 \n\n- y\n",
+			want:    "9.8.7",
+			wantOK:  true,
+		},
+		{
+			name: "only next",
+			content: `# CHANGELOG
+
+## next
+
+- nothing released
+`,
+			want:   "",
+			wantOK: false,
+		},
+		{
+			name: "pre-release heading not matched",
+			content: `## next
+
+## 1.0.0-beta.1
+
+- rc
+`,
+			want:   "",
+			wantOK: false,
+		},
+		{
+			name: "v prefix in heading not matched",
+			content: `## next
+
+## v1.2.3
+
+- x
+`,
+			want:   "",
+			wantOK: false,
+		},
+		{
+			name:    "empty changelog",
+			content: "",
+			want:    "",
+			wantOK:  false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, ok := ExtractReleaseVersion(tt.content)
+			if ok != tt.wantOK || got != tt.want {
+				t.Errorf("ExtractReleaseVersion() = (%q, %v), want (%q, %v)", got, ok, tt.want, tt.wantOK)
+			}
+		})
+	}
+}
+
 func TestExtractSection(t *testing.T) {
 	changelog := `# CHANGELOG
 
