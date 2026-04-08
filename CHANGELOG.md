@@ -4,6 +4,72 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+## 1.0.0
+
+### AI Task Builder
+
+- Add aitaskbuilder batch export command
+- Add aitaskbuilder batch update command
+
+### Collections
+
+- Update collection rendering
+- Ensure that workspace options default to viper config
+- Move collection renderers to /cmd
+
+### Core
+
+- Add submissions TUI list view
+- Add invitations support
+- Add interactive drill-down to submission-counts command
+- Make workspace required on hook create
+- Add participant group create command
+- Add researcher create-participant command
+
+### Filters
+
+- Move filter view to ./cmd/filters
+- Add filter-set create command
+- Use dedicated request model and fix selected_range serialization
+
+### Participant Groups
+
+- Add participant group remove command with bulk and file support
+- Address code review feedback
+
+### Hooks
+
+- Add hook create command
+- Add create-secret command
+- Add hook subscription delete command
+
+### Study
+
+- Unified output format flags
+- Move study ui renderer to ./cmd
+- Add study submission-counts command
+- Add demographic-export and test-study CLI commands
+- Add status code check and improve error handling for study commands
+- Align demographic-export and test-study with API docs
+
+### Submissions
+
+- Update submission rendering
+- Add submission transition and bulk-approve commands
+- Add --file flag to submission bulk-approve command
+
+### Survey
+
+- Add survey list command
+- Add survey view command
+- Add survey create command
+- Add survey delete command
+- Add interactive and JSON output modes to survey list
+
+### Workspaces
+
+- Add workspace balance command
+
 ## 0.0.66
 
 ### Templates

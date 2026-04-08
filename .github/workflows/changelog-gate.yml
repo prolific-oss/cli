@@ -36,7 +36,7 @@ jobs:
             echo "PR title does not include [run-release]; check passed."
             exit 0
           fi
-          if ! gh pr view "${PR_NUMBER}" --json files -q '.files[].path' | grep -Fxq 'CHANGELOG.md'; then
+          if ! gh pr view "${PR_NUMBER}" --repo "${{ github.repository }}" --json files -q '.files[].path' | grep -Fxq 'CHANGELOG.md'; then
             echo "::error::PR title includes [run-release] but CHANGELOG.md is not modified in this PR. Run \`make changelog VERSION=x.y.z\` (or edit CHANGELOG.md) and push before merging."
             exit 1
           fi

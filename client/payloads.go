@@ -91,6 +91,21 @@ type CreateBatchParams struct {
 	TaskSteps        string `json:"task_steps"`
 }
 
+// UpdateBatchParams represents the parameters for updating an AI Task Builder batch.
+type UpdateBatchParams struct {
+	BatchID     string
+	Name        string
+	DatasetID   string
+	TaskDetails *TaskDetails // nil means task details will not be updated
+}
+
+// UpdateAITaskBuilderBatchPayload represents the JSON payload for updating an AI Task Builder batch.
+type UpdateAITaskBuilderBatchPayload struct {
+	Name        string       `json:"name,omitempty"`
+	DatasetID   string       `json:"dataset_id,omitempty"`
+	TaskDetails *TaskDetails `json:"task_details,omitempty"`
+}
+
 // TaskDetails represents the task configuration details for batch creation
 type TaskDetails struct {
 	TaskName         string `json:"task_name"`
