@@ -24,6 +24,7 @@ You can create surveys with questions organised into sections, or as a flat list
 		NewViewCommand("view", client, w),
 		NewCreateCommand("create", client, w),
 		NewDeleteCommand("delete", client, w),
+		NewResponseCommand(client, w),
 	)
 	return cmd
 }

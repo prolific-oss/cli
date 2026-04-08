@@ -95,6 +95,13 @@ type API interface {
 	CreateSurvey(survey model.CreateSurvey) (*CreateSurveyResponse, error)
 	DeleteSurvey(ID string) error
 
+	GetSurveyResponses(surveyID string, limit, offset int) (*ListSurveyResponsesResponse, error)
+	GetSurveyResponse(surveyID, responseID string) (*model.SurveyResponse, error)
+	CreateSurveyResponse(surveyID string, response model.CreateSurveyResponseRequest) (*CreateSurveyResponseResponse, error)
+	DeleteSurveyResponse(surveyID, responseID string) error
+	DeleteAllSurveyResponses(surveyID string) error
+	GetSurveyResponseSummary(surveyID string) (*model.SurveySummary, error)
+
 	GetMessages(userID *string, createdAfter *string) (*ListMessagesResponse, error)
 	SendMessage(body, recipientID, studyID string) error
 	GetUnreadMessages() (*ListUnreadMessagesResponse, error)
@@ -1002,6 +1009,96 @@ func (c *Client) DeleteSurvey(ID string) error {
 	}
 
 	return nil
+}
+
+// GetSurveyResponses will return all responses for a survey
+func (c *Client) GetSurveyResponses(surveyID string, limit, offset int) (*ListSurveyResponsesResponse, error) {
+	var response ListSurveyResponsesResponse
+
+	url := fmt.Sprintf("/api/v1/surveys/%s/responses/?limit=%v&offset=%v", surveyID, limit, offset)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// GetSurveyResponse will return a single survey response
+func (c *Client) GetSurveyResponse(surveyID, responseID string) (*model.SurveyResponse, error) {
+	var response model.SurveyResponse
+
+	url := fmt.Sprintf("/api/v1/surveys/%s/responses/%s", surveyID, responseID)
+	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("status code was %v, so therefore unable to get survey response: %v", httpResponse.StatusCode, responseID)
+	}
+
+	return &response, nil
+}
+
+// CreateSurveyResponse will create a new survey response
+func (c *Client) CreateSurveyResponse(surveyID string, surveyResponse model.CreateSurveyResponseRequest) (*CreateSurveyResponseResponse, error) {
+	var response CreateSurveyResponseResponse
+
+	url := fmt.Sprintf("/api/v1/surveys/%s/responses/", surveyID)
+	_, err := c.Execute(http.MethodPost, url, surveyResponse, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// DeleteSurveyResponse will delete a single survey response
+func (c *Client) DeleteSurveyResponse(surveyID, responseID string) error {
+	url := fmt.Sprintf("/api/v1/surveys/%s/responses/%s", surveyID, responseID)
+	httpResponse, err := c.Execute(http.MethodDelete, url, nil, nil)
+	if err != nil {
+		return fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("status code was %v, so therefore unable to delete survey response: %v", httpResponse.StatusCode, responseID)
+	}
+
+	return nil
+}
+
+// DeleteAllSurveyResponses will delete all responses for a survey
+func (c *Client) DeleteAllSurveyResponses(surveyID string) error {
+	url := fmt.Sprintf("/api/v1/surveys/%s/responses/", surveyID)
+	httpResponse, err := c.Execute(http.MethodDelete, url, nil, nil)
+	if err != nil {
+		return fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("status code was %v, so therefore unable to delete all survey responses for survey: %v", httpResponse.StatusCode, surveyID)
+	}
+
+	return nil
+}
+
+// GetSurveyResponseSummary will return the response summary for a survey
+func (c *Client) GetSurveyResponseSummary(surveyID string) (*model.SurveySummary, error) {
+	var response model.SurveySummary
+
+	url := fmt.Sprintf("/api/v1/surveys/%s/responses/summary/", surveyID)
+	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("status code was %v, so therefore unable to get survey response summary for survey: %v", httpResponse.StatusCode, surveyID)
+	}
+
+	return &response, nil
 }
 
 // UpdateCollection will update a collection with the given ID
