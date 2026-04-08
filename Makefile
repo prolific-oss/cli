@@ -114,6 +114,7 @@ static-all: clean install static test
 .PHONY: changelog
 changelog: ## Generate grouped changelog for a release (Usage: make changelog VERSION=0.0.61 — numeric only; tag/release will be v0.0.61)
 	@if [ -z "$(VERSION)" ]; then echo "Usage: make changelog VERSION=0.0.61 (published tag is v0.0.61)"; exit 1; fi
+	@go run ./scripts/changelog validate-version "$(VERSION)"
 	@command -v git-cliff >/dev/null 2>&1 || { \
  		echo "Error: git-cliff is required to generate the changelog but was not found in PATH."; \
  		echo "Please install git-cliff (run `brew install git-cliff` or see https://git-cliff.org/docs/installation/) and try again."; \

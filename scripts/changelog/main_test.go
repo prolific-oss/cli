@@ -113,6 +113,31 @@ Notes.
 	}
 }
 
+func TestStrictSemver(t *testing.T) {
+	tests := []struct {
+		name string
+		in   string
+		want bool
+	}{
+		{"valid patch", "0.0.61", true},
+		{"valid multi digit", "10.20.30", true},
+		{"v prefix", "v0.0.61", false},
+		{"pre-release", "1.0.0-beta.1", false},
+		{"build metadata", "1.0.0+build", false},
+		{"two components", "1.0", false},
+		{"empty", "", false},
+		{"whitespace padded valid", "  1.2.3  ", true},
+		{"leading zero segment ok", "0.01.2", true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := StrictSemver(tt.in); got != tt.want {
+				t.Errorf("StrictSemver(%q) = %v, want %v", tt.in, got, tt.want)
+			}
+		})
+	}
+}
+
 func TestExtractSection(t *testing.T) {
 	changelog := `# CHANGELOG
 
