@@ -11,30 +11,26 @@
 - Add aitaskbuilder batch export command
 - Add aitaskbuilder batch update command
 
-### Study
-
-- Unified output format flags
-- Move study ui renderer to ./cmd
-- Add study submission-counts command
-- Add demographic-export and test-study CLI commands
-- Add status code check and improve error handling for study commands
-- Align demographic-export and test-study with API docs
-
 ### Collections
 
 - Update collection rendering
 - Ensure that workspace options default to viper config
 - Move collection renderers to /cmd
 
-### Workspaces
+### Core
 
-- Add workspace balance command
+- Add submissions TUI list view
+- Add invitations support
+- Add interactive drill-down to submission-counts command
+- Make workspace required on hook create
+- Add participant group create command
+- Add researcher create-participant command
 
-### Submissions
+### Filters
 
-- Update submission rendering
-- Add submission transition and bulk-approve commands
-- Add --file flag to submission bulk-approve command
+- Move filter view to ./cmd/filters
+- Add filter-set create command
+- Use dedicated request model and fix selected_range serialization
 
 ### Participant Groups
 
@@ -47,25 +43,32 @@
 - Add create-secret command
 - Add hook subscription delete command
 
-### Filters
+### Study
 
-- Move filter view to ./cmd/filters
-- Add filter-set create command
-- Use dedicated request model and fix selected_range serialization
+- Unified output format flags
+- Move study ui renderer to ./cmd
+- Add study submission-counts command
+- Add demographic-export and test-study CLI commands
+- Add status code check and improve error handling for study commands
+- Align demographic-export and test-study with API docs
 
-### Core
+### Submissions
 
-- Add submissions TUI list view
-- Add invitations support
-- Add interactive drill-down to submission-counts command
-- Make workspace required on hook create
-- Add participant group create command
-- Add survey commands (list, view, create, delete)
+- Update submission rendering
+- Add submission transition and bulk-approve commands
+- Add --file flag to submission bulk-approve command
+
+### Survey
+
+- Add survey list command
+- Add survey view command
+- Add survey create command
+- Add survey delete command
 - Add interactive and JSON output modes to survey list
-- Check status code on CreateHookSecret
-- Add researcher create-participant command
-- Handle 204 response for survey delete and add example template
-- Include response body in status error and simplify error wrapping
+
+### Workspaces
+
+- Add workspace balance command
 
 ## 0.0.66
 
