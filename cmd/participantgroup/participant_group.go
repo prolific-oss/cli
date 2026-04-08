@@ -30,6 +30,7 @@ Participant groups allow you do the following:
 		NewListCommand("list", client, w),
 		NewViewCommand("view", client, w),
 		NewCreateCommand("create", client, w),
+		NewRemoveCommand("remove", client, w),
 	)
 	return cmd
 }

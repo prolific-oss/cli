@@ -68,6 +68,7 @@ type API interface {
 	DeleteHookSubscription(subscriptionID string) error
 
 	GetWorkspaces(limit, offset int) (*ListWorkspacesResponse, error)
+	GetWorkspaceBalance(workspaceID string) (*WorkspaceBalanceResponse, error)
 	CreateWorkspace(workspace model.Workspace) (*CreateWorkspacesResponse, error)
 
 	CreateInvitation(invitation model.CreateInvitation) (*CreateInvitationResponse, error)
@@ -79,6 +80,9 @@ type API interface {
 	GetParticipantGroups(workspaceID string, limit, offset int) (*ListParticipantGroupsResponse, error)
 	GetParticipantGroup(groupID string) (*ViewParticipantGroupResponse, error)
 	CreateParticipantGroup(group model.CreateParticipantGroup) (*CreateParticipantGroupResponse, error)
+	RemoveParticipantGroupMembers(groupID string, participantIDs []string) (*ViewParticipantGroupResponse, error)
+
+	CreateTestParticipant(email string) (*CreateTestParticipantResponse, error)
 
 	GetFilters() (*ListFiltersResponse, error)
 
@@ -117,6 +121,8 @@ type API interface {
 	GetAITaskBuilderBatches(workspaceID string) (*GetAITaskBuilderBatchesResponse, error)
 	GetAITaskBuilderResponses(batchID string) (*GetAITaskBuilderResponsesResponse, error)
 	GetAITaskBuilderTasks(batchID string) (*GetAITaskBuilderTasksResponse, error)
+	InitiateBatchExport(batchID string) (*BatchExportResponse, error)
+	GetBatchExportStatus(batchID, exportID string) (*BatchExportResponse, error)
 	GetAITaskBuilderDatasetStatus(datasetID string) (*GetAITaskBuilderDatasetStatusResponse, error)
 	GetAITaskBuilderDatasetUploadURL(datasetID, fileName string) (*GetAITaskBuilderDatasetUploadURLResponse, error)
 }
@@ -721,6 +727,19 @@ func (c *Client) GetWorkspaces(limit, offset int) (*ListWorkspacesResponse, erro
 	return &response, nil
 }
 
+// GetWorkspaceBalance will return the balance for a workspace.
+func (c *Client) GetWorkspaceBalance(workspaceID string) (*WorkspaceBalanceResponse, error) {
+	var response WorkspaceBalanceResponse
+
+	url := fmt.Sprintf("/api/v1/workspaces/%s/balance/", workspaceID)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
 // CreateWorkspace will create you a workspace
 func (c *Client) CreateWorkspace(workspace model.Workspace) (*CreateWorkspacesResponse, error) {
 	var response CreateWorkspacesResponse
@@ -834,6 +853,46 @@ func (c *Client) CreateParticipantGroup(group model.CreateParticipantGroup) (*Cr
 	_, err := c.Execute(http.MethodPost, url, group, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+func (c *Client) RemoveParticipantGroupMembers(groupID string, participantIDs []string) (*ViewParticipantGroupResponse, error) {
+	payload := RemoveParticipantGroupMembersPayload{
+		ParticipantIDs: participantIDs,
+	}
+	var response ViewParticipantGroupResponse
+
+	url := fmt.Sprintf("/api/v1/participant-groups/%s/participants/", groupID)
+	httpResponse, err := c.Execute(http.MethodDelete, url, payload, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to remove participants from group %s: %s", groupID, err)
+	}
+	if httpResponse.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unable to remove participants from group %s, status code: %v", groupID, httpResponse.StatusCode)
+	}
+
+	return &response, nil
+}
+
+// CreateTestParticipant creates a test participant for the researcher with the given email.
+func (c *Client) CreateTestParticipant(email string) (*CreateTestParticipantResponse, error) {
+	var response CreateTestParticipantResponse
+
+	payload := struct {
+		Email string `json:"email"`
+	}{Email: email}
+
+	url := "/api/v1/researchers/participants/"
+	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unable to create test participant (status %d): %s", httpResponse.StatusCode, string(body))
 	}
 
 	return &response, nil
@@ -1244,6 +1303,45 @@ func (c *Client) GetAITaskBuilderTasks(batchID string) (*GetAITaskBuilderTasksRe
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
+	return &response, nil
+}
+
+// InitiateBatchExport starts a batch export job via POST.
+// Returns "generating" + ExportID (202) if a new job was enqueued,
+// or "complete" + URL immediately (200) if a valid export already exists.
+func (c *Client) InitiateBatchExport(batchID string) (*BatchExportResponse, error) {
+	var response BatchExportResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/export", batchID)
+	httpResponse, err := c.Execute(http.MethodPost, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK && httpResponse.StatusCode != http.StatusAccepted {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+	}
+
+	return &response, nil
+}
+
+// GetBatchExportStatus polls the status of an in-progress batch export job.
+// Returns "generating", "complete" (with URL), or "failed".
+func (c *Client) GetBatchExportStatus(batchID, exportID string) (*BatchExportResponse, error) {
+	var response BatchExportResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/export/%s", batchID, exportID)
+	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+	}
+
 	return &response, nil
 }
 

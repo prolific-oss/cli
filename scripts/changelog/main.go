@@ -4,6 +4,7 @@
 // Usage:
 //
 //	go run ./scripts/changelog extract --section next --strip-comments
+//	go run ./scripts/changelog extract-version
 //	go run ./scripts/changelog merge --manual MANUAL.md --generated CLIFF.md --output MERGED.md
 //	go run ./scripts/changelog update --version 0.1.0 --notes NOTES.md
 package main
@@ -25,11 +26,12 @@ var (
 	reBlankLines     = regexp.MustCompile(`\n{3,}`)
 	reVersionHeading = regexp.MustCompile(`^## \d`)
 	reChangelogTitle = regexp.MustCompile(`(?m)(# CHANGELOG\n+)`)
+	reStrictSemver   = regexp.MustCompile(`^[0-9]+\.[0-9]+\.[0-9]+$`)
 )
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stderr, "usage: changelog <extract|merge|update|transform> [flags]")
+		fmt.Fprintln(os.Stderr, "usage: changelog <extract|extract-version|merge|update|transform> [flags]")
 		os.Exit(1)
 	}
 
@@ -39,6 +41,8 @@ func main() {
 	switch cmd {
 	case "extract":
 		runExtract()
+	case "extract-version":
+		runExtractVersion()
 	case "merge":
 		runMerge()
 	case "update":
@@ -94,6 +98,33 @@ func runExtract() {
 
 	result := ExtractSection(string(data), *section, *stripComments)
 	fmt.Print(result)
+}
+
+func runExtractVersion() {
+	fs := flag.NewFlagSet("extract-version", flag.ContinueOnError)
+	changelogPath := fs.String("changelog", "CHANGELOG.md", "path to changelog file")
+	if err := fs.Parse(os.Args[1:]); err != nil {
+		fmt.Fprintf(os.Stderr, "extract-version: %v\n", err)
+		os.Exit(1)
+	}
+
+	path, err := resolvePath(*changelogPath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "extract-version: %v\n", err)
+		os.Exit(1)
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "extract-version: %v\n", err)
+		os.Exit(1)
+	}
+
+	version, ok := ExtractReleaseVersion(string(data))
+	if !ok {
+		fmt.Fprintln(os.Stderr, "extract-version: no ## x.y.z release section found (skipping ## next); run make changelog VERSION=x.y.z before merging")
+		os.Exit(1)
+	}
+	fmt.Print(version)
 }
 
 func runMerge() {
@@ -192,6 +223,27 @@ func readFileOrEmpty(raw string) string {
 		return ""
 	}
 	return strings.TrimSpace(string(data))
+}
+
+// ExtractReleaseVersion scans changelog top to bottom for ## headings and
+// returns the first heading text that is strict semver x.y.z (major.minor.patch
+// digits only), excluding the literal section title "next". This matches the
+// release workflow: the current release block is the first versioned section
+// after ## next in a typical CHANGELOG.
+func ExtractReleaseVersion(changelog string) (version string, ok bool) {
+	for _, line := range strings.Split(changelog, "\n") {
+		if !strings.HasPrefix(line, "## ") {
+			continue
+		}
+		heading := strings.TrimSpace(strings.TrimPrefix(line, "## "))
+		if heading == "next" {
+			continue
+		}
+		if reStrictSemver.MatchString(heading) {
+			return heading, true
+		}
+	}
+	return "", false
 }
 
 // ExtractSection extracts the content between a ## <section> heading and the

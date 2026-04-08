@@ -58,7 +58,7 @@ $ prolific participant create -N "My Group" -w <workspace_id> -p <participant_id
 	flags.StringVarP(&opts.Name, "name", "N", "", "The name of the participant group.")
 	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "The ID of the workspace to create the participant group in.")
 	flags.StringVarP(&opts.Description, "description", "d", "", "The description of the participant group.")
-	flags.StringSliceVarP(&opts.ParticipantIDs, "participant-id", "p", nil, "The ID of a participant to add to the group. Can be specified multiple times.")
+	flags.StringArrayVarP(&opts.ParticipantIDs, "participant-id", "p", nil, "The ID of a participant to add to the group. Can be specified multiple times.")
 
 	return cmd
 }

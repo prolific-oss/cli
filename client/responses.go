@@ -122,6 +122,23 @@ type TransitionStudyResponse struct {
 	Status                  string   `json:"status"`
 }
 
+// WorkspaceBalanceResponse is the response for the workspace balance endpoint.
+type WorkspaceBalanceResponse struct {
+	CurrencyCode     string `json:"currency_code"`
+	TotalBalance     int    `json:"total_balance"`
+	BalanceBreakdown struct {
+		Rewards int `json:"rewards"`
+		Fees    int `json:"fees"`
+		VAT     int `json:"vat"`
+	} `json:"balance_breakdown"`
+	AvailableBalance          int `json:"available_balance"`
+	AvailableBalanceBreakdown struct {
+		Rewards int `json:"rewards"`
+		Fees    int `json:"fees"`
+		VAT     int `json:"vat"`
+	} `json:"available_balance_breakdown"`
+}
+
 // ListCampaignsResponse is the response for the campaigns request.
 type ListCampaignsResponse struct {
 	Results []model.Campaign `json:"results"`
@@ -340,6 +357,11 @@ type ListCredentialPoolsResponse struct {
 	CredentialPools []CredentialPoolSummary `json:"credential_pools"`
 }
 
+// CreateTestParticipantResponse is the response for creating a test participant.
+type CreateTestParticipantResponse struct {
+	ParticipantID string `json:"participant_id"`
+}
+
 // CreateInvitationResponse is the response for creating invitations.
 type CreateInvitationResponse struct {
 	Invitations []model.Invitation `json:"invitations"`
@@ -375,6 +397,16 @@ type ListCollectionsResponse struct {
 // For POST (initiate): Status is "generating" (ExportID set) or "complete" (URL/ExpiresAt set).
 // For GET (poll): Status is "generating", "complete", or "failed".
 type CollectionExportResponse struct {
+	Status    string `json:"status"`
+	ExportID  string `json:"export_id,omitempty"`
+	URL       string `json:"url,omitempty"`
+	ExpiresAt string `json:"expires_at,omitempty"`
+}
+
+// BatchExportResponse is the response for the batch export endpoints.
+// For POST (initiate): Status is "generating" (ExportID set) or "complete" (URL/ExpiresAt set).
+// For GET (poll): Status is "generating", "complete", or "failed".
+type BatchExportResponse struct {
 	Status    string `json:"status"`
 	ExportID  string `json:"export_id,omitempty"`
 	URL       string `json:"url,omitempty"`
