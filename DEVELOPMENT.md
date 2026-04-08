@@ -24,7 +24,7 @@ brew install go
 ```
 
 **Other platforms:**
-Download from <https://go.dev/dl/>
+Download from [https://go.dev/dl/](https://go.dev/dl/)
 
 ### Setting up your PATH
 
@@ -132,7 +132,7 @@ make docker-scout
 
 **Required:**
 
-- `PROLIFIC_TOKEN` - API token from Prolific (get from <https://app.prolific.com/researcher/tokens/>)
+- `PROLIFIC_TOKEN` - API token from Prolific (get from [https://app.prolific.com/researcher/tokens/](https://app.prolific.com/researcher/tokens/))
 
 **Optional:**
 
@@ -146,7 +146,7 @@ Location: `$HOME/.config/prolific-oss/prolific.yaml`
 Available settings:
 
 ```yaml
-workspace: xxxxxxxxxx  # Default workspace ID for commands
+workspace: xxxxxxxxxx # Default workspace ID for commands
 ```
 
 ## Code Organization
@@ -430,12 +430,12 @@ Enforces [Conventional Commits](https://www.conventionalcommits.org/) format on 
 #### Release flow
 
 1. Run `make changelog VERSION=0.0.60` to generate grouped release notes
-2. Create a PR with the updated `CHANGELOG.md` and include `[run-release]` in the PR title (e.g. `chore: release v0.0.60 [run-release]`)
+2. Create a PR with the updated `CHANGELOG.md` and apply the `release` label
 3. Get the PR reviewed and merge to `main` — CI automatically creates the git tag, GitHub Release, and uploads binaries
 
-Two CI gates guard the PR:
-- **`changelog-gate.yml`** — fails if `CHANGELOG.md` is not modified when `[run-release]` is present
-- **`release-tag-gate.yml`** — fails on common `[run-release]` misspellings or wrong casing
+One CI gate guards the PR:
+
+- `**changelog-gate.yml`** — fails if the `release` label is present but `CHANGELOG.md` is not modified
 
 ## Changelog Conventions
 
@@ -445,11 +445,13 @@ Changelog entries are generated from conventional commits by [git-cliff](https:/
 
 This project uses [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PATCH`). While the project is pre-1.0, all releases use `0.0.x`.
 
-| Change | Version bump | Example |
-|--------|-------------|---------|
+
+| Change                                                                       | Version bump                | Example                                     |
+| ---------------------------------------------------------------------------- | --------------------------- | ------------------------------------------- |
 | Breaking change to an existing command (flag removed, output format changed) | `MINOR` (`0.0.x` → `0.1.0`) | Removing a flag, changing JSON output shape |
-| New command or flag | `PATCH` | Adding `study delete` |
-| Bug fix, docs, refactor, CI | `PATCH` | Fixing a nil-pointer crash |
+| New command or flag                                                          | `PATCH`                     | Adding `study delete`                       |
+| Bug fix, docs, refactor, CI                                                  | `PATCH`                     | Fixing a nil-pointer crash                  |
+
 
 **Pre-1.0 note:** `MAJOR` stays at `0` until the API and command surface are considered stable. `MINOR` bumps signal breaking changes for the duration of `0.x`.
 
@@ -470,6 +472,7 @@ At release time `make changelog` merges any `## next` content with the generated
 ### What gets included
 
 Only user-facing commit types appear in the changelog:
+
 - `feat` → **Features**, `fix` → **Bug Fixes**, `docs` → **Documentation**, `perf` → **Performance**, `refactor` → **Refactoring**, `revert` → **Reverts**, `test` → **Testing**
 - `chore`, `ci`, `build`, `style` are **skipped** (internal housekeeping)
 
@@ -497,22 +500,15 @@ Builds and pushes Docker images.
 
 ### `changelog-gate.yml`
 
-Runs on pull request events. Fails if the PR title contains `[run-release]` but `CHANGELOG.md` is not modified.
-
-### `release-tag-gate.yml`
-
-Runs on pull request events. Validates that `[run-release]` is spelled and cased correctly in the PR title. Catches common typos and wrong separators so that the release is not silently skipped.
+Runs on pull request events. Fails if the PR has the `release` label but `CHANGELOG.md` is not modified.
 
 ### `create-release.yml`
 
-Runs when a PR is merged to `main` with `[run-release]` in the title. Uses `go run ./scripts/changelog extract-version` to read the version from the top-most `## x.y.z` section in `CHANGELOG.md`, then:
+Runs when a PR with the `release` label is merged to `main`. Uses `go run ./scripts/changelog extract-version` to read the version from the top-most `## x.y.z` section in `CHANGELOG.md`, then:
 
 1. Creates and pushes a `vx.y.z` annotated tag
-2. Creates a GitHub Release with the matching changelog entry as notes — publishing it immediately, which triggers `release.yml` via the `release: published` event
-
-### `release.yml`
-
-Builds binaries when a GitHub Release is published. Triggered by the `release: published` event (including releases created by `create-release.yml`). Builds for darwin, linux, windows, and freebsd, then uploads assets to the release.
+2. Creates a GitHub Release with the matching changelog entry as notes
+3. Builds binaries for darwin, linux, windows, and freebsd and uploads them to the release
 
 ## Common Patterns
 
@@ -520,11 +516,9 @@ Builds binaries when a GitHub Release is published. Triggered by the `release: p
 
 1. Create package under `cmd/<resource>/`
 2. Implement command function(s) following pattern:
-
-   ```go
+  ```go
    func NewXCommand(client client.API, w io.Writer) *cobra.Command
-   ```
-
+  ```
 3. Add tests in `<command>_test.go`
 4. Register in `cmd/root.go:65-80`
 5. Update `CHANGELOG.md`
@@ -584,7 +578,7 @@ Client automatically handles 400+ status codes and returns formatted errors.
 
 - All API calls require `PROLIFIC_TOKEN` environment variable
 - Client will return error if token not set: `"PROLIFIC_TOKEN not set"`
-- Get token from: <https://app.prolific.com/researcher/tokens/>
+- Get token from: [https://app.prolific.com/researcher/tokens/](https://app.prolific.com/researcher/tokens/)
 
 ## Dependencies
 
@@ -646,18 +640,20 @@ Uses `github.com/pkg/browser` package.
 
 ## Quick Reference
 
-| Task | Command |
-|------|---------|
-| Install deps & setup | `make install` |
-| Build | `make build` |
-| Test | `make test` |
-| Test with coverage HTML | `make test-cov` |
-| Lint | `make lint` |
-| Full workflow | `make all` |
-| Generate mocks | `make test-gen-mock` |
-| Run CLI | `./prolific --help` |
-| List studies | `./prolific study list` |
-| Create study | `./prolific study create -t <template>` |
+
+| Task                    | Command                                 |
+| ----------------------- | --------------------------------------- |
+| Install deps & setup    | `make install`                          |
+| Build                   | `make build`                            |
+| Test                    | `make test`                             |
+| Test with coverage HTML | `make test-cov`                         |
+| Lint                    | `make lint`                             |
+| Full workflow           | `make all`                              |
+| Generate mocks          | `make test-gen-mock`                    |
+| Run CLI                 | `./prolific --help`                     |
+| List studies            | `./prolific study list`                 |
+| Create study            | `./prolific study create -t <template>` |
+
 
 ## Notes for AI Agents
 
@@ -670,3 +666,4 @@ Uses `github.com/pkg/browser` package.
 - **Use dependency injection** - pass `client.API` and `io.Writer` to commands
 - **Consider interactive vs non-interactive** modes for list commands
 - **Look at examples** in `docs/examples/` for study template structure
+
