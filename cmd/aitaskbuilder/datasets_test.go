@@ -12,6 +12,7 @@ const (
 	createCommandUse       = "create"
 	uploadCommandUse       = "upload"
 	workspaceNotFoundError = "workspace not found"
+	apiError               = "error: API error"
 )
 
 func TestNewDatasetsCommand(t *testing.T) {

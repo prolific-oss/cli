@@ -237,6 +237,11 @@ type GetAITaskBuilderBatchResponse struct {
 	model.AITaskBuilderBatch
 }
 
+// UpdateAITaskBuilderBatchResponse is the response for the update AI Task Builder batch endpoint.
+type UpdateAITaskBuilderBatchResponse struct {
+	model.AITaskBuilderBatch
+}
+
 // GetAITaskBuilderBatchStatusResponse is the response for the get AI Task Builder get batch status endpoint.
 type GetAITaskBuilderBatchStatusResponse struct {
 	model.AITaskBuilderBatchStatus

@@ -497,21 +497,6 @@ func (mr *MockAPIMockRecorder) GetBatchExportStatus(batchID, exportID interface{
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBatchExportStatus", reflect.TypeOf((*MockAPI)(nil).GetBatchExportStatus), batchID, exportID)
 }
 
-// InitiateBatchExport mocks base method.
-func (m *MockAPI) InitiateBatchExport(batchID string) (*client.BatchExportResponse, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "InitiateBatchExport", batchID)
-	ret0, _ := ret[0].(*client.BatchExportResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// InitiateBatchExport indicates an expected call of InitiateBatchExport.
-func (mr *MockAPIMockRecorder) InitiateBatchExport(batchID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitiateBatchExport", reflect.TypeOf((*MockAPI)(nil).InitiateBatchExport), batchID)
-}
-
 // GetCampaigns mocks base method.
 func (m *MockAPI) GetCampaigns(workspaceID string, limit, offset int) (*client.ListCampaignsResponse, error) {
 	m.ctrl.T.Helper()
@@ -917,6 +902,21 @@ func (mr *MockAPIMockRecorder) GetWorkspaces(limit, offset interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkspaces", reflect.TypeOf((*MockAPI)(nil).GetWorkspaces), limit, offset)
 }
 
+// InitiateBatchExport mocks base method.
+func (m *MockAPI) InitiateBatchExport(batchID string) (*client.BatchExportResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InitiateBatchExport", batchID)
+	ret0, _ := ret[0].(*client.BatchExportResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// InitiateBatchExport indicates an expected call of InitiateBatchExport.
+func (mr *MockAPIMockRecorder) InitiateBatchExport(batchID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitiateBatchExport", reflect.TypeOf((*MockAPI)(nil).InitiateBatchExport), batchID)
+}
+
 // InitiateCollectionExport mocks base method.
 func (m *MockAPI) InitiateCollectionExport(collectionID string) (*client.CollectionExportResponse, error) {
 	m.ctrl.T.Helper()
@@ -1077,6 +1077,21 @@ func (m *MockAPI) TransitionSubmission(ID string, payload client.TransitionSubmi
 func (mr *MockAPIMockRecorder) TransitionSubmission(ID, payload interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransitionSubmission", reflect.TypeOf((*MockAPI)(nil).TransitionSubmission), ID, payload)
+}
+
+// UpdateAITaskBuilderBatch mocks base method.
+func (m *MockAPI) UpdateAITaskBuilderBatch(params client.UpdateBatchParams) (*client.UpdateAITaskBuilderBatchResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateAITaskBuilderBatch", params)
+	ret0, _ := ret[0].(*client.UpdateAITaskBuilderBatchResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateAITaskBuilderBatch indicates an expected call of UpdateAITaskBuilderBatch.
+func (mr *MockAPIMockRecorder) UpdateAITaskBuilderBatch(params interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAITaskBuilderBatch", reflect.TypeOf((*MockAPI)(nil).UpdateAITaskBuilderBatch), params)
 }
 
 // UpdateCollection mocks base method.

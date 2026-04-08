@@ -110,6 +110,7 @@ type API interface {
 	CreateAITaskBuilderDataset(workspaceID string, payload CreateAITaskBuilderDatasetPayload) (*CreateAITaskBuilderDatasetResponse, error)
 	CreateAITaskBuilderCollection(payload model.CreateAITaskBuilderCollection) (*CreateAITaskBuilderCollectionResponse, error)
 	GetAITaskBuilderBatch(batchID string) (*GetAITaskBuilderBatchResponse, error)
+	UpdateAITaskBuilderBatch(params UpdateBatchParams) (*UpdateAITaskBuilderBatchResponse, error)
 	GetAITaskBuilderBatchStatus(batchID string) (*GetAITaskBuilderBatchStatusResponse, error)
 	GetAITaskBuilderBatches(workspaceID string) (*GetAITaskBuilderBatchesResponse, error)
 	GetAITaskBuilderResponses(batchID string) (*GetAITaskBuilderResponsesResponse, error)
@@ -1146,6 +1147,37 @@ func (c *Client) PayBonusPayments(id string) error {
 	}
 
 	return nil
+}
+
+// UpdateAITaskBuilderBatch will update an AI Task Builder batch.
+func (c *Client) UpdateAITaskBuilderBatch(params UpdateBatchParams) (*UpdateAITaskBuilderBatchResponse, error) {
+	var response UpdateAITaskBuilderBatchResponse
+
+	payload := UpdateAITaskBuilderBatchPayload{
+		Name:      params.Name,
+		DatasetID: params.DatasetID,
+	}
+
+	if params.TaskName != "" || params.TaskIntroduction != "" || params.TaskSteps != "" {
+		payload.TaskDetails = &TaskDetails{
+			TaskName:         params.TaskName,
+			TaskIntroduction: params.TaskIntroduction,
+			TaskSteps:        params.TaskSteps,
+		}
+	}
+
+	url := fmt.Sprintf("/api/v1/data-collection/batches/%s", params.BatchID)
+	httpResponse, err := c.Execute(http.MethodPatch, url, payload, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unable to update batch: %v", string(body))
+	}
+
+	return &response, nil
 }
 
 // GetAITaskBuilderBatch will return details of an AI Task Builder batch.
