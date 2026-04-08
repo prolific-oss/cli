@@ -120,10 +120,12 @@ func TestNewBatchUpdateCommandUpdatesAllTaskDetails(t *testing.T) {
 
 	// All three task detail flags provided — no GET call expected
 	c.EXPECT().UpdateAITaskBuilderBatch(client.UpdateBatchParams{
-		BatchID:          batchID,
-		TaskName:         taskName,
-		TaskIntroduction: taskIntroduction,
-		TaskSteps:        taskSteps,
+		BatchID: batchID,
+		TaskDetails: &client.TaskDetails{
+			TaskName:         taskName,
+			TaskIntroduction: taskIntroduction,
+			TaskSteps:        taskSteps,
+		},
 	}).Return(response, nil)
 
 	var b bytes.Buffer
@@ -201,10 +203,12 @@ func TestNewBatchUpdateCommandMergesPartialTaskDetails(t *testing.T) {
 
 	// Merged params: new task name + existing introduction and steps
 	c.EXPECT().UpdateAITaskBuilderBatch(client.UpdateBatchParams{
-		BatchID:          batchID,
-		TaskName:         newTaskName,
-		TaskIntroduction: existingIntroduction,
-		TaskSteps:        existingSteps,
+		BatchID: batchID,
+		TaskDetails: &client.TaskDetails{
+			TaskName:         newTaskName,
+			TaskIntroduction: existingIntroduction,
+			TaskSteps:        existingSteps,
+		},
 	}).Return(updateResponse, nil)
 
 	var b bytes.Buffer

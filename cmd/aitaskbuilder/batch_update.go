@@ -95,31 +95,35 @@ func updateAITaskBuilderBatch(c client.API, opts BatchUpdateOptions, w io.Writer
 
 	if anyTaskDetailChanged {
 		if allTaskDetailsChanged {
-			params.TaskName = opts.TaskName
-			params.TaskIntroduction = opts.TaskIntroduction
-			params.TaskSteps = opts.TaskSteps
+			params.TaskDetails = &client.TaskDetails{
+				TaskName:         opts.TaskName,
+				TaskIntroduction: opts.TaskIntroduction,
+				TaskSteps:        opts.TaskSteps,
+			}
 		} else {
 			existing, err := c.GetAITaskBuilderBatch(opts.BatchID)
 			if err != nil {
 				return err
 			}
 
+			taskName := existing.TaskDetails.TaskName
+			taskIntroduction := existing.TaskDetails.TaskIntroduction
+			taskSteps := existing.TaskDetails.TaskSteps
+
 			if opts.TaskNameChanged {
-				params.TaskName = opts.TaskName
-			} else {
-				params.TaskName = existing.TaskDetails.TaskName
+				taskName = opts.TaskName
 			}
-
 			if opts.TaskIntroductionChanged {
-				params.TaskIntroduction = opts.TaskIntroduction
-			} else {
-				params.TaskIntroduction = existing.TaskDetails.TaskIntroduction
+				taskIntroduction = opts.TaskIntroduction
+			}
+			if opts.TaskStepsChanged {
+				taskSteps = opts.TaskSteps
 			}
 
-			if opts.TaskStepsChanged {
-				params.TaskSteps = opts.TaskSteps
-			} else {
-				params.TaskSteps = existing.TaskDetails.TaskSteps
+			params.TaskDetails = &client.TaskDetails{
+				TaskName:         taskName,
+				TaskIntroduction: taskIntroduction,
+				TaskSteps:        taskSteps,
 			}
 		}
 	}

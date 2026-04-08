@@ -1154,16 +1154,9 @@ func (c *Client) UpdateAITaskBuilderBatch(params UpdateBatchParams) (*UpdateAITa
 	var response UpdateAITaskBuilderBatchResponse
 
 	payload := UpdateAITaskBuilderBatchPayload{
-		Name:      params.Name,
-		DatasetID: params.DatasetID,
-	}
-
-	if params.TaskName != "" || params.TaskIntroduction != "" || params.TaskSteps != "" {
-		payload.TaskDetails = &TaskDetails{
-			TaskName:         params.TaskName,
-			TaskIntroduction: params.TaskIntroduction,
-			TaskSteps:        params.TaskSteps,
-		}
+		Name:        params.Name,
+		DatasetID:   params.DatasetID,
+		TaskDetails: params.TaskDetails,
 	}
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s", params.BatchID)

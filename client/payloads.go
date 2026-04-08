@@ -93,12 +93,10 @@ type CreateBatchParams struct {
 
 // UpdateBatchParams represents the parameters for updating an AI Task Builder batch.
 type UpdateBatchParams struct {
-	BatchID          string
-	Name             string
-	DatasetID        string
-	TaskName         string
-	TaskIntroduction string
-	TaskSteps        string
+	BatchID     string
+	Name        string
+	DatasetID   string
+	TaskDetails *TaskDetails // nil means task details will not be updated
 }
 
 // UpdateAITaskBuilderBatchPayload represents the JSON payload for updating an AI Task Builder batch.
