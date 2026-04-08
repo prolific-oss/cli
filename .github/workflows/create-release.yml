@@ -16,7 +16,7 @@ jobs:
   finalize-release:
     if: >-
       github.event.pull_request.merged == true &&
-      contains(github.event.pull_request.title, '[run-release]')
+      contains(github.event.pull_request.labels.*.name, 'release')
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.version.outputs.tag }}
