@@ -5,6 +5,7 @@
 //
 //	go run ./scripts/changelog extract --section next --strip-comments
 //	go run ./scripts/changelog extract-version
+//	go run ./scripts/changelog validate-version 0.1.0
 //	go run ./scripts/changelog merge --manual MANUAL.md --generated CLIFF.md --output MERGED.md
 //	go run ./scripts/changelog update --version 0.1.0 --notes NOTES.md
 package main
@@ -31,7 +32,7 @@ var (
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stderr, "usage: changelog <extract|extract-version|merge|update|transform> [flags]")
+		fmt.Fprintln(os.Stderr, "usage: changelog <extract|extract-version|validate-version|merge|update|transform> [flags]")
 		os.Exit(1)
 	}
 
@@ -43,6 +44,8 @@ func main() {
 		runExtract()
 	case "extract-version":
 		runExtractVersion()
+	case "validate-version":
+		runValidateVersion()
 	case "merge":
 		runMerge()
 	case "update":
@@ -98,6 +101,25 @@ func runExtract() {
 
 	result := ExtractSection(string(data), *section, *stripComments)
 	fmt.Print(result)
+}
+
+// StrictSemver reports whether s is major.minor.patch with digits only (no v prefix,
+// no pre-release metadata). This must match ExtractReleaseVersion and the changelog
+// release workflow.
+func StrictSemver(s string) bool {
+	return reStrictSemver.MatchString(strings.TrimSpace(s))
+}
+
+func runValidateVersion() {
+	if len(os.Args) < 2 {
+		fmt.Fprintln(os.Stderr, "validate-version: version argument required (strict x.y.z, no v prefix)")
+		os.Exit(1)
+	}
+	v := strings.TrimSpace(os.Args[1])
+	if !StrictSemver(v) {
+		fmt.Fprintf(os.Stderr, "validate-version: %q is invalid — use strict semver x.y.z with digits only (e.g. 0.0.61, not v0.0.61)\n", v)
+		os.Exit(1)
+	}
 }
 
 func runExtractVersion() {
@@ -173,6 +195,10 @@ func runUpdate() {
 		fmt.Fprintln(os.Stderr, "update: --version is required")
 		os.Exit(1)
 	}
+	if !StrictSemver(*version) {
+		fmt.Fprintf(os.Stderr, "update: --version must be strict x.y.z (digits only, no v prefix), got %q\n", *version)
+		os.Exit(1)
+	}
 	if *notes == "" {
 		fmt.Fprintln(os.Stderr, "update: --notes is required")
 		os.Exit(1)
@@ -239,7 +265,7 @@ func ExtractReleaseVersion(changelog string) (version string, ok bool) {
 		if heading == "next" {
 			continue
 		}
-		if reStrictSemver.MatchString(heading) {
+		if StrictSemver(heading) {
 			return heading, true
 		}
 	}
