@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: release-${{ github.repository }}
+  cancel-in-progress: false
+
 jobs:
   finalize-release:
     if: >-
@@ -78,8 +82,7 @@ jobs:
           go-version-file: go.mod
 
       - name: Get dependencies
-        run: |
-          make install
+        run: go mod download
 
       - name: Build and upload release binaries
         env:
