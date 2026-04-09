@@ -217,12 +217,11 @@ This generates grouped release notes from conventional commits, merges any hand-
 
 ### 2. Create a release PR
 
-Create a PR with the updated `CHANGELOG.md` and include `[run-release]` in the PR title (e.g. `chore: release v0.0.60 [run-release]`).
+Create a PR with the updated `CHANGELOG.md` and apply the `release` label.
 
-Two CI gates will validate the PR:
+One CI gate will validate the PR:
 
-- **Changelog gate** — confirms `CHANGELOG.md` is modified when `[run-release]` is present.
-- **Release tag gate** — catches common misspellings or wrong casing of `[run-release]`.
+- **Changelog gate** — confirms `CHANGELOG.md` is modified when the `release` label is present.
 
 ### 3. Merge to trigger the release
 
