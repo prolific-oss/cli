@@ -230,7 +230,7 @@ Once the PR is approved and merged to `main`, CI automatically:
 
 1. Extracts the version from the latest `## x.y.z` section in `CHANGELOG.md`
 2. Creates and pushes a `vx.y.z` git tag
-3. Creates a GitHub Release with the changelog entry as release notes
+3. Creates a GitHub Release titled `vx.y.z` (always use the `v` prefix for tags and release names, e.g. `v1.0.1`, not `1.0.1`) with the changelog entry as release notes
 4. Builds binaries for multiple platforms (darwin, linux, windows, freebsd) and uploads them to the release
 
 Users can then download binaries from the release page or use `go install`.

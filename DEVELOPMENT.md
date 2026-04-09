@@ -445,6 +445,8 @@ Changelog entries are generated from conventional commits by [git-cliff](https:/
 
 This project uses [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PATCH`). While the project is pre-1.0, all releases use `0.0.x`.
 
+**Release naming:** Git tags and GitHub Releases must use a leading `v` (e.g. `v1.0.1`), not a bare version string (`1.0.1`). The automated release workflow creates both the tag and the release title as `vx.y.z`. `CHANGELOG.md` headings stay as bare semver (`## 1.0.1`) — that is intentional. When you run `make changelog`, pass `VERSION` **without** the `v` (e.g. `VERSION=1.0.1`); tooling adds the prefix for tags and releases.
+
 | Change | Version bump | Example |
 |--------|-------------|---------|
 | Breaking change to an existing command (flag removed, output format changed) | `MINOR` (`0.0.x` → `0.1.0`) | Removing a flag, changing JSON output shape |
@@ -453,7 +455,7 @@ This project uses [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PATCH
 
 **Pre-1.0 note:** `MAJOR` stays at `0` until the API and command surface are considered stable. `MINOR` bumps signal breaking changes for the duration of `0.x`.
 
-The version is passed to `make changelog VERSION=x.y.z` — there is no automated bump calculation; the release author decides based on the table above.
+The version is passed to `make changelog VERSION=x.y.z` (numeric only, no `v` prefix) — there is no automated bump calculation; the release author decides based on the table above.
 
 ### Manual release notes
 
@@ -508,7 +510,7 @@ Runs on pull request events. Validates that `[run-release]` is spelled and cased
 Runs when a PR is merged to `main` with `[run-release]` in the title. Uses `go run ./scripts/changelog extract-version` to read the version from the top-most `## x.y.z` section in `CHANGELOG.md`, then:
 
 1. Creates and pushes a `vx.y.z` annotated tag
-2. Creates a GitHub Release with the matching changelog entry as notes — publishing it immediately, which triggers `release.yml` via the `release: published` event
+2. Creates a GitHub Release named `vx.y.z` (tag and release title both use the `v` prefix) with the matching changelog entry as notes — publishing it immediately, which triggers `release.yml` via the `release: published` event
 
 ### `release.yml`
 
