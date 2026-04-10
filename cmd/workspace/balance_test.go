@@ -12,6 +12,7 @@ import (
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/workspace"
 	"github.com/prolific-oss/cli/mock_client"
+	"github.com/spf13/viper"
 )
 
 func TestNewBalanceCommand(t *testing.T) {
@@ -21,8 +22,8 @@ func TestNewBalanceCommand(t *testing.T) {
 
 	cmd := workspace.NewBalanceCommand("balance", c, os.Stdout)
 
-	if cmd.Use != "balance <workspace-id>" {
-		t.Fatalf("expected use: balance <workspace-id>; got %s", cmd.Use)
+	if cmd.Use != "balance [workspace-id]" {
+		t.Fatalf("expected use: balance [workspace-id]; got %s", cmd.Use)
 	}
 
 	if cmd.Short != "Show the balance of a workspace" {
@@ -63,12 +64,13 @@ func TestNewBalanceCommandCallsAPI(t *testing.T) {
 
 	writer.Flush()
 
-	expected := `Currency:  USD
+	expected := `ID:        abc123
+Currency:  USD
 
-Total Balance:  14.28
-  Rewards:      14.28
-  Fees:         0.00
-  VAT:          0.00
+Total Balance:      14.28
+  Rewards:          14.28
+  Fees:             0.00
+  VAT:              0.00
 
 Available Balance:  14.28
   Rewards:          14.28
@@ -99,6 +101,58 @@ func TestNewBalanceCommandHandlesErrors(t *testing.T) {
 	err := cmd.RunE(cmd, []string{workspaceID})
 
 	expected := fmt.Sprintf("error: %s", errorMessage)
+	if err.Error() != expected {
+		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())
+	}
+}
+
+func TestNewBalanceCommandUsesViperWorkspace(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	workspaceID := "viper-workspace-id"
+
+	viper.Set("workspace", workspaceID)
+	t.Cleanup(func() { viper.Reset() })
+
+	response := client.WorkspaceBalanceResponse{
+		CurrencyCode:     "USD",
+		TotalBalance:     0,
+		AvailableBalance: 0,
+	}
+
+	c.
+		EXPECT().
+		GetWorkspaceBalance(workspaceID).
+		Return(&response, nil).
+		Times(1)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := workspace.NewBalanceCommand("balance", c, writer)
+	err := cmd.RunE(cmd, []string{})
+	if err != nil {
+		t.Fatalf("expected no error; got %s", err)
+	}
+}
+
+func TestNewBalanceCommandErrorsWithNoWorkspace(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	viper.Reset()
+
+	cmd := workspace.NewBalanceCommand("balance", c, os.Stdout)
+	err := cmd.RunE(cmd, []string{})
+
+	if err == nil {
+		t.Fatal("expected an error; got nil")
+	}
+
+	expected := "error: please provide a workspace ID"
 	if err.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())
 	}
