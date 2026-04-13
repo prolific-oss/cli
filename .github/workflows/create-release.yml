@@ -1,25 +1,67 @@
 name: Create Release
 
+# Push to main (ref is refs/heads/main) so environment deployment-branch rules
+# like "main only" work with production secrets. We only continue when a merged
+# PR in this push had the `release` label (see should-release job).
 on:
-  pull_request:
-    types: [closed]
+  push:
     branches: [main]
 
-permissions:
-  contents: write
+concurrency:
+  group: release-${{ github.repository }}
+  cancel-in-progress: false
 
 jobs:
-  finalize-release:
-    if: >-
-      github.event.pull_request.merged == true &&
-      contains(github.event.pull_request.title, '[run-release]')
+  should-release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      release: ${{ steps.check.outputs.release }}
+    steps:
+      - name: Check merged PRs in this push for release label
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          COUNT=$(jq '(.commits // []) | length' "$GITHUB_EVENT_PATH")
+          if [ "$COUNT" -eq 0 ]; then
+            mapfile -t candidates < <(printf '%s\n' '${{ github.sha }}')
+          else
+            mapfile -t candidates < <(jq -r '.commits[].id' "$GITHUB_EVENT_PATH")
+          fi
+
+          release=false
+          for sha in "${candidates[@]}"; do
+            [ -z "$sha" ] && continue
+            result=$(gh api \
+              "repos/${{ github.repository }}/commits/${sha}/pulls" \
+              --jq 'any(.[]; (.labels // []) | map(.name) | index("release") != null)')
+            if [ "$result" = "true" ]; then
+              release=true
+              break
+            fi
+          done
+
+          echo "release=${release}" >> "$GITHUB_OUTPUT"
+          echo "should_release=${release}"
+
+  finalize-release:
+    needs: should-release
+    if: needs.should-release.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    environment: main
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          ref: ${{ github.sha }}
           fetch-depth: 0
+          token: ${{ secrets.REPO_CONTENTS_WRITE }}
 
       - name: Set up Go
         uses: actions/setup-go@v6.4.0
@@ -46,7 +88,7 @@ jobs:
 
       - name: Create tag and GitHub release
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.REPO_CONTENTS_WRITE }}
         run: |
           TAG="${{ steps.version.outputs.tag }}"
 
@@ -59,3 +101,53 @@ jobs:
           gh release create "$TAG" \
             --title "$TAG" \
             --notes-file RELEASE_NOTES.md
+
+  build:
+    needs: finalize-release
+    runs-on: ubuntu-latest
+    environment: main
+    name: Build
+    steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.finalize-release.outputs.tag }}
+          token: ${{ secrets.REPO_CONTENTS_WRITE }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+
+      - name: Get dependencies
+        run: go mod download
+
+      - name: Build and upload release binaries
+        env:
+          GH_TOKEN: ${{ secrets.REPO_CONTENTS_WRITE }}
+        run: |
+          make clean
+
+          GOOSARCHES=(
+            darwin/amd64
+            darwin/arm64
+            freebsd/amd64
+            freebsd/386
+            linux/arm
+            linux/arm64
+            linux/amd64
+            linux/386
+            windows/amd64
+            windows/386
+          )
+
+          for GOOSARCH in "${GOOSARCHES[@]}"; do
+            GOOS=${GOOSARCH%/*}
+            ARCH=${GOOSARCH#*/}
+
+            printf '\n\nBuilding binary for %s/%s\n\n' "$GOOS" "$ARCH"
+
+            GIT_RELEASE=${{ needs.finalize-release.outputs.tag }} GOOS=${GOOS} GOARCH=${ARCH} make static-named
+          done
+
+          gh release upload ${{ needs.finalize-release.outputs.tag }} build/*
