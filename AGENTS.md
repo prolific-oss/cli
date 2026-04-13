@@ -239,8 +239,8 @@ make changelog VERSION=x.y.z   # Generate grouped CHANGELOG.md entry for the rel
 This uses `git-cliff` (must be installed separately: `brew install git-cliff`) plus a custom Go script in `scripts/changelog/` that groups entries by subcommand area. After running:
 
 1. Review and commit the updated `CHANGELOG.md`
-2. Get the PR merged to `main`
-3. Create a GitHub Release with the matching tag (`vx.y.z`) — the `release.yml` workflow builds and uploads binaries automatically
+2. Open a PR, add the `release` label, and merge to `main`
+3. The `create-release.yml` workflow runs on the push to `main`. It creates the GitHub Release with tag and title `vx.y.z` (e.g. `v1.0.1`, never a bare `1.0.1`) and uploads binaries **only** when the merged PR had the `release` label; ordinary pushes to `main` do not release
 
 To include hand-written notes in the next release, add them under `## next` in `CHANGELOG.md` before running `make changelog` — they will be merged in automatically.
 

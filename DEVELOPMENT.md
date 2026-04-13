@@ -431,11 +431,11 @@ Enforces [Conventional Commits](https://www.conventionalcommits.org/) format on 
 
 1. Run `make changelog VERSION=0.0.60` to generate grouped release notes
 2. Create a PR with the updated `CHANGELOG.md` and apply the `release` label
-3. Get the PR reviewed and merge to `main` — CI automatically creates the git tag, GitHub Release, and uploads binaries
+3. Get the PR reviewed and merge to `main` — the `create-release.yml` workflow runs on that push and creates the git tag, GitHub Release, and uploads binaries **only** when the merged PR is labeled `release` (pushes to `main` without that label do not trigger a release)
 
 One CI gate guards the PR:
 
-- `**changelog-gate.yml`** — fails if the `release` label is present but `CHANGELOG.md` is not modified
+- **`changelog-gate.yml`** — fails if the `release` label is present but `CHANGELOG.md` is not modified
 
 ## Changelog Conventions
 
@@ -445,6 +445,7 @@ Changelog entries are generated from conventional commits by [git-cliff](https:/
 
 This project uses [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PATCH`). While the project is pre-1.0, all releases use `0.0.x`.
 
+**Release naming:** Git tags and GitHub Releases must use a leading `v` (e.g. `v1.0.1`), not a bare version string (`1.0.1`). The automated release workflow creates both the tag and the release title as `vx.y.z`. `CHANGELOG.md` headings stay as bare semver (`## 1.0.1`) — that is intentional. When you run `make changelog`, pass `VERSION` **without** the `v` (e.g. `VERSION=1.0.1`); tooling adds the prefix for tags and releases.
 
 | Change                                                                       | Version bump                | Example                                     |
 | ---------------------------------------------------------------------------- | --------------------------- | ------------------------------------------- |
@@ -452,10 +453,9 @@ This project uses [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PATCH
 | New command or flag                                                          | `PATCH`                     | Adding `study delete`                       |
 | Bug fix, docs, refactor, CI                                                  | `PATCH`                     | Fixing a nil-pointer crash                  |
 
-
 **Pre-1.0 note:** `MAJOR` stays at `0` until the API and command surface are considered stable. `MINOR` bumps signal breaking changes for the duration of `0.x`.
 
-The version is passed to `make changelog VERSION=x.y.z` — there is no automated bump calculation; the release author decides based on the table above.
+The version is passed to `make changelog VERSION=x.y.z` (numeric only, no `v` prefix) — there is no automated bump calculation; the release author decides based on the table above.
 
 ### Manual release notes
 
@@ -504,11 +504,15 @@ Runs on pull request events. Fails if the PR has the `release` label but `CHANGE
 
 ### `create-release.yml`
 
-Runs when a PR with the `release` label is merged to `main`. Uses `go run ./scripts/changelog extract-version` to read the version from the top-most `## x.y.z` section in `CHANGELOG.md`, then:
+Runs on every **push to `main`**. A first job (`should-release`) inspects the commits in that push and uses the GitHub API to see whether any of them is linked to a merged PR that has the `release` label. If not, the rest of the workflow is skipped.
 
-1. Creates and pushes a `vx.y.z` annotated tag
-2. Creates a GitHub Release with the matching changelog entry as notes
-3. Builds binaries for darwin, linux, windows, and freebsd and uploads them to the release
+When the label is present, `finalize-release` uses `go run ./scripts/changelog extract-version` to read the version from the top-most `## x.y.z` section in `CHANGELOG.md`, then:
+
+1. Writes release notes with `go run ./scripts/changelog extract --section <version>` into `RELEASE_NOTES.md`
+2. Creates and pushes a `vx.y.z` annotated tag
+3. Creates a GitHub Release named `vx.y.z` (tag and release title both use the `v` prefix) with those notes
+
+The `build` job then checks out that tag, runs `make static-named` for each target platform, and uploads the binaries to the same GitHub Release.
 
 ## Common Patterns
 
@@ -516,9 +520,11 @@ Runs when a PR with the `release` label is merged to `main`. Uses `go run ./scri
 
 1. Create package under `cmd/<resource>/`
 2. Implement command function(s) following pattern:
-  ```go
-   func NewXCommand(client client.API, w io.Writer) *cobra.Command
-  ```
+
+```go
+ func NewXCommand(client client.API, w io.Writer) *cobra.Command
+```
+
 3. Add tests in `<command>_test.go`
 4. Register in `cmd/root.go:65-80`
 5. Update `CHANGELOG.md`
@@ -640,7 +646,6 @@ Uses `github.com/pkg/browser` package.
 
 ## Quick Reference
 
-
 | Task                    | Command                                 |
 | ----------------------- | --------------------------------------- |
 | Install deps & setup    | `make install`                          |
@@ -654,7 +659,6 @@ Uses `github.com/pkg/browser` package.
 | List studies            | `./prolific study list`                 |
 | Create study            | `./prolific study create -t <template>` |
 
-
 ## Notes for AI Agents
 
 - **Always run tests after changes**: `make test`
@@ -666,4 +670,3 @@ Uses `github.com/pkg/browser` package.
 - **Use dependency injection** - pass `client.API` and `io.Writer` to commands
 - **Consider interactive vs non-interactive** modes for list commands
 - **Look at examples** in `docs/examples/` for study template structure
-

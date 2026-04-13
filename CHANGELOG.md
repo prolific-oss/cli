@@ -4,6 +4,12 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+## 1.0.1
+
+### Workspaces
+
+- Allow users to utilise active workspace on balance command
+
 ## 1.0.0
 
 ### AI Task Builder

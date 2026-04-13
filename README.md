@@ -225,11 +225,13 @@ One CI gate will validate the PR:
 
 ### 3. Merge to trigger the release
 
-Once the PR is approved and merged to `main`, CI automatically:
+Merging the PR to `main` triggers `.github/workflows/create-release.yml` on that push. The workflow only performs a release when the **merged PR has the `release` label** (it checks linked PRs for that label); other pushes to `main` do not create tags or releases.
 
-1. Extracts the version from the latest `## x.y.z` section in `CHANGELOG.md`
+When a release runs, it automatically:
+
+1. Extracts the version from the top-most `## x.y.z` section in `CHANGELOG.md`
 2. Creates and pushes a `vx.y.z` git tag
-3. Creates a GitHub Release with the changelog entry as release notes
+3. Creates a GitHub Release titled `vx.y.z` (always use the `v` prefix for tags and release names, e.g. `v1.0.1`, not `1.0.1`) with the matching changelog section as release notes
 4. Builds binaries for multiple platforms (darwin, linux, windows, freebsd) and uploads them to the release
 
 Users can then download binaries from the release page or use `go install`.
