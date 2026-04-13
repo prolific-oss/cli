@@ -431,11 +431,11 @@ Enforces [Conventional Commits](https://www.conventionalcommits.org/) format on 
 
 1. Run `make changelog VERSION=0.0.60` to generate grouped release notes
 2. Create a PR with the updated `CHANGELOG.md` and apply the `release` label
-3. Get the PR reviewed and merge to `main` — CI automatically creates the git tag, GitHub Release, and uploads binaries
+3. Get the PR reviewed and merge to `main` — the `create-release.yml` workflow runs on that push and creates the git tag, GitHub Release, and uploads binaries **only** when the merged PR is labeled `release` (pushes to `main` without that label do not trigger a release)
 
 One CI gate guards the PR:
 
-- `**changelog-gate.yml`\*\* — fails if the `release` label is present but `CHANGELOG.md` is not modified
+- **`changelog-gate.yml`** — fails if the `release` label is present but `CHANGELOG.md` is not modified
 
 ## Changelog Conventions
 
@@ -504,11 +504,15 @@ Runs on pull request events. Fails if the PR has the `release` label but `CHANGE
 
 ### `create-release.yml`
 
-Runs when a PR with the `release` label is merged to `main`. Uses `go run ./scripts/changelog extract-version` to read the version from the top-most `## x.y.z` section in `CHANGELOG.md`, then:
+Runs on every **push to `main`**. A first job (`should-release`) inspects the commits in that push and uses the GitHub API to see whether any of them is linked to a merged PR that has the `release` label. If not, the rest of the workflow is skipped.
 
-1. Creates and pushes a `vx.y.z` annotated tag
-2. Creates a GitHub Release named `vx.y.z` (tag and release title both use the `v` prefix) with the matching changelog entry as notes
-3. Builds binaries for darwin, linux, windows, and freebsd and uploads them to the release
+When the label is present, `finalize-release` uses `go run ./scripts/changelog extract-version` to read the version from the top-most `## x.y.z` section in `CHANGELOG.md`, then:
+
+1. Writes release notes with `go run ./scripts/changelog extract --section <version>` into `RELEASE_NOTES.md`
+2. Creates and pushes a `vx.y.z` annotated tag
+3. Creates a GitHub Release named `vx.y.z` (tag and release title both use the `v` prefix) with those notes
+
+The `build` job then checks out that tag, runs `make static-named` for each target platform, and uploads the binaries to the same GitHub Release.
 
 ## Common Patterns
 
