@@ -145,7 +145,7 @@ jobs:
             GOOS=${GOOSARCH%/*}
             ARCH=${GOOSARCH#*/}
 
-            echo "\n\nBuilding binary for ${GOOS}/${ARCH}\n"
+            printf '\n\nBuilding binary for %s/%s\n\n' "$GOOS" "$ARCH"
 
             GIT_RELEASE=${{ needs.finalize-release.outputs.tag }} GOOS=${GOOS} GOARCH=${ARCH} make static-named
           done
