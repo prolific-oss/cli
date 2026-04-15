@@ -16,10 +16,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"os/exec"
 	"strings"
 	"sync"
 	"testing"
@@ -33,7 +33,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const specFile = "publicapi.yaml"
+const specURL = "https://docs.prolific.com/openapi.yaml"
+const specFile = "openapi.yaml"
 
 func TestMain(m *testing.M) {
 	if err := downloadSpec(); err != nil {
@@ -44,16 +45,25 @@ func TestMain(m *testing.M) {
 }
 
 func downloadSpec() error {
-	cmd := exec.Command(
-		"gh", "api",
-		"--header", "Accept: application/vnd.github.raw+json",
-		"/repos/prolific-oss/prolific/contents/assets/api/publicapi.yaml",
-	)
-	out, err := cmd.Output()
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, specURL, nil)
 	if err != nil {
-		return fmt.Errorf("gh api: %w", err)
+		return err
 	}
-	return os.WriteFile(specFile, out, 0600)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("GET %s: %w", specURL, err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("GET %s: unexpected status %s", specURL, resp.Status)
+	}
+	f, err := os.Create(specFile)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	_, err = io.Copy(f, resp.Body)
+	return err
 }
 
 // findRoute locates the matching OpenAPI route for r, tolerating trailing-slash
@@ -87,140 +97,118 @@ type operation struct {
 // TestAPICoverage to fail.
 var operations = []operation{
 	// Workspaces
-	{operationID: "workspaces_GetWorkspaces", call: func(c *client.Client) { c.GetWorkspaces(10, 0) }},
-	{operationID: "workspaces_CreateWorkspace", call: func(c *client.Client) { c.CreateWorkspace(model.Workspace{Title: "t"}) }},
-	{operationID: "workspaces_GetWorkspace", skip: "OUTOFSCOPE: no CLI command for retrieving a single workspace by ID"},
-	{operationID: "workspaces_UpdateWorkspace", skip: "OUTOFSCOPE: no CLI command for updating a workspace"},
-	{operationID: "workspaces_GetWorkspaceBalance", call: func(c *client.Client) { c.GetWorkspaceBalance("ws-id") }},
+	{operationID: "get-workspaces", call: func(c *client.Client) { c.GetWorkspaces(10, 0) }},
+	{operationID: "create-workspace", call: func(c *client.Client) { c.CreateWorkspace(model.Workspace{Title: "t"}) }},
+	{operationID: "get-workspace", skip: "OUTOFSCOPE: no CLI command for retrieving a single workspace by ID"},
+	{operationID: "update-workspace", skip: "OUTOFSCOPE: no CLI command for updating a workspace"},
+	{operationID: "get-workspace-balance", call: func(c *client.Client) { c.GetWorkspaceBalance("ws-id") }},
 
 	// Projects
-	{operationID: "projects_GetProjects", call: func(c *client.Client) { c.GetProjects("ws-id", 10, 0) }},
-	{operationID: "projects_CreateProject", call: func(c *client.Client) { c.CreateProject("ws-id", model.Project{Title: "t"}) }},
-	{operationID: "projects_GetProject", call: func(c *client.Client) { c.GetProject("proj-id") }},
-	{operationID: "projects_UpdateProject", skip: "OUTOFSCOPE: no CLI command for updating a project"},
+	{operationID: "get-projects", call: func(c *client.Client) { c.GetProjects("ws-id", 10, 0) }},
+	{operationID: "create-project", call: func(c *client.Client) { c.CreateProject("ws-id", model.Project{Title: "t"}) }},
+	{operationID: "get-project", call: func(c *client.Client) { c.GetProject("proj-id") }},
+	{operationID: "update-project", skip: "OUTOFSCOPE: no CLI command for updating a project"},
 
 	// Filters
-	{operationID: "filters_GetFilters", call: func(c *client.Client) { c.GetFilters() }},
-	{operationID: "filters_GetFilterDistribution", skip: "OUTOFSCOPE: filter distribution not needed in CLI"},
-	{operationID: "filters_GetEligibleCount", skip: "OUTOFSCOPE: eligibility count not needed in CLI"},
+	{operationID: "get-filters", call: func(c *client.Client) { c.GetFilters() }},
+	{operationID: "get-filter-distribution", skip: "OUTOFSCOPE: filter distribution not needed in CLI"},
+	{operationID: "get-eligible-count", skip: "OUTOFSCOPE: eligibility count not needed in CLI"},
 
 	// Filter Sets
-	{operationID: "filterSets_GetFilterSets", call: func(c *client.Client) { c.GetFilterSets("ws-id", 10, 0) }},
-	{operationID: "filterSets_CreateFilterSet", call: func(c *client.Client) { c.CreateFilterSet(model.CreateFilterSet{}) }},
-	{operationID: "filterSets_GetFilterSet", call: func(c *client.Client) { c.GetFilterSet("fs-id") }},
-	{operationID: "filterSets_DeleteFilterSet", skip: "OUTOFSCOPE: no CLI command for deleting a filter set"},
-	{operationID: "filterSets_UpdateFilterSet", skip: "OUTOFSCOPE: no CLI command for updating a filter set"},
-	{operationID: "filterSets_CloneFilterSet", skip: "OUTOFSCOPE: no CLI command for cloning a filter set"},
-	{operationID: "filterSets_LockFilterSet", skip: "OUTOFSCOPE: no CLI command for locking a filter set"},
-	{operationID: "filterSets_UnlockFilterSet", skip: "OUTOFSCOPE: no CLI command for unlocking a filter set"},
+	{operationID: "get-filter-sets", call: func(c *client.Client) { c.GetFilterSets("ws-id", 10, 0) }},
+	{operationID: "create-filter-set", call: func(c *client.Client) { c.CreateFilterSet(model.CreateFilterSet{}) }},
+	{operationID: "get-filter-set", call: func(c *client.Client) { c.GetFilterSet("fs-id") }},
+	{operationID: "delete-filter-set", skip: "OUTOFSCOPE: no CLI command for deleting a filter set"},
+	{operationID: "update-filter-set", skip: "OUTOFSCOPE: no CLI command for updating a filter set"},
+	{operationID: "clone-filter-set", skip: "OUTOFSCOPE: no CLI command for cloning a filter set"},
+	{operationID: "lock-filter-set", skip: "OUTOFSCOPE: no CLI command for locking a filter set"},
+	{operationID: "unlock-filter-set", skip: "OUTOFSCOPE: no CLI command for unlocking a filter set"},
 
 	// Webhooks
-	{operationID: "webhooks_GetEventTypes", call: func(c *client.Client) { c.GetHookEventTypes() }},
-	{operationID: "webhooks_GetSecrets", call: func(c *client.Client) { c.GetHookSecrets("ws-id") }},
-	{operationID: "webhooks_CreateSecret", call: func(c *client.Client) {
+	{operationID: "get-event-types", call: func(c *client.Client) { c.GetHookEventTypes() }},
+	{operationID: "get-secrets", call: func(c *client.Client) { c.GetHookSecrets("ws-id") }},
+	{operationID: "create-secret", call: func(c *client.Client) {
 		c.CreateHookSecret(client.CreateSecretPayload{WorkspaceID: "ws-id"})
 	}},
-	{operationID: "webhooks_GetSubscriptions", call: func(c *client.Client) { c.GetHooks("ws-id", true, 10, 0) }},
-	{operationID: "webhooks_CreateSubscription", call: func(c *client.Client) {
+	{operationID: "get-subscriptions", call: func(c *client.Client) { c.GetHooks("ws-id", true, 10, 0) }},
+	{operationID: "create-subscription", call: func(c *client.Client) {
 		c.CreateHookSubscription(client.CreateHookPayload{
 			EventType:   "submission.completed",
 			TargetURL:   "https://example.com/hook",
 			WorkspaceID: "ws-id",
 		})
 	}},
-	{operationID: "webhooks_GetSubscription", skip: "OUTOFSCOPE: no CLI command for retrieving a single webhook subscription"},
-	{operationID: "webhooks_ConfirmSubscription", call: func(c *client.Client) {
+	{operationID: "get-subscription", skip: "OUTOFSCOPE: no CLI command for retrieving a single webhook subscription"},
+	{operationID: "confirm-subscription", call: func(c *client.Client) {
 		c.ConfirmHookSubscription("sub-id", "secret-value")
 	}},
-	{operationID: "webhooks_DeleteSubscription", call: func(c *client.Client) { c.DeleteHookSubscription("sub-id") }},
-	{operationID: "webhooks_UpdateSubscription", call: func(c *client.Client) {
+	{operationID: "delete-subscription", call: func(c *client.Client) { c.DeleteHookSubscription("sub-id") }},
+	{operationID: "update-subscription", call: func(c *client.Client) {
 		c.UpdateHookSubscription("sub-id", client.UpdateHookPayload{})
 	}},
-	{operationID: "webhooks_GetEvents", call: func(c *client.Client) { c.GetEvents("sub-id", 10, 0) }},
+	{operationID: "get-events", call: func(c *client.Client) { c.GetEvents("sub-id", 10, 0) }},
 
 	// Surveys
-	{operationID: "surveys_GetSurveys", call: func(c *client.Client) { c.GetSurveys("researcher-id", 10, 0) }},
-	{operationID: "surveys_CreateSurvey", call: func(c *client.Client) {
+	{operationID: "get-surveys", call: func(c *client.Client) { c.GetSurveys("researcher-id", 10, 0) }},
+	{operationID: "create-survey", call: func(c *client.Client) {
 		c.CreateSurvey(model.CreateSurvey{Title: "t", ResearcherID: "researcher-id"})
 	}},
-	{operationID: "surveys_GetSurvey", call: func(c *client.Client) { c.GetSurvey("survey-id") }},
-	{operationID: "surveys_DeleteSurvey", call: func(c *client.Client) { c.DeleteSurvey("survey-id") }},
-	{operationID: "surveys_GetResponses", call: func(c *client.Client) {
-		c.GetSurveyResponses("survey-id", 10, 0)
-	}},
-	{operationID: "surveys_CreateResponse", call: func(c *client.Client) {
+	{operationID: "get-survey", call: func(c *client.Client) { c.GetSurvey("survey-id") }},
+	{operationID: "delete-survey", call: func(c *client.Client) { c.DeleteSurvey("survey-id") }},
+	{operationID: "get-responses", call: func(c *client.Client) { c.GetSurveyResponses("survey-id", 10, 0) }},
+	{operationID: "create-response", call: func(c *client.Client) {
 		c.CreateSurveyResponse("survey-id", model.CreateSurveyResponseRequest{
 			ParticipantID: "participant-id",
 			SubmissionID:  "submission-id",
 		})
 	}},
-	{operationID: "surveys_DeleteResponses", call: func(c *client.Client) { c.DeleteAllSurveyResponses("survey-id") }},
-	{operationID: "surveys_GetSummary", call: func(c *client.Client) { c.GetSurveyResponseSummary("survey-id") }},
-	{operationID: "surveys_GetResponse", call: func(c *client.Client) {
-		c.GetSurveyResponse("survey-id", "response-id")
-	}},
-	{operationID: "surveys_DeleteResponse", call: func(c *client.Client) {
-		c.DeleteSurveyResponse("survey-id", "response-id")
-	}},
+	{operationID: "delete-responses", call: func(c *client.Client) { c.DeleteAllSurveyResponses("survey-id") }},
+	{operationID: "get-summary", call: func(c *client.Client) { c.GetSurveyResponseSummary("survey-id") }},
+	{operationID: "get-response", call: func(c *client.Client) { c.GetSurveyResponse("survey-id", "response-id") }},
+	{operationID: "delete-response", call: func(c *client.Client) { c.DeleteSurveyResponse("survey-id", "response-id") }},
 
 	// AI Task Builder — Batches
-	{operationID: "aiTaskBuilder_GetTaskBuilderBatches", call: func(c *client.Client) {
-		c.GetAITaskBuilderBatches("ws-id")
-	}},
-	{operationID: "aiTaskBuilder_CreateTaskBuilderBatch", call: func(c *client.Client) {
+	{operationID: "get-task-builder-batches", call: func(c *client.Client) { c.GetAITaskBuilderBatches("ws-id") }},
+	{operationID: "create-task-builder-batch", call: func(c *client.Client) {
 		c.CreateAITaskBuilderBatch(client.CreateBatchParams{
 			Name:        "t",
 			WorkspaceID: "ws-id",
 			DatasetID:   "ds-id",
 		})
 	}},
-	{operationID: "aiTaskBuilder_GetTaskBuilderBatch", call: func(c *client.Client) {
-		c.GetAITaskBuilderBatch("batch-id")
-	}},
-	{operationID: "aiTaskBuilder_UpdateTaskBuilderBatch", call: func(c *client.Client) {
+	{operationID: "get-task-builder-batch", call: func(c *client.Client) { c.GetAITaskBuilderBatch("batch-id") }},
+	{operationID: "update-task-builder-batch", call: func(c *client.Client) {
 		c.UpdateAITaskBuilderBatch(client.UpdateBatchParams{BatchID: "batch-id", Name: "t"})
 	}},
-	{operationID: "aiTaskBuilder_GetTaskBuilderBatchStatus", call: func(c *client.Client) {
-		c.GetAITaskBuilderBatchStatus("batch-id")
-	}},
-	{operationID: "aiTaskBuilder_SetupTaskBuilderBatch", call: func(c *client.Client) {
+	{operationID: "get-task-builder-batch-status", call: func(c *client.Client) { c.GetAITaskBuilderBatchStatus("batch-id") }},
+	{operationID: "setup-task-builder-batch", call: func(c *client.Client) {
 		c.SetupAITaskBuilderBatch("batch-id", "ds-id", 5)
 	}},
-	{operationID: "aiTaskBuilder_GetTaskBuilderBatchTaskResponses", call: func(c *client.Client) {
-		c.GetAITaskBuilderResponses("batch-id")
-	}},
-	{operationID: "aiTaskBuilder_GetTaskBuilderBatchReport", skip: "OUTOFSCOPE: no CLI command for batch report; GetAITaskBuilderTasks calls /tasks which is not in the spec"},
-	{operationID: "aiTaskBuilder_DuplicateTaskBuilderBatch", skip: "OUTOFSCOPE: no CLI command for duplicating a batch"},
-	{operationID: "aiTaskBuilder_RequestBatchExport", call: func(c *client.Client) { c.InitiateBatchExport("batch-id") }},
-	{operationID: "aiTaskBuilder_GetBatchExportStatus", call: func(c *client.Client) {
-		c.GetBatchExportStatus("batch-id", "export-id")
-	}},
+	{operationID: "get-task-builder-batch-task-responses", call: func(c *client.Client) { c.GetAITaskBuilderResponses("batch-id") }},
+	{operationID: "get-task-builder-batch-report", skip: "OUTOFSCOPE: no CLI command for batch report; GetAITaskBuilderTasks calls /tasks which is not in the spec"},
+	{operationID: "duplicate-task-builder-batch", skip: "OUTOFSCOPE: no CLI command for duplicating a batch"},
+	{operationID: "request-batch-export", call: func(c *client.Client) { c.InitiateBatchExport("batch-id") }},
+	{operationID: "get-batch-export-status", call: func(c *client.Client) { c.GetBatchExportStatus("batch-id", "export-id") }},
 
 	// AI Task Builder — Datasets
-	{operationID: "aiTaskBuilder_CreateTaskBuilderDataset", call: func(c *client.Client) {
+	{operationID: "create-task-builder-dataset", call: func(c *client.Client) {
 		c.CreateAITaskBuilderDataset("ws-id", client.CreateAITaskBuilderDatasetPayload{Name: "t"})
 	}},
-	{operationID: "aiTaskBuilder_getDatasetUploadUrl", call: func(c *client.Client) {
-		c.GetAITaskBuilderDatasetUploadURL("ds-id", "data")
-	}},
-	{operationID: "aiTaskBuilder_GetTaskBuilderDatasetStatus", call: func(c *client.Client) {
-		c.GetAITaskBuilderDatasetStatus("ds-id")
-	}},
+	{operationID: "get-dataset-upload-url", call: func(c *client.Client) { c.GetAITaskBuilderDatasetUploadURL("ds-id", "data") }},
+	{operationID: "get-task-builder-dataset-status", call: func(c *client.Client) { c.GetAITaskBuilderDatasetStatus("ds-id") }},
 
 	// AI Task Builder — Instructions
-	{operationID: "aiTaskBuilder_GetTaskBuilderInstructions", skip: "OUTOFSCOPE: no CLI command for getting task builder instructions"},
-	{operationID: "aiTaskBuilder_CreateTaskBuilderInstructions", call: func(c *client.Client) {
+	{operationID: "get-task-builder-instructions", skip: "OUTOFSCOPE: no CLI command for getting task builder instructions"},
+	{operationID: "create-task-builder-instructions", call: func(c *client.Client) {
 		c.CreateAITaskBuilderInstructions("batch-id", client.CreateAITaskBuilderInstructionsPayload{
 			Instructions: []client.Instruction{},
 		})
 	}},
-	{operationID: "aiTaskBuilder_UpdateTaskBuilderInstructions", skip: "OUTOFSCOPE: no CLI command for updating task builder instructions"},
+	{operationID: "update-task-builder-instructions", skip: "OUTOFSCOPE: no CLI command for updating task builder instructions"},
 
 	// AI Task Builder — Collections
-	{operationID: "aiTaskBuilder_ListCollections", call: func(c *client.Client) {
-		c.GetCollections("ws-id", 10, 0)
-	}},
-	{operationID: "aiTaskBuilder_CreateCollection", call: func(c *client.Client) {
+	{operationID: "list-collections", call: func(c *client.Client) { c.GetCollections("ws-id", 10, 0) }},
+	{operationID: "create-collection", call: func(c *client.Client) {
 		c.CreateAITaskBuilderCollection(model.CreateAITaskBuilderCollection{
 			WorkspaceID:     "ws-id",
 			Name:            "t",
@@ -228,22 +216,22 @@ var operations = []operation{
 			TaskDetails:     &model.TaskDetails{TaskName: "t", TaskIntroduction: "t", TaskSteps: "t"},
 		})
 	}},
-	{operationID: "aiTaskBuilder_GetCollection", call: func(c *client.Client) { c.GetCollection("coll-id") }},
-	{operationID: "aiTaskBuilder_UpdateCollection", call: func(c *client.Client) {
+	{operationID: "get-collection", call: func(c *client.Client) { c.GetCollection("coll-id") }},
+	{operationID: "update-collection", call: func(c *client.Client) {
 		c.UpdateCollection("coll-id", model.UpdateCollection{
 			Name:            "t",
 			CollectionItems: []model.Page{},
 			TaskDetails:     &model.TaskDetails{TaskName: "t", TaskIntroduction: "t", TaskSteps: "t"},
 		})
 	}},
-	{operationID: "aiTaskBuilder_GetCollectionResponses", skip: "OUTOFSCOPE: no CLI command for getting collection responses"},
-	{operationID: "aiTaskBuilder_RequestCollectionExport", call: func(c *client.Client) { c.InitiateCollectionExport("coll-id") }},
-	{operationID: "aiTaskBuilder_GetCollectionExportStatus", call: func(c *client.Client) {
+	{operationID: "get-collection-responses", skip: "OUTOFSCOPE: no CLI command for getting collection responses"},
+	{operationID: "request-collection-export", call: func(c *client.Client) { c.InitiateCollectionExport("coll-id") }},
+	{operationID: "get-collection-export-status", call: func(c *client.Client) {
 		c.GetCollectionExportStatus("coll-id", "export-id")
 	}},
 
 	// Invitations
-	{operationID: "invitations_CreateInvitation", call: func(c *client.Client) {
+	{operationID: "create-invitation", call: func(c *client.Client) {
 		c.CreateInvitation(model.CreateInvitation{
 			Association: "ws-id",
 			Emails:      []string{"user@example.com"},
@@ -252,24 +240,22 @@ var operations = []operation{
 	}},
 
 	// Messages
-	{operationID: "messages_GetMessages", call: func(c *client.Client) {
+	{operationID: "get-messages", call: func(c *client.Client) {
 		uid := "user-id"
 		c.GetMessages(&uid, nil)
 	}},
-	{operationID: "messages_SendMessage", call: func(c *client.Client) {
-		c.SendMessage("hello", "recipient-id", "study-id")
-	}},
-	{operationID: "messages_BulkMessageParticipants", call: func(c *client.Client) {
+	{operationID: "send-message", call: func(c *client.Client) { c.SendMessage("hello", "recipient-id", "study-id") }},
+	{operationID: "bulk-message-participants", call: func(c *client.Client) {
 		c.BulkSendMessage([]string{"p1", "p2"}, "hello", "study-id")
 	}},
-	{operationID: "messages_SendMessageToParticipantGroup", call: func(c *client.Client) {
+	{operationID: "send-message-to-participant-group", call: func(c *client.Client) {
 		c.SendGroupMessage("group-id", "hello", nil)
 	}},
-	{operationID: "messages_GetUnreadMessages", call: func(c *client.Client) { c.GetUnreadMessages() }},
+	{operationID: "get-unread-messages", call: func(c *client.Client) { c.GetUnreadMessages() }},
 
-	// Studies — global list and CRUD
-	{operationID: "studies_GetStudies", call: func(c *client.Client) { c.GetStudies("", "") }},
-	{operationID: "studies_CreateStudy", call: func(c *client.Client) {
+	// Studies
+	{operationID: "get-studies", call: func(c *client.Client) { c.GetStudies("", "") }},
+	{operationID: "create-study", call: func(c *client.Client) {
 		c.CreateStudy(model.CreateStudy{
 			Name:                    "t",
 			ProlificIDOption:        "url_parameters",
@@ -279,94 +265,86 @@ var operations = []operation{
 			DeviceCompatibility:     []string{"desktop"},
 		})
 	}},
-	{operationID: "studies_GetProjectStudies", call: func(c *client.Client) { c.GetStudies("", "proj-id") }},
-	{operationID: "studies_GetStudy", call: func(c *client.Client) { c.GetStudy("study-id") }},
-	{operationID: "studies_DeleteStudy", skip: "OUTOFSCOPE: no CLI command for deleting a study"},
-	{operationID: "studies_UpdateStudy", call: func(c *client.Client) {
+	{operationID: "get-project-studies", call: func(c *client.Client) { c.GetStudies("", "proj-id") }},
+	{operationID: "get-study", call: func(c *client.Client) { c.GetStudy("study-id") }},
+	{operationID: "delete-study", skip: "OUTOFSCOPE: no CLI command for deleting a study"},
+	{operationID: "update-study", call: func(c *client.Client) {
 		c.UpdateStudy("study-id", map[string]any{"name": "updated"})
 	}},
-	{operationID: "studies_PublishStudy", call: func(c *client.Client) {
-		c.TransitionStudy("study-id", "PUBLISH")
-	}},
-	{operationID: "studies_CreateTestStudy", call: func(c *client.Client) { c.TestStudy("study-id") }},
-	{operationID: "studies_GetStudyAccessDetailsProgress", skip: "OUTOFSCOPE: no CLI command for access details progress"},
-	{operationID: "studies_GetStudyCost", skip: "OUTOFSCOPE: no CLI command for getting study cost"},
-	{operationID: "studies_GetStudySubmissions", call: func(c *client.Client) {
-		c.GetSubmissions("study-id", 10, 0)
-	}},
-	{operationID: "studies_CountStudySubmissionsByStatus", call: func(c *client.Client) {
-		c.GetStudySubmissionCounts("study-id")
-	}},
-	{operationID: "studies_DownloadStudyCredentialReport", call: func(c *client.Client) {
+	{operationID: "publish-study", call: func(c *client.Client) { c.TransitionStudy("study-id", "PUBLISH") }},
+	{operationID: "create-test-study", call: func(c *client.Client) { c.TestStudy("study-id") }},
+	{operationID: "get-study-access-details-progress", skip: "OUTOFSCOPE: no CLI command for access details progress"},
+	{operationID: "get-study-cost", skip: "OUTOFSCOPE: no CLI command for getting study cost"},
+	{operationID: "get-study-submissions", call: func(c *client.Client) { c.GetSubmissions("study-id", 10, 0) }},
+	{operationID: "count-study-submissions-by-status", call: func(c *client.Client) { c.GetStudySubmissionCounts("study-id") }},
+	{operationID: "download-study-credential-report", call: func(c *client.Client) {
 		c.GetStudyCredentialsUsageReportCSV("study-id")
 	}},
-	{operationID: "studies_ExportStudy", skip: "OUTOFSCOPE: no CLI command for exporting a study as a whole"},
-	{operationID: "studies_ExportDemographicData", skip: "SPECMISMATCH: spec requires a request body, client sends none"},
-	{operationID: "studies_GetDemographicExportHistory", skip: "OUTOFSCOPE: no CLI command for demographic export history"},
-	{operationID: "studies_DuplicateStudy", skip: "SPECMISMATCH: spec requires a request body, client sends none"},
-	{operationID: "studies_GetStudyPredictedRecruitmentTime", skip: "OUTOFSCOPE: no CLI command for predicted recruitment time"},
-	{operationID: "studies_PostStudyPredictedRecruitmentTime", skip: "OUTOFSCOPE: no CLI command for posting predicted recruitment time"},
-	{operationID: "studies_CalculateStudyCost", skip: "OUTOFSCOPE: no CLI command for calculating study cost"},
+	{operationID: "export-study", skip: "OUTOFSCOPE: no CLI command for exporting a study as a whole"},
+	{operationID: "export-demographic-data", skip: "SPECMISMATCH: spec requires a request body, client sends none"},
+	{operationID: "get-demographic-export-history", skip: "OUTOFSCOPE: no CLI command for demographic export history"},
+	{operationID: "duplicate-study", skip: "SPECMISMATCH: spec requires a request body, client sends none"},
+	{operationID: "get-study-predicted-recruitment-time", skip: "OUTOFSCOPE: no CLI command for predicted recruitment time"},
+	{operationID: "post-study-predicted-recruitment-time", skip: "OUTOFSCOPE: no CLI command for posting predicted recruitment time"},
+	{operationID: "calculate-study-cost", skip: "OUTOFSCOPE: no CLI command for calculating study cost"},
 
 	// Credentials
-	{operationID: "credentials_ListCredentialPools", call: func(c *client.Client) { c.ListCredentialPools("ws-id") }},
-	{operationID: "credentials_CreateCredentialPool", call: func(c *client.Client) {
+	{operationID: "list-credential-pools", call: func(c *client.Client) { c.ListCredentialPools("ws-id") }},
+	{operationID: "create-credential-pool", call: func(c *client.Client) {
 		c.CreateCredentialPool("user,pass\nuser2,pass2", "ws-id")
 	}},
-	{operationID: "credentials_UpdateCredentialPool", call: func(c *client.Client) {
+	{operationID: "update-credential-pool", call: func(c *client.Client) {
 		c.UpdateCredentialPool("pool-id", "user,pass\nuser2,pass2")
 	}},
 
 	// Reward Recommendations
-	{operationID: "rewardRecommendations_CalculateRewardRecommendations", skip: "OUTOFSCOPE: reward recommendations not needed in CLI"},
+	{operationID: "calculate-reward-recommendations", skip: "OUTOFSCOPE: reward recommendations not needed in CLI"},
 
 	// Well-known endpoints
-	{operationID: "wellKnownEndpoints_getStudyJwks", skip: "OUTOFSCOPE: JWKS endpoint not needed in CLI"},
+	{operationID: "get-study-jwks", skip: "OUTOFSCOPE: JWKS endpoint not needed in CLI"},
 
 	// Submissions
-	{operationID: "submissions_GetSubmissions", skip: "OUTOFSCOPE: global submissions list not exposed in CLI; use study-scoped GetSubmissions"},
-	{operationID: "submissions_GetSubmission", skip: "OUTOFSCOPE: single submission retrieval not exposed in CLI"},
-	{operationID: "submissions_TransitionSubmission", call: func(c *client.Client) {
+	{operationID: "get-submissions", skip: "OUTOFSCOPE: global submissions list not exposed in CLI; use study-scoped get-study-submissions"},
+	{operationID: "get-submission", skip: "OUTOFSCOPE: single submission retrieval not exposed in CLI"},
+	{operationID: "transition-submission", call: func(c *client.Client) {
 		c.TransitionSubmission("sub-id", client.TransitionSubmissionPayload{Action: "APPROVE"})
 	}},
-	{operationID: "submissions_RequestSubmissionReturn", call: func(c *client.Client) {
+	{operationID: "request-submission-return", call: func(c *client.Client) {
 		c.RequestSubmissionReturn("sub-id", []string{"no longer needed"})
 	}},
-	{operationID: "submissions_GetSubmissionDemographics", skip: "OUTOFSCOPE: submission demographics not exposed in CLI"},
-	{operationID: "submissions_BulkApproveSubmissions", call: func(c *client.Client) {
+	{operationID: "get-submission-demographics", skip: "OUTOFSCOPE: submission demographics not exposed in CLI"},
+	{operationID: "bulk-approve-submissions", call: func(c *client.Client) {
 		c.BulkApproveSubmissions(client.BulkApproveSubmissionsPayload{
 			SubmissionIDs: []string{"sub-id"},
 		})
 	}},
 
 	// Bonuses
-	{operationID: "bonuses_CreateBonusPayments", call: func(c *client.Client) {
+	{operationID: "create-bonus-payments", call: func(c *client.Client) {
 		c.CreateBonusPayments(client.CreateBonusPaymentsPayload{
 			StudyID:    "study-id",
 			CSVBonuses: "participant-id,1.50",
 		})
 	}},
-	{operationID: "bonuses_PayBonusPayments", call: func(c *client.Client) { c.PayBonusPayments("bonus-id") }},
+	{operationID: "pay-bonus-payments", call: func(c *client.Client) { c.PayBonusPayments("bonus-id") }},
 
 	// Users
-	{operationID: "users_GetUser", call: func(c *client.Client) { c.GetMe() }},
-	{operationID: "users_CreateTestParticipantForResearcher", call: func(c *client.Client) {
+	{operationID: "get-user", call: func(c *client.Client) { c.GetMe() }},
+	{operationID: "create-test-participant-for-researcher", call: func(c *client.Client) {
 		c.CreateTestParticipant("test@example.com")
 	}},
 
 	// Participant Groups
-	{operationID: "participantGroups_GetParticipantGroups", skip: "SPECMISMATCH: spec uses a filter deepObject query param, client sends it flat"},
-	{operationID: "participantGroups_CreateParticipantGroup", call: func(c *client.Client) {
+	{operationID: "get-participant-groups", skip: "SPECMISMATCH: spec uses a filter deepObject query param, client sends it flat"},
+	{operationID: "create-participant-group", call: func(c *client.Client) {
 		c.CreateParticipantGroup(model.CreateParticipantGroup{Name: "t", WorkspaceID: "ws-id"})
 	}},
-	{operationID: "participantGroups_GetParticipantGroup", skip: "OUTOFSCOPE: no CLI command for retrieving a single participant group by ID"},
-	{operationID: "participantGroups_DeleteParticipantGroup", skip: "OUTOFSCOPE: no CLI command for deleting a participant group"},
-	{operationID: "participantGroups_UpdateParticipantGroup", skip: "OUTOFSCOPE: no CLI command for updating a participant group"},
-	{operationID: "participantGroups_GetParticipantGroupParticipants", call: func(c *client.Client) {
-		c.GetParticipantGroup("group-id")
-	}},
-	{operationID: "participantGroups_AddToParticipantGroup", skip: "OUTOFSCOPE: adding participants not exposed in CLI"},
-	{operationID: "participantGroups_RemoveFromParticipantGroup", call: func(c *client.Client) {
+	{operationID: "get-participant-group", skip: "OUTOFSCOPE: no CLI command for retrieving a single participant group by ID"},
+	{operationID: "delete-participant-group", skip: "OUTOFSCOPE: no CLI command for deleting a participant group"},
+	{operationID: "update-participant-group", skip: "OUTOFSCOPE: no CLI command for updating a participant group"},
+	{operationID: "get-participant-group-participants", call: func(c *client.Client) { c.GetParticipantGroup("group-id") }},
+	{operationID: "add-to-participant-group", skip: "OUTOFSCOPE: adding participants not exposed in CLI"},
+	{operationID: "remove-from-participant-group", call: func(c *client.Client) {
 		c.RemoveParticipantGroupMembers("group-id", []string{"participant-id"})
 	}},
 }
@@ -375,9 +353,9 @@ var operations = []operation{
 // in the operations table — either as a concrete client call or with an explicit
 // skip reason. Fails when a new endpoint is added to the spec without updating this table.
 func TestAPICoverage(t *testing.T) {
-	data, err := os.ReadFile("publicapi.yaml")
+	data, err := os.ReadFile("openapi.yaml")
 	if err != nil {
-		t.Fatalf("failed to read publicapi.yaml: %v", err)
+		t.Fatalf("failed to read openapi.yaml: %v", err)
 	}
 
 	var spec struct {
@@ -386,7 +364,7 @@ func TestAPICoverage(t *testing.T) {
 		} `yaml:"paths"`
 	}
 	if err := yaml.Unmarshal(data, &spec); err != nil {
-		t.Fatalf("failed to parse publicapi.yaml: %v", err)
+		t.Fatalf("failed to parse openapi.yaml: %v", err)
 	}
 
 	specOps := map[string]bool{}
@@ -425,9 +403,9 @@ func TestAPICoverage(t *testing.T) {
 // structure matters.
 func TestClientMatchesAPISpec(t *testing.T) {
 	loader := openapi3.NewLoader()
-	doc, err := loader.LoadFromFile("publicapi.yaml")
+	doc, err := loader.LoadFromFile("openapi.yaml")
 	if err != nil {
-		t.Fatalf("failed to load publicapi.yaml: %v", err)
+		t.Fatalf("failed to load openapi.yaml: %v", err)
 	}
 
 	var (
@@ -479,7 +457,6 @@ func TestClientMatchesAPISpec(t *testing.T) {
 			continue
 		}
 		t.Run(tt.operationID, func(t *testing.T) {
-
 			valErr = nil
 
 			c := client.Client{

@@ -56,6 +56,10 @@ linters:
       # QF1012 Use fmt.Fprintf(...) clashes with go fix patterns
       - linters: [staticcheck]
         text: "QF1012"
+      # contract_test/ call functions intentionally ignore return values —
+      # only the outbound request shape matters, not the stub server response.
+      - linters: [errcheck]
+        path: 'contract_test/'
     paths:
       - third_party$
       - builtin$
