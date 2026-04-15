@@ -1,6 +1,6 @@
 ---
-name: review-command
-description: Review an existing CLI command for correctness against established patterns.
+name: audit-command
+description: Audit an existing CLI command for correctness against established patterns.
 argument-hint: "[resource] [command]"
 user-invocable: true
 ---
@@ -216,15 +216,18 @@ After completing all checks, produce a summary:
 ## Review: prolific {resource} {command}
 
 ### 🔴 Must Fix
-- [issue description] (`cmd/{resource}/{file}.go:{line}`)
+- [Check Type] [issue description] (`cmd/{resource}/{file}.go:{line}`)
 
 ### 🟡 Should Fix
-- [issue description]
+- [Check Type] [issue description]
 
 ### 🟢 OK
-- Output flags: shared.AddOutputFlags is used correctly
-- Dependency injection: constructor uses client.API and io.Writer
-- ...
+- [Check Type], [Check Type], ...
+```
+
+**Example**
+```
+- 🔴 [Error Formatting]: Inconsistent error prefixes in `publishCollection` helper — `"failed to get collection: %s"`, `"failed to read template file: %s"`, etc. — all must use `"error: %s"`
 ```
 
 If there are no issues, say so clearly: "All checks passed — no issues found."

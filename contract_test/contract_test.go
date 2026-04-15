@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"os/exec"
 	"strings"
 	"sync"
 	"testing"
@@ -31,6 +32,29 @@ import (
 	"github.com/prolific-oss/cli/model"
 	"gopkg.in/yaml.v3"
 )
+
+const specFile = "publicapi.yaml"
+
+func TestMain(m *testing.M) {
+	if err := downloadSpec(); err != nil {
+		fmt.Fprintf(os.Stderr, "failed to download spec: %v\n", err)
+		os.Exit(1)
+	}
+	os.Exit(m.Run())
+}
+
+func downloadSpec() error {
+	cmd := exec.Command(
+		"gh", "api",
+		"--header", "Accept: application/vnd.github.raw+json",
+		"/repos/prolific-oss/prolific/contents/assets/api/publicapi.yaml",
+	)
+	out, err := cmd.Output()
+	if err != nil {
+		return fmt.Errorf("gh api: %w", err)
+	}
+	return os.WriteFile(specFile, out, 0600)
+}
 
 // findRoute locates the matching OpenAPI route for r, tolerating trailing-slash
 // differences between the client and the spec (the API accepts both forms).
