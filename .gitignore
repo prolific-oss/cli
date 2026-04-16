@@ -19,6 +19,5 @@ templates/*
 # OS
 .DS_Store
 
-# prolific api spec publicapi.yaml
-publicapi.yaml
+# prolific api spec openapi.yaml
 openapi.yaml

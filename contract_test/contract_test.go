@@ -21,8 +21,8 @@ import (
 	"net/http/httptest"
 	"os"
 	"strings"
-	"sync"
 	"testing"
+	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
@@ -45,7 +45,10 @@ func TestMain(m *testing.M) {
 }
 
 func downloadSpec() error {
-	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, specURL, nil)
+	_ = os.Remove(specFile) // best-effort cleanup before re-downloading
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, specURL, nil)
 	if err != nil {
 		return err
 	}
@@ -349,7 +352,7 @@ var operations = []operation{
 	}},
 }
 
-// TestAPICoverage verifies that every operationId in publicapi.yaml is accounted for
+// TestAPICoverage verifies that every operationId in openapi.yaml is accounted for
 // in the operations table — either as a concrete client call or with an explicit
 // skip reason. Fails when a new endpoint is added to the spec without updating this table.
 func TestAPICoverage(t *testing.T) {
@@ -386,13 +389,13 @@ func TestAPICoverage(t *testing.T) {
 
 	for id := range specOps {
 		if !covered[id] {
-			t.Errorf("operationId %q is in publicapi.yaml but not in the coverage table — add a call or skip reason", id)
+			t.Errorf("operationId %q is in openapi.yaml but not in the coverage table — add a call or skip reason", id)
 		}
 	}
 
 	for _, op := range operations {
 		if !specOps[op.operationID] {
-			t.Errorf("operationId %q is in the coverage table but not in publicapi.yaml — stale entry", op.operationID)
+			t.Errorf("operationId %q is in the coverage table but not in openapi.yaml — stale entry", op.operationID)
 		}
 	}
 }
@@ -409,18 +412,14 @@ func TestClientMatchesAPISpec(t *testing.T) {
 	}
 
 	var (
-		mu     sync.Mutex
-		valErr error
+		errCh  chan error
 		router routers.Router
 	)
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		mu.Lock()
-		defer mu.Unlock()
-
 		route, pathParams, routeErr := findRoute(router, r)
 		if routeErr != nil {
-			valErr = fmt.Errorf("route not found for %s %s: %v", r.Method, r.URL.Path, routeErr)
+			errCh <- fmt.Errorf("route not found for %s %s: %v", r.Method, r.URL.Path, routeErr)
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, "{}")
 			return
@@ -434,9 +433,7 @@ func TestClientMatchesAPISpec(t *testing.T) {
 				AuthenticationFunc: openapi3filter.NoopAuthenticationFunc,
 			},
 		}
-		if validateErr := openapi3filter.ValidateRequest(context.Background(), input); validateErr != nil {
-			valErr = validateErr
-		}
+		errCh <- openapi3filter.ValidateRequest(context.Background(), input)
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -457,7 +454,7 @@ func TestClientMatchesAPISpec(t *testing.T) {
 			continue
 		}
 		t.Run(tt.operationID, func(t *testing.T) {
-			valErr = nil
+			errCh = make(chan error, 1)
 
 			c := client.Client{
 				Client:  srv.Client(),
@@ -466,10 +463,8 @@ func TestClientMatchesAPISpec(t *testing.T) {
 			}
 			tt.call(&c) // client errors from status-code checks are intentionally ignored
 
-			capturedErr := valErr
-
-			if capturedErr != nil {
-				t.Errorf("request validation failed: %v", capturedErr)
+			if err := <-errCh; err != nil {
+				t.Errorf("request validation failed: %v", err)
 			}
 		})
 	}

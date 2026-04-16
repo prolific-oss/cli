@@ -5,7 +5,7 @@ argument-hint: "[resource] [command]"
 user-invocable: true
 ---
 
-# CLI Command Reviewer
+# CLI Command Audit Skill
 
 ## When to Use This Skill
 
