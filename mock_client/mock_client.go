@@ -294,14 +294,6 @@ func (m *MockAPI) CreateSurveyResponse(surveyID string, response model.CreateSur
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateSurveyResponse", surveyID, response)
 	ret0, _ := ret[0].(*client.CreateSurveyResponseResponse)
-  ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-// CreateTestParticipant mocks base method.
-func (m *MockAPI) CreateTestParticipant(email string) (*client.CreateTestParticipantResponse, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateTestParticipant", email)
-	ret0, _ := ret[0].(*client.CreateTestParticipantResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -311,6 +303,16 @@ func (mr *MockAPIMockRecorder) CreateSurveyResponse(surveyID, response interface
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSurveyResponse", reflect.TypeOf((*MockAPI)(nil).CreateSurveyResponse), surveyID, response)
 }
+
+// CreateTestParticipant mocks base method.
+func (m *MockAPI) CreateTestParticipant(email string) (*client.CreateTestParticipantResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateTestParticipant", email)
+	ret0, _ := ret[0].(*client.CreateTestParticipantResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
 // CreateTestParticipant indicates an expected call of CreateTestParticipant.
 func (mr *MockAPIMockRecorder) CreateTestParticipant(email interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
