@@ -39,12 +39,13 @@ body:
       label: Relevant cli output
       description: Please copy and paste any relevant cli output. This will be automatically formatted into code, so no need for backticks.
       render: shell
-    required: false
+    validations:
+      required: true
   - type: checkboxes
     id: terms
     attributes:
       label: Code of Conduct
-      description: By submitting this issue, you agree to follow our [Code of Conduct](https://example.com).
+      description: By submitting this issue, you agree to follow our [Code of Conduct](../CONTRIBUTING.md#code-of-conduct).
       options:
         - label: I agree to follow this project's Code of Conduct
           required: true
