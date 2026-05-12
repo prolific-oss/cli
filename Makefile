@@ -42,7 +42,7 @@ install: install-binary ## Install dependencies and the prolific binary
 	cp scripts/hooks/commit-msg .git/hooks/commit-msg
 	go install github.com/golang/mock/mockgen@master
 	go install github.com/securego/gosec/v2/cmd/gosec@latest
-	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
+	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.11.2
 	go install golang.org/x/tools/cmd/goimports@latest
 	go get ./...
 

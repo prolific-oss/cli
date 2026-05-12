@@ -261,6 +261,7 @@ var operations = []operation{
 	{operationID: "create-study", call: func(c *client.Client) {
 		c.CreateStudy(model.CreateStudy{
 			Name:                    "t",
+			ExternalStudyURL:        "https://example.com/study?p={{%PROLIFIC_PID%}}",
 			ProlificIDOption:        "url_parameters",
 			TotalAvailablePlaces:    10,
 			EstimatedCompletionTime: 5,
@@ -315,7 +316,6 @@ var operations = []operation{
 	{operationID: "request-submission-return", call: func(c *client.Client) {
 		c.RequestSubmissionReturn("sub-id", []string{"no longer needed"})
 	}},
-	{operationID: "get-submission-demographics", skip: "OUTOFSCOPE: submission demographics not exposed in CLI"},
 	{operationID: "bulk-approve-submissions", call: func(c *client.Client) {
 		c.BulkApproveSubmissions(client.BulkApproveSubmissionsPayload{
 			SubmissionIDs: []string{"sub-id"},
