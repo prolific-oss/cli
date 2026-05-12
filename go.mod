@@ -12,11 +12,11 @@ require (
 	github.com/spf13/cobra v1.10.2 // Apache 2.0
 	github.com/spf13/viper v1.21.0 // MIT
 	golang.org/x/exp v0.0.0-20250819193227-8b4c13bb791b // BSD-3-Clause
-	golang.org/x/text v0.36.0 // BSD-3-Clause
+	golang.org/x/text v0.37.0 // BSD-3-Clause
 )
 
 require (
-	github.com/getkin/kin-openapi v0.137.0
+	github.com/getkin/kin-openapi v0.138.0
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/stretchr/testify v1.11.1
 	gopkg.in/yaml.v3 v3.0.1
