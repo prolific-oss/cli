@@ -261,7 +261,7 @@ var operations = []operation{
 	{operationID: "create-study", call: func(c *client.Client) {
 		c.CreateStudy(model.CreateStudy{
 			Name:                    "t",
-			ExternalStudyURL:        "https://example.com/study",
+			ExternalStudyURL:        "https://example.com/study?p={{%PROLIFIC_PID%}}",
 			ProlificIDOption:        "url_parameters",
 			TotalAvailablePlaces:    10,
 			EstimatedCompletionTime: 5,
