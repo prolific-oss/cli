@@ -13,6 +13,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 
 	"github.com/prolific-oss/cli/config"
@@ -1436,6 +1437,15 @@ func (c *Client) CreateAITaskBuilderInstructions(batchID string, instructions Cr
 	if httpResponse.StatusCode != http.StatusCreated {
 		body, _ := io.ReadAll(httpResponse.Body)
 		return nil, fmt.Errorf("unable to create instructions: %v", string(body))
+	}
+
+	if httpResponse.Header.Get("Deprecation") != "" {
+		sunset := httpResponse.Header.Get("Sunset")
+		fmt.Fprintln(os.Stderr, "Warning: This instructions endpoint is deprecated.")
+		if sunset != "" {
+			fmt.Fprintf(os.Stderr, "It will be sunset on: %s\n", sunset)
+		}
+		fmt.Fprintln(os.Stderr, "Manage instructions via batch_items instead.")
 	}
 
 	return &response, nil

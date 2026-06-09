@@ -301,6 +301,10 @@ var operations = []operation{
 		c.UpdateCredentialPool("pool-id", "user,pass\nuser2,pass2")
 	}},
 
+	// Costs
+	{operationID: "get-organisation-cost", skip: "OUTOFSCOPE: no CLI command for organisation cost"},
+	{operationID: "get-workspace-cost", skip: "OUTOFSCOPE: no CLI command for workspace cost"},
+
 	// Reward Recommendations
 	{operationID: "calculate-reward-recommendations", skip: "OUTOFSCOPE: reward recommendations not needed in CLI"},
 
@@ -316,6 +320,7 @@ var operations = []operation{
 	{operationID: "request-submission-return", call: func(c *client.Client) {
 		c.RequestSubmissionReturn("sub-id", []string{"no longer needed"})
 	}},
+	{operationID: "get-submission-feedback-upload-url", skip: "OUTOFSCOPE: no CLI command for submission feedback upload URL"},
 	{operationID: "bulk-approve-submissions", call: func(c *client.Client) {
 		c.BulkApproveSubmissions(client.BulkApproveSubmissionsPayload{
 			SubmissionIDs: []string{"sub-id"},
