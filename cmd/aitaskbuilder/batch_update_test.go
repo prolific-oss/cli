@@ -3,9 +3,11 @@ package aitaskbuilder_test
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -325,5 +327,171 @@ func TestNewBatchUpdateCommandNoFieldsProvided(t *testing.T) {
 	expectedError := "error: " + aitaskbuilder.ErrAtLeastOneUpdateFieldRequired
 	if err.Error() != expectedError {
 		t.Fatalf("expected error: %s; got %s", expectedError, err.Error())
+	}
+}
+
+func TestNewBatchUpdateCommandWithBatchItemsJSON(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	createdAt, _ := time.Parse(time.RFC3339, "2025-02-27T18:03:59.795Z")
+	response := &client.UpdateAITaskBuilderBatchResponse{
+		AITaskBuilderBatch: model.AITaskBuilderBatch{
+			ID:            updateBatchID,
+			CreatedAt:     createdAt,
+			CreatedBy:     "user-1",
+			Name:          "Existing Name",
+			Status:        "UNINITIALISED",
+			WorkspaceID:   "6745ab669112d10b9b3afb48",
+			SchemaVersion: 5,
+			Datasets:      []model.Dataset{},
+		},
+	}
+
+	c.EXPECT().UpdateAITaskBuilderBatch(client.UpdateBatchParams{
+		BatchID:    updateBatchID,
+		BatchItems: json.RawMessage(batchItemsJSON),
+	}).Return(response, nil)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := aitaskbuilder.NewBatchUpdateCommand(c, writer)
+	cmd.SetArgs([]string{"--batch-id", updateBatchID, "--batch-items-json", batchItemsJSON})
+
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("expected no error; got %v", err)
+	}
+}
+
+func TestNewBatchUpdateCommandWithBatchItemsFile(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	tmpFile := filepath.Join(t.TempDir(), "batch-items.json")
+	if err := os.WriteFile(tmpFile, []byte(batchItemsJSON), 0600); err != nil {
+		t.Fatal(err)
+	}
+
+	createdAt, _ := time.Parse(time.RFC3339, "2025-02-27T18:03:59.795Z")
+	response := &client.UpdateAITaskBuilderBatchResponse{
+		AITaskBuilderBatch: model.AITaskBuilderBatch{
+			ID:            updateBatchID,
+			CreatedAt:     createdAt,
+			CreatedBy:     "user-1",
+			Name:          "Existing Name",
+			Status:        "UNINITIALISED",
+			WorkspaceID:   "6745ab669112d10b9b3afb48",
+			SchemaVersion: 5,
+			Datasets:      []model.Dataset{},
+		},
+	}
+
+	c.EXPECT().UpdateAITaskBuilderBatch(client.UpdateBatchParams{
+		BatchID:    updateBatchID,
+		BatchItems: json.RawMessage(batchItemsJSON),
+	}).Return(response, nil)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := aitaskbuilder.NewBatchUpdateCommand(c, writer)
+	cmd.SetArgs([]string{"--batch-id", updateBatchID, "--batch-items-file", tmpFile})
+
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("expected no error; got %v", err)
+	}
+}
+
+func TestNewBatchUpdateCommandClearBatchItems(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	createdAt, _ := time.Parse(time.RFC3339, "2025-02-27T18:03:59.795Z")
+	response := &client.UpdateAITaskBuilderBatchResponse{
+		AITaskBuilderBatch: model.AITaskBuilderBatch{
+			ID:            updateBatchID,
+			CreatedAt:     createdAt,
+			CreatedBy:     "user-1",
+			Name:          "Existing Name",
+			Status:        "UNINITIALISED",
+			WorkspaceID:   "6745ab669112d10b9b3afb48",
+			SchemaVersion: 5,
+			Datasets:      []model.Dataset{},
+		},
+	}
+
+	c.EXPECT().UpdateAITaskBuilderBatch(client.UpdateBatchParams{
+		BatchID:    updateBatchID,
+		BatchItems: json.RawMessage("null"),
+	}).Return(response, nil)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := aitaskbuilder.NewBatchUpdateCommand(c, writer)
+	cmd.SetArgs([]string{"--batch-id", updateBatchID, "--clear-batch-items"})
+
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("expected no error; got %v", err)
+	}
+}
+
+func TestNewBatchUpdateCommandBatchItemsValidationErrors(t *testing.T) {
+	testCases := []struct {
+		name        string
+		args        []string
+		expectedErr string
+	}{
+		{
+			name:        "both file and json flags",
+			args:        []string{"--batch-id", updateBatchID, "-f", "some-file.json", "-j", batchItemsJSON},
+			expectedErr: "error: " + aitaskbuilder.ErrBothBatchItemsInputsProvided,
+		},
+		{
+			name:        "clear with file flag",
+			args:        []string{"--batch-id", updateBatchID, "--clear-batch-items", "-f", "some-file.json"},
+			expectedErr: "error: " + aitaskbuilder.ErrBatchItemsMutuallyExclusive,
+		},
+		{
+			name:        "clear with json flag",
+			args:        []string{"--batch-id", updateBatchID, "--clear-batch-items", "-j", batchItemsJSON},
+			expectedErr: "error: " + aitaskbuilder.ErrBatchItemsMutuallyExclusive,
+		},
+		{
+			name:        "invalid JSON",
+			args:        []string{"--batch-id", updateBatchID, "-j", "not-json"},
+			expectedErr: "error: " + aitaskbuilder.ErrBatchItemsMustBeArray,
+		},
+		{
+			name:        "empty array",
+			args:        []string{"--batch-id", updateBatchID, "-j", "[]"},
+			expectedErr: "error: " + aitaskbuilder.ErrBatchItemsMustBeNonEmpty,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			c := mock_client.NewMockAPI(ctrl)
+
+			var b bytes.Buffer
+			writer := bufio.NewWriter(&b)
+
+			cmd := aitaskbuilder.NewBatchUpdateCommand(c, writer)
+			cmd.SetArgs(tc.args)
+
+			err := cmd.Execute()
+			if err == nil {
+				t.Fatal("expected error; got nil")
+			}
+			if err.Error() != tc.expectedErr {
+				t.Fatalf("expected error: %q; got %q", tc.expectedErr, err.Error())
+			}
+		})
 	}
 }

@@ -1,0 +1,28 @@
+[
+  {
+    "rows": [
+      {
+        "columns": [
+          {
+            "items": [
+              {
+                "type": "free_text",
+                "description": "Please describe your observations."
+              },
+              {
+                "type": "multiple_choice",
+                "description": "How confident are you in your answer?",
+                "answer_limit": 1,
+                "options": [
+                  { "label": "Very confident", "value": "very_confident" },
+                  { "label": "Somewhat confident", "value": "somewhat_confident" },
+                  { "label": "Not confident", "value": "not_confident" }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

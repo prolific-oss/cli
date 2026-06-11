@@ -129,6 +129,18 @@ type API interface {
 	GetAITaskBuilderDatasetUploadURL(datasetID, fileName string) (*GetAITaskBuilderDatasetUploadURLResponse, error)
 }
 
+// UnrecognizedAPIError is returned by Execute when the response body does not match any known
+// error format. Callers can type-assert via errors.As to inspect the raw body and apply
+// their own formatting.
+type UnrecognizedAPIError struct {
+	StatusCode int
+	Body       []byte
+}
+
+func (e *UnrecognizedAPIError) Error() string {
+	return fmt.Sprintf("request failed with status %d: %s", e.StatusCode, string(e.Body))
+}
+
 // Client is responsible for interacting with the Prolific API.
 type Client struct {
 	Client  *http.Client
@@ -207,8 +219,8 @@ func (c *Client) Execute(method, url string, body any, response any) (*http.Resp
 			return nil, fmt.Errorf("request failed: %s - %s", simpleError.Message, simpleError.Detail)
 		}
 
-		// If both fail, return generic error with status code
-		return nil, fmt.Errorf("request failed with status %d: %s", httpResponse.StatusCode, string(responseBody))
+		// If both fail, return a typed error so callers can inspect the raw body
+		return nil, &UnrecognizedAPIError{StatusCode: httpResponse.StatusCode, Body: responseBody}
 	}
 
 	if response != nil {
@@ -1255,20 +1267,56 @@ func (c *Client) UpdateAITaskBuilderBatch(params UpdateBatchParams) (*UpdateAITa
 		Name:        params.Name,
 		DatasetID:   params.DatasetID,
 		TaskDetails: params.TaskDetails,
+		BatchItems:  params.BatchItems,
 	}
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s", params.BatchID)
 	httpResponse, err := c.Execute(http.MethodPatch, url, payload, &response)
 	if err != nil {
+		var apiErr *UnrecognizedAPIError
+		if errors.As(err, &apiErr) {
+			return nil, fmt.Errorf("unable to update batch: %s", formatBatchErrorBody(apiErr.Body))
+		}
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
 
 	if httpResponse.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unable to update batch: %v", string(body))
+		return nil, fmt.Errorf("unable to update batch: %s", formatBatchErrorBody(body))
 	}
 
 	return &response, nil
+}
+
+// formatBatchErrorBody returns a human-readable error string from a batch API error response body.
+// For INVALID_BATCH_ITEMS errors it formats each validation issue; otherwise it returns the raw body.
+func formatBatchErrorBody(body []byte) string {
+	var apiErr struct {
+		Type   string `json:"type"`
+		Issues []struct {
+			Page    int    `json:"page"`
+			Row     int    `json:"row"`
+			Column  int    `json:"column"`
+			Item    int    `json:"item"`
+			Type    string `json:"type"`
+			Field   string `json:"field,omitempty"`
+			Message string `json:"message"`
+		} `json:"issues"`
+	}
+	if err := json.Unmarshal(body, &apiErr); err != nil || apiErr.Type != "INVALID_BATCH_ITEMS" {
+		return string(body)
+	}
+
+	msg := "batch_items validation failed:"
+	for _, issue := range apiErr.Issues {
+		location := fmt.Sprintf("Page %d, Row %d, Column %d, Item %d (%s)",
+			issue.Page+1, issue.Row+1, issue.Column+1, issue.Item+1, issue.Type)
+		if issue.Field != "" {
+			location = fmt.Sprintf("%s %q", location, issue.Field)
+		}
+		msg += fmt.Sprintf("\n  %s: %s", location, issue.Message)
+	}
+	return msg
 }
 
 // GetAITaskBuilderBatch will return details of an AI Task Builder batch.
@@ -1408,17 +1456,22 @@ func (c *Client) CreateAITaskBuilderBatch(params CreateBatchParams) (*CreateAITa
 			TaskIntroduction: params.TaskIntroduction,
 			TaskSteps:        params.TaskSteps,
 		},
+		BatchItems: params.BatchItems,
 	}
 
 	url := "/api/v1/data-collection/batches"
 	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
 	if err != nil {
+		var apiErr *UnrecognizedAPIError
+		if errors.As(err, &apiErr) {
+			return nil, fmt.Errorf("unable to create batch: %s", formatBatchErrorBody(apiErr.Body))
+		}
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
 
 	if httpResponse.StatusCode != http.StatusCreated {
 		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unable to create batch: %v", string(body))
+		return nil, fmt.Errorf("unable to create batch: %s", formatBatchErrorBody(body))
 	}
 
 	return &response, nil
