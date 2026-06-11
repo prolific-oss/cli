@@ -1,5 +1,7 @@
 package client
 
+import "encoding/json"
+
 // SendMessagePayload represents the JSON payload for sending a message.
 type SendMessagePayload struct {
 	RecipientID string `json:"recipient_id"`
@@ -83,12 +85,13 @@ type CreateAITaskBuilderDatasetPayload struct {
 
 // CreateBatchParams represents the parameters for creating an AI Task Builder batch.
 type CreateBatchParams struct {
-	Name             string `json:"name"`
-	WorkspaceID      string `json:"workspace_id"`
-	DatasetID        string `json:"dataset_id"`
-	TaskName         string `json:"task_name"`
-	TaskIntroduction string `json:"task_introduction"`
-	TaskSteps        string `json:"task_steps"`
+	Name             string          `json:"name"`
+	WorkspaceID      string          `json:"workspace_id"`
+	DatasetID        string          `json:"dataset_id"`
+	TaskName         string          `json:"task_name"`
+	TaskIntroduction string          `json:"task_introduction"`
+	TaskSteps        string          `json:"task_steps"`
+	BatchItems       json.RawMessage // nil means omit from payload
 }
 
 // UpdateBatchParams represents the parameters for updating an AI Task Builder batch.
@@ -96,14 +99,16 @@ type UpdateBatchParams struct {
 	BatchID     string
 	Name        string
 	DatasetID   string
-	TaskDetails *TaskDetails // nil means task details will not be updated
+	TaskDetails *TaskDetails    // nil means task details will not be updated
+	BatchItems  json.RawMessage // nil = omit, json.RawMessage("null") = clear, JSON array = set
 }
 
 // UpdateAITaskBuilderBatchPayload represents the JSON payload for updating an AI Task Builder batch.
 type UpdateAITaskBuilderBatchPayload struct {
-	Name        string       `json:"name,omitempty"`
-	DatasetID   string       `json:"dataset_id,omitempty"`
-	TaskDetails *TaskDetails `json:"task_details,omitempty"`
+	Name        string          `json:"name,omitempty"`
+	DatasetID   string          `json:"dataset_id,omitempty"`
+	TaskDetails *TaskDetails    `json:"task_details,omitempty"`
+	BatchItems  json.RawMessage `json:"batch_items,omitempty"`
 }
 
 // TaskDetails represents the task configuration details for batch creation
@@ -115,10 +120,11 @@ type TaskDetails struct {
 
 // CreateAITaskBuilderBatchPayload represents the JSON payload for creating an AI Task Builder batch
 type CreateAITaskBuilderBatchPayload struct {
-	Name        string      `json:"name"`
-	WorkspaceID string      `json:"workspace_id"`
-	DatasetID   string      `json:"dataset_id"`
-	TaskDetails TaskDetails `json:"task_details"`
+	Name        string          `json:"name"`
+	WorkspaceID string          `json:"workspace_id"`
+	DatasetID   string          `json:"dataset_id"`
+	TaskDetails TaskDetails     `json:"task_details"`
+	BatchItems  json.RawMessage `json:"batch_items,omitempty"`
 }
 
 // InstructionType represents the type of instruction.

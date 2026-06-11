@@ -17,6 +17,8 @@ type BatchCreateOptions struct {
 	TaskName         string
 	TaskIntroduction string
 	TaskSteps        string
+	BatchItemsFile   string
+	BatchItemsJSON   string
 }
 
 func NewBatchCreateCommand(client client.API, w io.Writer) *cobra.Command {
@@ -29,10 +31,20 @@ func NewBatchCreateCommand(client client.API, w io.Writer) *cobra.Command {
 
 This command creates a batch in a workspace and links it to a dataset. The dataset must
 be in READY status before you can create a batch with it. You must provide the batch name,
-workspace ID, dataset ID, and task details (name, introduction, and steps).`,
+workspace ID, dataset ID, and task details (name, introduction, and steps).
+
+Optionally, supply batch_items to define the participant task layout as a structured
+JSON schema (pages → rows → columns → items). Provide batch_items from a file with
+-f or as an inline JSON string with -j. See docs/examples/batch-items.json for an example.`,
 		Example: `
 Create a batch:
 $ prolific aitaskbuilder batch create -n "My Data Collection Batch" -w 6278acb09062db3b35bcbeb0 -d 1234acb09999db4b99bcded1 --task-name "Sample Task" --task-introduction "This is a sample task for testing" --task-steps "1. Review the data\n2. Provide your response"
+
+Create a batch with batch_items from a file:
+$ prolific aitaskbuilder batch create -n "My Batch" -w <workspace_id> -d <dataset_id> --task-name "Task" --task-introduction "Intro" --task-steps "Steps" -f batch-items.json
+
+Create a batch with inline batch_items JSON:
+$ prolific aitaskbuilder batch create -n "My Batch" -w <workspace_id> -d <dataset_id> --task-name "Task" --task-introduction "Intro" --task-steps "Steps" -j '[{"rows":[{"columns":[{"items":[{"type":"free_text","description":"Describe your observations."}]}]}]}]'
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
@@ -53,6 +65,8 @@ $ prolific aitaskbuilder batch create -n "My Data Collection Batch" -w 6278acb09
 	flags.StringVar(&opts.TaskName, "task-name", "", "Task name (required) - The name of the task.")
 	flags.StringVar(&opts.TaskIntroduction, "task-introduction", "", "Task introduction (required) - The introduction text for the task.")
 	flags.StringVar(&opts.TaskSteps, "task-steps", "", "Task steps (required) - The steps for completing the task.")
+	flags.StringVarP(&opts.BatchItemsFile, "batch-items-file", "f", "", "Path to JSON file containing batch_items layout.")
+	flags.StringVarP(&opts.BatchItemsJSON, "batch-items-json", "j", "", "Inline JSON string containing batch_items layout.")
 
 	_ = cmd.MarkFlagRequired("name")
 	_ = cmd.MarkFlagRequired("workspace-id")
@@ -85,6 +99,11 @@ func createAITaskBuilderBatch(c client.API, opts BatchCreateOptions, w io.Writer
 		return errors.New(ErrTaskStepsRequired)
 	}
 
+	batchItems, err := parseBatchItemsInput(opts.BatchItemsFile, opts.BatchItemsJSON)
+	if err != nil {
+		return err
+	}
+
 	params := client.CreateBatchParams{
 		Name:             opts.Name,
 		WorkspaceID:      opts.WorkspaceID,
@@ -92,6 +111,7 @@ func createAITaskBuilderBatch(c client.API, opts BatchCreateOptions, w io.Writer
 		TaskName:         opts.TaskName,
 		TaskIntroduction: opts.TaskIntroduction,
 		TaskSteps:        opts.TaskSteps,
+		BatchItems:       batchItems,
 	}
 
 	response, err := c.CreateAITaskBuilderBatch(params)

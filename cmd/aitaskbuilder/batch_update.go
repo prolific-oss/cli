@@ -1,9 +1,11 @@
 package aitaskbuilder
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"os"
 
 	"github.com/prolific-oss/cli/client"
 	"github.com/spf13/cobra"
@@ -20,6 +22,9 @@ type BatchUpdateOptions struct {
 	TaskNameChanged         bool
 	TaskIntroductionChanged bool
 	TaskStepsChanged        bool
+	BatchItemsFile          string
+	BatchItemsJSON          string
+	ClearBatchItems         bool
 }
 
 func NewBatchUpdateCommand(client client.API, w io.Writer) *cobra.Command {
@@ -32,7 +37,11 @@ func NewBatchUpdateCommand(client client.API, w io.Writer) *cobra.Command {
 
 This command updates a batch's name, dataset, and/or task details. At least one
 field must be provided. Task detail flags can be provided individually — any
-omitted task detail fields will be preserved from the existing batch.`,
+omitted task detail fields will be preserved from the existing batch.
+
+batch_items can be set from a file (-f) or inline JSON (-j), or cleared with
+--clear-batch-items. Clearing batch_items also deletes all associated instructions
+and content blocks for the batch.`,
 		Example: `
 Update a batch name:
 $ prolific aitaskbuilder batch update -b 497f6eca-6276-4993-bfeb-53cbbbba6f08 -n "Updated Batch Name"
@@ -45,6 +54,12 @@ $ prolific aitaskbuilder batch update -b 497f6eca-6276-4993-bfeb-53cbbbba6f08 --
 
 Update name and dataset:
 $ prolific aitaskbuilder batch update -b 497f6eca-6276-4993-bfeb-53cbbbba6f08 -n "Updated Name" -d 1234acb09999db4b99bcded1
+
+Set batch_items from a file:
+$ prolific aitaskbuilder batch update -b 497f6eca-6276-4993-bfeb-53cbbbba6f08 -f batch-items.json
+
+Clear batch_items:
+$ prolific aitaskbuilder batch update -b 497f6eca-6276-4993-bfeb-53cbbbba6f08 --clear-batch-items
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
@@ -68,6 +83,9 @@ $ prolific aitaskbuilder batch update -b 497f6eca-6276-4993-bfeb-53cbbbba6f08 -n
 	flags.StringVar(&opts.TaskName, "task-name", "", "Task name - The new name of the task.")
 	flags.StringVar(&opts.TaskIntroduction, "task-introduction", "", "Task introduction - The new introduction text for the task.")
 	flags.StringVar(&opts.TaskSteps, "task-steps", "", "Task steps - The new steps for completing the task.")
+	flags.StringVarP(&opts.BatchItemsFile, "batch-items-file", "f", "", "Path to JSON file containing batch_items layout.")
+	flags.StringVarP(&opts.BatchItemsJSON, "batch-items-json", "j", "", "Inline JSON string containing batch_items layout.")
+	flags.BoolVar(&opts.ClearBatchItems, "clear-batch-items", false, "Set batch_items to null, removing the configured task layout and deleting all associated instructions and content blocks.")
 
 	_ = cmd.MarkFlagRequired("batch-id")
 
@@ -82,15 +100,32 @@ func updateAITaskBuilderBatch(c client.API, opts BatchUpdateOptions, w io.Writer
 
 	anyTaskDetailChanged := opts.TaskNameChanged || opts.TaskIntroductionChanged || opts.TaskStepsChanged
 	allTaskDetailsChanged := opts.TaskNameChanged && opts.TaskIntroductionChanged && opts.TaskStepsChanged
+	anyBatchItemsChanged := opts.BatchItemsFile != "" || opts.BatchItemsJSON != "" || opts.ClearBatchItems
 
-	if opts.Name == "" && opts.DatasetID == "" && !anyTaskDetailChanged {
+	if opts.Name == "" && opts.DatasetID == "" && !anyTaskDetailChanged && !anyBatchItemsChanged {
 		return errors.New(ErrAtLeastOneUpdateFieldRequired)
 	}
 
+	var batchItems json.RawMessage
+	if opts.ClearBatchItems {
+		if opts.BatchItemsFile != "" || opts.BatchItemsJSON != "" {
+			return errors.New(ErrBatchItemsMutuallyExclusive)
+		}
+		fmt.Fprintln(os.Stderr, "Warning: clearing batch_items will delete all associated instructions and content blocks.")
+		batchItems = json.RawMessage("null")
+	} else if anyBatchItemsChanged {
+		var err error
+		batchItems, err = parseBatchItemsInput(opts.BatchItemsFile, opts.BatchItemsJSON)
+		if err != nil {
+			return err
+		}
+	}
+
 	params := client.UpdateBatchParams{
-		BatchID:   opts.BatchID,
-		Name:      opts.Name,
-		DatasetID: opts.DatasetID,
+		BatchID:    opts.BatchID,
+		Name:       opts.Name,
+		DatasetID:  opts.DatasetID,
+		BatchItems: batchItems,
 	}
 
 	if anyTaskDetailChanged {

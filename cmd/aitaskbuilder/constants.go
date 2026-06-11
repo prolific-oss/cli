@@ -6,6 +6,10 @@ const (
 	ErrBatchIDRequired               = "batch ID is required"
 	ErrBatchNotFound                 = "batch not found"
 	ErrBothInstructionInputsProvided = "cannot specify both instructions file (-f) and JSON string (-j)"
+	ErrBothBatchItemsInputsProvided  = "cannot specify both batch-items file (-f) and batch-items JSON (-j)"
+	ErrBatchItemsMutuallyExclusive   = "cannot combine --clear-batch-items with batch-items file (-f) or batch-items JSON (-j)"
+	ErrBatchItemsMustBeArray         = "batch_items must be a JSON array"
+	ErrBatchItemsMustBeNonEmpty      = "batch_items must contain at least one page"
 	ErrDatasetIDRequired             = "dataset ID is required"
 	ErrDatasetNotFound               = "dataset not found"
 	ErrInstructionInputRequired      = "either instructions file (-f) or JSON string (-j) must be provided"
@@ -15,5 +19,5 @@ const (
 	ErrTaskStepsRequired             = "task steps is required"
 	ErrTasksPerGroupMinimum          = "tasks per group must be at least 1"
 	ErrWorkspaceIDRequired           = "workspace ID is required"
-	ErrAtLeastOneUpdateFieldRequired = "at least one of --name, --dataset-id, or task detail flags must be provided"
+	ErrAtLeastOneUpdateFieldRequired = "at least one of --name, --dataset-id, task detail flags, or batch-items flags must be provided"
 )

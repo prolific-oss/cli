@@ -3,9 +3,11 @@ package aitaskbuilder_test
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -202,6 +204,145 @@ func TestNewBatchCreateCommandMissingRequiredFlags(t *testing.T) {
 
 			if err.Error() != tc.expectedErr {
 				t.Fatalf("expected error: %s; got %s", tc.expectedErr, err.Error())
+			}
+		})
+	}
+}
+
+const batchItemsJSON = `[{"rows":[{"columns":[{"items":[{"type":"free_text","description":"Describe your observations."}]}]}]}]`
+
+func baseCreateArgs() []string {
+	return []string{
+		"--name", "Test Batch",
+		"--workspace-id", "6278acb09062db3b35bcbeb0",
+		"--dataset-id", "1234acb09999db4b99bcded1",
+		"--task-name", "Task",
+		"--task-introduction", "Intro",
+		"--task-steps", "Steps",
+	}
+}
+
+func TestNewBatchCreateCommandWithBatchItemsJSON(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	response := &client.CreateAITaskBuilderBatchResponse{
+		ID:          "497f6eca-6276-4993-bfeb-53cbbbba6f08",
+		CreatedAt:   "2019-08-24T14:15:22Z",
+		CreatedBy:   "user-1",
+		Name:        "Test Batch",
+		Status:      "UNINITIALISED",
+		WorkspaceID: "6278acb09062db3b35bcbeb0",
+	}
+
+	c.EXPECT().CreateAITaskBuilderBatch(client.CreateBatchParams{
+		Name:             "Test Batch",
+		WorkspaceID:      "6278acb09062db3b35bcbeb0",
+		DatasetID:        "1234acb09999db4b99bcded1",
+		TaskName:         "Task",
+		TaskIntroduction: "Intro",
+		TaskSteps:        "Steps",
+		BatchItems:       json.RawMessage(batchItemsJSON),
+	}).Return(response, nil)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := aitaskbuilder.NewBatchCreateCommand(c, writer)
+	cmd.SetArgs(append(baseCreateArgs(), "--batch-items-json", batchItemsJSON))
+
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("expected no error; got %v", err)
+	}
+}
+
+func TestNewBatchCreateCommandWithBatchItemsFile(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	tmpFile := filepath.Join(t.TempDir(), "batch-items.json")
+	if err := os.WriteFile(tmpFile, []byte(batchItemsJSON), 0600); err != nil {
+		t.Fatal(err)
+	}
+
+	response := &client.CreateAITaskBuilderBatchResponse{
+		ID:          "497f6eca-6276-4993-bfeb-53cbbbba6f08",
+		CreatedAt:   "2019-08-24T14:15:22Z",
+		CreatedBy:   "user-1",
+		Name:        "Test Batch",
+		Status:      "UNINITIALISED",
+		WorkspaceID: "6278acb09062db3b35bcbeb0",
+	}
+
+	c.EXPECT().CreateAITaskBuilderBatch(client.CreateBatchParams{
+		Name:             "Test Batch",
+		WorkspaceID:      "6278acb09062db3b35bcbeb0",
+		DatasetID:        "1234acb09999db4b99bcded1",
+		TaskName:         "Task",
+		TaskIntroduction: "Intro",
+		TaskSteps:        "Steps",
+		BatchItems:       json.RawMessage(batchItemsJSON),
+	}).Return(response, nil)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := aitaskbuilder.NewBatchCreateCommand(c, writer)
+	cmd.SetArgs(append(baseCreateArgs(), "--batch-items-file", tmpFile))
+
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("expected no error; got %v", err)
+	}
+}
+
+func TestNewBatchCreateCommandBatchItemsValidationErrors(t *testing.T) {
+	testCases := []struct {
+		name        string
+		extraArgs   []string
+		expectedErr string
+	}{
+		{
+			name:        "both file and json flags",
+			extraArgs:   []string{"-f", "some-file.json", "-j", batchItemsJSON},
+			expectedErr: "error: " + aitaskbuilder.ErrBothBatchItemsInputsProvided,
+		},
+		{
+			name:        "invalid JSON",
+			extraArgs:   []string{"-j", "not-json"},
+			expectedErr: "error: " + aitaskbuilder.ErrBatchItemsMustBeArray,
+		},
+		{
+			name:        "non-array JSON",
+			extraArgs:   []string{"-j", `{"rows":[]}`},
+			expectedErr: "error: " + aitaskbuilder.ErrBatchItemsMustBeArray,
+		},
+		{
+			name:        "empty array",
+			extraArgs:   []string{"-j", "[]"},
+			expectedErr: "error: " + aitaskbuilder.ErrBatchItemsMustBeNonEmpty,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			c := mock_client.NewMockAPI(ctrl)
+
+			var b bytes.Buffer
+			writer := bufio.NewWriter(&b)
+
+			cmd := aitaskbuilder.NewBatchCreateCommand(c, writer)
+			cmd.SetArgs(append(baseCreateArgs(), tc.extraArgs...))
+
+			err := cmd.Execute()
+			if err == nil {
+				t.Fatal("expected error; got nil")
+			}
+			if err.Error() != tc.expectedErr {
+				t.Fatalf("expected error: %q; got %q", tc.expectedErr, err.Error())
 			}
 		})
 	}
