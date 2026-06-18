@@ -4,6 +4,16 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+## 1.0.2
+
+### AI Task Builder
+
+- Add batch_items support to batch create and update commands
+
+### Core
+
+- Add instructions endpoint deprecation message (#438)
+
 ## 1.0.1
 
 ### Workspaces
