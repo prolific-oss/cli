@@ -198,7 +198,9 @@ var operations = []operation{
 		c.CreateAITaskBuilderDataset("ws-id", client.CreateAITaskBuilderDatasetPayload{Name: "t"})
 	}},
 	{operationID: "get-dataset-upload-url", call: func(c *client.Client) { c.GetAITaskBuilderDatasetUploadURL("ds-id", "data") }},
+	{operationID: "get-task-builder-dataset", skip: "OUTOFSCOPE: no CLI command for retrieving a specific dataset by ID"},
 	{operationID: "get-task-builder-dataset-status", call: func(c *client.Client) { c.GetAITaskBuilderDatasetStatus("ds-id") }},
+	{operationID: "get-dataset-import-status", skip: "OUTOFSCOPE: no CLI command for dataset import status"},
 
 	// AI Task Builder — Instructions
 	{operationID: "get-task-builder-instructions", skip: "OUTOFSCOPE: no CLI command for getting task builder instructions"},
