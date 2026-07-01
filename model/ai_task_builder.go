@@ -172,10 +172,41 @@ type CreateAITaskBuilderCollection struct {
 	CollectionItems []CollectionPage `json:"collection_items" mapstructure:"collection_items"`
 }
 
-// CollectionPage represents a page in a collection containing instructions.
+// CollectionPage represents a page in a collection. In the V3 schema a page
+// nests its items as rows -> columns -> items. For backward compatibility the
+// CLI also accepts the deprecated v2 page_items shape in template files and
+// converts it to a single row/column on the wire (see NormaliseToV3).
 type CollectionPage struct {
-	Order     int                     `json:"order" mapstructure:"order"`
-	PageItems []CollectionInstruction `json:"page_items" mapstructure:"page_items"`
+	Order int             `json:"order" mapstructure:"order"`
+	Rows  []CollectionRow `json:"rows" mapstructure:"rows"`
+
+	// PageItems is the deprecated v2 input shape. It is parsed from template
+	// files for backward compatibility but never serialised to the API; it is
+	// converted into Rows by NormaliseToV3.
+	PageItems []CollectionPageItem `json:"-" mapstructure:"page_items"`
+}
+
+// CollectionRow represents a row within a collection page (V3 schema).
+type CollectionRow struct {
+	Columns []CollectionColumn `json:"columns" mapstructure:"columns"`
+}
+
+// CollectionColumn represents a column within a row, holding the page's items (V3 schema).
+type CollectionColumn struct {
+	Items []CollectionPageItem `json:"items" mapstructure:"items"`
+}
+
+// NormaliseToV3 converts any deprecated v2 page_items into the V3
+// rows -> columns -> items structure so the payload always serialises as V3.
+// Pages already expressed as rows are left untouched.
+func (c *CreateAITaskBuilderCollection) NormaliseToV3() {
+	for i := range c.CollectionItems {
+		page := &c.CollectionItems[i]
+		if len(page.Rows) == 0 && len(page.PageItems) > 0 {
+			page.Rows = []CollectionRow{{Columns: []CollectionColumn{{Items: page.PageItems}}}}
+		}
+		page.PageItems = nil
+	}
 }
 
 // CollectionPageItem represents an item within a collection page.

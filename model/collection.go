@@ -127,11 +127,29 @@ type PageInstruction struct {
 	Caption string `json:"caption,omitempty" yaml:"caption,omitempty" mapstructure:"caption"`
 }
 
-// Page represents a single page within a collection.
+// Page represents a single page within a collection. In the V3 schema a page
+// nests its items as rows -> columns -> items. The deprecated v2 page_items
+// shape is still accepted from template files and converted to a single
+// row/column on the wire (see UpdateCollection.NormaliseToV3).
 type Page struct {
 	BaseEntity `yaml:",inline" mapstructure:",squash"`
-	Order      int               `json:"order" yaml:"order" mapstructure:"order"`
-	PageItems  []PageInstruction `json:"page_items" yaml:"page_items" mapstructure:"page_items"`
+	Order      int   `json:"order" yaml:"order" mapstructure:"order"`
+	Rows       []Row `json:"rows" yaml:"rows" mapstructure:"rows"`
+
+	// PageItems is the deprecated v2 input shape. It is parsed from template
+	// files for backward compatibility but never serialised to the API; it is
+	// converted into Rows by NormaliseToV3.
+	PageItems []PageInstruction `json:"-" yaml:"page_items,omitempty" mapstructure:"page_items"`
+}
+
+// Row represents a row within a collection page (V3 schema).
+type Row struct {
+	Columns []Column `json:"columns" yaml:"columns" mapstructure:"columns"`
+}
+
+// Column represents a column within a row, holding the page's items (V3 schema).
+type Column struct {
+	Items []PageInstruction `json:"items" yaml:"items" mapstructure:"items"`
 }
 
 // UpdateCollection represents the payload for updating a collection.
@@ -142,4 +160,17 @@ type UpdateCollection struct {
 	WorkspaceID     string       `json:"workspace_id,omitempty" yaml:"workspace_id,omitempty" mapstructure:"workspace_id"`
 	TaskDetails     *TaskDetails `json:"task_details,omitempty" yaml:"task_details,omitempty" mapstructure:"task_details"`
 	CollectionItems []Page       `json:"collection_items" yaml:"collection_items" mapstructure:"collection_items"`
+}
+
+// NormaliseToV3 converts any deprecated v2 page_items into the V3
+// rows -> columns -> items structure so the payload always serialises as V3.
+// Pages already expressed as rows are left untouched.
+func (u *UpdateCollection) NormaliseToV3() {
+	for i := range u.CollectionItems {
+		page := &u.CollectionItems[i]
+		if len(page.Rows) == 0 && len(page.PageItems) > 0 {
+			page.Rows = []Row{{Columns: []Column{{Items: page.PageItems}}}}
+		}
+		page.PageItems = nil
+	}
 }

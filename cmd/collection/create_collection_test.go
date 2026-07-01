@@ -285,12 +285,13 @@ collection_items:
 
 	// Verify first page - content blocks
 	firstPage := capturedPayload.CollectionItems[0]
-	if len(firstPage.PageItems) != 2 {
-		t.Fatalf("expected 2 page items in first page; got %d", len(firstPage.PageItems))
+	firstPageItems := firstPage.Rows[0].Columns[0].Items
+	if len(firstPageItems) != 2 {
+		t.Fatalf("expected 2 page items in first page; got %d", len(firstPageItems))
 	}
 
 	// Verify rich_text content block
-	richTextItem := firstPage.PageItems[0]
+	richTextItem := firstPageItems[0]
 	if richTextItem.Type != "rich_text" {
 		t.Fatalf("expected type 'rich_text'; got '%s'", richTextItem.Type)
 	}
@@ -299,7 +300,7 @@ collection_items:
 	}
 
 	// Verify image content block
-	imageItem := firstPage.PageItems[1]
+	imageItem := firstPageItems[1]
 	if imageItem.Type != "image" {
 		t.Fatalf("expected type 'image'; got '%s'", imageItem.Type)
 	}
@@ -315,11 +316,12 @@ collection_items:
 
 	// Verify second page - instructions with disable_dropdown
 	secondPage := capturedPayload.CollectionItems[1]
-	if len(secondPage.PageItems) != 2 {
-		t.Fatalf("expected 2 page items in second page; got %d", len(secondPage.PageItems))
+	secondPageItems := secondPage.Rows[0].Columns[0].Items
+	if len(secondPageItems) != 2 {
+		t.Fatalf("expected 2 page items in second page; got %d", len(secondPageItems))
 	}
 
-	multipleChoiceItem := secondPage.PageItems[1]
+	multipleChoiceItem := secondPageItems[1]
 	if multipleChoiceItem.Type != "multiple_choice" {
 		t.Fatalf("expected type 'multiple_choice'; got '%s'", multipleChoiceItem.Type)
 	}
@@ -611,11 +613,12 @@ func TestNewCreateCollectionCommandWithContentBlocks(t *testing.T) {
 	}
 
 	firstPage := capturedPayload.CollectionItems[0]
-	if len(firstPage.PageItems) != 2 {
-		t.Fatalf("expected 2 page items in first page; got %d", len(firstPage.PageItems))
+	firstPageItems := firstPage.Rows[0].Columns[0].Items
+	if len(firstPageItems) != 2 {
+		t.Fatalf("expected 2 page items in first page; got %d", len(firstPageItems))
 	}
 
-	richTextItem := firstPage.PageItems[0]
+	richTextItem := firstPageItems[0]
 	if richTextItem.Type != "rich_text" {
 		t.Fatalf("expected type 'rich_text'; got '%s'", richTextItem.Type)
 	}
@@ -623,7 +626,7 @@ func TestNewCreateCollectionCommandWithContentBlocks(t *testing.T) {
 		t.Fatalf("expected rich_text content to be set; got '%s'", richTextItem.Content)
 	}
 
-	imageItem := firstPage.PageItems[1]
+	imageItem := firstPageItems[1]
 	if imageItem.Type != "image" {
 		t.Fatalf("expected type 'image'; got '%s'", imageItem.Type)
 	}
@@ -694,12 +697,20 @@ func TestNewCreateCollectionCommandPassesThroughContentFormatJSON(t *testing.T) 
 		CollectionItems: []model.CollectionPage{
 			{
 				Order: 0,
-				PageItems: []model.CollectionPageItem{
+				Rows: []model.CollectionRow{
 					{
-						Order:         0,
-						Type:          string(model.ContentBlockTypeRichText),
-						Content:       "# Welcome",
-						ContentFormat: model.ContentFormatMarkdown,
+						Columns: []model.CollectionColumn{
+							{
+								Items: []model.CollectionPageItem{
+									{
+										Order:         0,
+										Type:          string(model.ContentBlockTypeRichText),
+										Content:       "# Welcome",
+										ContentFormat: model.ContentFormatMarkdown,
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -765,12 +776,20 @@ collection_items:
 		CollectionItems: []model.CollectionPage{
 			{
 				Order: 0,
-				PageItems: []model.CollectionPageItem{
+				Rows: []model.CollectionRow{
 					{
-						Order:         0,
-						Type:          string(model.ContentBlockTypeRichText),
-						Content:       "# Welcome",
-						ContentFormat: model.ContentFormatMarkdown,
+						Columns: []model.CollectionColumn{
+							{
+								Items: []model.CollectionPageItem{
+									{
+										Order:         0,
+										Type:          string(model.ContentBlockTypeRichText),
+										Content:       "# Welcome",
+										ContentFormat: model.ContentFormatMarkdown,
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -1083,5 +1102,82 @@ func TestNewCreateCollectionCommandWithExclusiveOptionMultiSelect(t *testing.T) 
 	writer.Flush()
 	if !strings.Contains(b.String(), "Collection created successfully!") {
 		t.Fatalf("expected success message; got %s", b.String())
+	}
+}
+
+// TestNewCreateCollectionCommandAcceptsV3RowsColumnsItems verifies that a
+// template using the native V3 rows/columns/items shape is accepted and sent
+// unchanged.
+func TestNewCreateCollectionCommandAcceptsV3RowsColumnsItems(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	tmpDir := t.TempDir()
+	templateFile := filepath.Join(tmpDir, "collection.json")
+	templateContent := fmt.Sprintf(`{
+  "workspace_id": "%s",
+  "name": "v3-native-collection",
+  "task_details": %s,
+  "collection_items": [
+    {
+      "order": 0,
+      "rows": [
+        {
+          "columns": [
+            {
+              "items": [
+                {
+                  "order": 0,
+                  "type": "free_text",
+                  "description": "How was your experience completing this task?"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}`, testWorkspaceID, taskDetails)
+
+	err := os.WriteFile(templateFile, []byte(templateContent), 0600)
+	if err != nil {
+		t.Fatalf("failed to create temporary file: %s", err.Error())
+	}
+
+	var capturedPayload model.CreateAITaskBuilderCollection
+	c.EXPECT().
+		CreateAITaskBuilderCollection(gomock.Any()).
+		DoAndReturn(func(payload model.CreateAITaskBuilderCollection) (*client.CreateAITaskBuilderCollectionResponse, error) {
+			capturedPayload = payload
+			return &client.CreateAITaskBuilderCollectionResponse{
+				ID:          "collection-v3-123",
+				Name:        "v3-native-collection",
+				WorkspaceID: testWorkspaceID,
+			}, nil
+		})
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := collection.NewCreateCollectionCommand(c, writer)
+	cmd.SetArgs([]string{"-t", templateFile})
+
+	err = cmd.Execute()
+	if err != nil {
+		t.Fatalf("expected no error; got %s", err.Error())
+	}
+
+	if len(capturedPayload.CollectionItems) != 1 {
+		t.Fatalf("expected 1 collection item; got %d", len(capturedPayload.CollectionItems))
+	}
+
+	items := capturedPayload.CollectionItems[0].Rows[0].Columns[0].Items
+	if len(items) != 1 {
+		t.Fatalf("expected 1 item; got %d", len(items))
+	}
+	if items[0].Type != string(model.InstructionTypeFreeText) {
+		t.Fatalf("expected item type 'free_text'; got '%s'", items[0].Type)
 	}
 }

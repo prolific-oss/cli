@@ -15,6 +15,7 @@ import (
 )
 
 const testUpdateCollectionID = "550e8400-e29b-41d4-a716-446655440000"
+const testPageID = "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
 
 func TestNewUpdateCommand(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -37,7 +38,7 @@ func TestNewUpdateCommand(t *testing.T) {
 
 func TestUpdateCollection(t *testing.T) {
 	collectionID := testUpdateCollectionID
-	pageID := "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+	pageID := testPageID
 
 	tests := []struct {
 		name            string
@@ -94,25 +95,41 @@ collection_items:
 					{
 						BaseEntity: model.BaseEntity{ID: pageID},
 						Order:      0,
-						PageItems: []model.PageInstruction{
+						Rows: []model.Row{
 							{
-								Type:        model.InstructionTypeFreeText,
-								Description: "What is your name?",
-								Order:       0,
+								Columns: []model.Column{
+									{
+										Items: []model.PageInstruction{
+											{
+												Type:        model.InstructionTypeFreeText,
+												Description: "What is your name?",
+												Order:       0,
+											},
+										},
+									},
+								},
 							},
 						},
 					},
 					{
 						Order: 1,
-						PageItems: []model.PageInstruction{
+						Rows: []model.Row{
 							{
-								Type:        model.InstructionTypeMultipleChoice,
-								Description: "How satisfied are you?",
-								Order:       0,
-								AnswerLimit: 1,
-								Options: []model.MultipleChoiceOption{
-									{Label: "Very Satisfied", Value: "5"},
-									{Label: "Satisfied", Value: "4"},
+								Columns: []model.Column{
+									{
+										Items: []model.PageInstruction{
+											{
+												Type:        model.InstructionTypeMultipleChoice,
+												Description: "How satisfied are you?",
+												Order:       0,
+												AnswerLimit: 1,
+												Options: []model.MultipleChoiceOption{
+													{Label: "Very Satisfied", Value: "5"},
+													{Label: "Satisfied", Value: "4"},
+												},
+											},
+										},
+									},
 								},
 							},
 						},
@@ -159,11 +176,19 @@ Name: Collection With Pages
 					{
 						BaseEntity: model.BaseEntity{ID: pageID},
 						Order:      0,
-						PageItems: []model.PageInstruction{
+						Rows: []model.Row{
 							{
-								Type:        model.InstructionTypeFreeText,
-								Description: "Enter your feedback",
-								Order:       0,
+								Columns: []model.Column{
+									{
+										Items: []model.PageInstruction{
+											{
+												Type:        model.InstructionTypeFreeText,
+												Description: "Enter your feedback",
+												Order:       0,
+											},
+										},
+									},
+								},
 							},
 						},
 					},
@@ -211,11 +236,19 @@ Name: JSON Updated Collection
 					{
 						BaseEntity: model.BaseEntity{ID: pageID},
 						Order:      0,
-						PageItems: []model.PageInstruction{
+						Rows: []model.Row{
 							{
-								Type:        model.InstructionTypeFreeText,
-								Description: "Enter your feedback",
-								Order:       0,
+								Columns: []model.Column{
+									{
+										Items: []model.PageInstruction{
+											{
+												Type:        model.InstructionTypeFreeText,
+												Description: "Enter your feedback",
+												Order:       0,
+											},
+										},
+									},
+								},
 							},
 						},
 					},
@@ -281,7 +314,7 @@ collection_items:
 			mockReturn:     nil,
 			mockError:      nil,
 			expectedOutput: "",
-			expectedError:  "page at index 0: each page must have at least one item in page_items",
+			expectedError:  "page at index 0: each page must have at least one item",
 			skipMock:       true,
 		},
 		{
@@ -310,7 +343,7 @@ collection_items:
 			mockReturn:     nil,
 			mockError:      nil,
 			expectedOutput: "",
-			expectedError:  "page at index 1: each page must have at least one item in page_items",
+			expectedError:  "page at index 1: each page must have at least one item",
 			skipMock:       true,
 		},
 		{
@@ -341,11 +374,19 @@ collection_items:
 				CollectionItems: []model.Page{
 					{
 						Order: 0,
-						PageItems: []model.PageInstruction{
+						Rows: []model.Row{
 							{
-								Type:        model.InstructionTypeFreeText,
-								Description: "Valid page",
-								Order:       0,
+								Columns: []model.Column{
+									{
+										Items: []model.PageInstruction{
+											{
+												Type:        model.InstructionTypeFreeText,
+												Description: "Valid page",
+												Order:       0,
+											},
+										},
+									},
+								},
 							},
 						},
 					},
@@ -373,11 +414,19 @@ collection_items:
 				CollectionItems: []model.Page{
 					{
 						Order: 0,
-						PageItems: []model.PageInstruction{
+						Rows: []model.Row{
 							{
-								Type:        model.InstructionTypeFreeText,
-								Description: "Valid page",
-								Order:       0,
+								Columns: []model.Column{
+									{
+										Items: []model.PageInstruction{
+											{
+												Type:        model.InstructionTypeFreeText,
+												Description: "Valid page",
+												Order:       0,
+											},
+										},
+									},
+								},
 							},
 						},
 					},
@@ -553,7 +602,7 @@ func TestUpdateCollectionInvalidConfigFile(t *testing.T) {
 
 func TestUpdateCollectionExactPayload(t *testing.T) {
 	collectionID := testUpdateCollectionID
-	pageID := "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+	pageID := testPageID
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -595,21 +644,29 @@ func TestUpdateCollectionExactPayload(t *testing.T) {
 					ID: pageID,
 				},
 				Order: 0,
-				PageItems: []model.PageInstruction{
+				Rows: []model.Row{
 					{
-						Type:                 model.InstructionTypeFreeText,
-						Description:          "Enter your feedback",
-						Order:                0,
-						PlaceholderTextInput: "Type here...",
-					},
-					{
-						Type:        model.InstructionTypeMultipleChoice,
-						Description: "Rate your experience",
-						Order:       1,
-						AnswerLimit: 1,
-						Options: []model.MultipleChoiceOption{
-							{Label: "Good", Value: "good"},
-							{Label: "Bad", Value: "bad"},
+						Columns: []model.Column{
+							{
+								Items: []model.PageInstruction{
+									{
+										Type:                 model.InstructionTypeFreeText,
+										Description:          "Enter your feedback",
+										Order:                0,
+										PlaceholderTextInput: "Type here...",
+									},
+									{
+										Type:        model.InstructionTypeMultipleChoice,
+										Description: "Rate your experience",
+										Order:       1,
+										AnswerLimit: 1,
+										Options: []model.MultipleChoiceOption{
+											{Label: "Good", Value: "good"},
+											{Label: "Bad", Value: "bad"},
+										},
+									},
+								},
+							},
 						},
 					},
 				},
@@ -681,12 +738,20 @@ func TestUpdateCollectionPassesThroughContentFormat(t *testing.T) {
 		CollectionItems: []model.Page{
 			{
 				Order: 0,
-				PageItems: []model.PageInstruction{
+				Rows: []model.Row{
 					{
-						Type:          model.ContentBlockTypeRichText,
-						Content:       "# Welcome",
-						ContentFormat: model.ContentFormatMarkdown,
-						Order:         0,
+						Columns: []model.Column{
+							{
+								Items: []model.PageInstruction{
+									{
+										Type:          model.ContentBlockTypeRichText,
+										Content:       "# Welcome",
+										ContentFormat: model.ContentFormatMarkdown,
+										Order:         0,
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -774,16 +839,24 @@ func TestUpdateCollectionWithExclusiveOptionMultiSelect(t *testing.T) {
 		CollectionItems: []model.Page{
 			{
 				Order: 0,
-				PageItems: []model.PageInstruction{
+				Rows: []model.Row{
 					{
-						Type:        model.InstructionTypeMultipleChoice,
-						Description: "Select all medications you are taking.",
-						Order:       0,
-						AnswerLimit: -1,
-						Options: []model.MultipleChoiceOption{
-							{Label: "Aspirin", Value: "aspirin"},
-							{Label: "Ibuprofen", Value: "ibuprofen"},
-							{Label: "None of the above", Value: "none", Exclusive: true},
+						Columns: []model.Column{
+							{
+								Items: []model.PageInstruction{
+									{
+										Type:        model.InstructionTypeMultipleChoice,
+										Description: "Select all medications you are taking.",
+										Order:       0,
+										AnswerLimit: -1,
+										Options: []model.MultipleChoiceOption{
+											{Label: "Aspirin", Value: "aspirin"},
+											{Label: "Ibuprofen", Value: "ibuprofen"},
+											{Label: "None of the above", Value: "none", Exclusive: true},
+										},
+									},
+								},
+							},
 						},
 					},
 				},
@@ -814,5 +887,100 @@ func TestUpdateCollectionWithExclusiveOptionMultiSelect(t *testing.T) {
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+// TestUpdateCollectionAcceptsV3RowsColumnsItems verifies that a template using
+// the native V3 rows/columns/items shape is accepted and sent unchanged.
+func TestUpdateCollectionAcceptsV3RowsColumnsItems(t *testing.T) {
+	collectionID := testUpdateCollectionID
+	pageID := testPageID
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	configContent := `{
+  "name": "V3 Updated Collection",
+  "collection_items": [
+    {
+      "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+      "order": 0,
+      "rows": [
+        {
+          "columns": [
+            {
+              "items": [
+                {
+                  "type": "free_text",
+                  "description": "Enter your feedback",
+                  "order": 0
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}`
+
+	expectedPayload := model.UpdateCollection{
+		Name: "V3 Updated Collection",
+		CollectionItems: []model.Page{
+			{
+				BaseEntity: model.BaseEntity{ID: pageID},
+				Order:      0,
+				Rows: []model.Row{
+					{
+						Columns: []model.Column{
+							{
+								Items: []model.PageInstruction{
+									{
+										Type:        model.InstructionTypeFreeText,
+										Description: "Enter your feedback",
+										Order:       0,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	c.EXPECT().
+		UpdateCollection(collectionID, gomock.Eq(expectedPayload)).
+		Return(&model.Collection{
+			ID:        collectionID,
+			Name:      "V3 Updated Collection",
+			CreatedAt: time.Now(),
+			CreatedBy: "user123",
+			ItemCount: 1,
+		}, nil).
+		Times(1)
+
+	configFile := createTempConfigFile(t, configContent, ".json")
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := collection.NewUpdateCommand(c, writer)
+	cmd.SetArgs([]string{collectionID, "-t", configFile})
+	err := cmd.Execute()
+	writer.Flush()
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	expectedOutput := `Collection updated successfully
+ID: 550e8400-e29b-41d4-a716-446655440000
+Name: V3 Updated Collection
+`
+	actual := b.String()
+	if actual != expectedOutput {
+		t.Fatalf("expected output:\n'%s'\n\ngot:\n'%s'", expectedOutput, actual)
 	}
 }

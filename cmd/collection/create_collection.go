@@ -33,6 +33,9 @@ To create a collection via the CLI, define your collection as a JSON/YAML file
 $ prolific collection create -t docs/examples/collection.json
 $ prolific collection create -t docs/examples/collection.yaml
 
+Collection items use the rows -> columns -> items structure. The deprecated
+page_items shape is still accepted and converted automatically.
+
 An example of a JSON collection file:
 
 {
@@ -46,27 +49,35 @@ An example of a JSON collection file:
   "collection_items": [
     {
       "order": 0,
-      "page_items": [
+      "rows": [
         {
-          "order": 0,
-          "type": "free_text",
-          "description": "How was your experience completing this task?"
-        },
-        {
-          "order": 1,
-          "type": "multiple_choice",
-          "description": "Which option do you prefer?",
-          "options": [
+          "columns": [
             {
-              "label": "Response 1",
-              "value": "response1"
-            },
-            {
-              "label": "Response 2",
-              "value": "response2"
+              "items": [
+                {
+                  "order": 0,
+                  "type": "free_text",
+                  "description": "How was your experience completing this task?"
+                },
+                {
+                  "order": 1,
+                  "type": "multiple_choice",
+                  "description": "Which option do you prefer?",
+                  "options": [
+                    {
+                      "label": "Response 1",
+                      "value": "response1"
+                    },
+                    {
+                      "label": "Response 2",
+                      "value": "response2"
+                    }
+                  ],
+                  "answer_limit": -1
+                }
+              ]
             }
-          ],
-          "answer_limit": -1
+          ]
         }
       ]
     }
@@ -84,19 +95,21 @@ task_details:
   task_steps: "<ol><li>Example Step 1</li><li>Example Step 2</li></ol>"
 collection_items:
   - order: 0
-    page_items:
-      - order: 0
-        type: free_text
-        description: How was your experience completing this task?
-      - order: 1
-        type: multiple_choice
-        description: Which option do you prefer?
-        options:
-          - label: Response 1
-            value: response1
-          - label: Response 2
-            value: response2
-        answer_limit: -1
+    rows:
+      - columns:
+          - items:
+              - order: 0
+                type: free_text
+                description: How was your experience completing this task?
+              - order: 1
+                type: multiple_choice
+                description: Which option do you prefer?
+                options:
+                  - label: Response 1
+                    value: response1
+                  - label: Response 2
+                    value: response2
+                answer_limit: -1
 ---`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
@@ -176,6 +189,10 @@ func createCollection(c client.API, opts CreateCollectionOptions, w io.Writer) e
 	if err := validatePayload(payload); err != nil {
 		return err
 	}
+
+	// Convert any deprecated v2 page_items input into the V3 rows/columns/items
+	// structure so the payload is always sent as V3.
+	payload.NormaliseToV3()
 
 	collection, err := c.CreateAITaskBuilderCollection(payload)
 	if err != nil {

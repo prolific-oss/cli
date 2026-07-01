@@ -6,44 +6,46 @@ task_details:
   task_steps: "<ol><li>Example Step 1</li><li>Example Step 2</li></ol>"
 collection_items:
   - order: 0
-    page_items:
-      - order: 0
-        type: free_text
-        description: How was your experience completing this task?
-      - order: 1
-        type: multiple_choice
-        description: Which option do you prefer?
-        options:
-          - label: Response 1
-            value: response1
-          - label: Response 2
-            value: response2
-        answer_limit: -1
-      - order: 2
-        type: free_text_with_unit
-        description: What is your current weight?
-        helper_text: Please enter your weight as a number
-        placeholder_text_input: Enter weight
-        unit_options:
-          - label: KG
-            value: kg
-          - label: Pounds
-            value: lbs
-        default_unit: kg
-        unit_position: suffix
-      - order: 3
-        type: rich_text
-        content: |
-          # Welcome
-          Please read the **instructions** carefully before starting.
-        content_format: markdown
-      - order: 4
-        type: file_upload
-        description: Please upload a photo of your receipt.
-        accepted_file_types:
-          - .jpg
-          - .png
-          - .pdf
-        max_file_size_mb: 5.0
-        min_file_count: 1
-        max_file_count: 3
+    rows:
+      - columns:
+          - items:
+              - order: 0
+                type: free_text
+                description: How was your experience completing this task?
+              - order: 1
+                type: multiple_choice
+                description: Which option do you prefer?
+                options:
+                  - label: Response 1
+                    value: response1
+                  - label: Response 2
+                    value: response2
+                answer_limit: -1
+              - order: 2
+                type: free_text_with_unit
+                description: What is your current weight?
+                helper_text: Please enter your weight as a number
+                placeholder_text_input: Enter weight
+                unit_options:
+                  - label: KG
+                    value: kg
+                  - label: Pounds
+                    value: lbs
+                default_unit: kg
+                unit_position: suffix
+              - order: 3
+                type: rich_text
+                content: |
+                  # Welcome
+                  Please read the **instructions** carefully before starting.
+                content_format: markdown
+              - order: 4
+                type: file_upload
+                description: Please upload a photo of your receipt.
+                accepted_file_types:
+                  - .jpg
+                  - .png
+                  - .pdf
+                max_file_size_mb: 5.0
+                min_file_count: 1
+                max_file_count: 3
