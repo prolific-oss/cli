@@ -34,7 +34,10 @@ List all filters in an interactive, searchable interface
 $ prolific filters
 
 List all filters in a non-interactive format for scripting or AI agents
-$ prolific filters -n`,
+$ prolific filters -n
+
+Preview eligible participant count for a filter payload
+$ prolific filters count -t /path/to/filters.json`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 			if nonInteractive {
@@ -52,6 +55,8 @@ $ prolific filters -n`,
 
 	flags := cmd.Flags()
 	flags.BoolVarP(&nonInteractive, "non-interactive", "n", false, "Render the filter details straight to the terminal.")
+
+	cmd.AddCommand(NewCountCommand(client, w))
 
 	return cmd
 }

@@ -1,6 +1,10 @@
 package client
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"github.com/prolific-oss/cli/model"
+)
 
 // SendMessagePayload represents the JSON payload for sending a message.
 type SendMessagePayload struct {
@@ -210,4 +214,11 @@ type UpdateCredentialPoolPayload struct {
 type CreateBonusPaymentsPayload struct {
 	StudyID    string `json:"study_id"`
 	CSVBonuses string `json:"csv_bonuses"`
+}
+
+// EligibilityCountPayload represents the JSON payload for previewing eligible participant counts.
+type EligibilityCountPayload struct {
+	Filters        []model.Filter `json:"filters" mapstructure:"filters"`
+	WorkspaceID    string         `json:"workspace_id,omitempty" mapstructure:"workspace_id"`
+	OrganisationID string         `json:"organisation_id,omitempty" mapstructure:"organisation_id"`
 }

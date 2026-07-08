@@ -600,6 +600,21 @@ func (mr *MockAPIMockRecorder) GetCollections(workspaceID, limit, offset interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCollections", reflect.TypeOf((*MockAPI)(nil).GetCollections), workspaceID, limit, offset)
 }
 
+// GetEligibleCount mocks base method.
+func (m *MockAPI) GetEligibleCount(payload client.EligibilityCountPayload) (*client.EligibilityCountResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetEligibleCount", payload)
+	ret0, _ := ret[0].(*client.EligibilityCountResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetEligibleCount indicates an expected call of GetEligibleCount.
+func (mr *MockAPIMockRecorder) GetEligibleCount(payload interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEligibleCount", reflect.TypeOf((*MockAPI)(nil).GetEligibleCount), payload)
+}
+
 // GetEvents mocks base method.
 func (m *MockAPI) GetEvents(subscriptionID string, limit, offset int) (*client.ListHookEventsResponse, error) {
 	m.ctrl.T.Helper()

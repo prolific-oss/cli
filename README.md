@@ -13,7 +13,7 @@
 
 CLI application for getting information out of [Prolific](https://www.prolific.com) about your research studies.
 
-This CLI is an **experimental, open, proof of concept** project from engineers at Prolific. As such, there *may* be discrepancies with the Prolific API.
+This CLI is an **experimental, open, proof of concept** project from engineers at Prolific. As such, there _may_ be discrepancies with the Prolific API.
 
 ```text
 CLI application for retrieving data from the Prolific Platform
@@ -106,7 +106,7 @@ You can create a Researcher token in your [account](https://app.prolific.com/res
 You can optionally override the URL for the API too. This will be set as default to the Prolific API URL. You can override this if Prolific have granted you access to a different environment.
 
 ```shell
-export PROLIFIC_URL="https://api.prolific.com"
+export PROLIFIC_URL="http://localhost:8888"
 ```
 
 ## Installation
@@ -183,11 +183,11 @@ Or provide arguments directly (ticket, resource, command, command-type):
 
 **Argument order:** `[ticket] [resource] [command] [command-type]`
 
-| Argument | Description | Examples |
-|----------|-------------|----------|
-| `ticket` | Jira ticket number | DCP-2190 |
-| `resource` | Resource name | collection, study, workspace |
-| `command` | Command name | list, get, create, publish |
+| Argument       | Description             | Examples                           |
+| -------------- | ----------------------- | ---------------------------------- |
+| `ticket`       | Jira ticket number      | DCP-2190                           |
+| `resource`     | Resource name           | collection, study, workspace       |
+| `command`      | Command name            | list, get, create, publish         |
 | `command-type` | Command type (optional) | LIST, VIEW, CREATE, UPDATE, ACTION |
 
 If any arguments are omitted, Claude will ask for them interactively.

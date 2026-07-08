@@ -27,6 +27,11 @@ func TestNewListCommand(t *testing.T) {
 	assert.NotNil(t, flag)
 	assert.Equal(t, "n", flag.Shorthand)
 	assert.Equal(t, "false", flag.DefValue)
+
+	countCmd, _, err := cmd.Find([]string{"count"})
+	assert.NoError(t, err)
+	assert.NotNil(t, countCmd)
+	assert.Equal(t, "count", countCmd.Use)
 }
 
 func TestListFiltersNonInteractive(t *testing.T) {

@@ -218,6 +218,11 @@ type CreateFilterSetResponse struct {
 	model.FilterSet
 }
 
+// EligibilityCountResponse is the response for previewing eligible participant counts.
+type EligibilityCountResponse struct {
+	Count int `json:"count"`
+}
+
 // ListMessagesResponse is the response for the list messages endpoint.
 type ListMessagesResponse struct {
 	Results []model.Message `json:"results"`

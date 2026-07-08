@@ -86,6 +86,7 @@ type API interface {
 	CreateTestParticipant(email string) (*CreateTestParticipantResponse, error)
 
 	GetFilters() (*ListFiltersResponse, error)
+	GetEligibleCount(payload EligibilityCountPayload) (*EligibilityCountResponse, error)
 
 	GetFilterSets(workspaceID string, limit, offset int) (*ListFilterSetsResponse, error)
 	GetFilterSet(ID string) (*model.FilterSet, error)
@@ -917,6 +918,19 @@ func (c *Client) GetFilters() (*ListFiltersResponse, error) {
 
 	url := "/api/v1/filters/"
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// GetEligibleCount will return an eligibility count for a set of filters without persisting a filter set.
+func (c *Client) GetEligibleCount(payload EligibilityCountPayload) (*EligibilityCountResponse, error) {
+	var response EligibilityCountResponse
+
+	url := "/api/v1/eligibility-count/"
+	_, err := c.Execute(http.MethodPost, url, payload, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}

@@ -1,0 +1,18 @@
+{
+  "workspace_id": "<your_workspace_id>",
+  "filters": [
+    {
+      "filter_id": "approval_rate",
+      "selected_range": {
+        "lower": 95,
+        "upper": 100
+      }
+    },
+    {
+      "filter_id": "active_in_last_days",
+      "selected_range": {
+        "upper": 30
+      }
+    }
+  ]
+}

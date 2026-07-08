@@ -1,0 +1,9 @@
+{
+  "workspace_id": "<your_workspace_id>",
+  "filters": [
+    {
+      "filter_id": "sex",
+      "selected_values": ["0"]
+    }
+  ]
+}

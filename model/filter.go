@@ -14,6 +14,7 @@ type Filter struct {
 	Choices           map[string]string `json:"choices,omitempty" mapstructure:"choices"`
 	SelectedValues    []string          `json:"selected_values,omitempty" mapstructure:"selected_values"`
 	SelectedRange     *FilterRange      `json:"selected_range,omitempty" mapstructure:"selected_range"`
+	SelectedFilters   []Filter          `json:"selected_filters,omitempty" mapstructure:"selected_filters"`
 	Weightings        map[string]any    `json:"weightings,omitempty" mapstructure:"weightings"`
 }
 

@@ -1,0 +1,42 @@
+{
+  "workspace_id": "<your_workspace_id>",
+  "filters": [
+    {
+      "filter_id": "or",
+      "selected_filters": [
+        {
+          "filter_id": "and",
+          "selected_filters": [
+            {
+              "filter_id": "sex",
+              "selected_values": ["0"]
+            },
+            {
+              "filter_id": "age",
+              "selected_range": {
+                "lower": 30,
+                "upper": 40
+              }
+            }
+          ]
+        },
+        {
+          "filter_id": "and",
+          "selected_filters": [
+            {
+              "filter_id": "sex",
+              "selected_values": ["1"]
+            },
+            {
+              "filter_id": "age",
+              "selected_range": {
+                "lower": 20,
+                "upper": 30
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
