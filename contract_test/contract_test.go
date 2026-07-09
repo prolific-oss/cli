@@ -340,6 +340,7 @@ var operations = []operation{
 
 	// Users
 	{operationID: "get-user", call: func(c *client.Client) { c.GetMe() }},
+	{operationID: "get-user-identity", skip: "OUTOFSCOPE: no CLI command for retrieving user identity"},
 	{operationID: "create-test-participant-for-researcher", call: func(c *client.Client) {
 		c.CreateTestParticipant("test@example.com")
 	}},
