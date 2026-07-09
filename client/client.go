@@ -127,6 +127,7 @@ type API interface {
 	GetBatchExportStatus(batchID, exportID string) (*BatchExportResponse, error)
 	GetAITaskBuilderDatasetStatus(datasetID string) (*GetAITaskBuilderDatasetStatusResponse, error)
 	GetAITaskBuilderDatasetUploadURL(datasetID, fileName string) (*GetAITaskBuilderDatasetUploadURLResponse, error)
+	GetAITaskBuilderDatasetImportStatus(datasetID, importID string) (*GetAITaskBuilderDatasetImportStatusResponse, error)
 }
 
 // UnrecognizedAPIError is returned by Execute when the response body does not match any known
@@ -1435,11 +1436,35 @@ func (c *Client) GetAITaskBuilderDatasetStatus(datasetID string) (*GetAITaskBuil
 func (c *Client) GetAITaskBuilderDatasetUploadURL(datasetID, fileName string) (*GetAITaskBuilderDatasetUploadURLResponse, error) {
 	var response GetAITaskBuilderDatasetUploadURLResponse
 
-	url := fmt.Sprintf("/api/v1/data-collection/datasets/%s/upload-url/%s.csv/", datasetID, fileName)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	url := fmt.Sprintf("/api/v1/data-collection/datasets/%s/upload-url/%s", datasetID, fileName)
+	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
+
+	if httpResponse.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+	}
+
+	return &response, nil
+}
+
+// GetAITaskBuilderDatasetImportStatus returns the status of a dataset import job.
+func (c *Client) GetAITaskBuilderDatasetImportStatus(datasetID, importID string) (*GetAITaskBuilderDatasetImportStatusResponse, error) {
+	var response GetAITaskBuilderDatasetImportStatusResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/datasets/%s/imports/%s", datasetID, importID)
+	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+	}
+
 	return &response, nil
 }
 

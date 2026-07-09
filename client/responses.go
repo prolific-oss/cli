@@ -269,10 +269,18 @@ type GetAITaskBuilderDatasetStatusResponse struct {
 
 // GetAITaskBuilderDatasetUploadURLResponse is the response for getting an upload URL for an AI Task Builder dataset.
 type GetAITaskBuilderDatasetUploadURLResponse struct {
-	DatasetID  string `json:"dataset_id"`
-	ExpiresAt  string `json:"expires_at"`
-	HTTPMethod string `json:"http_method"`
-	UploadURL  string `json:"upload_url"`
+	DatasetID   string `json:"dataset_id"`
+	ImportID    string `json:"import_id"`
+	UploadURL   string `json:"upload_url"`
+	HTTPMethod  string `json:"http_method"`
+	ContentType string `json:"content_type"`
+	ExpiresAt   string `json:"expires_at"`
+	FileKey     string `json:"file_key"`
+}
+
+// GetAITaskBuilderDatasetImportStatusResponse is the response for retrieving dataset import status.
+type GetAITaskBuilderDatasetImportStatusResponse struct {
+	model.DatasetImportJob
 }
 
 // CreateAITaskBuilderDatasetResponse is the response for creating a dataset

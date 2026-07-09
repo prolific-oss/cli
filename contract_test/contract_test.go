@@ -112,6 +112,9 @@ var operations = []operation{
 	{operationID: "get-project", call: func(c *client.Client) { c.GetProject("proj-id") }},
 	{operationID: "update-project", skip: "OUTOFSCOPE: no CLI command for updating a project"},
 
+	// Users
+	{operationID: "get-user-identity", skip: "OUTOFSCOPE: internal identity endpoint is not used by the CLI"},
+
 	// Filters
 	{operationID: "get-filters", call: func(c *client.Client) { c.GetFilters() }},
 	{operationID: "get-filter-distribution", skip: "OUTOFSCOPE: filter distribution not needed in CLI"},
@@ -197,10 +200,12 @@ var operations = []operation{
 	{operationID: "create-task-builder-dataset", call: func(c *client.Client) {
 		c.CreateAITaskBuilderDataset("ws-id", client.CreateAITaskBuilderDatasetPayload{Name: "t"})
 	}},
-	{operationID: "get-dataset-upload-url", call: func(c *client.Client) { c.GetAITaskBuilderDatasetUploadURL("ds-id", "data") }},
+	{operationID: "get-dataset-upload-url", call: func(c *client.Client) { c.GetAITaskBuilderDatasetUploadURL("ds-id", "data.jsonl") }},
 	{operationID: "get-task-builder-dataset", skip: "OUTOFSCOPE: no CLI command for retrieving a specific dataset by ID"},
 	{operationID: "get-task-builder-dataset-status", call: func(c *client.Client) { c.GetAITaskBuilderDatasetStatus("ds-id") }},
-	{operationID: "get-dataset-import-status", skip: "OUTOFSCOPE: no CLI command for dataset import status"},
+	{operationID: "get-dataset-import-status", call: func(c *client.Client) {
+		c.GetAITaskBuilderDatasetImportStatus("ds-id", "import-id")
+	}},
 
 	// AI Task Builder — Instructions
 	{operationID: "get-task-builder-instructions", skip: "OUTOFSCOPE: no CLI command for getting task builder instructions"},
