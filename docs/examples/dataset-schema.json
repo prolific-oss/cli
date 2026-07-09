@@ -1,0 +1,9 @@
+{
+  "strict": true,
+  "fields": {
+    "question": { "type": "text", "label": "Question" },
+    "image": { "type": "image_url", "label": "Reference image" },
+    "source": { "type": "metadata" },
+    "group": { "type": "task_group_id" }
+  }
+}
