@@ -12,11 +12,11 @@ require (
 	github.com/spf13/cobra v1.10.2 // Apache 2.0
 	github.com/spf13/viper v1.21.0 // MIT
 	golang.org/x/exp v0.0.0-20250819193227-8b4c13bb791b // BSD-3-Clause
-	golang.org/x/text v0.38.0 // BSD-3-Clause
+	golang.org/x/text v0.40.0 // BSD-3-Clause
 )
 
 require (
-	github.com/getkin/kin-openapi v0.140.0
+	github.com/getkin/kin-openapi v0.141.0
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/stretchr/testify v1.11.1
 	gopkg.in/yaml.v3 v3.0.1
@@ -47,8 +47,8 @@ require (
 	github.com/muesli/ansi v0.0.0-20230316100256-276c6243b2f6 // indirect
 	github.com/muesli/cancelreader v0.2.2 // indirect
 	github.com/muesli/termenv v0.16.0 // indirect
-	github.com/oasdiff/yaml v0.1.0 // indirect
-	github.com/oasdiff/yaml3 v0.0.13 // indirect
+	github.com/oasdiff/yaml v0.1.1 // indirect
+	github.com/oasdiff/yaml3 v0.0.14 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
