@@ -51,7 +51,6 @@ func TestNewCreateDatasetCommandCallsAPI(t *testing.T) {
 		Status:              "READY",
 		TotalDatapointCount: 0,
 		WorkspaceID:         workspaceID123,
-		SchemaVersion:       3,
 	}
 
 	c.
@@ -77,7 +76,6 @@ Created By: user-789
 Status: READY
 Total Datapoint Count: 0
 Workspace ID: workspace-123
-Schema Version: 3
 `
 	actual := b.String()
 	if actual != expected {
@@ -104,13 +102,12 @@ func TestNewCreateDatasetCommandWithSchema(t *testing.T) {
 	}
 
 	response := client.CreateAITaskBuilderDatasetResponse{
-		ID:            "dataset-456",
-		Name:          "Test Dataset",
-		CreatedAt:     "2024-01-15T10:30:00Z",
-		CreatedBy:     "user-789",
-		Status:        "READY",
-		WorkspaceID:   workspaceID123,
-		SchemaVersion: 4,
+		ID:          "dataset-456",
+		Name:        "Test Dataset",
+		CreatedAt:   "2024-01-15T10:30:00Z",
+		CreatedBy:   "user-789",
+		Status:      "READY",
+		WorkspaceID: workspaceID123,
 	}
 
 	c.
@@ -140,7 +137,6 @@ Created By: user-789
 Status: READY
 Total Datapoint Count: 0
 Workspace ID: workspace-123
-Schema Version: 4
 Strict: true
 Schema Fields: 2
 `
@@ -168,13 +164,12 @@ func TestNewCreateDatasetCommandWithSchemaDefaultsStrictFalse(t *testing.T) {
 	}
 
 	response := client.CreateAITaskBuilderDatasetResponse{
-		ID:            "dataset-456",
-		Name:          "Test Dataset",
-		CreatedAt:     "2024-01-15T10:30:00Z",
-		CreatedBy:     "user-789",
-		Status:        "READY",
-		WorkspaceID:   workspaceID123,
-		SchemaVersion: 4,
+		ID:          "dataset-456",
+		Name:        "Test Dataset",
+		CreatedAt:   "2024-01-15T10:30:00Z",
+		CreatedBy:   "user-789",
+		Status:      "READY",
+		WorkspaceID: workspaceID123,
 	}
 
 	c.
@@ -203,7 +198,6 @@ Created By: user-789
 Status: READY
 Total Datapoint Count: 0
 Workspace ID: workspace-123
-Schema Version: 4
 Strict: false
 Schema Fields: 1
 `

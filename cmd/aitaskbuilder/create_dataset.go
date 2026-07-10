@@ -130,7 +130,6 @@ func createAITaskBuilderDataset(c client.API, opts CreateDatasetOptions, w io.Wr
 	fmt.Fprintf(w, "Status: %s\n", response.Status)
 	fmt.Fprintf(w, "Total Datapoint Count: %d\n", response.TotalDatapointCount)
 	fmt.Fprintf(w, "Workspace ID: %s\n", response.WorkspaceID)
-	fmt.Fprintf(w, "Schema Version: %d\n", response.SchemaVersion)
 	if payload.Schema != nil {
 		if payload.Schema.Strict != nil {
 			fmt.Fprintf(w, "Strict: %t\n", *payload.Schema.Strict)

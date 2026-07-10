@@ -284,7 +284,6 @@ type CreateAITaskBuilderDatasetResponse struct {
 	Status              model.DatasetStatus `json:"status"`
 	TotalDatapointCount int                 `json:"total_datapoint_count"`
 	WorkspaceID         string              `json:"workspace_id"`
-	SchemaVersion       int                 `json:"schema_version"`
 }
 
 // CreateAITaskBuilderBatchResponse is the response for creating an AI Task Builder batch.
