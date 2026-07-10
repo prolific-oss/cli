@@ -85,8 +85,11 @@ func TestResolveDatasetSchemaMissingFile(t *testing.T) {
 
 func TestResolveDatasetSchemaInvalidJSON(t *testing.T) {
 	_, err := resolveDatasetSchema(`{not valid json`, false, false)
-	if err == nil || err.Error() != ErrSchemaMustBeObject {
-		t.Fatalf("expected %q; got %v", ErrSchemaMustBeObject, err)
+	if err == nil {
+		t.Fatal("expected invalid JSON error")
+	}
+	if err.Error() != ErrSchemaInvalidJSON {
+		t.Fatalf("expected %q; got %v", ErrSchemaInvalidJSON, err)
 	}
 }
 
@@ -95,6 +98,16 @@ func TestResolveDatasetSchemaNonObject(t *testing.T) {
 	_, err := resolveDatasetSchema(`{}[]`, false, false)
 	if err == nil || err.Error() != ErrSchemaMustBeObject {
 		t.Fatalf("expected %q; got %v", ErrSchemaMustBeObject, err)
+	}
+}
+
+func TestResolveDatasetSchemaTypeMismatch(t *testing.T) {
+	_, err := resolveDatasetSchema(`{"fields":[]}`, false, false)
+	if err == nil {
+		t.Fatal("expected invalid JSON type error")
+	}
+	if err.Error() != ErrSchemaInvalidJSON {
+		t.Fatalf("expected %q; got %v", ErrSchemaInvalidJSON, err)
 	}
 }
 

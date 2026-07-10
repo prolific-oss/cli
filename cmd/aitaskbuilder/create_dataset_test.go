@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -227,13 +226,13 @@ func TestNewCreateDatasetCommandStrictWithoutSchema(t *testing.T) {
 	_ = cmd.Flags().Set("strict", "true")
 	err := cmd.RunE(cmd, nil)
 
-	expected := fmt.Sprintf("error: %s", aitaskbuilder.ErrStrictRequiresSchema)
+	expected := aitaskbuilder.ErrStrictRequiresSchema
 	if err == nil || err.Error() != expected {
 		t.Fatalf("expected error '%s'; got '%v'", expected, err)
 	}
 }
 
-func TestNewCreateDatasetCommandExecuteSuppressesUsageForRuntimeErrors(t *testing.T) {
+func TestNewCreateDatasetCommandExecuteShowsUsageForRuntimeErrors(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
@@ -252,8 +251,8 @@ func TestNewCreateDatasetCommandExecuteSuppressesUsageForRuntimeErrors(t *testin
 		t.Fatal("expected error")
 	}
 
-	if err.Error() != "error: "+aitaskbuilder.ErrStrictRequiresSchema {
-		t.Fatalf("expected error %q; got %q", "error: "+aitaskbuilder.ErrStrictRequiresSchema, err.Error())
+	if err.Error() != aitaskbuilder.ErrStrictRequiresSchema {
+		t.Fatalf("expected error %q; got %q", aitaskbuilder.ErrStrictRequiresSchema, err.Error())
 	}
 
 	writer.Flush()
@@ -262,8 +261,8 @@ func TestNewCreateDatasetCommandExecuteSuppressesUsageForRuntimeErrors(t *testin
 		t.Fatalf("expected no stdout output; got %q", stdout.String())
 	}
 
-	if strings.Contains(stderr.String(), "Usage:") || strings.Contains(stderr.String(), "Error:") {
-		t.Fatalf("expected no Cobra error or usage output; got %q", stderr.String())
+	if !strings.Contains(stderr.String(), "Usage:") || !strings.Contains(stderr.String(), "Error: "+aitaskbuilder.ErrStrictRequiresSchema) {
+		t.Fatalf("expected Cobra error and usage output; got %q", stderr.String())
 	}
 }
 
@@ -281,7 +280,7 @@ func TestNewCreateDatasetCommandStrictSetInBoth(t *testing.T) {
 	_ = cmd.Flags().Set("schema", `{"strict":true,"fields":{"question":{"type":"text"}}}`)
 	err := cmd.RunE(cmd, nil)
 
-	expected := fmt.Sprintf("error: %s", aitaskbuilder.ErrSchemaStrictSetInBoth)
+	expected := aitaskbuilder.ErrSchemaStrictSetInBoth
 	if err == nil || err.Error() != expected {
 		t.Fatalf("expected error '%s'; got '%v'", expected, err)
 	}
@@ -308,7 +307,7 @@ func TestNewCreateDatasetCommandHandlesErrors(t *testing.T) {
 	_ = cmd.Flags().Set("workspace-id", "invalid-workspace")
 	err := cmd.RunE(cmd, nil)
 
-	expected := fmt.Sprintf("error: %s", workspaceNotFoundError)
+	expected := workspaceNotFoundError
 
 	if err.Error() != expected {
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, err.Error())
@@ -330,7 +329,7 @@ func TestNewCreateDatasetCommandRequiresName(t *testing.T) {
 
 	if !cmd.Flags().Changed("name") {
 		expected := aitaskbuilder.ErrNameRequired
-		if err.Error() != "error: "+expected {
+		if err.Error() != expected {
 			t.Fatalf("expected error to contain '%s', got '%s'", expected, err.Error())
 		}
 	}
@@ -351,7 +350,7 @@ func TestNewCreateDatasetCommandRequiresWorkspaceID(t *testing.T) {
 
 	if !cmd.Flags().Changed("workspace-id") {
 		expected := aitaskbuilder.ErrWorkspaceIDRequired
-		if err.Error() != "error: "+expected {
+		if err.Error() != expected {
 			t.Fatalf("expected error to contain '%s', got '%s'", expected, err.Error())
 		}
 	}

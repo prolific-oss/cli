@@ -24,10 +24,8 @@ func NewCreateDatasetCommand(client client.API, w io.Writer) *cobra.Command {
 	var opts CreateDatasetOptions
 
 	cmd := &cobra.Command{
-		Use:           "create",
-		Short:         "Create a Dataset",
-		SilenceErrors: true,
-		SilenceUsage:  true,
+		Use:   "create",
+		Short: "Create a Dataset",
 		Long: `Create a new AI Task Builder dataset
 
 A dataset contains the data that will be used for annotation tasks. You must provide:
@@ -76,7 +74,7 @@ $ prolific aitaskbuilder dataset create -n "test" -w <workspace_id> --strict --s
 
 			err := createAITaskBuilderDataset(client, opts, w)
 			if err != nil {
-				return fmt.Errorf("error: %s", err)
+				return err
 			}
 
 			return nil

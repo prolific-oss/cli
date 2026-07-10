@@ -14,6 +14,7 @@ const (
 	ErrDatasetNotFound               = "dataset not found"
 	ErrInstructionInputRequired      = "either instructions file (-f) or JSON string (-j) must be provided"
 	ErrNameRequired                  = "name is required"
+	ErrSchemaInvalidJSON             = "schema contains invalid JSON"
 	ErrSchemaStrictSetInBoth         = "cannot set strict in both --schema and --strict"
 	ErrStrictRequiresSchema          = "--strict requires --schema"
 	ErrSchemaMustBeObject            = "schema must be a JSON object"

@@ -91,6 +91,11 @@ func parseDatasetSchema(raw []byte) (*rawDatasetSchema, error) {
 		if strings.HasPrefix(err.Error(), "json: unknown field ") {
 			return nil, fmt.Errorf("schema contains %s", strings.TrimPrefix(err.Error(), "json: "))
 		}
+		var syntaxErr *json.SyntaxError
+		var typeErr *json.UnmarshalTypeError
+		if errors.As(err, &syntaxErr) || errors.As(err, &typeErr) || errors.Is(err, io.ErrUnexpectedEOF) {
+			return nil, errors.New(ErrSchemaInvalidJSON)
+		}
 		return nil, errors.New(ErrSchemaMustBeObject)
 	}
 
