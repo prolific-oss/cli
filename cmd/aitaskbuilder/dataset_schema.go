@@ -1,9 +1,11 @@
 package aitaskbuilder
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -40,9 +42,9 @@ func resolveDatasetSchema(schemaInput string, strict, strictSet bool) (*client.D
 		return nil, err
 	}
 
-	var parsed rawDatasetSchema
-	if err := json.Unmarshal(raw, &parsed); err != nil {
-		return nil, errors.New(ErrSchemaMustBeObject)
+	parsed, err := parseDatasetSchema(raw)
+	if err != nil {
+		return nil, err
 	}
 
 	if len(parsed.Fields) == 0 {
@@ -77,6 +79,26 @@ func resolveDatasetSchema(schemaInput string, strict, strictSet bool) (*client.D
 	}
 
 	return &client.DatasetSchema{Strict: strictValue, Fields: parsed.Fields}, nil
+}
+
+func parseDatasetSchema(raw []byte) (*rawDatasetSchema, error) {
+	var parsed rawDatasetSchema
+
+	decoder := json.NewDecoder(bytes.NewReader(raw))
+	decoder.DisallowUnknownFields()
+
+	if err := decoder.Decode(&parsed); err != nil {
+		if strings.HasPrefix(err.Error(), "json: unknown field ") {
+			return nil, fmt.Errorf("schema contains %s", strings.TrimPrefix(err.Error(), "json: "))
+		}
+		return nil, errors.New(ErrSchemaMustBeObject)
+	}
+
+	if err := decoder.Decode(&struct{}{}); err != io.EOF {
+		return nil, errors.New(ErrSchemaMustBeObject)
+	}
+
+	return &parsed, nil
 }
 
 // readDatasetSchemaInput returns the raw schema bytes. A trimmed value starting

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -51,7 +52,7 @@ func TestNewCreateDatasetCommandCallsAPI(t *testing.T) {
 		Status:              "READY",
 		TotalDatapointCount: 0,
 		WorkspaceID:         workspaceID123,
-		SchemaVersion:       "3",
+		SchemaVersion:       3,
 	}
 
 	c.
@@ -110,7 +111,7 @@ func TestNewCreateDatasetCommandWithSchema(t *testing.T) {
 		CreatedBy:     "user-789",
 		Status:        "READY",
 		WorkspaceID:   workspaceID123,
-		SchemaVersion: "4",
+		SchemaVersion: 4,
 	}
 
 	c.
@@ -174,7 +175,7 @@ func TestNewCreateDatasetCommandWithSchemaDefaultsStrictFalse(t *testing.T) {
 		CreatedBy:     "user-789",
 		Status:        "READY",
 		WorkspaceID:   workspaceID123,
-		SchemaVersion: "4",
+		SchemaVersion: 4,
 	}
 
 	c.
@@ -229,6 +230,40 @@ func TestNewCreateDatasetCommandStrictWithoutSchema(t *testing.T) {
 	expected := fmt.Sprintf("error: %s", aitaskbuilder.ErrStrictRequiresSchema)
 	if err == nil || err.Error() != expected {
 		t.Fatalf("expected error '%s'; got '%v'", expected, err)
+	}
+}
+
+func TestNewCreateDatasetCommandExecuteSuppressesUsageForRuntimeErrors(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	writer := bufio.NewWriter(&stdout)
+
+	cmd := aitaskbuilder.NewCreateDatasetCommand(c, writer)
+	cmd.SetOut(&stderr)
+	cmd.SetErr(&stderr)
+	cmd.SetArgs([]string{"--name", "Test Dataset", "--workspace-id", workspaceID123, "--strict"})
+
+	err := cmd.Execute()
+	if err == nil {
+		t.Fatal("expected error")
+	}
+
+	if err.Error() != "error: "+aitaskbuilder.ErrStrictRequiresSchema {
+		t.Fatalf("expected error %q; got %q", "error: "+aitaskbuilder.ErrStrictRequiresSchema, err.Error())
+	}
+
+	writer.Flush()
+
+	if stdout.Len() != 0 {
+		t.Fatalf("expected no stdout output; got %q", stdout.String())
+	}
+
+	if strings.Contains(stderr.String(), "Usage:") || strings.Contains(stderr.String(), "Error:") {
+		t.Fatalf("expected no Cobra error or usage output; got %q", stderr.String())
 	}
 }
 

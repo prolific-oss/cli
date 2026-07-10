@@ -112,6 +112,26 @@ func TestResolveDatasetSchemaMissingFields(t *testing.T) {
 	}
 }
 
+func TestResolveDatasetSchemaUnknownTopLevelField(t *testing.T) {
+	_, err := resolveDatasetSchema(`{"bla":false,"fields":{"q":{"type":"text"}}}`, false, false)
+	if err == nil {
+		t.Fatal("expected unknown top-level field error")
+	}
+	if !strings.Contains(err.Error(), `unknown field "bla"`) {
+		t.Fatalf("expected unknown field error for bla; got %v", err)
+	}
+}
+
+func TestResolveDatasetSchemaUnknownFieldProperty(t *testing.T) {
+	_, err := resolveDatasetSchema(`{"fields":{"q":{"type":"text","extra":true}}}`, false, false)
+	if err == nil {
+		t.Fatal("expected unknown field property error")
+	}
+	if !strings.Contains(err.Error(), `unknown field "extra"`) {
+		t.Fatalf("expected unknown field error for extra; got %v", err)
+	}
+}
+
 func TestResolveDatasetSchemaInvalidFieldType(t *testing.T) {
 	_, err := resolveDatasetSchema(`{"fields":{"q":{"type":"number"}}}`, false, false)
 	if err == nil {

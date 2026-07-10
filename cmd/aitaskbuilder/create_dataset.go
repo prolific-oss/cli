@@ -24,8 +24,10 @@ func NewCreateDatasetCommand(client client.API, w io.Writer) *cobra.Command {
 	var opts CreateDatasetOptions
 
 	cmd := &cobra.Command{
-		Use:   "create",
-		Short: "Create a Dataset",
+		Use:           "create",
+		Short:         "Create a Dataset",
+		SilenceErrors: true,
+		SilenceUsage:  true,
 		Long: `Create a new AI Task Builder dataset
 
 A dataset contains the data that will be used for annotation tasks. You must provide:
@@ -35,8 +37,9 @@ A dataset contains the data that will be used for annotation tasks. You must pro
 The workspace ID determines which workspace owns and has access to this dataset.
 
 Optionally attach a typed schema with --schema (inline JSON or a path to a JSON
-file) to define the dataset's fields up front. The value is the full schema
-object, for example:
+file) to define the dataset's fields up front. When passing inline JSON in a
+shell, quote the entire value (for example with single quotes) so the shell
+passes it through unchanged. The value is the full schema object, for example:
 
   {
     "strict": true,
@@ -73,7 +76,7 @@ $ prolific aitaskbuilder dataset create -n "test" -w <workspace_id> --strict --s
 
 			err := createAITaskBuilderDataset(client, opts, w)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return fmt.Errorf("error: %s", err)
 			}
 
 			return nil
@@ -83,7 +86,7 @@ $ prolific aitaskbuilder dataset create -n "test" -w <workspace_id> --strict --s
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.Name, "name", "n", "", "Name of the dataset (required)")
 	flags.StringVarP(&opts.WorkspaceID, "workspace-id", "w", "", "Workspace ID (required)")
-	flags.StringVar(&opts.Schema, "schema", "", "Optional dataset schema as inline JSON or a path to a JSON file")
+	flags.StringVar(&opts.Schema, "schema", "", "Optional dataset schema as quoted inline JSON or a path to a JSON file")
 	flags.BoolVar(&opts.Strict, "strict", false, "Enable strict mode: reject records missing any schema field (requires --schema)")
 
 	_ = cmd.MarkFlagRequired("name")
@@ -129,7 +132,7 @@ func createAITaskBuilderDataset(c client.API, opts CreateDatasetOptions, w io.Wr
 	fmt.Fprintf(w, "Status: %s\n", response.Status)
 	fmt.Fprintf(w, "Total Datapoint Count: %d\n", response.TotalDatapointCount)
 	fmt.Fprintf(w, "Workspace ID: %s\n", response.WorkspaceID)
-	fmt.Fprintf(w, "Schema Version: %s\n", response.SchemaVersion)
+	fmt.Fprintf(w, "Schema Version: %d\n", response.SchemaVersion)
 	if payload.Schema != nil {
 		if payload.Schema.Strict != nil {
 			fmt.Fprintf(w, "Strict: %t\n", *payload.Schema.Strict)
