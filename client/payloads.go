@@ -77,10 +77,26 @@ type RemoveParticipantGroupMembersPayload struct {
 	ParticipantIDs []string `json:"participant_ids"`
 }
 
+// DatasetSchemaField describes a single field in a dataset schema.
+type DatasetSchemaField struct {
+	Type  string `json:"type"`
+	Label string `json:"label,omitempty"`
+}
+
+// DatasetSchema is a researcher-defined V4 dataset schema.
+//
+// Strict is a pointer so the CLI can preserve explicit false values and only
+// omit the field when the schema itself is omitted from the request.
+type DatasetSchema struct {
+	Strict *bool                         `json:"strict,omitempty"`
+	Fields map[string]DatasetSchemaField `json:"fields"`
+}
+
 // CreateAITaskBuilderDatasetPayload represents the request for creating a dataset
 type CreateAITaskBuilderDatasetPayload struct {
-	Name        string `json:"name"`
-	WorkspaceID string `json:"workspace_id"`
+	Name        string         `json:"name"`
+	WorkspaceID string         `json:"workspace_id"`
+	Schema      *DatasetSchema `json:"schema,omitempty"`
 }
 
 // CreateBatchParams represents the parameters for creating an AI Task Builder batch.
