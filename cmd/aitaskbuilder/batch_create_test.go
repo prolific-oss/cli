@@ -297,6 +297,41 @@ func TestNewBatchCreateCommandWithBatchItemsFile(t *testing.T) {
 	}
 }
 
+func TestNewBatchCreateCommandWithAutoSync(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	response := &client.CreateAITaskBuilderBatchResponse{
+		ID:          "497f6eca-6276-4993-bfeb-53cbbbba6f08",
+		CreatedAt:   "2019-08-24T14:15:22Z",
+		CreatedBy:   "user-1",
+		Name:        "Test Batch",
+		Status:      "UNINITIALISED",
+		WorkspaceID: "6278acb09062db3b35bcbeb0",
+	}
+
+	c.EXPECT().CreateAITaskBuilderBatch(client.CreateBatchParams{
+		Name:             "Test Batch",
+		WorkspaceID:      "6278acb09062db3b35bcbeb0",
+		DatasetID:        "1234acb09999db4b99bcded1",
+		TaskName:         "Task",
+		TaskIntroduction: "Intro",
+		TaskSteps:        "Steps",
+		AutoSync:         true,
+	}).Return(response, nil)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := aitaskbuilder.NewBatchCreateCommand(c, writer)
+	cmd.SetArgs(append(baseCreateArgs(), "--auto-sync"))
+
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("expected no error; got %v", err)
+	}
+}
+
 func TestNewBatchCreateCommandBatchItemsValidationErrors(t *testing.T) {
 	testCases := []struct {
 		name        string
