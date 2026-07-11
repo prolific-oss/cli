@@ -440,6 +440,41 @@ func TestNewBatchUpdateCommandClearBatchItems(t *testing.T) {
 	}
 }
 
+func TestNewBatchUpdateCommandUpdatesAutoSync(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	createdAt, _ := time.Parse(time.RFC3339, "2025-02-27T18:03:59.795Z")
+	response := &client.UpdateAITaskBuilderBatchResponse{
+		AITaskBuilderBatch: model.AITaskBuilderBatch{
+			ID:            updateBatchID,
+			CreatedAt:     createdAt,
+			CreatedBy:     "user-1",
+			Name:          "Existing Name",
+			Status:        "UNINITIALISED",
+			WorkspaceID:   "6745ab669112d10b9b3afb48",
+			SchemaVersion: 5,
+			Datasets:      []model.Dataset{},
+		},
+	}
+
+	c.EXPECT().UpdateAITaskBuilderBatch(client.UpdateBatchParams{
+		BatchID:  updateBatchID,
+		AutoSync: new(true),
+	}).Return(response, nil)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := aitaskbuilder.NewBatchUpdateCommand(c, writer)
+	cmd.SetArgs([]string{"--batch-id", updateBatchID, "--auto-sync"})
+
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("expected no error; got %v", err)
+	}
+}
+
 func TestNewBatchUpdateCommandBatchItemsValidationErrors(t *testing.T) {
 	testCases := []struct {
 		name        string
