@@ -19,6 +19,7 @@ type BatchCreateOptions struct {
 	TaskSteps        string
 	BatchItemsFile   string
 	BatchItemsJSON   string
+	AutoSync         bool
 }
 
 func NewBatchCreateCommand(client client.API, w io.Writer) *cobra.Command {
@@ -35,7 +36,10 @@ workspace ID, dataset ID, and task details (name, introduction, and steps).
 
 Optionally, supply batch_items to define the participant task layout as a structured
 JSON schema (pages → rows → columns → items). Provide batch_items from a file with
--f or as an inline JSON string with -j. See docs/examples/batch-items.json for an example.`,
+-f or as an inline JSON string with -j. See docs/examples/batch-items.json for an example.
+
+Set --auto-sync to automatically add new dataset datapoints to the batch as they
+arrive; it defaults to false.`,
 		Example: `
 Create a batch:
 $ prolific aitaskbuilder batch create -n "My Data Collection Batch" -w 6278acb09062db3b35bcbeb0 -d 1234acb09999db4b99bcded1 --task-name "Sample Task" --task-introduction "This is a sample task for testing" --task-steps "1. Review the data\n2. Provide your response"
@@ -45,6 +49,9 @@ $ prolific aitaskbuilder batch create -n "My Batch" -w <workspace_id> -d <datase
 
 Create a batch with inline batch_items JSON:
 $ prolific aitaskbuilder batch create -n "My Batch" -w <workspace_id> -d <dataset_id> --task-name "Task" --task-introduction "Intro" --task-steps "Steps" -j '[{"rows":[{"columns":[{"items":[{"type":"free_text","description":"Describe your observations."}]}]}]}]'
+
+Create a batch with auto-sync enabled:
+$ prolific aitaskbuilder batch create -n "My Batch" -w <workspace_id> -d <dataset_id> --task-name "Task" --task-introduction "Intro" --task-steps "Steps" --auto-sync
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
@@ -67,6 +74,7 @@ $ prolific aitaskbuilder batch create -n "My Batch" -w <workspace_id> -d <datase
 	flags.StringVar(&opts.TaskSteps, "task-steps", "", "Task steps (required) - The steps for completing the task.")
 	flags.StringVarP(&opts.BatchItemsFile, "batch-items-file", "f", "", "Path to JSON file containing batch_items layout.")
 	flags.StringVarP(&opts.BatchItemsJSON, "batch-items-json", "j", "", "Inline JSON string containing batch_items layout.")
+	flags.BoolVar(&opts.AutoSync, "auto-sync", false, "Automatically synchronize new dataset datapoints into the batch as they are added.")
 
 	_ = cmd.MarkFlagRequired("name")
 	_ = cmd.MarkFlagRequired("workspace-id")
@@ -112,6 +120,7 @@ func createAITaskBuilderBatch(c client.API, opts BatchCreateOptions, w io.Writer
 		TaskIntroduction: opts.TaskIntroduction,
 		TaskSteps:        opts.TaskSteps,
 		BatchItems:       batchItems,
+		AutoSync:         opts.AutoSync,
 	}
 
 	response, err := c.CreateAITaskBuilderBatch(params)
