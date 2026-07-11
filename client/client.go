@@ -125,6 +125,8 @@ type API interface {
 	GetAITaskBuilderTasks(batchID string) (*GetAITaskBuilderTasksResponse, error)
 	InitiateBatchExport(batchID string) (*BatchExportResponse, error)
 	GetBatchExportStatus(batchID, exportID string) (*BatchExportResponse, error)
+	SyncAITaskBuilderBatch(batchID string) (*AITaskBuilderBatchSyncResponse, error)
+	GetAITaskBuilderBatchSyncStatus(batchID, syncID string) (*AITaskBuilderBatchSyncResponse, error)
 	GetAITaskBuilderDatasetStatus(datasetID string) (*GetAITaskBuilderDatasetStatusResponse, error)
 	GetAITaskBuilderDatasetUploadURL(datasetID, fileName string) (*GetAITaskBuilderDatasetUploadURLResponse, error)
 	GetAITaskBuilderDatasetImportStatus(datasetID, importID string) (*GetAITaskBuilderDatasetImportStatusResponse, error)
@@ -1407,6 +1409,46 @@ func (c *Client) GetBatchExportStatus(batchID, exportID string) (*BatchExportRes
 	var response BatchExportResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/export/%s", batchID, exportID)
+	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+	}
+
+	return &response, nil
+}
+
+// SyncAITaskBuilderBatch starts an async sync job that extends a batch with tasks
+// created from datapoints appended to its dataset since setup or the last sync.
+// Returns the created job (status "queued") including its sync_id.
+func (c *Client) SyncAITaskBuilderBatch(batchID string) (*AITaskBuilderBatchSyncResponse, error) {
+	var response AITaskBuilderBatchSyncResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/sync", batchID)
+	httpResponse, err := c.Execute(http.MethodPost, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK && httpResponse.StatusCode != http.StatusAccepted {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+	}
+
+	return &response, nil
+}
+
+// GetAITaskBuilderBatchSyncStatus polls the status of an in-progress batch sync
+// job. Returns "queued", "processing", "complete" (with outcome counts), or
+// "failed" (with a reason).
+func (c *Client) GetAITaskBuilderBatchSyncStatus(batchID, syncID string) (*AITaskBuilderBatchSyncResponse, error) {
+	var response AITaskBuilderBatchSyncResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/syncs/%s", batchID, syncID)
 	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)

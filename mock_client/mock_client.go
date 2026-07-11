@@ -450,6 +450,21 @@ func (mr *MockAPIMockRecorder) GetAITaskBuilderBatchStatus(batchID interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAITaskBuilderBatchStatus", reflect.TypeOf((*MockAPI)(nil).GetAITaskBuilderBatchStatus), batchID)
 }
 
+// GetAITaskBuilderBatchSyncStatus mocks base method.
+func (m *MockAPI) GetAITaskBuilderBatchSyncStatus(batchID, syncID string) (*client.AITaskBuilderBatchSyncResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAITaskBuilderBatchSyncStatus", batchID, syncID)
+	ret0, _ := ret[0].(*client.AITaskBuilderBatchSyncResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAITaskBuilderBatchSyncStatus indicates an expected call of GetAITaskBuilderBatchSyncStatus.
+func (mr *MockAPIMockRecorder) GetAITaskBuilderBatchSyncStatus(batchID, syncID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAITaskBuilderBatchSyncStatus", reflect.TypeOf((*MockAPI)(nil).GetAITaskBuilderBatchSyncStatus), batchID, syncID)
+}
+
 // GetAITaskBuilderBatches mocks base method.
 func (m *MockAPI) GetAITaskBuilderBatches(workspaceID string) (*client.GetAITaskBuilderBatchesResponse, error) {
 	m.ctrl.T.Helper()
@@ -1135,6 +1150,21 @@ func (m *MockAPI) SetupAITaskBuilderBatch(batchID, datasetID string, tasksPerGro
 func (mr *MockAPIMockRecorder) SetupAITaskBuilderBatch(batchID, datasetID, tasksPerGroup interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetupAITaskBuilderBatch", reflect.TypeOf((*MockAPI)(nil).SetupAITaskBuilderBatch), batchID, datasetID, tasksPerGroup)
+}
+
+// SyncAITaskBuilderBatch mocks base method.
+func (m *MockAPI) SyncAITaskBuilderBatch(batchID string) (*client.AITaskBuilderBatchSyncResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SyncAITaskBuilderBatch", batchID)
+	ret0, _ := ret[0].(*client.AITaskBuilderBatchSyncResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SyncAITaskBuilderBatch indicates an expected call of SyncAITaskBuilderBatch.
+func (mr *MockAPIMockRecorder) SyncAITaskBuilderBatch(batchID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncAITaskBuilderBatch", reflect.TypeOf((*MockAPI)(nil).SyncAITaskBuilderBatch), batchID)
 }
 
 // TestStudy mocks base method.

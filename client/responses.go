@@ -426,6 +426,20 @@ type BatchExportResponse struct {
 	ExpiresAt string `json:"expires_at,omitempty"`
 }
 
+// AITaskBuilderBatchSyncResponse is the response for both starting a batch sync
+// and polling its status. Status is one of "queued", "processing", "complete",
+// or "failed". The outcome counts are populated on completion; Reason is set on
+// failure.
+type AITaskBuilderBatchSyncResponse struct {
+	Status              string `json:"status"`
+	SyncID              string `json:"sync_id,omitempty"`
+	TasksCreated        int    `json:"tasks_created,omitempty"`
+	DatapointsProcessed int    `json:"datapoints_processed,omitempty"`
+	GroupsCreated       int    `json:"groups_created,omitempty"`
+	GroupsExpanded      int    `json:"groups_expanded,omitempty"`
+	Reason              string `json:"reason,omitempty"`
+}
+
 // CreateBonusPaymentsResponse is the response for creating bonus payments.
 // Monetary fields are returned by the API as floats in minor currency units
 // (e.g., 100.0 = £1.00). Divide by 100 before display via ui.RenderMoney().
