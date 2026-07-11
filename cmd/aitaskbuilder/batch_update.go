@@ -25,6 +25,8 @@ type BatchUpdateOptions struct {
 	BatchItemsFile          string
 	BatchItemsJSON          string
 	ClearBatchItems         bool
+	AutoSync                bool
+	AutoSyncChanged         bool
 }
 
 func NewBatchUpdateCommand(client client.API, w io.Writer) *cobra.Command {
@@ -41,7 +43,9 @@ omitted task detail fields will be preserved from the existing batch.
 
 batch_items can be set from a file (-f) or inline JSON (-j), or cleared with
 --clear-batch-items. Clearing batch_items also deletes all associated instructions
-and content blocks for the batch.`,
+and content blocks for the batch.
+
+--auto-sync can be enabled or disabled independently of the other fields above.`,
 		Example: `
 Update a batch name:
 $ prolific aitaskbuilder batch update -b 497f6eca-6276-4993-bfeb-53cbbbba6f08 -n "Updated Batch Name"
@@ -60,12 +64,16 @@ $ prolific aitaskbuilder batch update -b 497f6eca-6276-4993-bfeb-53cbbbba6f08 -f
 
 Clear batch_items:
 $ prolific aitaskbuilder batch update -b 497f6eca-6276-4993-bfeb-53cbbbba6f08 --clear-batch-items
+
+Enable auto-sync:
+$ prolific aitaskbuilder batch update -b 497f6eca-6276-4993-bfeb-53cbbbba6f08 --auto-sync
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
 			opts.TaskNameChanged = cmd.Flags().Changed("task-name")
 			opts.TaskIntroductionChanged = cmd.Flags().Changed("task-introduction")
 			opts.TaskStepsChanged = cmd.Flags().Changed("task-steps")
+			opts.AutoSyncChanged = cmd.Flags().Changed("auto-sync")
 
 			err := updateAITaskBuilderBatch(client, opts, w)
 			if err != nil {
@@ -86,6 +94,7 @@ $ prolific aitaskbuilder batch update -b 497f6eca-6276-4993-bfeb-53cbbbba6f08 --
 	flags.StringVarP(&opts.BatchItemsFile, "batch-items-file", "f", "", "Path to JSON file containing batch_items layout.")
 	flags.StringVarP(&opts.BatchItemsJSON, "batch-items-json", "j", "", "Inline JSON string containing batch_items layout.")
 	flags.BoolVar(&opts.ClearBatchItems, "clear-batch-items", false, "Set batch_items to null, removing the configured task layout and deleting all associated instructions and content blocks.")
+	flags.BoolVar(&opts.AutoSync, "auto-sync", false, "Enable or disable automatic synchronization of new dataset datapoints into the batch.")
 
 	_ = cmd.MarkFlagRequired("batch-id")
 
@@ -102,7 +111,7 @@ func updateAITaskBuilderBatch(c client.API, opts BatchUpdateOptions, w io.Writer
 	allTaskDetailsChanged := opts.TaskNameChanged && opts.TaskIntroductionChanged && opts.TaskStepsChanged
 	anyBatchItemsChanged := opts.BatchItemsFile != "" || opts.BatchItemsJSON != "" || opts.ClearBatchItems
 
-	if opts.Name == "" && opts.DatasetID == "" && !anyTaskDetailChanged && !anyBatchItemsChanged {
+	if opts.Name == "" && opts.DatasetID == "" && !anyTaskDetailChanged && !anyBatchItemsChanged && !opts.AutoSyncChanged {
 		return errors.New(ErrAtLeastOneUpdateFieldRequired)
 	}
 
@@ -126,6 +135,10 @@ func updateAITaskBuilderBatch(c client.API, opts BatchUpdateOptions, w io.Writer
 		Name:       opts.Name,
 		DatasetID:  opts.DatasetID,
 		BatchItems: batchItems,
+	}
+
+	if opts.AutoSyncChanged {
+		params.AutoSync = &opts.AutoSync
 	}
 
 	if anyTaskDetailChanged {

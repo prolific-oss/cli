@@ -25,5 +25,5 @@ const (
 	ErrTaskStepsRequired             = "task steps is required"
 	ErrTasksPerGroupMinimum          = "tasks per group must be at least 1"
 	ErrWorkspaceIDRequired           = "workspace ID is required"
-	ErrAtLeastOneUpdateFieldRequired = "at least one of --name, --dataset-id, task detail flags, or batch-items flags must be provided"
+	ErrAtLeastOneUpdateFieldRequired = "at least one of --name, --dataset-id, task detail flags, batch-items flags, or --auto-sync must be provided"
 )

@@ -118,6 +118,7 @@ type UpdateBatchParams struct {
 	DatasetID   string
 	TaskDetails *TaskDetails    // nil means task details will not be updated
 	BatchItems  json.RawMessage // nil = omit, json.RawMessage("null") = clear, JSON array = set
+	AutoSync    *bool           // nil means auto_sync will not be updated
 }
 
 // UpdateAITaskBuilderBatchPayload represents the JSON payload for updating an AI Task Builder batch.
@@ -126,6 +127,7 @@ type UpdateAITaskBuilderBatchPayload struct {
 	DatasetID   string          `json:"dataset_id,omitempty"`
 	TaskDetails *TaskDetails    `json:"task_details,omitempty"`
 	BatchItems  json.RawMessage `json:"batch_items,omitempty"`
+	AutoSync    *bool           `json:"auto_sync,omitempty"`
 }
 
 // TaskDetails represents the task configuration details for batch creation
