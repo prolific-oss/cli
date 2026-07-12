@@ -185,6 +185,7 @@ func updateAITaskBuilderBatch(c client.API, opts BatchUpdateOptions, w io.Writer
 	fmt.Fprintf(w, "ID: %s\n", response.ID)
 	fmt.Fprintf(w, "Name: %s\n", response.Name)
 	fmt.Fprintf(w, "Status: %s\n", response.Status)
+	fmt.Fprintf(w, "Auto Sync Enabled: %t\n", response.AutoSyncEnabled)
 	fmt.Fprintf(w, "Total Task Count: %d\n", response.TotalTaskCount)
 	fmt.Fprintf(w, "Total Instruction Count: %d\n", response.TotalInstructionCount)
 	fmt.Fprintf(w, "Workspace ID: %s\n", response.WorkspaceID)

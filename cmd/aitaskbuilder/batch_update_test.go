@@ -82,8 +82,8 @@ func TestNewBatchUpdateCommandUpdatesName(t *testing.T) {
 
 	writer.Flush()
 
-	expected := fmt.Sprintf("AI Task Builder Batch Updated Successfully:\nID: %s\nName: %s\nStatus: %s\nTotal Task Count: %d\nTotal Instruction Count: %d\nWorkspace ID: %s\nCreated By: %s\nCreated At: %s\nSchema Version: %d\n",
-		response.ID, response.Name, response.Status, response.TotalTaskCount, response.TotalInstructionCount,
+	expected := fmt.Sprintf("AI Task Builder Batch Updated Successfully:\nID: %s\nName: %s\nStatus: %s\nAuto Sync Enabled: %v\nTotal Task Count: %d\nTotal Instruction Count: %d\nWorkspace ID: %s\nCreated By: %s\nCreated At: %s\nSchema Version: %d\n",
+		response.ID, response.Name, response.Status, response.AutoSyncEnabled, response.TotalTaskCount, response.TotalInstructionCount,
 		response.WorkspaceID, response.CreatedBy, "2025-02-27 18:03:59", response.SchemaVersion)
 
 	if b.String() != expected {
@@ -148,8 +148,8 @@ func TestNewBatchUpdateCommandUpdatesAllTaskDetails(t *testing.T) {
 
 	writer.Flush()
 
-	expected := fmt.Sprintf("AI Task Builder Batch Updated Successfully:\nID: %s\nName: %s\nStatus: %s\nTotal Task Count: %d\nTotal Instruction Count: %d\nWorkspace ID: %s\nCreated By: %s\nCreated At: %s\nSchema Version: %d\n\nTask Details:\n  Name: %s\n  Introduction: %s\n  Steps: %s\n",
-		response.ID, response.Name, response.Status, response.TotalTaskCount, response.TotalInstructionCount,
+	expected := fmt.Sprintf("AI Task Builder Batch Updated Successfully:\nID: %s\nName: %s\nStatus: %s\nAuto Sync Enabled: %v\nTotal Task Count: %d\nTotal Instruction Count: %d\nWorkspace ID: %s\nCreated By: %s\nCreated At: %s\nSchema Version: %d\n\nTask Details:\n  Name: %s\n  Introduction: %s\n  Steps: %s\n",
+		response.ID, response.Name, response.Status, response.AutoSyncEnabled, response.TotalTaskCount, response.TotalInstructionCount,
 		response.WorkspaceID, response.CreatedBy, "2025-02-27 18:03:59", response.SchemaVersion,
 		taskName, taskIntroduction, taskSteps)
 
