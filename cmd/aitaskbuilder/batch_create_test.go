@@ -14,6 +14,7 @@ import (
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/aitaskbuilder"
 	"github.com/prolific-oss/cli/mock_client"
+	"github.com/prolific-oss/cli/model"
 )
 
 func TestNewBatchCreateCommand(t *testing.T) {
@@ -57,13 +58,14 @@ func TestNewBatchCreateCommandCallsAPI(t *testing.T) {
 		TotalTaskCount:        0,
 		TotalInstructionCount: 0,
 		WorkspaceID:           workspaceID,
-		Datasets: []client.DatasetReference{
+		Datasets: []model.Dataset{
 			{
 				ID:                  datasetID,
 				TotalDatapointCount: 100,
 			},
 		},
-		TaskDetails: client.TaskDetailsResponse{
+		AutoSyncEnabled: false,
+		TaskDetails: model.TaskDetails{
 			TaskName:         taskName,
 			TaskIntroduction: taskIntroduction,
 			TaskSteps:        taskSteps,
@@ -99,8 +101,8 @@ func TestNewBatchCreateCommandCallsAPI(t *testing.T) {
 
 	writer.Flush()
 
-	expected := fmt.Sprintf("AI Task Builder Batch Created Successfully:\nID: %s\nName: %s\nStatus: %s\nTotal Task Count: %d\nTotal Instruction Count: %d\nWorkspace ID: %s\nCreated By: %s\nCreated At: %s\nDatasets: %d\n  Dataset 1: %s (100 datapoints)\n\nTask Details:\n  Name: %s\n  Introduction: %s\n  Steps: %s\n",
-		response.ID, response.Name, response.Status, response.TotalTaskCount, response.TotalInstructionCount, response.WorkspaceID, response.CreatedBy, response.CreatedAt, len(response.Datasets), datasetID, taskName, taskIntroduction, taskSteps)
+	expected := fmt.Sprintf("AI Task Builder Batch Created Successfully:\nID: %s\nName: %s\nStatus: %s\nAuto Sync Enabled: %v\nTotal Task Count: %d\nTotal Instruction Count: %d\nWorkspace ID: %s\nCreated By: %s\nCreated At: %s\nDatasets: %d\n  Dataset 1: %s (100 datapoints)\n\nTask Details:\n  Name: %s\n  Introduction: %s\n  Steps: %s\n",
+		response.ID, response.Name, response.Status, response.AutoSyncEnabled, response.TotalTaskCount, response.TotalInstructionCount, response.WorkspaceID, response.CreatedBy, response.CreatedAt, len(response.Datasets), datasetID, taskName, taskIntroduction, taskSteps)
 
 	if b.String() != expected {
 		t.Fatalf("expected output:\n%s\ngot output:\n%s", expected, b.String())

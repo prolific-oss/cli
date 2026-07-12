@@ -132,6 +132,7 @@ func createAITaskBuilderBatch(c client.API, opts BatchCreateOptions, w io.Writer
 	fmt.Fprintf(w, "ID: %s\n", response.ID)
 	fmt.Fprintf(w, "Name: %s\n", response.Name)
 	fmt.Fprintf(w, "Status: %s\n", response.Status)
+	fmt.Fprintf(w, "Auto Sync Enabled: %t\n", response.AutoSyncEnabled)
 	fmt.Fprintf(w, "Total Task Count: %d\n", response.TotalTaskCount)
 	fmt.Fprintf(w, "Total Instruction Count: %d\n", response.TotalInstructionCount)
 	if response.TotalTaskGroups != nil {
