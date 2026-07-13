@@ -51,6 +51,64 @@ const (
 	DatasetStatusError DatasetStatus = "ERROR"
 )
 
+// DatasetImportFormat represents the file format for a dataset import.
+type DatasetImportFormat string
+
+const (
+	// DatasetImportFormatCSV uploads comma-separated values.
+	DatasetImportFormatCSV DatasetImportFormat = "csv"
+	// DatasetImportFormatJSONL uploads JSON Lines.
+	DatasetImportFormatJSONL DatasetImportFormat = "jsonl"
+)
+
+// DatasetImportJobStatus represents the status of a dataset import job.
+type DatasetImportJobStatus string
+
+const (
+	// DatasetImportJobStatusUninitialised means the import was created but the upload has not started.
+	DatasetImportJobStatusUninitialised DatasetImportJobStatus = "uninitialised"
+	// DatasetImportJobStatusQueued means the upload completed and is waiting to be processed.
+	DatasetImportJobStatusQueued DatasetImportJobStatus = "queued"
+	// DatasetImportJobStatusProcessing means the import is currently being processed.
+	DatasetImportJobStatusProcessing DatasetImportJobStatus = "processing"
+	// DatasetImportJobStatusComplete means all records were accepted.
+	DatasetImportJobStatusComplete DatasetImportJobStatus = "complete"
+	// DatasetImportJobStatusPartial means some records were accepted and some were rejected.
+	DatasetImportJobStatusPartial DatasetImportJobStatus = "partial"
+	// DatasetImportJobStatusFailed means the import could not be processed.
+	DatasetImportJobStatusFailed DatasetImportJobStatus = "failed"
+	// DatasetImportJobStatusPendingSchema means processing is waiting for a dataset schema to be defined.
+	DatasetImportJobStatusPendingSchema DatasetImportJobStatus = "pending_schema"
+)
+
+// DatasetImportJobRecordError represents a record-level import error.
+type DatasetImportJobRecordError struct {
+	RecordIndex int    `json:"record_index"`
+	Field       string `json:"field"`
+	Reason      string `json:"reason"`
+}
+
+// DatasetImportJob represents the status of a single dataset upload/import.
+type DatasetImportJob struct {
+	DatasetID           string                        `json:"dataset_id"`
+	ImportID            string                        `json:"import_id"`
+	Type                string                        `json:"type"`
+	Filename            string                        `json:"filename,omitempty"`
+	CreatedAt           string                        `json:"created_at"`
+	UpdatedAt           string                        `json:"updated_at"`
+	ProcessingStartedAt string                        `json:"processing_started_at,omitempty"`
+	ProcessedOffset     *int                          `json:"processed_offset,omitempty"`
+	WrittenCount        *int                          `json:"written_count,omitempty"`
+	DuplicateSeenCount  *int                          `json:"duplicate_seen_count,omitempty"`
+	RejectedSeenCount   *int                          `json:"rejected_seen_count,omitempty"`
+	Status              DatasetImportJobStatus        `json:"status"`
+	AcceptedCount       *int                          `json:"accepted_count,omitempty"`
+	DuplicateCount      *int                          `json:"duplicate_count,omitempty"`
+	RejectedCount       *int                          `json:"rejected_count,omitempty"`
+	Errors              []DatasetImportJobRecordError `json:"errors,omitempty"`
+	Reason              string                        `json:"reason,omitempty"`
+}
+
 // TaskDetails represents the task configuration details.
 type TaskDetails struct {
 	TaskName         string `json:"task_name" mapstructure:"task_name"`

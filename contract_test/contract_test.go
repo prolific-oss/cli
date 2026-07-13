@@ -92,7 +92,7 @@ func findRoute(router routers.Router, r *http.Request) (*routers.Route, map[stri
 type operation struct {
 	operationID string
 	call        func(*client.Client) // nil when skipped
-	skip        string               // required reason when call is nil; prefix with OUTOFSCOPE or SPECMISMATCH
+	skip        string               // required reason when call is nil; prefix with OUTOFSCOPE or SPECMIS/MATCH
 }
 
 // operations maps every operationId in openapi.yaml to either a client method call
@@ -197,10 +197,12 @@ var operations = []operation{
 	{operationID: "create-task-builder-dataset", call: func(c *client.Client) {
 		c.CreateAITaskBuilderDataset("ws-id", client.CreateAITaskBuilderDatasetPayload{Name: "t"})
 	}},
-	{operationID: "get-dataset-upload-url", call: func(c *client.Client) { c.GetAITaskBuilderDatasetUploadURL("ds-id", "data") }},
+	{operationID: "get-dataset-upload-url", call: func(c *client.Client) { c.GetAITaskBuilderDatasetUploadURL("ds-id", "data.jsonl") }},
 	{operationID: "get-task-builder-dataset", skip: "OUTOFSCOPE: no CLI command for retrieving a specific dataset by ID"},
 	{operationID: "get-task-builder-dataset-status", call: func(c *client.Client) { c.GetAITaskBuilderDatasetStatus("ds-id") }},
-	{operationID: "get-dataset-import-status", skip: "OUTOFSCOPE: no CLI command for dataset import status"},
+	{operationID: "get-dataset-import-status", call: func(c *client.Client) {
+		c.GetAITaskBuilderDatasetImportStatus("ds-id", "import-id")
+	}},
 
 	// AI Task Builder — Instructions
 	{operationID: "get-task-builder-instructions", skip: "OUTOFSCOPE: no CLI command for getting task builder instructions"},
