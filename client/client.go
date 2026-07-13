@@ -1271,6 +1271,7 @@ func (c *Client) UpdateAITaskBuilderBatch(params UpdateBatchParams) (*UpdateAITa
 		DatasetID:   params.DatasetID,
 		TaskDetails: params.TaskDetails,
 		BatchItems:  params.BatchItems,
+		AutoSync:    params.AutoSync,
 	}
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s", params.BatchID)
@@ -1524,6 +1525,7 @@ func (c *Client) CreateAITaskBuilderBatch(params CreateBatchParams) (*CreateAITa
 			TaskSteps:        params.TaskSteps,
 		},
 		BatchItems: params.BatchItems,
+		AutoSync:   params.AutoSync,
 	}
 
 	url := "/api/v1/data-collection/batches"

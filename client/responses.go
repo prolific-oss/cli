@@ -296,23 +296,18 @@ type CreateAITaskBuilderDatasetResponse struct {
 
 // CreateAITaskBuilderBatchResponse is the response for creating an AI Task Builder batch.
 type CreateAITaskBuilderBatchResponse struct {
-	ID                    string              `json:"id"`
-	CreatedAt             string              `json:"created_at"`
-	CreatedBy             string              `json:"created_by"`
-	Name                  string              `json:"name"`
-	Status                string              `json:"status"`
-	TotalTaskCount        int                 `json:"total_task_count"`
-	TotalInstructionCount int                 `json:"total_instruction_count"`
-	TotalTaskGroups       *int                `json:"total_task_groups,omitempty"`
-	WorkspaceID           string              `json:"workspace_id"`
-	Datasets              []DatasetReference  `json:"datasets"`
-	TaskDetails           TaskDetailsResponse `json:"task_details"`
-}
-
-// DatasetReference represents a dataset reference in the batch response
-type DatasetReference struct {
-	ID                  string `json:"id"`
-	TotalDatapointCount int    `json:"total_datapoint_count"`
+	ID                    string            `json:"id"`
+	CreatedAt             string            `json:"created_at"`
+	CreatedBy             string            `json:"created_by"`
+	Name                  string            `json:"name"`
+	Status                string            `json:"status"`
+	TotalTaskCount        int               `json:"total_task_count"`
+	TotalInstructionCount int               `json:"total_instruction_count"`
+	TotalTaskGroups       *int              `json:"total_task_groups,omitempty"`
+	WorkspaceID           string            `json:"workspace_id"`
+	AutoSyncEnabled       bool              `json:"auto_sync_enabled"`
+	Datasets              []model.Dataset   `json:"datasets"`
+	TaskDetails           model.TaskDetails `json:"task_details"`
 }
 
 // TaskDetailsResponse represents the task details in the batch response

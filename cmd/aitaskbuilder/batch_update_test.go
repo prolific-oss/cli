@@ -82,8 +82,8 @@ func TestNewBatchUpdateCommandUpdatesName(t *testing.T) {
 
 	writer.Flush()
 
-	expected := fmt.Sprintf("AI Task Builder Batch Updated Successfully:\nID: %s\nName: %s\nStatus: %s\nTotal Task Count: %d\nTotal Instruction Count: %d\nWorkspace ID: %s\nCreated By: %s\nCreated At: %s\nSchema Version: %d\n",
-		response.ID, response.Name, response.Status, response.TotalTaskCount, response.TotalInstructionCount,
+	expected := fmt.Sprintf("AI Task Builder Batch Updated Successfully:\nID: %s\nName: %s\nStatus: %s\nAuto Sync Enabled: %v\nTotal Task Count: %d\nTotal Instruction Count: %d\nWorkspace ID: %s\nCreated By: %s\nCreated At: %s\nSchema Version: %d\n",
+		response.ID, response.Name, response.Status, response.AutoSyncEnabled, response.TotalTaskCount, response.TotalInstructionCount,
 		response.WorkspaceID, response.CreatedBy, "2025-02-27 18:03:59", response.SchemaVersion)
 
 	if b.String() != expected {
@@ -148,8 +148,8 @@ func TestNewBatchUpdateCommandUpdatesAllTaskDetails(t *testing.T) {
 
 	writer.Flush()
 
-	expected := fmt.Sprintf("AI Task Builder Batch Updated Successfully:\nID: %s\nName: %s\nStatus: %s\nTotal Task Count: %d\nTotal Instruction Count: %d\nWorkspace ID: %s\nCreated By: %s\nCreated At: %s\nSchema Version: %d\n\nTask Details:\n  Name: %s\n  Introduction: %s\n  Steps: %s\n",
-		response.ID, response.Name, response.Status, response.TotalTaskCount, response.TotalInstructionCount,
+	expected := fmt.Sprintf("AI Task Builder Batch Updated Successfully:\nID: %s\nName: %s\nStatus: %s\nAuto Sync Enabled: %v\nTotal Task Count: %d\nTotal Instruction Count: %d\nWorkspace ID: %s\nCreated By: %s\nCreated At: %s\nSchema Version: %d\n\nTask Details:\n  Name: %s\n  Introduction: %s\n  Steps: %s\n",
+		response.ID, response.Name, response.Status, response.AutoSyncEnabled, response.TotalTaskCount, response.TotalInstructionCount,
 		response.WorkspaceID, response.CreatedBy, "2025-02-27 18:03:59", response.SchemaVersion,
 		taskName, taskIntroduction, taskSteps)
 
@@ -437,6 +437,100 @@ func TestNewBatchUpdateCommandClearBatchItems(t *testing.T) {
 
 	if err := cmd.Execute(); err != nil {
 		t.Fatalf("expected no error; got %v", err)
+	}
+}
+
+//nolint:dupl
+func TestNewBatchUpdateCommandEnablesAutoSync(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	createdAt, _ := time.Parse(time.RFC3339, "2025-02-27T18:03:59.795Z")
+	response := &client.UpdateAITaskBuilderBatchResponse{
+		AITaskBuilderBatch: model.AITaskBuilderBatch{
+			ID:            updateBatchID,
+			CreatedAt:     createdAt,
+			CreatedBy:     "user-1",
+			Name:          "Existing Name",
+			Status:        "UNINITIALISED",
+			WorkspaceID:   "6745ab669112d10b9b3afb48",
+			SchemaVersion: 5,
+			Datasets:      []model.Dataset{},
+		},
+	}
+
+	c.EXPECT().UpdateAITaskBuilderBatch(client.UpdateBatchParams{
+		BatchID:  updateBatchID,
+		AutoSync: new(true),
+	}).Return(response, nil)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := aitaskbuilder.NewBatchUpdateCommand(c, writer)
+	cmd.SetArgs([]string{"--batch-id", updateBatchID, "--auto-sync"})
+
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("expected no error; got %v", err)
+	}
+}
+
+//nolint:dupl
+func TestNewBatchUpdateCommandDisablesAutoSync(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	createdAt, _ := time.Parse(time.RFC3339, "2025-02-27T18:03:59.795Z")
+	response := &client.UpdateAITaskBuilderBatchResponse{
+		AITaskBuilderBatch: model.AITaskBuilderBatch{
+			ID:            updateBatchID,
+			CreatedAt:     createdAt,
+			CreatedBy:     "user-1",
+			Name:          "Existing Name",
+			Status:        "UNINITIALISED",
+			WorkspaceID:   "6745ab669112d10b9b3afb48",
+			SchemaVersion: 5,
+			Datasets:      []model.Dataset{},
+		},
+	}
+
+	c.EXPECT().UpdateAITaskBuilderBatch(client.UpdateBatchParams{
+		BatchID:  updateBatchID,
+		AutoSync: new(false),
+	}).Return(response, nil)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := aitaskbuilder.NewBatchUpdateCommand(c, writer)
+	cmd.SetArgs([]string{"--batch-id", updateBatchID, "--no-auto-sync"})
+
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("expected no error; got %v", err)
+	}
+}
+
+func TestNewBatchUpdateCommandAutoSyncFlagsMutuallyExclusive(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := aitaskbuilder.NewBatchUpdateCommand(c, writer)
+	cmd.SetArgs([]string{"--batch-id", updateBatchID, "--auto-sync", "--no-auto-sync"})
+
+	err := cmd.Execute()
+	if err == nil {
+		t.Fatal("expected error; got nil")
+	}
+
+	expectedError := "error: " + aitaskbuilder.ErrAutoSyncFlagsMutuallyExclusive
+	if err.Error() != expectedError {
+		t.Fatalf("expected error: %s; got %s", expectedError, err.Error())
 	}
 }
 

@@ -18,6 +18,7 @@ type AITaskBuilderBatch struct {
 	WorkspaceID           string                       `json:"workspace_id"`
 	SchemaVersion         int                          `json:"schema_version"`
 	TaskDetails           TaskDetails                  `json:"task_details"`
+	AutoSyncEnabled       bool                         `json:"auto_sync_enabled"`
 }
 
 // AITaskBuilderBatchStatus represents the status of an AI Task Builder batch.

@@ -92,7 +92,7 @@ func findRoute(router routers.Router, r *http.Request) (*routers.Route, map[stri
 type operation struct {
 	operationID string
 	call        func(*client.Client) // nil when skipped
-	skip        string               // required reason when call is nil; prefix with OUTOFSCOPE or SPECMISMATCH
+	skip        string               // required reason when call is nil; prefix with OUTOFSCOPE or SPECMIS/MATCH
 }
 
 // operations maps every operationId in openapi.yaml to either a client method call
@@ -111,9 +111,6 @@ var operations = []operation{
 	{operationID: "create-project", call: func(c *client.Client) { c.CreateProject("ws-id", model.Project{Title: "t"}) }},
 	{operationID: "get-project", call: func(c *client.Client) { c.GetProject("proj-id") }},
 	{operationID: "update-project", skip: "OUTOFSCOPE: no CLI command for updating a project"},
-
-	// Users
-	{operationID: "get-user-identity", skip: "OUTOFSCOPE: internal identity endpoint is not used by the CLI"},
 
 	// Filters
 	{operationID: "get-filters", call: func(c *client.Client) { c.GetFilters() }},
