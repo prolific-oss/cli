@@ -274,6 +274,7 @@ var operations = []operation{
 		})
 	}},
 	{operationID: "get-project-studies", call: func(c *client.Client) { c.GetStudies("", "proj-id") }},
+	{operationID: "delete-project-study", skip: "OUTOFSCOPE: no CLI command for deleting a study"},
 	{operationID: "get-study", call: func(c *client.Client) { c.GetStudy("study-id") }},
 	{operationID: "delete-study", skip: "OUTOFSCOPE: no CLI command for deleting a study"},
 	{operationID: "update-study", call: func(c *client.Client) {

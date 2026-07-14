@@ -262,6 +262,10 @@ type GetAITaskBuilderResponsesResponse struct {
 // The API returns a simple array of task ID strings.
 type GetAITaskBuilderTasksResponse []string
 
+// GetAITaskBuilderTaskGroupsResponse is the response for the get AI Task Builder task groups endpoint.
+// The API returns a simple array of task group ID strings.
+type GetAITaskBuilderTaskGroupsResponse []string
+
 // GetAITaskBuilderDatasetStatusResponse is the response for the get AI Task Builder dataset status endpoint.
 type GetAITaskBuilderDatasetStatusResponse struct {
 	Status model.DatasetStatus `json:"status"`

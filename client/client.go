@@ -123,6 +123,7 @@ type API interface {
 	GetAITaskBuilderBatches(workspaceID string) (*GetAITaskBuilderBatchesResponse, error)
 	GetAITaskBuilderResponses(batchID string) (*GetAITaskBuilderResponsesResponse, error)
 	GetAITaskBuilderTasks(batchID string) (*GetAITaskBuilderTasksResponse, error)
+	GetAITaskBuilderTaskGroups(batchID string) (*GetAITaskBuilderTaskGroupsResponse, error)
 	InitiateBatchExport(batchID string) (*BatchExportResponse, error)
 	GetBatchExportStatus(batchID, exportID string) (*BatchExportResponse, error)
 	SyncAITaskBuilderBatch(batchID string) (*AITaskBuilderBatchSyncResponse, error)
@@ -1377,6 +1378,18 @@ func (c *Client) GetAITaskBuilderTasks(batchID string) (*GetAITaskBuilderTasksRe
 	var response GetAITaskBuilderTasksResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/tasks", batchID)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+	return &response, nil
+}
+
+// GetAITaskBuilderTaskGroups will return the task group IDs for an AI Task Builder batch.
+func (c *Client) GetAITaskBuilderTaskGroups(batchID string) (*GetAITaskBuilderTaskGroupsResponse, error) {
+	var response GetAITaskBuilderTaskGroupsResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/task-groups", batchID)
 	_, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)

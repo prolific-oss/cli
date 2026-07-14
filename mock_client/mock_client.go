@@ -540,6 +540,21 @@ func (mr *MockAPIMockRecorder) GetAITaskBuilderResponses(batchID interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAITaskBuilderResponses", reflect.TypeOf((*MockAPI)(nil).GetAITaskBuilderResponses), batchID)
 }
 
+// GetAITaskBuilderTaskGroups mocks base method.
+func (m *MockAPI) GetAITaskBuilderTaskGroups(batchID string) (*client.GetAITaskBuilderTaskGroupsResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAITaskBuilderTaskGroups", batchID)
+	ret0, _ := ret[0].(*client.GetAITaskBuilderTaskGroupsResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAITaskBuilderTaskGroups indicates an expected call of GetAITaskBuilderTaskGroups.
+func (mr *MockAPIMockRecorder) GetAITaskBuilderTaskGroups(batchID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAITaskBuilderTaskGroups", reflect.TypeOf((*MockAPI)(nil).GetAITaskBuilderTaskGroups), batchID)
+}
+
 // GetAITaskBuilderTasks mocks base method.
 func (m *MockAPI) GetAITaskBuilderTasks(batchID string) (*client.GetAITaskBuilderTasksResponse, error) {
 	m.ctrl.T.Helper()
