@@ -20,6 +20,8 @@ func noOpBrowserOpener(url string) error {
 	return nil
 }
 
+const testTaskGroupID = "task-group-1"
+
 func TestNewBatchPreviewCommand(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -27,7 +29,7 @@ func TestNewBatchPreviewCommand(t *testing.T) {
 
 	cmd := aitaskbuilder.NewBatchPreviewCommandWithOpener(c, os.Stdout, noOpBrowserOpener)
 
-	use := "preview"
+	use := "preview <batch-id>"
 	short := "Preview a batch in the browser"
 
 	if cmd.Use != use {
@@ -45,15 +47,37 @@ func TestBatchPreviewRequiresBatchID(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	cmd := aitaskbuilder.NewBatchPreviewCommandWithOpener(c, os.Stdout, noOpBrowserOpener)
-	err := cmd.RunE(cmd, nil)
+	err := cmd.Args(cmd, []string{})
 
 	if err == nil {
 		t.Fatal("expected error when batch-id is missing")
 	}
 
-	expected := fmt.Sprintf("error: %s", aitaskbuilder.ErrBatchIDRequired)
+	expected := "please provide a batch ID"
 	if err.Error() != expected {
 		t.Fatalf("expected error %q, got %q", expected, err.Error())
+	}
+}
+
+func TestBatchPreviewAcceptsPositionalBatchID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	batchID := testBatchUUID
+	taskGroupID := testTaskGroupID
+
+	response := client.GetAITaskBuilderBatchResponse{
+		AITaskBuilderBatch: model.AITaskBuilderBatch{ID: batchID},
+	}
+	taskGroups := client.GetAITaskBuilderTaskGroupsResponse{taskGroupID}
+
+	c.EXPECT().GetAITaskBuilderBatch(gomock.Eq(batchID)).Return(&response, nil).Times(1)
+	c.EXPECT().GetAITaskBuilderTaskGroups(gomock.Eq(batchID)).Return(&taskGroups, nil).Times(1)
+
+	cmd := aitaskbuilder.NewBatchPreviewCommandWithOpener(c, os.Stdout, noOpBrowserOpener)
+	if err := cmd.RunE(cmd, []string{batchID}); err != nil {
+		t.Fatalf("expected no error, got %v", err)
 	}
 }
 
@@ -63,7 +87,7 @@ func TestBatchPreviewCallsGetBatchAndTaskGroups(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	batchID := testBatchUUID
-	taskGroupID := "task-group-1"
+	taskGroupID := testTaskGroupID
 
 	response := client.GetAITaskBuilderBatchResponse{
 		AITaskBuilderBatch: model.AITaskBuilderBatch{ID: batchID},
@@ -77,8 +101,7 @@ func TestBatchPreviewCallsGetBatchAndTaskGroups(t *testing.T) {
 	writer := bufio.NewWriter(&b)
 
 	cmd := aitaskbuilder.NewBatchPreviewCommandWithOpener(c, writer, noOpBrowserOpener)
-	_ = cmd.Flags().Set("batch-id", batchID)
-	err := cmd.RunE(cmd, nil)
+	err := cmd.RunE(cmd, []string{batchID})
 	writer.Flush()
 
 	if err != nil {
@@ -96,8 +119,7 @@ func TestBatchPreviewReturnsErrorOnBatchClientError(t *testing.T) {
 	c.EXPECT().GetAITaskBuilderBatch(gomock.Eq(batchID)).Return(nil, errors.New("batch not found")).Times(1)
 
 	cmd := aitaskbuilder.NewBatchPreviewCommandWithOpener(c, os.Stdout, noOpBrowserOpener)
-	_ = cmd.Flags().Set("batch-id", batchID)
-	err := cmd.RunE(cmd, nil)
+	err := cmd.RunE(cmd, []string{batchID})
 
 	expected := "error: failed to get batch: batch not found"
 	if err == nil || err.Error() != expected {
@@ -121,8 +143,7 @@ func TestBatchPreviewReturnsErrorWhenNoTaskGroups(t *testing.T) {
 	c.EXPECT().GetAITaskBuilderTaskGroups(gomock.Eq(batchID)).Return(&taskGroups, nil).Times(1)
 
 	cmd := aitaskbuilder.NewBatchPreviewCommandWithOpener(c, os.Stdout, noOpBrowserOpener)
-	_ = cmd.Flags().Set("batch-id", batchID)
-	err := cmd.RunE(cmd, nil)
+	err := cmd.RunE(cmd, []string{batchID})
 
 	expected := fmt.Sprintf("error: %s %s", aitaskbuilder.ErrNoTaskGroupsFound, batchID)
 	if err == nil || err.Error() != expected {
@@ -136,7 +157,7 @@ func TestBatchPreviewOutputContainsURL(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	batchID := testBatchUUID
-	taskGroupID := "task-group-1"
+	taskGroupID := testTaskGroupID
 
 	response := client.GetAITaskBuilderBatchResponse{
 		AITaskBuilderBatch: model.AITaskBuilderBatch{ID: batchID},
@@ -150,8 +171,7 @@ func TestBatchPreviewOutputContainsURL(t *testing.T) {
 	writer := bufio.NewWriter(&b)
 
 	cmd := aitaskbuilder.NewBatchPreviewCommandWithOpener(c, writer, noOpBrowserOpener)
-	_ = cmd.Flags().Set("batch-id", batchID)
-	err := cmd.RunE(cmd, nil)
+	err := cmd.RunE(cmd, []string{batchID})
 	writer.Flush()
 
 	if err != nil {
@@ -169,5 +189,23 @@ func TestBatchPreviewOutputContainsURL(t *testing.T) {
 		if !bytes.Contains([]byte(output), []byte(expected)) {
 			t.Errorf("expected output to contain %q, got: %s", expected, output)
 		}
+	}
+}
+
+func TestGetBatchPreviewPath(t *testing.T) {
+	path := aitaskbuilder.GetBatchPreviewPath("batch-123", "task-group-456")
+
+	expected := "data-collection-tool/batches/batch-123/task-groups/task-group-456?preview=true"
+	if path != expected {
+		t.Fatalf("expected path %q, got %q", expected, path)
+	}
+}
+
+func TestGetBatchPreviewURL(t *testing.T) {
+	url := aitaskbuilder.GetBatchPreviewURL("batch-123", "task-group-456")
+
+	expected := "https://app.prolific.com/data-collection-tool/batches/batch-123/task-groups/task-group-456?preview=true"
+	if url != expected {
+		t.Fatalf("expected URL %q, got %q", expected, url)
 	}
 }

@@ -1,11 +1,15 @@
 package aitaskbuilder
 
 import (
+	"bufio"
 	"context"
+	"encoding/csv"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"slices"
@@ -26,6 +30,15 @@ const (
 
 // DatasetUploadPollSleep is the sleep function used between dataset import status polls.
 var DatasetUploadPollSleep func(time.Duration) = time.Sleep
+
+var validAudioURLFileExtensions = map[string]bool{
+	".aac": true,
+	".m4a": true,
+	".mp3": true,
+	".wav": true,
+}
+
+const supportedAudioURLFileExtensions = ".aac, .m4a, .mp3, .wav"
 
 // DatasetUploadOptions are the options for uploading to an AI Task Builder dataset.
 type DatasetUploadOptions struct {
@@ -107,6 +120,15 @@ func uploadDatasetFile(client client.API, opts DatasetUploadOptions, w io.Writer
 
 	uploadRequest, err := prepareDatasetUploadRequest(opts.FilePath, opts.Format)
 	if err != nil {
+		return err
+	}
+
+	dataset, err := client.GetAITaskBuilderDataset(opts.DatasetID)
+	if err != nil {
+		return fmt.Errorf("failed to get dataset: %w", err)
+	}
+
+	if err := validateAudioURLFields(opts.FilePath, uploadRequest.Format, dataset.Schema); err != nil {
 		return err
 	}
 
@@ -255,6 +277,164 @@ func uploadFileToPresignedURL(filePath, uploadURL, method, contentType string) e
 	}
 
 	return nil
+}
+
+func validateAudioURLFields(filePath string, format model.DatasetImportFormat, schema *client.DatasetSchema) error {
+	if schema == nil {
+		return nil
+	}
+
+	audioFields := make(map[string]struct{})
+	for fieldName, field := range schema.Fields {
+		if field.Type == "audio_url" {
+			audioFields[fieldName] = struct{}{}
+		}
+	}
+
+	if len(audioFields) == 0 {
+		return nil
+	}
+
+	switch format {
+	case model.DatasetImportFormatCSV:
+		return validateAudioURLFieldsInCSV(filePath, audioFields)
+	case model.DatasetImportFormatJSONL:
+		return ValidateAudioURLFieldsInJSONL(filePath, audioFields)
+	default:
+		return nil
+	}
+}
+
+func validateAudioURLFieldsInCSV(filePath string, audioFields map[string]struct{}) error {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to open file %s: %w", filePath, err)
+	}
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+	headers, err := reader.Read()
+	if err != nil {
+		return fmt.Errorf("failed to read CSV header from %s: %w", filePath, err)
+	}
+
+	audioColumnIndexes := make(map[int]string)
+	for idx, header := range headers {
+		fieldName := strings.TrimSpace(header)
+		if _, ok := audioFields[fieldName]; ok {
+			audioColumnIndexes[idx] = fieldName
+		}
+	}
+
+	if len(audioColumnIndexes) == 0 {
+		return nil
+	}
+
+	recordIndex := 1
+	for {
+		record, err := reader.Read()
+		if errors.Is(err, io.EOF) {
+			return nil
+		}
+		if err != nil {
+			return fmt.Errorf("failed to read CSV record %d from %s: %w", recordIndex, filePath, err)
+		}
+
+		for idx, fieldName := range audioColumnIndexes {
+			if idx >= len(record) {
+				continue
+			}
+
+			if err := validateAudioURLValue(recordIndex, fieldName, record[idx]); err != nil {
+				return err
+			}
+		}
+
+		recordIndex++
+	}
+}
+
+func ValidateAudioURLFieldsInJSONL(filePath string, audioFields map[string]struct{}) error {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to open file %s: %w", filePath, err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	scanner.Buffer(make([]byte, 0, 64*1024), 10*1024*1024)
+
+	recordIndex := 1
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" {
+			recordIndex++
+			continue
+		}
+
+		record := make(map[string]any)
+		if err := json.Unmarshal([]byte(line), &record); err != nil {
+			return fmt.Errorf("failed to parse JSONL record %d from %s: %w", recordIndex, filePath, err)
+		}
+
+		for fieldName := range audioFields {
+			value, ok := record[fieldName]
+			if !ok || value == nil {
+				continue
+			}
+
+			valueString, ok := value.(string)
+			if !ok {
+				return fmt.Errorf(
+					"record %d field %s: audio URL must be a string ending with one of %s",
+					recordIndex,
+					fieldName,
+					supportedAudioURLFileExtensions,
+				)
+			}
+
+			if err := validateAudioURLValue(recordIndex, fieldName, valueString); err != nil {
+				return err
+			}
+		}
+
+		recordIndex++
+	}
+
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("failed to read JSONL file %s: %w", filePath, err)
+	}
+
+	return nil
+}
+
+func validateAudioURLValue(recordIndex int, fieldName, value string) error {
+	trimmedValue := strings.TrimSpace(value)
+	if trimmedValue == "" {
+		return nil
+	}
+
+	if !hasSupportedAudioURLExtension(trimmedValue) {
+		return fmt.Errorf(
+			"record %d field %s: audio URL %q must end with one of %s",
+			recordIndex,
+			fieldName,
+			trimmedValue,
+			supportedAudioURLFileExtensions,
+		)
+	}
+
+	return nil
+}
+
+func hasSupportedAudioURLExtension(value string) bool {
+	parsedURL, err := url.ParseRequestURI(value)
+	if err != nil || parsedURL.Scheme == "" || parsedURL.Host == "" {
+		return false
+	}
+
+	extension := strings.ToLower(filepath.Ext(parsedURL.Path))
+	return validAudioURLFileExtensions[extension]
 }
 
 func waitForDatasetImport(

@@ -118,6 +118,7 @@ type API interface {
 	CreateAITaskBuilderDataset(workspaceID string, payload CreateAITaskBuilderDatasetPayload) (*CreateAITaskBuilderDatasetResponse, error)
 	CreateAITaskBuilderCollection(payload model.CreateAITaskBuilderCollection) (*CreateAITaskBuilderCollectionResponse, error)
 	GetAITaskBuilderBatch(batchID string) (*GetAITaskBuilderBatchResponse, error)
+	GetAITaskBuilderDataset(datasetID string) (*GetAITaskBuilderDatasetResponse, error)
 	UpdateAITaskBuilderBatch(params UpdateBatchParams) (*UpdateAITaskBuilderBatchResponse, error)
 	GetAITaskBuilderBatchStatus(batchID string) (*GetAITaskBuilderBatchStatusResponse, error)
 	GetAITaskBuilderBatches(workspaceID string) (*GetAITaskBuilderBatchesResponse, error)
@@ -1473,6 +1474,18 @@ func (c *Client) GetAITaskBuilderBatchSyncStatus(batchID, syncID string) (*AITas
 		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
 	}
 
+	return &response, nil
+}
+
+// GetAITaskBuilderDataset will return an AI Task Builder dataset by ID.
+func (c *Client) GetAITaskBuilderDataset(datasetID string) (*GetAITaskBuilderDatasetResponse, error) {
+	var response GetAITaskBuilderDatasetResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/datasets/%s", datasetID)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
 	return &response, nil
 }
 

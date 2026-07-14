@@ -266,6 +266,22 @@ type GetAITaskBuilderTasksResponse []string
 // The API returns a simple array of task group ID strings.
 type GetAITaskBuilderTaskGroupsResponse []string
 
+// GetAITaskBuilderDatasetResponse is the response for the get AI Task Builder dataset endpoint.
+type GetAITaskBuilderDatasetResponse struct {
+	ID                         string                   `json:"id"`
+	Name                       string                   `json:"name"`
+	CreatedAt                  string                   `json:"created_at"`
+	CreatedBy                  string                   `json:"created_by"`
+	WorkspaceID                string                   `json:"workspace_id"`
+	TotalDatapointCount        int                      `json:"total_datapoint_count"`
+	SchemaVersion              int                      `json:"schema_version"`
+	Status                     model.DatasetStatus      `json:"status,omitempty"`
+	Filename                   *string                  `json:"filename,omitempty"`
+	HasPredeterminedGroupingID *bool                    `json:"has_predetermined_grouping_id,omitempty"`
+	Schema                     *DatasetSchema           `json:"schema"`
+	Imports                    []model.DatasetImportJob `json:"imports"`
+}
+
 // GetAITaskBuilderDatasetStatusResponse is the response for the get AI Task Builder dataset status endpoint.
 type GetAITaskBuilderDatasetStatusResponse struct {
 	Status model.DatasetStatus `json:"status"`

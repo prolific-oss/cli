@@ -19,7 +19,12 @@ import (
 func setupMockClient(t *testing.T) *mock_client.MockAPI {
 	ctrl := gomock.NewController(t)
 	t.Cleanup(func() { ctrl.Finish() })
-	return mock_client.NewMockAPI(ctrl)
+	c := mock_client.NewMockAPI(ctrl)
+	c.EXPECT().
+		GetAITaskBuilderDataset(gomock.Any()).
+		Return(&client.GetAITaskBuilderDatasetResponse{}, nil).
+		AnyTimes()
+	return c
 }
 
 func TestNewGetDatasetStatusCommand(t *testing.T) {

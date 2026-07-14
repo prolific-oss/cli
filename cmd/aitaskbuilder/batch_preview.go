@@ -38,7 +38,16 @@ func NewBatchPreviewCommandWithOpener(c client.API, w io.Writer, browserOpener B
 	opts.BrowserOpener = browserOpener
 
 	cmd := &cobra.Command{
-		Use:   "preview",
+		Use: "preview <batch-id>",
+		Args: func(cmd *cobra.Command, args []string) error {
+			if len(args) == 0 && opts.BatchID == "" {
+				return errors.New("please provide a batch ID")
+			}
+			if len(args) > 1 {
+				return errors.New("accepts at most 1 arg(s), received " + fmt.Sprint(len(args)))
+			}
+			return nil
+		},
 		Short: "Preview a batch in the browser",
 		Long: `Preview a batch in the browser
 
@@ -46,14 +55,17 @@ Opens the batch's first task group in your default web browser so you can
 preview it before launch.`,
 		Example: `
 Preview an AI Task Builder batch in the browser:
-$ prolific aitaskbuilder batch preview -b <batch_id>
+$ prolific aitaskbuilder batch preview <batch_id>
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
+			if opts.BatchID == "" && len(args) > 0 {
+				opts.BatchID = args[0]
+			}
 
 			err := renderAITaskBuilderBatchPreview(c, opts, w)
 			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+				return fmt.Errorf("error: %s", err)
 			}
 
 			return nil
@@ -61,9 +73,7 @@ $ prolific aitaskbuilder batch preview -b <batch_id>
 	}
 
 	flags := cmd.Flags()
-	flags.StringVarP(&opts.BatchID, "batch-id", "b", "", "Batch ID (required) - The ID of the batch to preview.")
-
-	_ = cmd.MarkFlagRequired("batch-id")
+	flags.StringVarP(&opts.BatchID, "batch-id", "b", "", "Batch ID to preview. Optional when provided as a positional argument.")
 
 	return cmd
 }
@@ -78,12 +88,12 @@ func renderAITaskBuilderBatchPreview(c client.API, opts BatchPreviewOptions, w i
 	// Fetch batch to validate access
 	_, err := c.GetAITaskBuilderBatch(opts.BatchID)
 	if err != nil {
-		return fmt.Errorf("failed to get batch: %s", err.Error())
+		return fmt.Errorf("failed to get batch: %s", err)
 	}
 
 	taskGroups, err := c.GetAITaskBuilderTaskGroups(opts.BatchID)
 	if err != nil {
-		return fmt.Errorf("failed to get task groups: %s", err.Error())
+		return fmt.Errorf("failed to get task groups: %s", err)
 	}
 	if len(*taskGroups) == 0 {
 		return fmt.Errorf("%s %s", ErrNoTaskGroupsFound, opts.BatchID)

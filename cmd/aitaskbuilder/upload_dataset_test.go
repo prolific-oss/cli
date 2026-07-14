@@ -16,6 +16,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/aitaskbuilder"
+	"github.com/prolific-oss/cli/mock_client"
 	"github.com/prolific-oss/cli/model"
 )
 
@@ -245,6 +246,60 @@ func TestDatasetUploadCommandFormatOverrideAppendsExtension(t *testing.T) {
 
 	if !strings.Contains(b.String(), "Format: jsonl") {
 		t.Fatalf("expected output to contain jsonl format, got %s", b.String())
+	}
+}
+
+func TestDatasetUploadCommandRejectsUnsupportedCSVAudioExtension(t *testing.T) {
+	filePath := filepath.Join(t.TempDir(), "dataset.csv")
+	if err := os.WriteFile(filePath, []byte("question,clip\nhello,https://example.com/audio.txt\n"), 0o600); err != nil {
+		t.Fatalf("failed to write test file: %v", err)
+	}
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+	c.EXPECT().
+		GetAITaskBuilderDataset(gomock.Eq("dataset-audio")).
+		Return(&client.GetAITaskBuilderDatasetResponse{
+			Schema: &client.DatasetSchema{
+				Fields: map[string]client.DatasetSchemaField{
+					"clip": {Type: "audio_url"},
+				},
+			},
+		}, nil).
+		Times(1)
+
+	cmd := aitaskbuilder.NewDatasetUploadCommand(c, os.Stdout)
+	_ = cmd.Flags().Set("dataset-id", "dataset-audio")
+	_ = cmd.Flags().Set("file", filePath)
+
+	err := cmd.RunE(cmd, nil)
+	if err == nil {
+		t.Fatal("expected invalid audio URL extension error")
+	}
+
+	if !strings.Contains(err.Error(), `must end with one of .aac, .m4a, .mp3, .wav`) {
+		t.Fatalf("expected supported extensions in error, got %v", err)
+	}
+}
+
+func TestValidateAudioURLFieldsInJSONLRejectsUnsupportedAudioExtension(t *testing.T) {
+	filePath := filepath.Join(t.TempDir(), "dataset.jsonl")
+	if err := os.WriteFile(filePath, []byte("{\"clip\":\"https://example.com/audio.mov\"}\n"), 0o600); err != nil {
+		t.Fatalf("failed to write test file: %v", err)
+	}
+
+	audioFields := map[string]struct{}{
+		"clip": {},
+	}
+
+	err := aitaskbuilder.ValidateAudioURLFieldsInJSONL(filePath, audioFields)
+	if err == nil {
+		t.Fatal("expected invalid audio URL extension error")
+	}
+
+	if !strings.Contains(err.Error(), "record 1 field clip") {
+		t.Fatalf("expected record location in error, got %v", err)
 	}
 }
 
