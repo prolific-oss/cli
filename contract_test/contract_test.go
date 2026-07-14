@@ -111,6 +111,7 @@ var operations = []operation{
 	{operationID: "create-project", call: func(c *client.Client) { c.CreateProject("ws-id", model.Project{Title: "t"}) }},
 	{operationID: "get-project", call: func(c *client.Client) { c.GetProject("proj-id") }},
 	{operationID: "update-project", skip: "OUTOFSCOPE: no CLI command for updating a project"},
+	{operationID: "delete-project-study", skip: "OUTOFSCOPE: no CLI command for removing a study from a project"},
 
 	// Filters
 	{operationID: "get-filters", call: func(c *client.Client) { c.GetFilters() }},
