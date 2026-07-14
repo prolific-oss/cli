@@ -81,6 +81,27 @@ func TestBatchPreviewAcceptsPositionalBatchID(t *testing.T) {
 	}
 }
 
+func TestBatchPreviewRejectsBatchIDFlagAndPositionalArgument(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	cmd := aitaskbuilder.NewBatchPreviewCommandWithOpener(c, os.Stdout, noOpBrowserOpener)
+	if err := cmd.Flags().Set("batch-id", testBatchUUID); err != nil {
+		t.Fatalf("expected no error setting --batch-id, got %v", err)
+	}
+
+	err := cmd.Args(cmd, []string{"another-batch-id"})
+	if err == nil {
+		t.Fatal("expected error when both --batch-id and positional batch ID are provided")
+	}
+
+	expected := aitaskbuilder.ErrBatchIDArgAndFlagConflict
+	if err.Error() != expected {
+		t.Fatalf("expected error %q, got %q", expected, err.Error())
+	}
+}
+
 func TestBatchPreviewCallsGetBatchAndTaskGroups(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()

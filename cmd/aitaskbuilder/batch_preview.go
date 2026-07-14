@@ -43,10 +43,11 @@ func NewBatchPreviewCommandWithOpener(c client.API, w io.Writer, browserOpener B
 			if len(args) == 0 && opts.BatchID == "" {
 				return errors.New("please provide a batch ID")
 			}
-			if len(args) > 1 {
-				return errors.New("accepts at most 1 arg(s), received " + fmt.Sprint(len(args)))
+			if len(args) > 0 && opts.BatchID != "" {
+				return errors.New(ErrBatchIDArgAndFlagConflict)
 			}
-			return nil
+
+			return cobra.MaximumNArgs(1)(cmd, args)
 		},
 		Short: "Preview a batch in the browser",
 		Long: `Preview a batch in the browser

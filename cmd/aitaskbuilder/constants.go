@@ -31,4 +31,5 @@ const (
 	ErrWorkspaceIDRequired            = "workspace ID is required"
 	ErrAtLeastOneUpdateFieldRequired  = "at least one of --name, --dataset-id, task detail flags, batch-items flags, --auto-sync, or --no-auto-sync must be provided"
 	ErrAutoSyncFlagsMutuallyExclusive = "cannot use --auto-sync and --no-auto-sync together"
+	ErrBatchIDArgAndFlagConflict      = "cannot specify both --batch-id (-b) and positional batch ID"
 )
