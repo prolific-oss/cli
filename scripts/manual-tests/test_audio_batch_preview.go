@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-const defaultWorkspaceID = "679271425fe00981084a5f58" // DCT Workspace
+const defaultWorkspaceID = "679271425fe00981084a5f58"
 
 var fieldPattern = regexp.MustCompile(`(?m)^([A-Za-z ]+):\s*(\S+)$`)
 

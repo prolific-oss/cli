@@ -38,17 +38,8 @@ func NewBatchPreviewCommandWithOpener(c client.API, w io.Writer, browserOpener B
 	opts.BrowserOpener = browserOpener
 
 	cmd := &cobra.Command{
-		Use: "preview <batch-id>",
-		Args: func(cmd *cobra.Command, args []string) error {
-			if len(args) == 0 && opts.BatchID == "" {
-				return errors.New("please provide a batch ID")
-			}
-			if len(args) > 0 && opts.BatchID != "" {
-				return errors.New(ErrBatchIDArgAndFlagConflict)
-			}
-
-			return cobra.MaximumNArgs(1)(cmd, args)
-		},
+		Use:   "preview <batch-id>",
+		Args:  cobra.ExactArgs(1),
 		Short: "Preview a batch in the browser",
 		Long: `Preview a batch in the browser
 
@@ -60,9 +51,7 @@ $ prolific aitaskbuilder batch preview <batch_id>
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
-			if opts.BatchID == "" && len(args) > 0 {
-				opts.BatchID = args[0]
-			}
+			opts.BatchID = args[0]
 
 			err := renderAITaskBuilderBatchPreview(c, opts, w)
 			if err != nil {
@@ -72,9 +61,6 @@ $ prolific aitaskbuilder batch preview <batch_id>
 			return nil
 		},
 	}
-
-	flags := cmd.Flags()
-	flags.StringVarP(&opts.BatchID, "batch-id", "b", "", "Batch ID to preview. Optional when provided as a positional argument.")
 
 	return cmd
 }
