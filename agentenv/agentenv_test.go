@@ -94,8 +94,8 @@ func TestValidHeaderValue(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := validHeaderValue(tt.value); got != tt.want {
-				t.Fatalf("validHeaderValue(%q) = %v, want %v", tt.value, got, tt.want)
+			if got := ValidHeaderValue(tt.value); got != tt.want {
+				t.Fatalf("ValidHeaderValue(%q) = %v, want %v", tt.value, got, tt.want)
 			}
 		})
 	}
