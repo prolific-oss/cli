@@ -32,7 +32,7 @@ func Detected() string {
 		if name == "" { // generic var: forward its value
 			name = val
 		}
-		if !validHeaderValue(name) {
+		if !ValidHeaderValue(name) {
 			continue
 		}
 		return name // first usable match wins
@@ -40,10 +40,10 @@ func Detected() string {
 	return ""
 }
 
-// validHeaderValue reports whether s is safe to embed as a single
+// ValidHeaderValue reports whether s is safe to embed as a single
 // space-separated User-Agent token: no control characters, and no
 // whitespace (which would split the token across multiple segments).
-func validHeaderValue(s string) bool {
+func ValidHeaderValue(s string) bool {
 	for i := 0; i < len(s); i++ {
 		b := s[i]
 		if b < 0x20 || b == 0x7f || b == ' ' {
