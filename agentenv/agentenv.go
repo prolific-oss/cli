@@ -20,7 +20,8 @@ var sources = []agentSource{
 
 // Detected returns the name of the AI agent driving the CLI, or "" if none is
 // detected. Branded tools map to a fixed slug; generic vars forward their
-// (sanitised) value. Unset, empty, or malformed values yield "".
+// value verbatim, provided it contains no control characters or whitespace.
+// Unset, empty, or malformed values yield "".
 func Detected() string {
 	for _, s := range sources {
 		val := os.Getenv(s.env)
@@ -39,13 +40,13 @@ func Detected() string {
 	return ""
 }
 
+// validHeaderValue reports whether s is safe to embed as a single
+// space-separated User-Agent token: no control characters, and no
+// whitespace (which would split the token across multiple segments).
 func validHeaderValue(s string) bool {
 	for i := 0; i < len(s); i++ {
 		b := s[i]
-		if b == '\t' {
-			continue
-		}
-		if b < 0x20 || b == 0x7f {
+		if b < 0x20 || b == 0x7f || b == ' ' {
 			return false
 		}
 	}
