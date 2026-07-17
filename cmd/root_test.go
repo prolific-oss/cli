@@ -20,3 +20,16 @@ func TestNewGitHubCommand(t *testing.T) {
 		t.Fatalf("expected use: %s; got %s", short, cmd.Short)
 	}
 }
+
+func TestNewRootCommandRegistersSkillFlag(t *testing.T) {
+	root := cmd.NewRootCommand()
+
+	flag := root.PersistentFlags().Lookup("skill")
+	if flag == nil {
+		t.Fatal("expected --skill persistent flag to be registered")
+	}
+
+	if flag.DefValue != "" {
+		t.Fatalf("expected --skill default value to be empty, got %q", flag.DefValue)
+	}
+}

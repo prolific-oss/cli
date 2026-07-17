@@ -2,6 +2,8 @@
 
 ## next
 
+- Add `--skill` root flag to identify the AI skill/workflow invoking a command; folded into the `User-Agent` header sent with API requests
+
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
 ## 1.0.3
