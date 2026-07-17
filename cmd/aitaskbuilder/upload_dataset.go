@@ -155,7 +155,7 @@ func uploadDatasetFile(client client.API, opts DatasetUploadOptions, w io.Writer
 	fmt.Fprintf(w, "Uploading %s...\n", uploadRequest.DisplayName)
 
 	// Upload file to the presigned URL
-	err = uploadFileToPresignedURL(uploadRequest.LocalPath, uploadResponse.UploadURL, uploadResponse.HTTPMethod, uploadResponse.ContentType)
+	err = uploadFileToPresignedURL(uploadRequest.LocalPath, uploadResponse.UploadURL, uploadResponse.HTTPMethod, uploadResponse.ContentType, client.UserAgent())
 	if err != nil {
 		return fmt.Errorf("failed to upload file: %w", err)
 	}
@@ -241,7 +241,7 @@ func detectDatasetUploadFormat(fileName string) (model.DatasetImportFormat, erro
 }
 
 // uploadFileToPresignedURL uploads a file to a presigned URL using the API-provided method and content type.
-func uploadFileToPresignedURL(filePath, uploadURL, method, contentType string) error {
+func uploadFileToPresignedURL(filePath, uploadURL, method, contentType, userAgent string) error {
 	if method == "" {
 		return errors.New("upload response missing http method")
 	}
@@ -268,6 +268,7 @@ func uploadFileToPresignedURL(filePath, uploadURL, method, contentType string) e
 
 	request.ContentLength = info.Size()
 	request.Header.Set("Content-Type", contentType)
+	request.Header.Set("User-Agent", userAgent)
 
 	response, err := http.DefaultClient.Do(request)
 	if err != nil {
