@@ -69,6 +69,8 @@ func NewRootCommand() *cobra.Command {
 
 	client := client.New()
 
+	cmd.PersistentFlags().StringVar(&client.Skill, "skill", "", "Optional identifier for the AI skill/workflow invoking this command; folded into the User-Agent header sent with API requests")
+
 	w := os.Stdout
 
 	cmd.AddCommand(
