@@ -82,7 +82,8 @@ func TestValidHeaderValue(t *testing.T) {
 	}{
 		{"plain ascii", "claude-code", true},
 		{"empty string", "", true},
-		{"tab is allowed", "a\tb", true},
+		{"tab is rejected", "a\tb", false},
+		{"space is rejected", "a b", false},
 		{"utf-8 multibyte", "日本語", true},
 		{"high byte 0xFF", "\xff", true},
 		{"carriage return", "a\rb", false},
