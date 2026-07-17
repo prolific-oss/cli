@@ -105,7 +105,7 @@ func TestComposeUserAgent(t *testing.T) {
 
 func TestExecuteSetsSkillInUserAgent(t *testing.T) {
 	// Isolate from ambient agent env vars (this shell has AI_AGENT set).
-	for _, k := range []string{"CLAUDE_CODE", "GEMINI_CLI", "AI_AGENT", "LLM_AGENT"} {
+	for _, k := range []string{"CLAUDE_CODE", "ANTIGRAVITY_AGENT", "AI_AGENT", "LLM_AGENT"} {
 		t.Setenv(k, "")
 	}
 
