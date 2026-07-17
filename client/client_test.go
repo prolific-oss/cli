@@ -1,7 +1,11 @@
 package client
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"testing"
+
+	"github.com/prolific-oss/cli/version"
 )
 
 func TestFormatBatchErrorBody(t *testing.T) {
@@ -49,5 +53,33 @@ func TestFormatBatchErrorBody(t *testing.T) {
 				t.Fatalf("expected:\n%q\ngot:\n%q", tt.expected, got)
 			}
 		})
+	}
+}
+func TestExecuteSetsAgentInUserAgent(t *testing.T) {
+	// Isolate from ambient agent env vars (this shell has AI_AGENT set).
+	for _, k := range []string{"CLAUDE_CODE", "GEMINI_CLI", "AI_AGENT", "LLM_AGENT"} {
+		t.Setenv(k, "")
+	}
+	t.Setenv("CLAUDE_CODE", "1")
+
+	var gotUserAgent string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotUserAgent = r.Header.Get("User-Agent")
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	c := Client{
+		Client:  server.Client(),
+		BaseURL: server.URL,
+		Token:   "test-token",
+	}
+
+	if _, err := c.Execute(http.MethodGet, "/studies", nil, nil); err != nil {
+		t.Fatalf("Execute returned error: %v", err)
+	}
+
+	if want := "prolific-oss/cli/" + version.Get() + " agent/claude-code"; gotUserAgent != want {
+		t.Fatalf("User-Agent = %q, want %q", gotUserAgent, want)
 	}
 }
