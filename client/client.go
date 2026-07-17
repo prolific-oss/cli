@@ -16,8 +16,10 @@ import (
 	"os"
 	"strings"
 
+	"github.com/prolific-oss/cli/agentenv"
 	"github.com/prolific-oss/cli/config"
 	"github.com/prolific-oss/cli/model"
+	"github.com/prolific-oss/cli/version"
 	"github.com/spf13/viper"
 	"golang.org/x/exp/slices"
 )
@@ -188,8 +190,13 @@ func (c *Client) Execute(method, url string, body any, response any) (*http.Resp
 		return nil, err
 	}
 
+	userAgent := "prolific-oss/cli/" + version.Get()
+	if agent := agentenv.Detected(); agent != "" {
+		userAgent += " agent/" + agent
+	}
+
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("User-Agent", "prolific-oss/cli")
+	request.Header.Set("User-Agent", userAgent)
 	request.Header.Set("Authorization", fmt.Sprintf("Token %s", c.Token))
 
 	if c.Debug {
