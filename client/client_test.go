@@ -55,6 +55,83 @@ func TestFormatBatchErrorBody(t *testing.T) {
 		})
 	}
 }
+func TestComposeUserAgent(t *testing.T) {
+	knownVars := []string{"CLAUDE_CODE", "ANTIGRAVITY_AGENT", "AI_AGENT", "LLM_AGENT"}
+
+	tests := []struct {
+		name     string
+		skill    string
+		agentEnv map[string]string
+		want     string
+	}{
+		{
+			name:  "no skill, no agent",
+			skill: "",
+			want:  "prolific-oss/cli/" + version.Get(),
+		},
+		{
+			name:  "skill only",
+			skill: "cli-command-create",
+			want:  "prolific-oss/cli/" + version.Get() + " skill/cli-command-create",
+		},
+		{
+			name:     "agent and skill together",
+			skill:    "cli-command-create",
+			agentEnv: map[string]string{"CLAUDE_CODE": "1"},
+			want:     "prolific-oss/cli/" + version.Get() + " agent/claude-code skill/cli-command-create",
+		},
+		{
+			name:  "invalid skill (control characters) is dropped",
+			skill: "bad\nvalue",
+			want:  "prolific-oss/cli/" + version.Get(),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			for _, k := range knownVars {
+				t.Setenv(k, "") // isolate from ambient agent env vars
+			}
+			for k, v := range tt.agentEnv {
+				t.Setenv(k, v)
+			}
+
+			if got := ComposeUserAgent(tt.skill); got != tt.want {
+				t.Fatalf("ComposeUserAgent(%q) = %q, want %q", tt.skill, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestExecuteSetsSkillInUserAgent(t *testing.T) {
+	// Isolate from ambient agent env vars (this shell has AI_AGENT set).
+	for _, k := range []string{"CLAUDE_CODE", "GEMINI_CLI", "AI_AGENT", "LLM_AGENT"} {
+		t.Setenv(k, "")
+	}
+
+	var gotUserAgent string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotUserAgent = r.Header.Get("User-Agent")
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer server.Close()
+
+	c := Client{
+		Client:  server.Client(),
+		BaseURL: server.URL,
+		Token:   "test-token",
+		Skill:   "cli-command-create",
+	}
+
+	if _, err := c.Execute(http.MethodGet, "/studies", nil, nil); err != nil {
+		t.Fatalf("Execute returned error: %v", err)
+	}
+
+	if want := "prolific-oss/cli/" + version.Get() + " skill/cli-command-create"; gotUserAgent != want {
+		t.Fatalf("User-Agent = %q, want %q", gotUserAgent, want)
+	}
+}
+
 func TestExecuteSetsAgentInUserAgent(t *testing.T) {
 	// Isolate from ambient agent env vars (this shell has AI_AGENT set).
 	for _, k := range []string{"CLAUDE_CODE", "ANTIGRAVITY_AGENT", "AI_AGENT", "LLM_AGENT"} {
