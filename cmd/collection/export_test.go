@@ -19,18 +19,22 @@ import (
 )
 
 const testExportID = "export-job-uuid-123"
+const testUserAgent = "prolific-oss/cli/test agent/test-agent skill/test-skill"
 
 // newZIPServer creates a TLS test server that returns the given bytes as a
 // download response. Tests must inject srv.Client() via SetDownloadClientForTesting
 // so that the HTTPS scheme check passes and the self-signed cert is trusted.
-func newZIPServer(t *testing.T, content []byte) *httptest.Server {
+// The returned pointer captures the User-Agent header of the last request.
+func newZIPServer(t *testing.T, content []byte) (*httptest.Server, *string) {
 	t.Helper()
+	var gotUserAgent string
 	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotUserAgent = r.Header.Get("User-Agent")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write(content)
 	}))
 	t.Cleanup(srv.Close)
-	return srv
+	return srv, &gotUserAgent
 }
 
 func TestNewExportCommand(t *testing.T) {
@@ -68,13 +72,14 @@ func TestExportCommandRequiresCollectionID(t *testing.T) {
 // status "complete" immediately (server has a valid cached export).
 func TestExportCommandImmediateComplete(t *testing.T) {
 	zipContent := []byte("PK\x03\x04fake zip content")
-	srv := newZIPServer(t, zipContent)
+	srv, gotUserAgent := newZIPServer(t, zipContent)
 	defer collection.SetDownloadClientForTesting(srv.Client())()
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockClient := mock_client.NewMockAPI(ctrl)
 
+	mockClient.EXPECT().UserAgent().Return(testUserAgent).Times(1)
 	mockClient.
 		EXPECT().
 		InitiateCollectionExport(gomock.Eq(testCollectionID)).
@@ -112,6 +117,10 @@ func TestExportCommandImmediateComplete(t *testing.T) {
 	if !strings.Contains(output, outputPath) {
 		t.Errorf("expected output to mention file path %q, got: %s", outputPath, output)
 	}
+
+	if *gotUserAgent != testUserAgent {
+		t.Errorf("expected User-Agent %q, got %q", testUserAgent, *gotUserAgent)
+	}
 }
 
 // TestExportCommandPollingToComplete covers the normal async flow:
@@ -120,13 +129,14 @@ func TestExportCommandPollingToComplete(t *testing.T) {
 	defer collection.SetPollSleepForTesting(func(time.Duration) {})()
 
 	zipContent := []byte("PK\x03\x04fake zip content")
-	srv := newZIPServer(t, zipContent)
+	srv, _ := newZIPServer(t, zipContent)
 	defer collection.SetDownloadClientForTesting(srv.Client())()
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockClient := mock_client.NewMockAPI(ctrl)
 
+	mockClient.EXPECT().UserAgent().Return(testUserAgent).Times(1)
 	mockClient.EXPECT().
 		InitiateCollectionExport(gomock.Eq(testCollectionID)).
 		Return(&client.CollectionExportResponse{
@@ -227,13 +237,14 @@ func TestExportCommandInitiateError(t *testing.T) {
 
 func TestExportCommandDefaultOutputPath(t *testing.T) {
 	zipContent := []byte("PK\x03\x04fake zip content")
-	srv := newZIPServer(t, zipContent)
+	srv, _ := newZIPServer(t, zipContent)
 	defer collection.SetDownloadClientForTesting(srv.Client())()
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockClient := mock_client.NewMockAPI(ctrl)
 
+	mockClient.EXPECT().UserAgent().Return(testUserAgent).Times(1)
 	mockClient.EXPECT().
 		InitiateCollectionExport(gomock.Eq(testCollectionID)).
 		Return(&client.CollectionExportResponse{
