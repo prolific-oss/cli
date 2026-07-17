@@ -107,7 +107,7 @@ func exportCollection(c client.API, opts ExportOptions, w io.Writer) error {
 
 	// If already complete (cached result), download immediately.
 	if initResult.Status == exportStatusComplete {
-		return downloadExport(initResult.URL, opts.Output, w)
+		return downloadExport(initResult.URL, opts.Output, c.UserAgent(), w)
 	}
 
 	if initResult.Status != exportStatusGenerating {
@@ -134,7 +134,7 @@ func exportCollection(c client.API, opts ExportOptions, w io.Writer) error {
 
 		switch pollResult.Status {
 		case exportStatusComplete:
-			return downloadExport(pollResult.URL, opts.Output, w)
+			return downloadExport(pollResult.URL, opts.Output, c.UserAgent(), w)
 		case exportStatusFailed:
 			return fmt.Errorf("export generation failed for collection %s", collectionID)
 		case exportStatusGenerating:
@@ -145,16 +145,16 @@ func exportCollection(c client.API, opts ExportOptions, w io.Writer) error {
 	}
 }
 
-func downloadExport(url, outputPath string, w io.Writer) error {
+func downloadExport(url, outputPath, userAgent string, w io.Writer) error {
 	fmt.Fprintf(w, "\nExport ready. Downloading to %s...\n", outputPath)
-	if err := downloadFile(url, outputPath); err != nil {
+	if err := downloadFile(url, outputPath, userAgent); err != nil {
 		return fmt.Errorf("error downloading export: %s", err.Error())
 	}
 	fmt.Fprintf(w, "Export saved to %s\n", outputPath)
 	return nil
 }
 
-func downloadFile(rawURL, outputPath string) error {
+func downloadFile(rawURL, outputPath, userAgent string) error {
 	parsed, err := url.Parse(rawURL)
 	if err != nil {
 		return fmt.Errorf("invalid download URL: %w", err)
@@ -170,6 +170,7 @@ func downloadFile(rawURL, outputPath string) error {
 	if err != nil {
 		return fmt.Errorf("failed to create download request: %w", err)
 	}
+	req.Header.Set("User-Agent", userAgent)
 
 	resp, err := downloadClient.Do(req)
 	if err != nil {
