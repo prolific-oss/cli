@@ -32,6 +32,10 @@ const DefaultRecordLimit = 200
 
 // API represents what is allowed to be called on the Prolific client.
 type API interface {
+	// UserAgent returns the User-Agent string to send with requests that
+	// build their own *http.Request and bypass Execute.
+	UserAgent() string
+
 	GetMe() (*MeResponse, error)
 
 	CreateStudy(model.CreateStudy) (*model.Study, error)
@@ -154,6 +158,28 @@ type Client struct {
 	BaseURL string
 	Token   string
 	Debug   bool
+	Skill   string
+}
+
+// ComposeUserAgent builds the User-Agent string sent with every outgoing
+// request: the CLI's own identity, followed by the detected driving AI
+// agent (if any), followed by the invoking skill/workflow (if any and
+// valid). Each token is independent and omitted when empty or invalid.
+func ComposeUserAgent(skill string) string {
+	ua := "prolific-oss/cli/" + version.Get()
+	if agent := agentenv.Detected(); agent != "" {
+		ua += " agent/" + agent
+	}
+	if skill != "" && agentenv.ValidHeaderValue(skill) {
+		ua += " skill/" + skill
+	}
+	return ua
+}
+
+// UserAgent returns the composed User-Agent string for this client, folding
+// in the configured Skill.
+func (c *Client) UserAgent() string {
+	return ComposeUserAgent(c.Skill)
 }
 
 // New will return a new Prolific client.
@@ -192,13 +218,8 @@ func (c *Client) Execute(method, url string, body any, response any) (*http.Resp
 		return nil, err
 	}
 
-	userAgent := "prolific-oss/cli/" + version.Get()
-	if agent := agentenv.Detected(); agent != "" {
-		userAgent += " agent/" + agent
-	}
-
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("User-Agent", userAgent)
+	request.Header.Set("User-Agent", c.UserAgent())
 	request.Header.Set("Authorization", fmt.Sprintf("Token %s", c.Token))
 
 	if c.Debug {
