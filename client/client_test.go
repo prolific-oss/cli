@@ -57,7 +57,7 @@ func TestFormatBatchErrorBody(t *testing.T) {
 }
 func TestExecuteSetsAgentInUserAgent(t *testing.T) {
 	// Isolate from ambient agent env vars (this shell has AI_AGENT set).
-	for _, k := range []string{"CLAUDE_CODE", "GEMINI_CLI", "AI_AGENT", "LLM_AGENT"} {
+	for _, k := range []string{"CLAUDE_CODE", "ANTIGRAVITY_AGENT", "AI_AGENT", "LLM_AGENT"} {
 		t.Setenv(k, "")
 	}
 	t.Setenv("CLAUDE_CODE", "1")
