@@ -208,7 +208,7 @@ var operations = []operation{
 	{operationID: "get-dataset-import-status", call: func(c *client.Client) {
 		c.GetAITaskBuilderDatasetImportStatus("ds-id", "import-id")
 	}},
-	{operationID: "get-schema-migration-status", skip: "OUTOFSCOPE: no CLI command for schema migration status"},
+	{operationID: "get-schema-migration-status", skip: "OUTOFSCOPE: no CLI command for dataset schema migration status"},
 
 	// AI Task Builder — Instructions
 	{operationID: "get-task-builder-instructions", skip: "OUTOFSCOPE: no CLI command for getting task builder instructions"},
