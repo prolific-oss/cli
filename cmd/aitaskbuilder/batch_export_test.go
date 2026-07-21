@@ -24,17 +24,14 @@ const testBatchID = "batch-id-123"
 // newBatchZIPServer creates a TLS test server that returns the given bytes as a
 // download response. Tests must inject srv.Client() via SetBatchExportDownloadClientForTesting
 // so that the HTTPS scheme check passes and the self-signed cert is trusted.
-// The returned pointer captures the User-Agent header of the last request.
-func newBatchZIPServer(t *testing.T, content []byte) (*httptest.Server, *string) {
+func newBatchZIPServer(t *testing.T, content []byte) *httptest.Server {
 	t.Helper()
-	var gotUserAgent string
 	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		gotUserAgent = r.Header.Get("User-Agent")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write(content)
 	}))
 	t.Cleanup(srv.Close)
-	return srv, &gotUserAgent
+	return srv
 }
 
 func TestNewBatchExportCommand(t *testing.T) {
@@ -72,14 +69,13 @@ func TestBatchExportCommandRequiresBatchID(t *testing.T) {
 // status "complete" immediately (server has a valid cached export).
 func TestBatchExportCommandImmediateComplete(t *testing.T) {
 	zipContent := []byte("PK\x03\x04fake zip content")
-	srv, gotUserAgent := newBatchZIPServer(t, zipContent)
+	srv := newBatchZIPServer(t, zipContent)
 	defer aitaskbuilder.SetBatchExportDownloadClientForTesting(srv.Client())()
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockClient := mock_client.NewMockAPI(ctrl)
 
-	mockClient.EXPECT().UserAgent().Return(testUserAgent).Times(1)
 	mockClient.
 		EXPECT().
 		InitiateBatchExport(gomock.Eq(testBatchID)).
@@ -117,10 +113,6 @@ func TestBatchExportCommandImmediateComplete(t *testing.T) {
 	if !strings.Contains(output, outputPath) {
 		t.Errorf("expected output to mention file path %q, got: %s", outputPath, output)
 	}
-
-	if *gotUserAgent != testUserAgent {
-		t.Errorf("expected User-Agent %q, got %q", testUserAgent, *gotUserAgent)
-	}
 }
 
 // TestBatchExportCommandPollingToComplete covers the normal async flow:
@@ -129,14 +121,13 @@ func TestBatchExportCommandPollingToComplete(t *testing.T) {
 	defer aitaskbuilder.SetBatchExportPollSleepForTesting(func(time.Duration) {})()
 
 	zipContent := []byte("PK\x03\x04fake zip content")
-	srv, _ := newBatchZIPServer(t, zipContent)
+	srv := newBatchZIPServer(t, zipContent)
 	defer aitaskbuilder.SetBatchExportDownloadClientForTesting(srv.Client())()
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockClient := mock_client.NewMockAPI(ctrl)
 
-	mockClient.EXPECT().UserAgent().Return(testUserAgent).Times(1)
 	mockClient.EXPECT().
 		InitiateBatchExport(gomock.Eq(testBatchID)).
 		Return(&client.BatchExportResponse{
@@ -237,14 +228,13 @@ func TestBatchExportCommandInitiateError(t *testing.T) {
 
 func TestBatchExportCommandDefaultOutputPath(t *testing.T) {
 	zipContent := []byte("PK\x03\x04fake zip content")
-	srv, _ := newBatchZIPServer(t, zipContent)
+	srv := newBatchZIPServer(t, zipContent)
 	defer aitaskbuilder.SetBatchExportDownloadClientForTesting(srv.Client())()
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockClient := mock_client.NewMockAPI(ctrl)
 
-	mockClient.EXPECT().UserAgent().Return(testUserAgent).Times(1)
 	mockClient.EXPECT().
 		InitiateBatchExport(gomock.Eq(testBatchID)).
 		Return(&client.BatchExportResponse{

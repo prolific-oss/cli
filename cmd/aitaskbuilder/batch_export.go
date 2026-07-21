@@ -102,7 +102,7 @@ func exportBatch(c client.API, opts BatchExportOptions, w io.Writer) error {
 
 	// If already complete (cached result), download immediately.
 	if initResult.Status == batchExportStatusComplete {
-		return batchDownloadExport(initResult.URL, opts.Output, c.UserAgent(), w)
+		return batchDownloadExport(initResult.URL, opts.Output, w)
 	}
 
 	if initResult.Status != batchExportStatusGenerating {
@@ -129,7 +129,7 @@ func exportBatch(c client.API, opts BatchExportOptions, w io.Writer) error {
 
 		switch pollResult.Status {
 		case batchExportStatusComplete:
-			return batchDownloadExport(pollResult.URL, opts.Output, c.UserAgent(), w)
+			return batchDownloadExport(pollResult.URL, opts.Output, w)
 		case batchExportStatusFailed:
 			return fmt.Errorf("export generation failed for batch %s", batchID)
 		case batchExportStatusGenerating:
@@ -140,16 +140,16 @@ func exportBatch(c client.API, opts BatchExportOptions, w io.Writer) error {
 	}
 }
 
-func batchDownloadExport(rawURL, outputPath, userAgent string, w io.Writer) error {
+func batchDownloadExport(rawURL, outputPath string, w io.Writer) error {
 	fmt.Fprintf(w, "\nExport ready. Downloading to %s...\n", outputPath)
-	if err := batchDownloadFile(rawURL, outputPath, userAgent); err != nil {
+	if err := batchDownloadFile(rawURL, outputPath); err != nil {
 		return fmt.Errorf("error downloading export: %s", err.Error())
 	}
 	fmt.Fprintf(w, "Export saved to %s\n", outputPath)
 	return nil
 }
 
-func batchDownloadFile(rawURL, outputPath, userAgent string) error {
+func batchDownloadFile(rawURL, outputPath string) error {
 	parsed, err := url.Parse(rawURL)
 	if err != nil {
 		return fmt.Errorf("invalid download URL: %w", err)
@@ -165,7 +165,6 @@ func batchDownloadFile(rawURL, outputPath, userAgent string) error {
 	if err != nil {
 		return fmt.Errorf("failed to create download request: %w", err)
 	}
-	req.Header.Set("User-Agent", userAgent)
 
 	resp, err := batchExportDownloadClient.Do(req)
 	if err != nil {

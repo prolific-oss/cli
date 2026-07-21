@@ -32,10 +32,6 @@ const DefaultRecordLimit = 200
 
 // API represents what is allowed to be called on the Prolific client.
 type API interface {
-	// UserAgent returns the User-Agent string to send with requests that
-	// build their own *http.Request and bypass Execute.
-	UserAgent() string
-
 	GetMe() (*MeResponse, error)
 
 	CreateStudy(model.CreateStudy) (*model.Study, error)
@@ -176,9 +172,9 @@ func ComposeUserAgent(skill string) string {
 	return ua
 }
 
-// UserAgent returns the composed User-Agent string for this client, folding
+// userAgent returns the composed User-Agent string for this client, folding
 // in the configured Skill.
-func (c *Client) UserAgent() string {
+func (c *Client) userAgent() string {
 	return ComposeUserAgent(c.Skill)
 }
 
@@ -219,7 +215,7 @@ func (c *Client) Execute(method, url string, body any, response any) (*http.Resp
 	}
 
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("User-Agent", c.UserAgent())
+	request.Header.Set("User-Agent", c.userAgent())
 	request.Header.Set("Authorization", fmt.Sprintf("Token %s", c.Token))
 
 	if c.Debug {
