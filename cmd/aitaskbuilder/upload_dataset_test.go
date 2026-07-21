@@ -85,7 +85,6 @@ func TestDatasetUploadCommandUploadsDetectedCSV(t *testing.T) {
 	var gotContentLength int64
 	var gotTransferEncoding []string
 	var gotBody []byte
-	var gotUserAgent string
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -97,7 +96,6 @@ func TestDatasetUploadCommandUploadsDetectedCSV(t *testing.T) {
 		gotContentLength = r.ContentLength
 		gotTransferEncoding = r.TransferEncoding
 		gotBody = body
-		gotUserAgent = r.Header.Get("User-Agent")
 		w.WriteHeader(http.StatusOK)
 	}))
 	t.Cleanup(srv.Close)
@@ -165,10 +163,6 @@ func TestDatasetUploadCommandUploadsDetectedCSV(t *testing.T) {
 
 	if !bytes.Equal(gotBody, fileContent) {
 		t.Fatalf("expected uploaded file contents to match")
-	}
-
-	if gotUserAgent != testUserAgent {
-		t.Fatalf("expected User-Agent %q, got %q", testUserAgent, gotUserAgent)
 	}
 
 	output := b.String()

@@ -1316,17 +1316,3 @@ func (mr *MockAPIMockRecorder) UpdateStudy(ID, study interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStudy", reflect.TypeOf((*MockAPI)(nil).UpdateStudy), ID, study)
 }
-
-// UserAgent mocks base method.
-func (m *MockAPI) UserAgent() string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UserAgent")
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-// UserAgent indicates an expected call of UserAgent.
-func (mr *MockAPIMockRecorder) UserAgent() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserAgent", reflect.TypeOf((*MockAPI)(nil).UserAgent))
-}

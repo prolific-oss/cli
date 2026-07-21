@@ -16,11 +16,6 @@ import (
 	"github.com/prolific-oss/cli/model"
 )
 
-// testUserAgent is the default value returned by the UserAgent() mock set up
-// in setupMockClient. It's a cross-cutting header sent with every request,
-// so most tests don't assert on it directly and just need a harmless default.
-const testUserAgent = "prolific-oss/cli/test agent/test-agent skill/test-skill"
-
 func setupMockClient(t *testing.T) *mock_client.MockAPI {
 	ctrl := gomock.NewController(t)
 	t.Cleanup(func() { ctrl.Finish() })
@@ -29,7 +24,6 @@ func setupMockClient(t *testing.T) *mock_client.MockAPI {
 		GetAITaskBuilderDataset(gomock.Any()).
 		Return(&client.GetAITaskBuilderDatasetResponse{}, nil).
 		AnyTimes()
-	c.EXPECT().UserAgent().Return(testUserAgent).AnyTimes()
 	return c
 }
 
