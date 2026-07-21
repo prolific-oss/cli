@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -249,57 +250,107 @@ func TestDatasetUploadCommandFormatOverrideAppendsExtension(t *testing.T) {
 	}
 }
 
-func TestDatasetUploadCommandRejectsUnsupportedCSVAudioExtension(t *testing.T) {
-	filePath := filepath.Join(t.TempDir(), "dataset.csv")
-	if err := os.WriteFile(filePath, []byte("question,clip\nhello,https://example.com/audio.txt\n"), 0o600); err != nil {
-		t.Fatalf("failed to write test file: %v", err)
+func TestDatasetUploadCommandRejectsUnsupportedCSVMediaExtension(t *testing.T) {
+	tests := []struct {
+		name                string
+		fieldType           string
+		datasetID           string
+		unsupportedURL      string
+		supportedExtensions string
+	}{
+		{
+			name:                "audio",
+			fieldType:           "audio_url",
+			datasetID:           "dataset-audio",
+			unsupportedURL:      "https://example.com/audio.txt",
+			supportedExtensions: ".aac, .m4a, .mp3, .wav",
+		},
+		{
+			name:                "video",
+			fieldType:           "video_url",
+			datasetID:           "dataset-video",
+			unsupportedURL:      "https://example.com/video.txt",
+			supportedExtensions: ".mp4, .mov, .webm, .avi",
+		},
 	}
 
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	c := mock_client.NewMockAPI(ctrl)
-	c.EXPECT().
-		GetAITaskBuilderDataset(gomock.Eq("dataset-audio")).
-		Return(&client.GetAITaskBuilderDatasetResponse{
-			Schema: &client.DatasetSchema{
-				Fields: map[string]client.DatasetSchemaField{
-					"clip": {Type: "audio_url"},
-				},
-			},
-		}, nil).
-		Times(1)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			filePath := filepath.Join(t.TempDir(), "dataset.csv")
+			csvContents := fmt.Sprintf("question,clip\nhello,%s\n", tt.unsupportedURL)
+			if err := os.WriteFile(filePath, []byte(csvContents), 0o600); err != nil {
+				t.Fatalf("failed to write test file: %v", err)
+			}
 
-	cmd := aitaskbuilder.NewDatasetUploadCommand(c, os.Stdout)
-	_ = cmd.Flags().Set("dataset-id", "dataset-audio")
-	_ = cmd.Flags().Set("file", filePath)
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			c := mock_client.NewMockAPI(ctrl)
+			c.EXPECT().
+				GetAITaskBuilderDataset(gomock.Eq(tt.datasetID)).
+				Return(&client.GetAITaskBuilderDatasetResponse{
+					Schema: &client.DatasetSchema{
+						Fields: map[string]client.DatasetSchemaField{
+							"clip": {Type: tt.fieldType},
+						},
+					},
+				}, nil).
+				Times(1)
 
-	err := cmd.RunE(cmd, nil)
-	if err == nil {
-		t.Fatal("expected invalid audio URL extension error")
-	}
+			cmd := aitaskbuilder.NewDatasetUploadCommand(c, os.Stdout)
+			_ = cmd.Flags().Set("dataset-id", tt.datasetID)
+			_ = cmd.Flags().Set("file", filePath)
 
-	if !strings.Contains(err.Error(), `must end with one of .aac, .m4a, .mp3, .wav`) {
-		t.Fatalf("expected supported extensions in error, got %v", err)
+			err := cmd.RunE(cmd, nil)
+			if err == nil {
+				t.Fatal("expected invalid media URL extension error")
+			}
+
+			if !strings.Contains(err.Error(), fmt.Sprintf("must end with one of %s", tt.supportedExtensions)) {
+				t.Fatalf("expected supported extensions in error, got %v", err)
+			}
+		})
 	}
 }
 
-func TestValidateAudioURLFieldsInJSONLRejectsUnsupportedAudioExtension(t *testing.T) {
-	filePath := filepath.Join(t.TempDir(), "dataset.jsonl")
-	if err := os.WriteFile(filePath, []byte("{\"clip\":\"https://example.com/audio.mov\"}\n"), 0o600); err != nil {
-		t.Fatalf("failed to write test file: %v", err)
+func TestValidateMediaURLFieldsInJSONLRejectsUnsupportedExtension(t *testing.T) {
+	tests := []struct {
+		name           string
+		validate       func(string, map[string]struct{}) error
+		unsupportedURL string
+	}{
+		{
+			name:           "audio",
+			validate:       aitaskbuilder.ValidateAudioURLFieldsInJSONL,
+			unsupportedURL: "https://example.com/audio.mov",
+		},
+		{
+			name:           "video",
+			validate:       aitaskbuilder.ValidateVideoURLFieldsInJSONL,
+			unsupportedURL: "https://example.com/video.mp3",
+		},
 	}
 
-	audioFields := map[string]struct{}{
-		"clip": {},
-	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			filePath := filepath.Join(t.TempDir(), "dataset.jsonl")
+			content := fmt.Sprintf("{\"clip\":%q}\n", tt.unsupportedURL)
+			if err := os.WriteFile(filePath, []byte(content), 0o600); err != nil {
+				t.Fatalf("failed to write test file: %v", err)
+			}
 
-	err := aitaskbuilder.ValidateAudioURLFieldsInJSONL(filePath, audioFields)
-	if err == nil {
-		t.Fatal("expected invalid audio URL extension error")
-	}
+			mediaFields := map[string]struct{}{
+				"clip": {},
+			}
 
-	if !strings.Contains(err.Error(), "record 1 field clip") {
-		t.Fatalf("expected record location in error, got %v", err)
+			err := tt.validate(filePath, mediaFields)
+			if err == nil {
+				t.Fatal("expected invalid media URL extension error")
+			}
+
+			if !strings.Contains(err.Error(), "record 1 field clip") {
+				t.Fatalf("expected record location in error, got %v", err)
+			}
+		})
 	}
 }
 
