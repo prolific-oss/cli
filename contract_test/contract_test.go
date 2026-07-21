@@ -191,6 +191,8 @@ var operations = []operation{
 	{operationID: "get-task-builder-batch-task-responses", call: func(c *client.Client) { c.GetAITaskBuilderResponses("batch-id") }},
 	{operationID: "get-task-builder-batch-report", skip: "OUTOFSCOPE: no CLI command for batch report; GetAITaskBuilderTasks calls /tasks which is not in the spec"},
 	{operationID: "duplicate-task-builder-batch", skip: "OUTOFSCOPE: no CLI command for duplicating a batch"},
+	{operationID: "sync-task-builder-batch", call: func(c *client.Client) { c.SyncAITaskBuilderBatch("batch-id") }},
+	{operationID: "get-batch-sync-status", call: func(c *client.Client) { c.GetAITaskBuilderBatchSyncStatus("batch-id", "sync-id") }},
 	{operationID: "request-batch-export", call: func(c *client.Client) { c.InitiateBatchExport("batch-id") }},
 	{operationID: "get-batch-export-status", call: func(c *client.Client) { c.GetBatchExportStatus("batch-id", "export-id") }},
 
@@ -198,12 +200,15 @@ var operations = []operation{
 	{operationID: "create-task-builder-dataset", call: func(c *client.Client) {
 		c.CreateAITaskBuilderDataset("ws-id", client.CreateAITaskBuilderDatasetPayload{Name: "t"})
 	}},
+	{operationID: "update-task-builder-dataset", skip: "OUTOFSCOPE: no CLI command for updating a dataset"},
+	{operationID: "append-dataset-datapoints", skip: "OUTOFSCOPE: no CLI command for appending datapoints to a dataset"},
 	{operationID: "get-dataset-upload-url", call: func(c *client.Client) { c.GetAITaskBuilderDatasetUploadURL("ds-id", "data.jsonl") }},
 	{operationID: "get-task-builder-dataset", call: func(c *client.Client) { c.GetAITaskBuilderDataset("ds-id") }},
 	{operationID: "get-task-builder-dataset-status", call: func(c *client.Client) { c.GetAITaskBuilderDatasetStatus("ds-id") }},
 	{operationID: "get-dataset-import-status", call: func(c *client.Client) {
 		c.GetAITaskBuilderDatasetImportStatus("ds-id", "import-id")
 	}},
+	{operationID: "get-schema-migration-status", skip: "OUTOFSCOPE: no CLI command for schema migration status"},
 
 	// AI Task Builder — Instructions
 	{operationID: "get-task-builder-instructions", skip: "OUTOFSCOPE: no CLI command for getting task builder instructions"},
@@ -306,10 +311,6 @@ var operations = []operation{
 	{operationID: "update-credential-pool", call: func(c *client.Client) {
 		c.UpdateCredentialPool("pool-id", "user,pass\nuser2,pass2")
 	}},
-
-	// Costs
-	{operationID: "get-organisation-cost", skip: "OUTOFSCOPE: no CLI command for organisation cost"},
-	{operationID: "get-workspace-cost", skip: "OUTOFSCOPE: no CLI command for workspace cost"},
 
 	// Reward Recommendations
 	{operationID: "calculate-reward-recommendations", skip: "OUTOFSCOPE: reward recommendations not needed in CLI"},

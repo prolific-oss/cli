@@ -7,6 +7,10 @@ jobs:
   build:
     strategy:
       matrix:
+        # Label only — kept as 1.26.x to match the "Build (1.26.x)" required
+        # status check on main. actions/setup-go below is pinned to the exact
+        # patch version go.mod requires, since GitHub's setup-go version
+        # manifest can lag behind new Go releases.
         go-version: [1.26.x]
     runs-on: ubuntu-latest
     name: Build
@@ -14,7 +18,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6.5.0
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: 1.26.5
         id: go
 
       - name: Check out code into the Go module directory

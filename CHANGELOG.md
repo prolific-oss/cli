@@ -4,6 +4,22 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+## 1.0.3
+
+### AI Task Builder
+
+- Add schema to dataset create
+- Add batch sync command
+- Add --auto-sync flag to batch create command
+- Add --auto-sync flag to batch update command
+- Update dataset upload command to account for new dataset schemas
+- Add auto sync enabled to batch create and update response
+- Use git cli idiomatic approach to auto sync flaggs with no-auto-sync instead of disable or false flags
+
+### Core
+
+- Rename auto_sync request field to auto_sync_enabled
+
 ## 1.0.2
 
 ### AI Task Builder
