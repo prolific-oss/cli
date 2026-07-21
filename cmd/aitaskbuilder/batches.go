@@ -1,9 +1,11 @@
 package aitaskbuilder
 
 import (
+	"fmt"
 	"io"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/config"
 	"github.com/spf13/cobra"
 )
 
@@ -27,7 +29,18 @@ func NewBatchesCommand(client client.API, w io.Writer) *cobra.Command {
 		NewGetBatchesListCommand(client, w),
 		NewGetResponsesCommand(client, w),
 		NewBatchTasksCommand(client, w),
+		NewBatchPreviewCommand(client, w),
 	)
 
 	return cmd
+}
+
+// GetBatchPreviewPath returns the URL path to a batch preview, agnostic of domain.
+func GetBatchPreviewPath(batchID, taskGroupID string) string {
+	return fmt.Sprintf("data-collection-tool/batches/%s/task-groups/%s?preview=true", batchID, taskGroupID)
+}
+
+// GetBatchPreviewURL returns the full URL to a batch preview using configuration.
+func GetBatchPreviewURL(batchID, taskGroupID string) string {
+	return fmt.Sprintf("%s/%s", config.GetApplicationURL(), GetBatchPreviewPath(batchID, taskGroupID))
 }

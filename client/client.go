@@ -120,11 +120,13 @@ type API interface {
 	CreateAITaskBuilderDataset(workspaceID string, payload CreateAITaskBuilderDatasetPayload) (*CreateAITaskBuilderDatasetResponse, error)
 	CreateAITaskBuilderCollection(payload model.CreateAITaskBuilderCollection) (*CreateAITaskBuilderCollectionResponse, error)
 	GetAITaskBuilderBatch(batchID string) (*GetAITaskBuilderBatchResponse, error)
+	GetAITaskBuilderDataset(datasetID string) (*GetAITaskBuilderDatasetResponse, error)
 	UpdateAITaskBuilderBatch(params UpdateBatchParams) (*UpdateAITaskBuilderBatchResponse, error)
 	GetAITaskBuilderBatchStatus(batchID string) (*GetAITaskBuilderBatchStatusResponse, error)
 	GetAITaskBuilderBatches(workspaceID string) (*GetAITaskBuilderBatchesResponse, error)
 	GetAITaskBuilderResponses(batchID string) (*GetAITaskBuilderResponsesResponse, error)
 	GetAITaskBuilderTasks(batchID string) (*GetAITaskBuilderTasksResponse, error)
+	GetAITaskBuilderTaskGroups(batchID string) (*GetAITaskBuilderTaskGroupsResponse, error)
 	InitiateBatchExport(batchID string) (*BatchExportResponse, error)
 	GetBatchExportStatus(batchID, exportID string) (*BatchExportResponse, error)
 	SyncAITaskBuilderBatch(batchID string) (*AITaskBuilderBatchSyncResponse, error)
@@ -1391,6 +1393,18 @@ func (c *Client) GetAITaskBuilderTasks(batchID string) (*GetAITaskBuilderTasksRe
 	return &response, nil
 }
 
+// GetAITaskBuilderTaskGroups will return the task group IDs for an AI Task Builder batch.
+func (c *Client) GetAITaskBuilderTaskGroups(batchID string) (*GetAITaskBuilderTaskGroupsResponse, error) {
+	var response GetAITaskBuilderTaskGroupsResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/task-groups", batchID)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+	return &response, nil
+}
+
 // InitiateBatchExport starts a batch export job via POST.
 // Returns "generating" + ExportID (202) if a new job was enqueued,
 // or "complete" + URL immediately (200) if a valid export already exists.
@@ -1467,6 +1481,18 @@ func (c *Client) GetAITaskBuilderBatchSyncStatus(batchID, syncID string) (*AITas
 		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
 	}
 
+	return &response, nil
+}
+
+// GetAITaskBuilderDataset will return an AI Task Builder dataset by ID.
+func (c *Client) GetAITaskBuilderDataset(datasetID string) (*GetAITaskBuilderDatasetResponse, error) {
+	var response GetAITaskBuilderDatasetResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/datasets/%s", datasetID)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
 	return &response, nil
 }
 

@@ -18,6 +18,7 @@ func TestResolveDatasetSchemaInlineValid(t *testing.T) {
 		"fields": {
 			"question": { "type": "text", "label": "Question" },
 			"image":    { "type": "image_url" },
+			"audio":    { "type": "audio_url" },
 			"source":   { "type": "metadata" },
 			"group":    { "type": "task_group_id" }
 		}
@@ -33,8 +34,11 @@ func TestResolveDatasetSchemaInlineValid(t *testing.T) {
 	if schema.Strict == nil || !*schema.Strict {
 		t.Fatal("expected strict to be true from JSON")
 	}
-	if len(schema.Fields) != 4 {
-		t.Fatalf("expected 4 fields; got %d", len(schema.Fields))
+	if len(schema.Fields) != 5 {
+		t.Fatalf("expected 5 fields; got %d", len(schema.Fields))
+	}
+	if schema.Fields["audio"].Type != "audio_url" {
+		t.Fatalf("unexpected audio field: %+v", schema.Fields["audio"])
 	}
 	if schema.Fields["question"].Type != "text" || schema.Fields["question"].Label != "Question" {
 		t.Fatalf("unexpected question field: %+v", schema.Fields["question"])
@@ -154,7 +158,7 @@ func TestResolveDatasetSchemaInvalidFieldType(t *testing.T) {
 	if !strings.Contains(msg, `"q"`) || !strings.Contains(msg, `"number"`) {
 		t.Fatalf("expected error to name field and type; got %v", err)
 	}
-	if !strings.Contains(msg, "text, image_url, metadata, task_group_id") {
+	if !strings.Contains(msg, "text, image_url, metadata, task_group_id, audio_url") {
 		t.Fatalf("expected error to list allowed types; got %v", err)
 	}
 }

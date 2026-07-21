@@ -16,6 +16,9 @@ import (
 	"github.com/prolific-oss/cli/model"
 )
 
+// testBatchUUID is a shared batch ID used across multiple aitaskbuilder tests.
+const testBatchUUID = "01954894-65b3-779e-aaf6-348698e23634"
+
 func TestNewGetBatchCommand(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -40,7 +43,7 @@ func TestNewGetBatchCommandCallsAPI(t *testing.T) {
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	batchID := "01954894-65b3-779e-aaf6-348698e23634"
+	batchID := testBatchUUID
 
 	createdAt, _ := time.Parse(time.RFC3339, "2025-02-27T18:03:59.795Z")
 	response := client.GetAITaskBuilderBatchResponse{
@@ -84,7 +87,7 @@ func TestNewGetBatchCommandCallsAPI(t *testing.T) {
 	writer.Flush()
 
 	expected := `AI Task Builder Batch Details:
-ID: 01954894-65b3-779e-aaf6-348698e23634
+ID: ` + batchID + `
 Name: Test Batch
 Status: UNINITIALISED
 Total Task Count: 0

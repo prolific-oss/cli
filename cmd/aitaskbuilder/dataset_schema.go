@@ -18,6 +18,7 @@ var validDatasetSchemaFieldTypes = map[string]bool{
 	"image_url":     true,
 	"metadata":      true,
 	"task_group_id": true,
+	"audio_url":     true,
 }
 
 // rawDatasetSchema mirrors DatasetSchema but distinguishes an absent "strict"
@@ -54,7 +55,7 @@ func resolveDatasetSchema(schemaInput string, strict, strictSet bool) (*client.D
 	taskGroupIDCount := 0
 	for key, field := range parsed.Fields {
 		if !validDatasetSchemaFieldTypes[field.Type] {
-			return nil, fmt.Errorf("field %q has invalid type %q; must be one of text, image_url, metadata, task_group_id", key, field.Type)
+			return nil, fmt.Errorf("field %q has invalid type %q; must be one of text, image_url, metadata, task_group_id, audio_url", key, field.Type)
 		}
 		if field.Type == "task_group_id" {
 			taskGroupIDCount++
