@@ -15,6 +15,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/prolific-oss/cli/agentenv"
 	"github.com/prolific-oss/cli/config"
@@ -157,12 +158,19 @@ type Client struct {
 	Skill   string
 }
 
+// cliVersionPrefix is computed once since the CLI version can't change during
+// the process lifetime, avoiding a repeated debug.ReadBuildInfo() call on
+// every request in dev builds.
+var cliVersionPrefix = sync.OnceValue(func() string {
+	return "prolific-oss/cli/" + version.Get()
+})
+
 // ComposeUserAgent builds the User-Agent string sent with every outgoing
 // request: the CLI's own identity, followed by the detected driving AI
 // agent (if any), followed by the invoking skill/workflow (if any and
 // valid). Each token is independent and omitted when empty or invalid.
 func ComposeUserAgent(skill string) string {
-	ua := "prolific-oss/cli/" + version.Get()
+	ua := cliVersionPrefix()
 	if agent := agentenv.Detected(); agent != "" {
 		ua += " agent/" + agent
 	}

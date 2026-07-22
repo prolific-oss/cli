@@ -41,8 +41,9 @@ func Detected() string {
 }
 
 // ValidHeaderValue reports whether s is safe to embed as a single
-// space-separated User-Agent token: no control characters, and no
-// whitespace (which would split the token across multiple segments).
+// space-separated User-Agent token: no ASCII control characters (0x00-0x1F),
+// DEL (0x7F), or the ASCII space character. Other Unicode whitespace is not
+// rejected but is not expected from the known env vars or --skill input.
 func ValidHeaderValue(s string) bool {
 	for i := 0; i < len(s); i++ {
 		b := s[i]
