@@ -56,7 +56,7 @@ func TestFormatBatchErrorBody(t *testing.T) {
 	}
 }
 func TestComposeUserAgent(t *testing.T) {
-	knownVars := []string{"CLAUDE_CODE", "ANTIGRAVITY_AGENT", "AI_AGENT", "LLM_AGENT"}
+	knownVars := []string{"CLAUDECODE", "ANTIGRAVITY_AGENT", "AI_AGENT", "LLM_AGENT"}
 
 	tests := []struct {
 		name     string
@@ -77,7 +77,7 @@ func TestComposeUserAgent(t *testing.T) {
 		{
 			name:     "agent and skill together",
 			skill:    "cli-command-create",
-			agentEnv: map[string]string{"CLAUDE_CODE": "1"},
+			agentEnv: map[string]string{"CLAUDECODE": "1"},
 			want:     "prolific-oss/cli/" + version.Get() + " agent/claude-code skill/cli-command-create",
 		},
 		{
@@ -105,7 +105,7 @@ func TestComposeUserAgent(t *testing.T) {
 
 func TestExecuteSetsSkillInUserAgent(t *testing.T) {
 	// Isolate from ambient agent env vars (this shell has AI_AGENT set).
-	for _, k := range []string{"CLAUDE_CODE", "ANTIGRAVITY_AGENT", "AI_AGENT", "LLM_AGENT"} {
+	for _, k := range []string{"CLAUDECODE", "ANTIGRAVITY_AGENT", "AI_AGENT", "LLM_AGENT"} {
 		t.Setenv(k, "")
 	}
 
@@ -134,10 +134,10 @@ func TestExecuteSetsSkillInUserAgent(t *testing.T) {
 
 func TestExecuteSetsAgentInUserAgent(t *testing.T) {
 	// Isolate from ambient agent env vars (this shell has AI_AGENT set).
-	for _, k := range []string{"CLAUDE_CODE", "ANTIGRAVITY_AGENT", "AI_AGENT", "LLM_AGENT"} {
+	for _, k := range []string{"CLAUDECODE", "ANTIGRAVITY_AGENT", "AI_AGENT", "LLM_AGENT"} {
 		t.Setenv(k, "")
 	}
-	t.Setenv("CLAUDE_CODE", "1")
+	t.Setenv("CLAUDECODE", "1")
 
 	var gotUserAgent string
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

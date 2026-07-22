@@ -8,7 +8,7 @@ func TestDetected(t *testing.T) {
 	// Every env var Detected looks at. Each subtest zeroes all of them first
 	// so it's isolated from whatever environment its running in (e.g. running
 	// inside an AI agent, or a local dev machine) has set.
-	knownVars := []string{"CLAUDE_CODE", "ANTIGRAVITY_AGENT", "AI_AGENT", "LLM_AGENT"}
+	knownVars := []string{"CLAUDECODE", "ANTIGRAVITY_AGENT", "AI_AGENT", "LLM_AGENT"}
 
 	tests := []struct {
 		name string
@@ -22,7 +22,7 @@ func TestDetected(t *testing.T) {
 		},
 		{
 			name: "claude code, branded slug regardless of value",
-			env:  map[string]string{"CLAUDE_CODE": "1"},
+			env:  map[string]string{"CLAUDECODE": "1"},
 			want: "claude-code",
 		},
 		{
@@ -38,12 +38,12 @@ func TestDetected(t *testing.T) {
 		{
 			// tricky scenario, decision for branded
 			name: "branded wins over generic (precedence)",
-			env:  map[string]string{"CLAUDE_CODE": "1", "AI_AGENT": "cursor"},
+			env:  map[string]string{"CLAUDECODE": "1", "AI_AGENT": "cursor"},
 			want: "claude-code",
 		},
 		{
 			name: "empty string treated as unset",
-			env:  map[string]string{"CLAUDE_CODE": ""},
+			env:  map[string]string{"CLAUDECODE": ""},
 			want: "",
 		},
 		{
