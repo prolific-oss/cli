@@ -45,13 +45,14 @@ passes it through unchanged. The value is the full schema object, for example:
       "question": { "type": "text", "label": "Question" },
       "image":    { "type": "image_url" },
       "audio":    { "type": "audio_url" },
+      "video":    { "type": "video_url" },
       "source":   { "type": "metadata" },
       "group":    { "type": "task_group_id" }
     }
   }
 
-Field types are text, image_url, audio_url, metadata, and task_group_id (at
-most one). By default schemas are created with "strict": false. Use --strict
+Field types are text, image_url, audio_url, video_url, metadata, and
+task_group_id (at most one). By default schemas are created with "strict": false. Use --strict
 to enable strict mode when the schema JSON does not already set "strict"
 (passing --strict alongside a schema that sets "strict" is an error). See
 docs/examples/dataset-schema.json for a full example.

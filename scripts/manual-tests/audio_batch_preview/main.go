@@ -136,7 +136,7 @@ func repoRoot() (string, error) {
 		return "", fmt.Errorf("failed to resolve script path")
 	}
 
-	return filepath.Abs(filepath.Join(filepath.Dir(filePath), "..", ".."))
+	return filepath.Abs(filepath.Join(filepath.Dir(filePath), "..", "..", ".."))
 }
 
 func buildCLI(repoRoot, cliBinary string) error {

@@ -4,6 +4,7 @@
     "question": { "type": "text", "label": "Question" },
     "image": { "type": "image_url", "label": "Reference image" },
     "audio": { "type": "audio_url", "label": "Reference audio" },
+    "video": { "type": "video_url", "label": "Reference video" },
     "source": { "type": "metadata" },
     "group": { "type": "task_group_id" }
   }
