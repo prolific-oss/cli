@@ -270,7 +270,7 @@ func TestDatasetUploadCommandRejectsUnsupportedCSVMediaExtension(t *testing.T) {
 			fieldType:           "video_url",
 			datasetID:           "dataset-video",
 			unsupportedURL:      "https://example.com/video.txt",
-			supportedExtensions: ".mp4, .mov, .webm, .avi",
+			supportedExtensions: ".mp4, .webm, .mov",
 		},
 	}
 

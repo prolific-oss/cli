@@ -42,12 +42,11 @@ const supportedAudioURLFileExtensions = ".aac, .m4a, .mp3, .wav"
 
 var validVideoURLFileExtensions = map[string]bool{
 	".mp4":  true,
-	".mov":  true,
 	".webm": true,
-	".avi":  true,
+	".mov":  true,
 }
 
-const supportedVideoURLFileExtensions = ".mp4, .mov, .webm, .avi"
+const supportedVideoURLFileExtensions = ".mp4, .webm, .mov"
 
 // DatasetUploadOptions are the options for uploading to an AI Task Builder dataset.
 type DatasetUploadOptions struct {
