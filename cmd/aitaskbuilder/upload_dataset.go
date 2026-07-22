@@ -137,11 +137,7 @@ func uploadDatasetFile(client client.API, opts DatasetUploadOptions, w io.Writer
 		return fmt.Errorf("failed to get dataset: %w", err)
 	}
 
-	if err := validateAudioURLFields(opts.FilePath, uploadRequest.Format, dataset.Schema); err != nil {
-		return err
-	}
-
-	if err := validateVideoURLFields(opts.FilePath, uploadRequest.Format, dataset.Schema); err != nil {
+	if err := validateMediaURLFields(opts.FilePath, uploadRequest.Format, dataset.Schema); err != nil {
 		return err
 	}
 
@@ -292,54 +288,47 @@ func uploadFileToPresignedURL(filePath, uploadURL, method, contentType string) e
 	return nil
 }
 
-func validateAudioURLFields(filePath string, format model.DatasetImportFormat, schema *client.DatasetSchema) error {
-	return validateMediaURLFields(filePath, format, schema, "audio_url", "audio", validAudioURLFileExtensions, supportedAudioURLFileExtensions)
+// mediaURLFieldConfig describes how to validate the values of a single media URL field.
+type mediaURLFieldConfig struct {
+	mediaLabel          string
+	extensions          map[string]bool
+	supportedExtensions string
 }
 
-func validateVideoURLFields(filePath string, format model.DatasetImportFormat, schema *client.DatasetSchema) error {
-	return validateMediaURLFields(filePath, format, schema, "video_url", "video", validVideoURLFileExtensions, supportedVideoURLFileExtensions)
+// mediaURLFieldConfigsByType maps a dataset schema field type to its media URL validation config.
+var mediaURLFieldConfigsByType = map[string]mediaURLFieldConfig{
+	"audio_url": {mediaLabel: "audio", extensions: validAudioURLFileExtensions, supportedExtensions: supportedAudioURLFileExtensions},
+	"video_url": {mediaLabel: "video", extensions: validVideoURLFileExtensions, supportedExtensions: supportedVideoURLFileExtensions},
 }
 
-func validateMediaURLFields(
-	filePath string,
-	format model.DatasetImportFormat,
-	schema *client.DatasetSchema,
-	fieldType, mediaLabel string,
-	extensions map[string]bool,
-	supportedExtensions string,
-) error {
+// validateMediaURLFields validates all media URL fields (audio and video) in a single pass over the upload file.
+func validateMediaURLFields(filePath string, format model.DatasetImportFormat, schema *client.DatasetSchema) error {
 	if schema == nil {
 		return nil
 	}
 
-	mediaFields := make(map[string]struct{})
+	mediaFieldConfigs := make(map[string]mediaURLFieldConfig)
 	for fieldName, field := range schema.Fields {
-		if field.Type == fieldType {
-			mediaFields[fieldName] = struct{}{}
+		if config, ok := mediaURLFieldConfigsByType[field.Type]; ok {
+			mediaFieldConfigs[fieldName] = config
 		}
 	}
 
-	if len(mediaFields) == 0 {
+	if len(mediaFieldConfigs) == 0 {
 		return nil
 	}
 
 	switch format {
 	case model.DatasetImportFormatCSV:
-		return validateMediaURLFieldsInCSV(filePath, mediaFields, mediaLabel, extensions, supportedExtensions)
+		return validateMediaURLFieldsInCSV(filePath, mediaFieldConfigs)
 	case model.DatasetImportFormatJSONL:
-		return validateMediaURLFieldsInJSONL(filePath, mediaFields, mediaLabel, extensions, supportedExtensions)
+		return validateMediaURLFieldsInJSONL(filePath, mediaFieldConfigs)
 	default:
 		return nil
 	}
 }
 
-func validateMediaURLFieldsInCSV(
-	filePath string,
-	mediaFields map[string]struct{},
-	mediaLabel string,
-	extensions map[string]bool,
-	supportedExtensions string,
-) error {
+func validateMediaURLFieldsInCSV(filePath string, mediaFieldConfigs map[string]mediaURLFieldConfig) error {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return fmt.Errorf("failed to open file %s: %w", filePath, err)
@@ -355,7 +344,7 @@ func validateMediaURLFieldsInCSV(
 	mediaColumnIndexes := make(map[int]string)
 	for idx, header := range headers {
 		fieldName := strings.TrimSpace(header)
-		if _, ok := mediaFields[fieldName]; ok {
+		if _, ok := mediaFieldConfigs[fieldName]; ok {
 			mediaColumnIndexes[idx] = fieldName
 		}
 	}
@@ -379,7 +368,7 @@ func validateMediaURLFieldsInCSV(
 				continue
 			}
 
-			if err := validateMediaURLValue(recordIndex, fieldName, record[idx], mediaLabel, extensions, supportedExtensions); err != nil {
+			if err := validateMediaURLValue(recordIndex, fieldName, record[idx], mediaFieldConfigs[fieldName]); err != nil {
 				return err
 			}
 		}
@@ -389,20 +378,23 @@ func validateMediaURLFieldsInCSV(
 }
 
 func ValidateAudioURLFieldsInJSONL(filePath string, audioFields map[string]struct{}) error {
-	return validateMediaURLFieldsInJSONL(filePath, audioFields, "audio", validAudioURLFileExtensions, supportedAudioURLFileExtensions)
+	return validateMediaURLFieldsInJSONL(filePath, mediaFieldConfigMap(audioFields, mediaURLFieldConfigsByType["audio_url"]))
 }
 
 func ValidateVideoURLFieldsInJSONL(filePath string, videoFields map[string]struct{}) error {
-	return validateMediaURLFieldsInJSONL(filePath, videoFields, "video", validVideoURLFileExtensions, supportedVideoURLFileExtensions)
+	return validateMediaURLFieldsInJSONL(filePath, mediaFieldConfigMap(videoFields, mediaURLFieldConfigsByType["video_url"]))
 }
 
-func validateMediaURLFieldsInJSONL(
-	filePath string,
-	mediaFields map[string]struct{},
-	mediaLabel string,
-	extensions map[string]bool,
-	supportedExtensions string,
-) error {
+func mediaFieldConfigMap(fields map[string]struct{}, config mediaURLFieldConfig) map[string]mediaURLFieldConfig {
+	mediaFieldConfigs := make(map[string]mediaURLFieldConfig, len(fields))
+	for fieldName := range fields {
+		mediaFieldConfigs[fieldName] = config
+	}
+
+	return mediaFieldConfigs
+}
+
+func validateMediaURLFieldsInJSONL(filePath string, mediaFieldConfigs map[string]mediaURLFieldConfig) error {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return fmt.Errorf("failed to open file %s: %w", filePath, err)
@@ -425,7 +417,7 @@ func validateMediaURLFieldsInJSONL(
 			return fmt.Errorf("failed to parse JSONL record %d from %s: %w", recordIndex, filePath, err)
 		}
 
-		for fieldName := range mediaFields {
+		for fieldName, config := range mediaFieldConfigs {
 			value, ok := record[fieldName]
 			if !ok || value == nil {
 				continue
@@ -437,12 +429,12 @@ func validateMediaURLFieldsInJSONL(
 					"record %d field %s: %s URL must be a string ending with one of %s",
 					recordIndex,
 					fieldName,
-					mediaLabel,
-					supportedExtensions,
+					config.mediaLabel,
+					config.supportedExtensions,
 				)
 			}
 
-			if err := validateMediaURLValue(recordIndex, fieldName, valueString, mediaLabel, extensions, supportedExtensions); err != nil {
+			if err := validateMediaURLValue(recordIndex, fieldName, valueString, config); err != nil {
 				return err
 			}
 		}
@@ -457,20 +449,20 @@ func validateMediaURLFieldsInJSONL(
 	return nil
 }
 
-func validateMediaURLValue(recordIndex int, fieldName, value, mediaLabel string, extensions map[string]bool, supportedExtensions string) error {
+func validateMediaURLValue(recordIndex int, fieldName, value string, config mediaURLFieldConfig) error {
 	trimmedValue := strings.TrimSpace(value)
 	if trimmedValue == "" {
 		return nil
 	}
 
-	if !hasSupportedURLExtension(trimmedValue, extensions) {
+	if !hasSupportedURLExtension(trimmedValue, config.extensions) {
 		return fmt.Errorf(
 			"record %d field %s: %s URL %q must end with one of %s",
 			recordIndex,
 			fieldName,
-			mediaLabel,
+			config.mediaLabel,
 			trimmedValue,
-			supportedExtensions,
+			config.supportedExtensions,
 		)
 	}
 
