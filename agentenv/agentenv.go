@@ -12,7 +12,7 @@ type agentSource struct {
 }
 
 var sources = []agentSource{
-	{"CLAUDE_CODE", "claude-code"},
+	{"CLAUDECODE", "claude-code"},
 	{"ANTIGRAVITY_AGENT", "antigravity"},
 	{"AI_AGENT", ""},
 	{"LLM_AGENT", ""},
