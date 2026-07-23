@@ -2,9 +2,27 @@
 
 ## next
 
-- Add `--skill` root flag to identify the AI skill/workflow invoking a command; folded into the `User-Agent` header sent with API requests
-
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
+
+## 1.1.0
+
+### AI Task Builder
+
+- Map audio fields and add a batch preview command
+- Map video fields on AITB Dataset
+- Send User-Agent on dataset upload requests
+- Send User-Agent on batch export downloads
+- Stop sending skill/agent User-Agent on presigned URL requests
+
+### Collections
+
+- Send User-Agent on collection export downloads
+
+### Core
+
+- Add `--skill` root flag to identify the AI skill/workflow invoking a command; folded into the `User-Agent` header sent with API requests
+- Add AI detection to include the agent or model using the cli
+- Fix claude code env var bug
 
 ## 1.0.3
 
