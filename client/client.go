@@ -41,6 +41,8 @@ type API interface {
 	GetStudies(status, projectID string) (*ListStudiesResponse, error)
 	GetStudy(ID string) (*model.Study, error)
 	GetSubmissions(ID string, limit, offset int) (*ListSubmissionsResponse, error)
+	GetStudyFeedback(studyID string, hasWrittenFeedback bool, limit, offset int) (*ListStudyFeedbackResponse, error)
+	GetStudyRatings(studyID string) (*StudyRatingsResponse, error)
 	RequestSubmissionReturn(ID string, reasons []string) (*RequestSubmissionReturnResponse, error)
 	TransitionSubmission(ID string, payload TransitionSubmissionPayload) (*TransitionSubmissionResponse, error)
 	BulkApproveSubmissions(payload BulkApproveSubmissionsPayload) error
