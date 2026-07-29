@@ -324,5 +324,6 @@ func validateInstructionOptions(instruction client.Instruction, index int) error
 			return fmt.Errorf("instruction %d, option %d: heading is required for type 'multiple_choice_with_free_text'", index+1, j+1)
 		}
 	}
+
 	return nil
 }

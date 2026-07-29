@@ -137,6 +137,8 @@ type CreateStudy struct {
 	Reward                  float64 `json:"reward" mapstructure:"reward"`
 	// Enum: "desktop", "tablet", "mobile"
 	DeviceCompatibility []string `json:"device_compatibility" mapstructure:"device_compatibility"`
+	// Enum: "SINGLE", "QUOTA" (required for weighted filters)
+	StudyType string `json:"study_type,omitempty" mapstructure:"study_type"`
 	// Enum: "audio", "camera", "download", "microphone"
 	PeripheralRequirements []string `json:"peripheral_requirements,omitempty" mapstructure:"peripheral_requirements"`
 	// Study labels for categorization (e.g., "ai_annotation")
@@ -148,11 +150,12 @@ type CreateStudy struct {
 	// Data collection ID: Project/collection/batch ID for data collection
 	DataCollectionID string `json:"data_collection_id,omitempty" mapstructure:"data_collection_id"`
 	// Data collection metadata: Configuration parameters (optional dict)
-	DataCollectionMetadata map[string]interface{} `json:"data_collection_metadata,omitempty" mapstructure:"data_collection_metadata"`
+	DataCollectionMetadata map[string]any `json:"data_collection_metadata,omitempty" mapstructure:"data_collection_metadata"`
 	SubmissionsConfig      struct {
-		MaxSubmissionsPerParticipant int `json:"max_submissions_per_participant,omitempty" mapstructure:"max_submissions_per_participant"`
-		MaxConcurrentSubmissions     int `json:"max_concurrent_submissions,omitempty" mapstructure:"max_concurrent_submissions"`
-	} `json:"submissions_config,omitempty" mapstructure:"submissions_config"`
+		MaxSubmissionsPerParticipant int      `json:"max_submissions_per_participant,omitempty" mapstructure:"max_submissions_per_participant"`
+		MaxConcurrentSubmissions     int      `json:"max_concurrent_submissions,omitempty" mapstructure:"max_concurrent_submissions"`
+		AutoRejectionCategories      []string `json:"auto_rejection_categories,omitempty" mapstructure:"auto_rejection_categories"`
+	} `json:"submissions_config" mapstructure:"submissions_config"`
 	EligibilityRequirements []struct {
 		Attributes []struct {
 			ID    string `json:"id" mapstructure:"id"`
@@ -164,16 +167,24 @@ type CreateStudy struct {
 		} `json:"query" mapstructure:"query"`
 		Cls string `json:"_cls" mapstructure:"_cls"`
 	} `json:"eligibility_requirements,omitempty" mapstructure:"eligibility_requirements"`
-	Filters          []Filter `json:"filters,omitempty" mapstructure:"filters"`
-	Project          string   `json:"project,omitempty" mapstructure:"project"`
-	CredentialPoolID string   `json:"credential_pool_id,omitempty" mapstructure:"credential_pool_id"`
+	Filters          []Filter       `json:"filters,omitempty" mapstructure:"filters"`
+	FilterSetID      string         `json:"filter_set_id,omitempty" mapstructure:"filter_set_id"`
+	AccessDetails    []AccessDetail `json:"access_details,omitempty" mapstructure:"access_details"`
+	Project          string         `json:"project,omitempty" mapstructure:"project"`
+	CredentialPoolID string         `json:"credential_pool_id,omitempty" mapstructure:"credential_pool_id"`
+}
+
+// AccessDetail represents a taskflow access URL with its participant allocation.
+type AccessDetail struct {
+	ExternalURL     string  `json:"external_url" mapstructure:"external_url"`
+	TotalAllocation float64 `json:"total_allocation" mapstructure:"total_allocation"`
 }
 
 // CompletionCode represents a study completion code with its type and actions.
 type CompletionCode struct {
-	Code     string                   `json:"code" mapstructure:"code"`
-	CodeType string                   `json:"code_type" mapstructure:"code_type"`
-	Actions  []map[string]interface{} `json:"actions" mapstructure:"actions"`
+	Code     string           `json:"code" mapstructure:"code"`
+	CodeType string           `json:"code_type" mapstructure:"code_type"`
+	Actions  []map[string]any `json:"actions" mapstructure:"actions"`
 }
 
 // UpdateStudy represents the model we will send back to Prolific to update

@@ -31,6 +31,7 @@ Filters are broadly found in two distinct types:
 	cmd.AddCommand(
 		NewListCommand("list", client, w),
 		NewViewCommand("view", client, w),
+		NewCreateCommand("create", client, w),
 	)
 	return cmd
 }

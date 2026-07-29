@@ -39,8 +39,11 @@ func RenderMoney(amount float64, currencyCode string) string {
 		currencyCode = model.DefaultCurrency
 	}
 
+	cur, err := currency.ParseISO(currencyCode)
+	if err != nil {
+		return fmt.Sprintf("%.2f", amount)
+	}
 	p := message.NewPrinter(language.English)
-	cur := currency.MustParseISO(currencyCode)
 	return fmt.Sprintf("%s%.2f", p.Sprint(currency.Symbol(cur)), amount)
 }
 

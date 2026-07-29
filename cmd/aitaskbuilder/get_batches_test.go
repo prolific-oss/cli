@@ -40,7 +40,7 @@ func TestNewGetBatchesCommandCallsAPI(t *testing.T) {
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	workspaceID := "workspace-123"
+	workspaceID := workspaceID123
 	createdAt, _ := time.Parse(time.RFC3339, "2024-01-01T00:00:00Z")
 
 	response := client.GetAITaskBuilderBatchesResponse{

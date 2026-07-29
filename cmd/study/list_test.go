@@ -119,9 +119,7 @@ func TestListCommandFiltersByUnderpaying(t *testing.T) {
 	}
 	writer.Flush()
 
-	expected := `ID,Name,Status,
-1234,An underpaying study,active,
-`
+	expected := "ID,Name,Status\n1234,An underpaying study,active\n"
 
 	if b.String() != expected {
 		t.Fatalf("expected '%v', got '%v'", expected, b.String())

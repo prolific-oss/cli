@@ -797,3 +797,443 @@ func TestNewBatchInstructionsCommandFreeTextWithUnitPrefixPosition(t *testing.T)
 		t.Fatalf("expected output to contain '%s'; got %s", expectedOutput, buf.String())
 	}
 }
+
+func TestNewBatchInstructionsCommandWithExclusiveOptionMultiSelect(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	batchID := "01954894-65b3-779e-aaf6-348698e12350"
+
+	response := client.CreateAITaskBuilderInstructionsResponse{
+		model.Instruction{
+			ID:          "inst-exc-1",
+			Type:        "multiple_choice",
+			BatchID:     batchID,
+			CreatedBy:   "Sean",
+			CreatedAt:   "2024-09-18T07:50:15.055Z",
+			Description: "Select all medications you are taking.",
+			Options: []model.InstructionOption{
+				{Label: "Aspirin", Value: "aspirin"},
+				{Label: "Ibuprofen", Value: "ibuprofen"},
+				{Label: "None of the above", Value: "none", Exclusive: true},
+			},
+		},
+	}
+
+	answerLimit := -1
+	instructions := client.CreateAITaskBuilderInstructionsPayload{
+		Instructions: []client.Instruction{
+			{
+				Type:        "multiple_choice",
+				CreatedBy:   "Sean",
+				Description: "Select all medications you are taking.",
+				AnswerLimit: &answerLimit,
+				Options: []client.InstructionOption{
+					{Label: "Aspirin", Value: "aspirin"},
+					{Label: "Ibuprofen", Value: "ibuprofen"},
+					{Label: "None of the above", Value: "none", Exclusive: true},
+				},
+			},
+		},
+	}
+
+	c.EXPECT().CreateAITaskBuilderInstructions(batchID, instructions).Return(&response, nil)
+
+	var buf bytes.Buffer
+	writer := bufio.NewWriter(&buf)
+
+	cmd := aitaskbuilder.NewBatchInstructionsCommand(c, writer)
+
+	instructionsJSON := `[{
+		"type": "multiple_choice",
+		"created_by": "Sean",
+		"description": "Select all medications you are taking.",
+		"answer_limit": -1,
+		"options": [
+			{"label": "Aspirin", "value": "aspirin"},
+			{"label": "Ibuprofen", "value": "ibuprofen"},
+			{"label": "None of the above", "value": "none", "exclusive": true}
+		]
+	}]`
+
+	cmd.SetArgs([]string{
+		"-b", batchID,
+		"-j", instructionsJSON,
+	})
+
+	err := cmd.Execute()
+	if err != nil {
+		t.Fatalf("expected no error; got %s", err.Error())
+	}
+
+	writer.Flush()
+
+	expectedOutput := "Successfully added 1 instruction(s) to batch " + batchID
+	if !strings.Contains(buf.String(), expectedOutput) {
+		t.Fatalf("expected output to contain '%s'; got %s", expectedOutput, buf.String())
+	}
+}
+
+func TestNewBatchInstructionsCommandExclusiveWithMultipleChoiceWithFreeText(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	batchID := "01954894-65b3-779e-aaf6-348698e12353"
+
+	response := client.CreateAITaskBuilderInstructionsResponse{
+		model.Instruction{
+			ID:          "inst-exc-2",
+			Type:        "multiple_choice_with_free_text",
+			BatchID:     batchID,
+			CreatedBy:   "Sean",
+			CreatedAt:   "2024-09-18T07:50:15.055Z",
+			Description: "Which symptoms do you have?",
+			Options: []model.InstructionOption{
+				{Label: "Headache", Value: "headache", Heading: "Describe your headache"},
+				{Label: "Fever", Value: "fever", Heading: "Describe your fever"},
+				{Label: "None of the above", Value: "none", Heading: "Any other comments", Exclusive: true},
+			},
+		},
+	}
+
+	answerLimit := -1
+	instructions := client.CreateAITaskBuilderInstructionsPayload{
+		Instructions: []client.Instruction{
+			{
+				Type:        "multiple_choice_with_free_text",
+				CreatedBy:   "Sean",
+				Description: "Which symptoms do you have?",
+				AnswerLimit: &answerLimit,
+				Options: []client.InstructionOption{
+					{Label: "Headache", Value: "headache", Heading: "Describe your headache"},
+					{Label: "Fever", Value: "fever", Heading: "Describe your fever"},
+					{Label: "None of the above", Value: "none", Heading: "Any other comments", Exclusive: true},
+				},
+			},
+		},
+	}
+
+	c.EXPECT().CreateAITaskBuilderInstructions(batchID, instructions).Return(&response, nil)
+
+	var buf bytes.Buffer
+	writer := bufio.NewWriter(&buf)
+
+	cmd := aitaskbuilder.NewBatchInstructionsCommand(c, writer)
+
+	instructionsJSON := `[{
+		"type": "multiple_choice_with_free_text",
+		"created_by": "Sean",
+		"description": "Which symptoms do you have?",
+		"answer_limit": -1,
+		"options": [
+			{"label": "Headache", "value": "headache", "heading": "Describe your headache"},
+			{"label": "Fever", "value": "fever", "heading": "Describe your fever"},
+			{"label": "None of the above", "value": "none", "heading": "Any other comments", "exclusive": true}
+		]
+	}]`
+
+	cmd.SetArgs([]string{
+		"-b", batchID,
+		"-j", instructionsJSON,
+	})
+
+	err := cmd.Execute()
+	if err != nil {
+		t.Fatalf("expected no error; got %s", err.Error())
+	}
+
+	writer.Flush()
+
+	expectedOutput := "Successfully added 1 instruction(s) to batch " + batchID
+	if !strings.Contains(buf.String(), expectedOutput) {
+		t.Fatalf("expected output to contain '%s'; got %s", expectedOutput, buf.String())
+	}
+}
+
+func TestNewBatchInstructionsCommandFreeTextWithValidation(t *testing.T) {
+	tests := []struct {
+		name           string
+		batchID        string
+		instID         string
+		description    string
+		validationType string
+		min            *float64
+		max            *float64
+		jsonValidation string
+	}{
+		{
+			name:           "number validation",
+			batchID:        "01954894-65b3-779e-aaf6-348698e12360",
+			instID:         "inst-val-1",
+			description:    "Enter a score from 0 to 100.",
+			validationType: "number",
+			min:            func() *float64 { v := float64(0); return &v }(),
+			max:            func() *float64 { v := float64(100); return &v }(),
+			jsonValidation: `"validation": {"type": "number", "min": 0, "max": 100}`,
+		},
+		{
+			name:           "string validation",
+			batchID:        "01954894-65b3-779e-aaf6-348698e12361",
+			instID:         "inst-val-2",
+			description:    "Explain your reasoning.",
+			validationType: "string",
+			min:            func() *float64 { v := float64(10); return &v }(),
+			max:            func() *float64 { v := float64(500); return &v }(),
+			jsonValidation: `"validation": {"type": "string", "min": 10, "max": 500}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			c := mock_client.NewMockAPI(ctrl)
+
+			response := client.CreateAITaskBuilderInstructionsResponse{
+				model.Instruction{
+					ID:          tt.instID,
+					Type:        "free_text",
+					BatchID:     tt.batchID,
+					CreatedBy:   "Sean",
+					CreatedAt:   "2024-09-18T07:50:15.055Z",
+					Description: tt.description,
+				},
+			}
+
+			instructions := client.CreateAITaskBuilderInstructionsPayload{
+				Instructions: []client.Instruction{
+					{
+						Type:        "free_text",
+						CreatedBy:   "Sean",
+						Description: tt.description,
+						Validation: &client.ValidationRule{
+							Type: tt.validationType,
+							Min:  tt.min,
+							Max:  tt.max,
+						},
+					},
+				},
+			}
+
+			c.EXPECT().CreateAITaskBuilderInstructions(tt.batchID, instructions).Return(&response, nil)
+
+			var buf bytes.Buffer
+			writer := bufio.NewWriter(&buf)
+
+			cmd := aitaskbuilder.NewBatchInstructionsCommand(c, writer)
+
+			instructionsJSON := `[{
+				"type": "free_text",
+				"created_by": "Sean",
+				"description": "` + tt.description + `",
+				` + tt.jsonValidation + `
+			}]`
+
+			cmd.SetArgs([]string{"-b", tt.batchID, "-j", instructionsJSON})
+
+			err := cmd.Execute()
+			if err != nil {
+				t.Fatalf("expected no error; got %s", err.Error())
+			}
+
+			writer.Flush()
+
+			if !strings.Contains(buf.String(), "Successfully added 1 instruction(s)") {
+				t.Fatalf("expected success message; got %s", buf.String())
+			}
+		})
+	}
+}
+
+func TestNewBatchInstructionsCommandFreeTextWithValidationTypeOnly(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	batchID := "01954894-65b3-779e-aaf6-348698e12362"
+
+	response := client.CreateAITaskBuilderInstructionsResponse{
+		model.Instruction{
+			ID:          "inst-val-3",
+			Type:        "free_text",
+			BatchID:     batchID,
+			CreatedBy:   "Sean",
+			CreatedAt:   "2024-09-18T07:50:15.055Z",
+			Description: "Enter any number.",
+		},
+	}
+
+	instructions := client.CreateAITaskBuilderInstructionsPayload{
+		Instructions: []client.Instruction{
+			{
+				Type:        "free_text",
+				CreatedBy:   "Sean",
+				Description: "Enter any number.",
+				Validation: &client.ValidationRule{
+					Type: "number",
+				},
+			},
+		},
+	}
+
+	c.EXPECT().CreateAITaskBuilderInstructions(batchID, instructions).Return(&response, nil)
+
+	var buf bytes.Buffer
+	writer := bufio.NewWriter(&buf)
+
+	cmd := aitaskbuilder.NewBatchInstructionsCommand(c, writer)
+
+	instructionsJSON := `[{
+		"type": "free_text",
+		"created_by": "Sean",
+		"description": "Enter any number.",
+		"validation": {"type": "number"}
+	}]`
+
+	cmd.SetArgs([]string{"-b", batchID, "-j", instructionsJSON})
+
+	err := cmd.Execute()
+	if err != nil {
+		t.Fatalf("expected no error; got %s", err.Error())
+	}
+
+	writer.Flush()
+
+	if !strings.Contains(buf.String(), "Successfully added 1 instruction(s)") {
+		t.Fatalf("expected success message; got %s", buf.String())
+	}
+}
+
+func TestNewBatchInstructionsCommandFreeTextWithUnitWithUnitOptionValidation(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	batchID := "01954894-65b3-779e-aaf6-348698e12367"
+
+	minKg := float64(20)
+	maxKg := float64(300)
+	minLbs := float64(44)
+	maxLbs := float64(660)
+
+	response := client.CreateAITaskBuilderInstructionsResponse{
+		model.Instruction{
+			ID:          "inst-val-unit-1",
+			Type:        "free_text_with_unit",
+			BatchID:     batchID,
+			CreatedBy:   "Sean",
+			CreatedAt:   "2024-09-18T07:50:15.055Z",
+			Description: "What is your weight?",
+			UnitOptions: []model.UnitOption{
+				{Label: "KG", Value: "kg"},
+				{Label: "Pounds", Value: "lbs"},
+			},
+			UnitPosition: model.UnitPositionSuffix,
+		},
+	}
+
+	instructions := client.CreateAITaskBuilderInstructionsPayload{
+		Instructions: []client.Instruction{
+			{
+				Type:        "free_text_with_unit",
+				CreatedBy:   "Sean",
+				Description: "What is your weight?",
+				UnitOptions: []client.UnitOption{
+					{Label: "KG", Value: "kg", Validation: &client.ValidationRule{Type: "number", Min: &minKg, Max: &maxKg}},
+					{Label: "Pounds", Value: "lbs", Validation: &client.ValidationRule{Type: "number", Min: &minLbs, Max: &maxLbs}},
+				},
+				UnitPosition: string(model.UnitPositionSuffix),
+			},
+		},
+	}
+
+	c.EXPECT().CreateAITaskBuilderInstructions(batchID, instructions).Return(&response, nil)
+
+	var buf bytes.Buffer
+	writer := bufio.NewWriter(&buf)
+
+	cmd := aitaskbuilder.NewBatchInstructionsCommand(c, writer)
+
+	instructionsJSON := `[{
+		"type": "free_text_with_unit",
+		"created_by": "Sean",
+		"description": "What is your weight?",
+		"unit_options": [
+			{"label": "KG", "value": "kg", "validation": {"type": "number", "min": 20, "max": 300}},
+			{"label": "Pounds", "value": "lbs", "validation": {"type": "number", "min": 44, "max": 660}}
+		],
+		"unit_position": "suffix"
+	}]`
+
+	cmd.SetArgs([]string{"-b", batchID, "-j", instructionsJSON})
+
+	err := cmd.Execute()
+	if err != nil {
+		t.Fatalf("expected no error; got %s", err.Error())
+	}
+
+	writer.Flush()
+
+	if !strings.Contains(buf.String(), "Successfully added 1 instruction(s)") {
+		t.Fatalf("expected success message; got %s", buf.String())
+	}
+}
+
+func TestNewBatchInstructionsCommandFreeTextWithExplicitNullValidation(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	batchID := "01954894-65b3-779e-aaf6-348698e12369"
+
+	response := client.CreateAITaskBuilderInstructionsResponse{
+		model.Instruction{
+			ID:          "inst-val-null",
+			Type:        "free_text",
+			BatchID:     batchID,
+			CreatedBy:   "Sean",
+			CreatedAt:   "2024-09-18T07:50:15.055Z",
+			Description: "Enter a value.",
+		},
+	}
+
+	instructions := client.CreateAITaskBuilderInstructionsPayload{
+		Instructions: []client.Instruction{
+			{
+				Type:        "free_text",
+				CreatedBy:   "Sean",
+				Description: "Enter a value.",
+			},
+		},
+	}
+
+	c.EXPECT().CreateAITaskBuilderInstructions(batchID, instructions).Return(&response, nil)
+
+	var buf bytes.Buffer
+	writer := bufio.NewWriter(&buf)
+
+	cmd := aitaskbuilder.NewBatchInstructionsCommand(c, writer)
+
+	// Explicit null should be treated as absent (no validation)
+	instructionsJSON := `[{
+		"type": "free_text",
+		"created_by": "Sean",
+		"description": "Enter a value.",
+		"validation": null
+	}]`
+
+	cmd.SetArgs([]string{"-b", batchID, "-j", instructionsJSON})
+
+	err := cmd.Execute()
+	if err != nil {
+		t.Fatalf("expected no error; got %s", err.Error())
+	}
+
+	writer.Flush()
+
+	if !strings.Contains(buf.String(), "Successfully added 1 instruction(s)") {
+		t.Fatalf("expected success message; got %s", buf.String())
+	}
+}

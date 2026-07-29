@@ -35,6 +35,20 @@ func (m *MockAPI) EXPECT() *MockAPIMockRecorder {
 	return m.recorder
 }
 
+// BulkApproveSubmissions mocks base method.
+func (m *MockAPI) BulkApproveSubmissions(payload client.BulkApproveSubmissionsPayload) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BulkApproveSubmissions", payload)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BulkApproveSubmissions indicates an expected call of BulkApproveSubmissions.
+func (mr *MockAPIMockRecorder) BulkApproveSubmissions(payload interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BulkApproveSubmissions", reflect.TypeOf((*MockAPI)(nil).BulkApproveSubmissions), payload)
+}
+
 // BulkSendMessage mocks base method.
 func (m *MockAPI) BulkSendMessage(ids []string, body, studyID string) error {
 	m.ctrl.T.Helper()
@@ -47,6 +61,21 @@ func (m *MockAPI) BulkSendMessage(ids []string, body, studyID string) error {
 func (mr *MockAPIMockRecorder) BulkSendMessage(ids, body, studyID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BulkSendMessage", reflect.TypeOf((*MockAPI)(nil).BulkSendMessage), ids, body, studyID)
+}
+
+// ConfirmHookSubscription mocks base method.
+func (m *MockAPI) ConfirmHookSubscription(subscriptionID, secret string) (*model.Hook, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConfirmHookSubscription", subscriptionID, secret)
+	ret0, _ := ret[0].(*model.Hook)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConfirmHookSubscription indicates an expected call of ConfirmHookSubscription.
+func (mr *MockAPIMockRecorder) ConfirmHookSubscription(subscriptionID, secret interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfirmHookSubscription", reflect.TypeOf((*MockAPI)(nil).ConfirmHookSubscription), subscriptionID, secret)
 }
 
 // CreateAITaskBuilderBatch mocks base method.
@@ -139,6 +168,82 @@ func (mr *MockAPIMockRecorder) CreateCredentialPool(credentials, workspaceID int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateCredentialPool", reflect.TypeOf((*MockAPI)(nil).CreateCredentialPool), credentials, workspaceID)
 }
 
+// CreateFilterSet mocks base method.
+func (m *MockAPI) CreateFilterSet(filterSet model.CreateFilterSet) (*client.CreateFilterSetResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateFilterSet", filterSet)
+	ret0, _ := ret[0].(*client.CreateFilterSetResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateFilterSet indicates an expected call of CreateFilterSet.
+func (mr *MockAPIMockRecorder) CreateFilterSet(filterSet interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFilterSet", reflect.TypeOf((*MockAPI)(nil).CreateFilterSet), filterSet)
+}
+
+// CreateHookSecret mocks base method.
+func (m *MockAPI) CreateHookSecret(payload client.CreateSecretPayload) (*model.Secret, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateHookSecret", payload)
+	ret0, _ := ret[0].(*model.Secret)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateHookSecret indicates an expected call of CreateHookSecret.
+func (mr *MockAPIMockRecorder) CreateHookSecret(payload interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateHookSecret", reflect.TypeOf((*MockAPI)(nil).CreateHookSecret), payload)
+}
+
+// CreateHookSubscription mocks base method.
+func (m *MockAPI) CreateHookSubscription(payload client.CreateHookPayload) (*model.Hook, string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateHookSubscription", payload)
+	ret0, _ := ret[0].(*model.Hook)
+	ret1, _ := ret[1].(string)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// CreateHookSubscription indicates an expected call of CreateHookSubscription.
+func (mr *MockAPIMockRecorder) CreateHookSubscription(payload interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateHookSubscription", reflect.TypeOf((*MockAPI)(nil).CreateHookSubscription), payload)
+}
+
+// CreateInvitation mocks base method.
+func (m *MockAPI) CreateInvitation(invitation model.CreateInvitation) (*client.CreateInvitationResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateInvitation", invitation)
+	ret0, _ := ret[0].(*client.CreateInvitationResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateInvitation indicates an expected call of CreateInvitation.
+func (mr *MockAPIMockRecorder) CreateInvitation(invitation interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateInvitation", reflect.TypeOf((*MockAPI)(nil).CreateInvitation), invitation)
+}
+
+// CreateParticipantGroup mocks base method.
+func (m *MockAPI) CreateParticipantGroup(group model.CreateParticipantGroup) (*client.CreateParticipantGroupResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateParticipantGroup", group)
+	ret0, _ := ret[0].(*client.CreateParticipantGroupResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateParticipantGroup indicates an expected call of CreateParticipantGroup.
+func (mr *MockAPIMockRecorder) CreateParticipantGroup(group interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateParticipantGroup", reflect.TypeOf((*MockAPI)(nil).CreateParticipantGroup), group)
+}
+
 // CreateProject mocks base method.
 func (m *MockAPI) CreateProject(workspaceID string, project model.Project) (*client.CreateProjectResponse, error) {
 	m.ctrl.T.Helper()
@@ -169,6 +274,51 @@ func (mr *MockAPIMockRecorder) CreateStudy(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateStudy", reflect.TypeOf((*MockAPI)(nil).CreateStudy), arg0)
 }
 
+// CreateSurvey mocks base method.
+func (m *MockAPI) CreateSurvey(survey model.CreateSurvey) (*client.CreateSurveyResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateSurvey", survey)
+	ret0, _ := ret[0].(*client.CreateSurveyResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateSurvey indicates an expected call of CreateSurvey.
+func (mr *MockAPIMockRecorder) CreateSurvey(survey interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSurvey", reflect.TypeOf((*MockAPI)(nil).CreateSurvey), survey)
+}
+
+// CreateSurveyResponse mocks base method.
+func (m *MockAPI) CreateSurveyResponse(surveyID string, response model.CreateSurveyResponseRequest) (*client.CreateSurveyResponseResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateSurveyResponse", surveyID, response)
+	ret0, _ := ret[0].(*client.CreateSurveyResponseResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateSurveyResponse indicates an expected call of CreateSurveyResponse.
+func (mr *MockAPIMockRecorder) CreateSurveyResponse(surveyID, response interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSurveyResponse", reflect.TypeOf((*MockAPI)(nil).CreateSurveyResponse), surveyID, response)
+}
+
+// CreateTestParticipant mocks base method.
+func (m *MockAPI) CreateTestParticipant(email string) (*client.CreateTestParticipantResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateTestParticipant", email)
+	ret0, _ := ret[0].(*client.CreateTestParticipantResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateTestParticipant indicates an expected call of CreateTestParticipant.
+func (mr *MockAPIMockRecorder) CreateTestParticipant(email interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTestParticipant", reflect.TypeOf((*MockAPI)(nil).CreateTestParticipant), email)
+}
+
 // CreateWorkspace mocks base method.
 func (m *MockAPI) CreateWorkspace(workspace model.Workspace) (*client.CreateWorkspacesResponse, error) {
 	m.ctrl.T.Helper()
@@ -184,6 +334,62 @@ func (mr *MockAPIMockRecorder) CreateWorkspace(workspace interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateWorkspace", reflect.TypeOf((*MockAPI)(nil).CreateWorkspace), workspace)
 }
 
+// DeleteAllSurveyResponses mocks base method.
+func (m *MockAPI) DeleteAllSurveyResponses(surveyID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAllSurveyResponses", surveyID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAllSurveyResponses indicates an expected call of DeleteAllSurveyResponses.
+func (mr *MockAPIMockRecorder) DeleteAllSurveyResponses(surveyID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllSurveyResponses", reflect.TypeOf((*MockAPI)(nil).DeleteAllSurveyResponses), surveyID)
+}
+
+// DeleteHookSubscription mocks base method.
+func (m *MockAPI) DeleteHookSubscription(subscriptionID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteHookSubscription", subscriptionID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteHookSubscription indicates an expected call of DeleteHookSubscription.
+func (mr *MockAPIMockRecorder) DeleteHookSubscription(subscriptionID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteHookSubscription", reflect.TypeOf((*MockAPI)(nil).DeleteHookSubscription), subscriptionID)
+}
+
+// DeleteSurvey mocks base method.
+func (m *MockAPI) DeleteSurvey(ID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteSurvey", ID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteSurvey indicates an expected call of DeleteSurvey.
+func (mr *MockAPIMockRecorder) DeleteSurvey(ID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSurvey", reflect.TypeOf((*MockAPI)(nil).DeleteSurvey), ID)
+}
+
+// DeleteSurveyResponse mocks base method.
+func (m *MockAPI) DeleteSurveyResponse(surveyID, responseID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteSurveyResponse", surveyID, responseID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteSurveyResponse indicates an expected call of DeleteSurveyResponse.
+func (mr *MockAPIMockRecorder) DeleteSurveyResponse(surveyID, responseID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSurveyResponse", reflect.TypeOf((*MockAPI)(nil).DeleteSurveyResponse), surveyID, responseID)
+}
+
 // DuplicateStudy mocks base method.
 func (m *MockAPI) DuplicateStudy(ID string) (*model.Study, error) {
 	m.ctrl.T.Helper()
@@ -197,6 +403,21 @@ func (m *MockAPI) DuplicateStudy(ID string) (*model.Study, error) {
 func (mr *MockAPIMockRecorder) DuplicateStudy(ID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DuplicateStudy", reflect.TypeOf((*MockAPI)(nil).DuplicateStudy), ID)
+}
+
+// ExportDemographics mocks base method.
+func (m *MockAPI) ExportDemographics(ID string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExportDemographics", ID)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExportDemographics indicates an expected call of ExportDemographics.
+func (mr *MockAPIMockRecorder) ExportDemographics(ID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportDemographics", reflect.TypeOf((*MockAPI)(nil).ExportDemographics), ID)
 }
 
 // GetAITaskBuilderBatch mocks base method.
@@ -229,6 +450,21 @@ func (mr *MockAPIMockRecorder) GetAITaskBuilderBatchStatus(batchID interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAITaskBuilderBatchStatus", reflect.TypeOf((*MockAPI)(nil).GetAITaskBuilderBatchStatus), batchID)
 }
 
+// GetAITaskBuilderBatchSyncStatus mocks base method.
+func (m *MockAPI) GetAITaskBuilderBatchSyncStatus(batchID, syncID string) (*client.AITaskBuilderBatchSyncResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAITaskBuilderBatchSyncStatus", batchID, syncID)
+	ret0, _ := ret[0].(*client.AITaskBuilderBatchSyncResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAITaskBuilderBatchSyncStatus indicates an expected call of GetAITaskBuilderBatchSyncStatus.
+func (mr *MockAPIMockRecorder) GetAITaskBuilderBatchSyncStatus(batchID, syncID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAITaskBuilderBatchSyncStatus", reflect.TypeOf((*MockAPI)(nil).GetAITaskBuilderBatchSyncStatus), batchID, syncID)
+}
+
 // GetAITaskBuilderBatches mocks base method.
 func (m *MockAPI) GetAITaskBuilderBatches(workspaceID string) (*client.GetAITaskBuilderBatchesResponse, error) {
 	m.ctrl.T.Helper()
@@ -242,6 +478,36 @@ func (m *MockAPI) GetAITaskBuilderBatches(workspaceID string) (*client.GetAITask
 func (mr *MockAPIMockRecorder) GetAITaskBuilderBatches(workspaceID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAITaskBuilderBatches", reflect.TypeOf((*MockAPI)(nil).GetAITaskBuilderBatches), workspaceID)
+}
+
+// GetAITaskBuilderDataset mocks base method.
+func (m *MockAPI) GetAITaskBuilderDataset(datasetID string) (*client.GetAITaskBuilderDatasetResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAITaskBuilderDataset", datasetID)
+	ret0, _ := ret[0].(*client.GetAITaskBuilderDatasetResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAITaskBuilderDataset indicates an expected call of GetAITaskBuilderDataset.
+func (mr *MockAPIMockRecorder) GetAITaskBuilderDataset(datasetID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAITaskBuilderDataset", reflect.TypeOf((*MockAPI)(nil).GetAITaskBuilderDataset), datasetID)
+}
+
+// GetAITaskBuilderDatasetImportStatus mocks base method.
+func (m *MockAPI) GetAITaskBuilderDatasetImportStatus(datasetID, importID string) (*client.GetAITaskBuilderDatasetImportStatusResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAITaskBuilderDatasetImportStatus", datasetID, importID)
+	ret0, _ := ret[0].(*client.GetAITaskBuilderDatasetImportStatusResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAITaskBuilderDatasetImportStatus indicates an expected call of GetAITaskBuilderDatasetImportStatus.
+func (mr *MockAPIMockRecorder) GetAITaskBuilderDatasetImportStatus(datasetID, importID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAITaskBuilderDatasetImportStatus", reflect.TypeOf((*MockAPI)(nil).GetAITaskBuilderDatasetImportStatus), datasetID, importID)
 }
 
 // GetAITaskBuilderDatasetStatus mocks base method.
@@ -289,6 +555,21 @@ func (mr *MockAPIMockRecorder) GetAITaskBuilderResponses(batchID interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAITaskBuilderResponses", reflect.TypeOf((*MockAPI)(nil).GetAITaskBuilderResponses), batchID)
 }
 
+// GetAITaskBuilderTaskGroups mocks base method.
+func (m *MockAPI) GetAITaskBuilderTaskGroups(batchID string) (*client.GetAITaskBuilderTaskGroupsResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAITaskBuilderTaskGroups", batchID)
+	ret0, _ := ret[0].(*client.GetAITaskBuilderTaskGroupsResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAITaskBuilderTaskGroups indicates an expected call of GetAITaskBuilderTaskGroups.
+func (mr *MockAPIMockRecorder) GetAITaskBuilderTaskGroups(batchID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAITaskBuilderTaskGroups", reflect.TypeOf((*MockAPI)(nil).GetAITaskBuilderTaskGroups), batchID)
+}
+
 // GetAITaskBuilderTasks mocks base method.
 func (m *MockAPI) GetAITaskBuilderTasks(batchID string) (*client.GetAITaskBuilderTasksResponse, error) {
 	m.ctrl.T.Helper()
@@ -302,6 +583,21 @@ func (m *MockAPI) GetAITaskBuilderTasks(batchID string) (*client.GetAITaskBuilde
 func (mr *MockAPIMockRecorder) GetAITaskBuilderTasks(batchID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAITaskBuilderTasks", reflect.TypeOf((*MockAPI)(nil).GetAITaskBuilderTasks), batchID)
+}
+
+// GetBatchExportStatus mocks base method.
+func (m *MockAPI) GetBatchExportStatus(batchID, exportID string) (*client.BatchExportResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetBatchExportStatus", batchID, exportID)
+	ret0, _ := ret[0].(*client.BatchExportResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetBatchExportStatus indicates an expected call of GetBatchExportStatus.
+func (mr *MockAPIMockRecorder) GetBatchExportStatus(batchID, exportID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBatchExportStatus", reflect.TypeOf((*MockAPI)(nil).GetBatchExportStatus), batchID, exportID)
 }
 
 // GetCampaigns mocks base method.
@@ -334,6 +630,21 @@ func (mr *MockAPIMockRecorder) GetCollection(ID interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCollection", reflect.TypeOf((*MockAPI)(nil).GetCollection), ID)
 }
 
+// GetCollectionExportStatus mocks base method.
+func (m *MockAPI) GetCollectionExportStatus(collectionID, exportID string) (*client.CollectionExportResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCollectionExportStatus", collectionID, exportID)
+	ret0, _ := ret[0].(*client.CollectionExportResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCollectionExportStatus indicates an expected call of GetCollectionExportStatus.
+func (mr *MockAPIMockRecorder) GetCollectionExportStatus(collectionID, exportID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCollectionExportStatus", reflect.TypeOf((*MockAPI)(nil).GetCollectionExportStatus), collectionID, exportID)
+}
+
 // GetCollections mocks base method.
 func (m *MockAPI) GetCollections(workspaceID string, limit, offset int) (*client.ListCollectionsResponse, error) {
 	m.ctrl.T.Helper()
@@ -347,21 +658,6 @@ func (m *MockAPI) GetCollections(workspaceID string, limit, offset int) (*client
 func (mr *MockAPIMockRecorder) GetCollections(workspaceID, limit, offset interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCollections", reflect.TypeOf((*MockAPI)(nil).GetCollections), workspaceID, limit, offset)
-}
-
-// GetEligibilityRequirements mocks base method.
-func (m *MockAPI) GetEligibilityRequirements() (*client.ListRequirementsResponse, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEligibilityRequirements")
-	ret0, _ := ret[0].(*client.ListRequirementsResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetEligibilityRequirements indicates an expected call of GetEligibilityRequirements.
-func (mr *MockAPIMockRecorder) GetEligibilityRequirements() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEligibilityRequirements", reflect.TypeOf((*MockAPI)(nil).GetEligibilityRequirements))
 }
 
 // GetEvents mocks base method.
@@ -634,6 +930,21 @@ func (mr *MockAPIMockRecorder) GetStudyRatings(studyID interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStudyRatings", reflect.TypeOf((*MockAPI)(nil).GetStudyRatings), studyID)
 }
 
+// GetStudySubmissionCounts mocks base method.
+func (m *MockAPI) GetStudySubmissionCounts(ID string) (*model.SubmissionCounts, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetStudySubmissionCounts", ID)
+	ret0, _ := ret[0].(*model.SubmissionCounts)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetStudySubmissionCounts indicates an expected call of GetStudySubmissionCounts.
+func (mr *MockAPIMockRecorder) GetStudySubmissionCounts(ID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStudySubmissionCounts", reflect.TypeOf((*MockAPI)(nil).GetStudySubmissionCounts), ID)
+}
+
 // GetSubmissions mocks base method.
 func (m *MockAPI) GetSubmissions(ID string, limit, offset int) (*client.ListSubmissionsResponse, error) {
 	m.ctrl.T.Helper()
@@ -647,6 +958,81 @@ func (m *MockAPI) GetSubmissions(ID string, limit, offset int) (*client.ListSubm
 func (mr *MockAPIMockRecorder) GetSubmissions(ID, limit, offset interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSubmissions", reflect.TypeOf((*MockAPI)(nil).GetSubmissions), ID, limit, offset)
+}
+
+// GetSurvey mocks base method.
+func (m *MockAPI) GetSurvey(ID string) (*model.Survey, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSurvey", ID)
+	ret0, _ := ret[0].(*model.Survey)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSurvey indicates an expected call of GetSurvey.
+func (mr *MockAPIMockRecorder) GetSurvey(ID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSurvey", reflect.TypeOf((*MockAPI)(nil).GetSurvey), ID)
+}
+
+// GetSurveyResponse mocks base method.
+func (m *MockAPI) GetSurveyResponse(surveyID, responseID string) (*model.SurveyResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSurveyResponse", surveyID, responseID)
+	ret0, _ := ret[0].(*model.SurveyResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSurveyResponse indicates an expected call of GetSurveyResponse.
+func (mr *MockAPIMockRecorder) GetSurveyResponse(surveyID, responseID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSurveyResponse", reflect.TypeOf((*MockAPI)(nil).GetSurveyResponse), surveyID, responseID)
+}
+
+// GetSurveyResponseSummary mocks base method.
+func (m *MockAPI) GetSurveyResponseSummary(surveyID string) (*model.SurveySummary, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSurveyResponseSummary", surveyID)
+	ret0, _ := ret[0].(*model.SurveySummary)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSurveyResponseSummary indicates an expected call of GetSurveyResponseSummary.
+func (mr *MockAPIMockRecorder) GetSurveyResponseSummary(surveyID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSurveyResponseSummary", reflect.TypeOf((*MockAPI)(nil).GetSurveyResponseSummary), surveyID)
+}
+
+// GetSurveyResponses mocks base method.
+func (m *MockAPI) GetSurveyResponses(surveyID string, limit, offset int) (*client.ListSurveyResponsesResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSurveyResponses", surveyID, limit, offset)
+	ret0, _ := ret[0].(*client.ListSurveyResponsesResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSurveyResponses indicates an expected call of GetSurveyResponses.
+func (mr *MockAPIMockRecorder) GetSurveyResponses(surveyID, limit, offset interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSurveyResponses", reflect.TypeOf((*MockAPI)(nil).GetSurveyResponses), surveyID, limit, offset)
+}
+
+// GetSurveys mocks base method.
+func (m *MockAPI) GetSurveys(researcherID string, limit, offset int) (*client.ListSurveysResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSurveys", researcherID, limit, offset)
+	ret0, _ := ret[0].(*client.ListSurveysResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSurveys indicates an expected call of GetSurveys.
+func (mr *MockAPIMockRecorder) GetSurveys(researcherID, limit, offset interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSurveys", reflect.TypeOf((*MockAPI)(nil).GetSurveys), researcherID, limit, offset)
 }
 
 // GetUnreadMessages mocks base method.
@@ -664,6 +1050,21 @@ func (mr *MockAPIMockRecorder) GetUnreadMessages() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUnreadMessages", reflect.TypeOf((*MockAPI)(nil).GetUnreadMessages))
 }
 
+// GetWorkspaceBalance mocks base method.
+func (m *MockAPI) GetWorkspaceBalance(workspaceID string) (*client.WorkspaceBalanceResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetWorkspaceBalance", workspaceID)
+	ret0, _ := ret[0].(*client.WorkspaceBalanceResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetWorkspaceBalance indicates an expected call of GetWorkspaceBalance.
+func (mr *MockAPIMockRecorder) GetWorkspaceBalance(workspaceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkspaceBalance", reflect.TypeOf((*MockAPI)(nil).GetWorkspaceBalance), workspaceID)
+}
+
 // GetWorkspaces mocks base method.
 func (m *MockAPI) GetWorkspaces(limit, offset int) (*client.ListWorkspacesResponse, error) {
 	m.ctrl.T.Helper()
@@ -677,6 +1078,36 @@ func (m *MockAPI) GetWorkspaces(limit, offset int) (*client.ListWorkspacesRespon
 func (mr *MockAPIMockRecorder) GetWorkspaces(limit, offset interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkspaces", reflect.TypeOf((*MockAPI)(nil).GetWorkspaces), limit, offset)
+}
+
+// InitiateBatchExport mocks base method.
+func (m *MockAPI) InitiateBatchExport(batchID string) (*client.BatchExportResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InitiateBatchExport", batchID)
+	ret0, _ := ret[0].(*client.BatchExportResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// InitiateBatchExport indicates an expected call of InitiateBatchExport.
+func (mr *MockAPIMockRecorder) InitiateBatchExport(batchID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitiateBatchExport", reflect.TypeOf((*MockAPI)(nil).InitiateBatchExport), batchID)
+}
+
+// InitiateCollectionExport mocks base method.
+func (m *MockAPI) InitiateCollectionExport(collectionID string) (*client.CollectionExportResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InitiateCollectionExport", collectionID)
+	ret0, _ := ret[0].(*client.CollectionExportResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// InitiateCollectionExport indicates an expected call of InitiateCollectionExport.
+func (mr *MockAPIMockRecorder) InitiateCollectionExport(collectionID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitiateCollectionExport", reflect.TypeOf((*MockAPI)(nil).InitiateCollectionExport), collectionID)
 }
 
 // ListCredentialPools mocks base method.
@@ -706,6 +1137,36 @@ func (m *MockAPI) PayBonusPayments(id string) error {
 func (mr *MockAPIMockRecorder) PayBonusPayments(id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PayBonusPayments", reflect.TypeOf((*MockAPI)(nil).PayBonusPayments), id)
+}
+
+// RemoveParticipantGroupMembers mocks base method.
+func (m *MockAPI) RemoveParticipantGroupMembers(groupID string, participantIDs []string) (*client.ViewParticipantGroupResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveParticipantGroupMembers", groupID, participantIDs)
+	ret0, _ := ret[0].(*client.ViewParticipantGroupResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RemoveParticipantGroupMembers indicates an expected call of RemoveParticipantGroupMembers.
+func (mr *MockAPIMockRecorder) RemoveParticipantGroupMembers(groupID, participantIDs interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveParticipantGroupMembers", reflect.TypeOf((*MockAPI)(nil).RemoveParticipantGroupMembers), groupID, participantIDs)
+}
+
+// RequestSubmissionReturn mocks base method.
+func (m *MockAPI) RequestSubmissionReturn(ID string, reasons []string) (*client.RequestSubmissionReturnResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RequestSubmissionReturn", ID, reasons)
+	ret0, _ := ret[0].(*client.RequestSubmissionReturnResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RequestSubmissionReturn indicates an expected call of RequestSubmissionReturn.
+func (mr *MockAPIMockRecorder) RequestSubmissionReturn(ID, reasons interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RequestSubmissionReturn", reflect.TypeOf((*MockAPI)(nil).RequestSubmissionReturn), ID, reasons)
 }
 
 // SendGroupMessage mocks base method.
@@ -751,6 +1212,36 @@ func (mr *MockAPIMockRecorder) SetupAITaskBuilderBatch(batchID, datasetID, tasks
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetupAITaskBuilderBatch", reflect.TypeOf((*MockAPI)(nil).SetupAITaskBuilderBatch), batchID, datasetID, tasksPerGroup)
 }
 
+// SyncAITaskBuilderBatch mocks base method.
+func (m *MockAPI) SyncAITaskBuilderBatch(batchID string) (*client.AITaskBuilderBatchSyncResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SyncAITaskBuilderBatch", batchID)
+	ret0, _ := ret[0].(*client.AITaskBuilderBatchSyncResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SyncAITaskBuilderBatch indicates an expected call of SyncAITaskBuilderBatch.
+func (mr *MockAPIMockRecorder) SyncAITaskBuilderBatch(batchID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SyncAITaskBuilderBatch", reflect.TypeOf((*MockAPI)(nil).SyncAITaskBuilderBatch), batchID)
+}
+
+// TestStudy mocks base method.
+func (m *MockAPI) TestStudy(ID string) (*client.TestStudyResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TestStudy", ID)
+	ret0, _ := ret[0].(*client.TestStudyResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TestStudy indicates an expected call of TestStudy.
+func (mr *MockAPIMockRecorder) TestStudy(ID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TestStudy", reflect.TypeOf((*MockAPI)(nil).TestStudy), ID)
+}
+
 // TransitionStudy mocks base method.
 func (m *MockAPI) TransitionStudy(ID, action string) (*client.TransitionStudyResponse, error) {
 	m.ctrl.T.Helper()
@@ -764,6 +1255,36 @@ func (m *MockAPI) TransitionStudy(ID, action string) (*client.TransitionStudyRes
 func (mr *MockAPIMockRecorder) TransitionStudy(ID, action interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransitionStudy", reflect.TypeOf((*MockAPI)(nil).TransitionStudy), ID, action)
+}
+
+// TransitionSubmission mocks base method.
+func (m *MockAPI) TransitionSubmission(ID string, payload client.TransitionSubmissionPayload) (*client.TransitionSubmissionResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TransitionSubmission", ID, payload)
+	ret0, _ := ret[0].(*client.TransitionSubmissionResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TransitionSubmission indicates an expected call of TransitionSubmission.
+func (mr *MockAPIMockRecorder) TransitionSubmission(ID, payload interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransitionSubmission", reflect.TypeOf((*MockAPI)(nil).TransitionSubmission), ID, payload)
+}
+
+// UpdateAITaskBuilderBatch mocks base method.
+func (m *MockAPI) UpdateAITaskBuilderBatch(params client.UpdateBatchParams) (*client.UpdateAITaskBuilderBatchResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateAITaskBuilderBatch", params)
+	ret0, _ := ret[0].(*client.UpdateAITaskBuilderBatchResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateAITaskBuilderBatch indicates an expected call of UpdateAITaskBuilderBatch.
+func (mr *MockAPIMockRecorder) UpdateAITaskBuilderBatch(params interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAITaskBuilderBatch", reflect.TypeOf((*MockAPI)(nil).UpdateAITaskBuilderBatch), params)
 }
 
 // UpdateCollection mocks base method.
@@ -782,22 +1303,37 @@ func (mr *MockAPIMockRecorder) UpdateCollection(ID, collection interface{}) *gom
 }
 
 // UpdateCredentialPool mocks base method.
-func (m *MockAPI) UpdateCredentialPool(credentialPoolID, credentials, workspaceID string) (*client.CredentialPoolResponse, error) {
+func (m *MockAPI) UpdateCredentialPool(credentialPoolID, credentials string) (*client.CredentialPoolResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateCredentialPool", credentialPoolID, credentials, workspaceID)
+	ret := m.ctrl.Call(m, "UpdateCredentialPool", credentialPoolID, credentials)
 	ret0, _ := ret[0].(*client.CredentialPoolResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateCredentialPool indicates an expected call of UpdateCredentialPool.
-func (mr *MockAPIMockRecorder) UpdateCredentialPool(credentialPoolID, credentials, workspaceID interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) UpdateCredentialPool(credentialPoolID, credentials interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCredentialPool", reflect.TypeOf((*MockAPI)(nil).UpdateCredentialPool), credentialPoolID, credentials, workspaceID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCredentialPool", reflect.TypeOf((*MockAPI)(nil).UpdateCredentialPool), credentialPoolID, credentials)
+}
+
+// UpdateHookSubscription mocks base method.
+func (m *MockAPI) UpdateHookSubscription(subscriptionID string, payload client.UpdateHookPayload) (*model.Hook, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateHookSubscription", subscriptionID, payload)
+	ret0, _ := ret[0].(*model.Hook)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateHookSubscription indicates an expected call of UpdateHookSubscription.
+func (mr *MockAPIMockRecorder) UpdateHookSubscription(subscriptionID, payload interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateHookSubscription", reflect.TypeOf((*MockAPI)(nil).UpdateHookSubscription), subscriptionID, payload)
 }
 
 // UpdateStudy mocks base method.
-func (m *MockAPI) UpdateStudy(ID string, study model.UpdateStudy) (*model.Study, error) {
+func (m *MockAPI) UpdateStudy(ID string, study any) (*model.Study, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateStudy", ID, study)
 	ret0, _ := ret[0].(*model.Study)

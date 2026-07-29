@@ -4,6 +4,173 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+## 1.1.0
+
+### AI Task Builder
+
+- Map audio fields and add a batch preview command
+- Map video fields on AITB Dataset
+- Send User-Agent on dataset upload requests
+- Send User-Agent on batch export downloads
+- Stop sending skill/agent User-Agent on presigned URL requests
+
+### Collections
+
+- Send User-Agent on collection export downloads
+
+### Core
+
+- Add `--skill` root flag to identify the AI skill/workflow invoking a command; folded into the `User-Agent` header sent with API requests
+- Add AI detection to include the agent or model using the cli
+- Fix claude code env var bug
+
+## 1.0.3
+
+### AI Task Builder
+
+- Add schema to dataset create
+- Add batch sync command
+- Add --auto-sync flag to batch create command
+- Add --auto-sync flag to batch update command
+- Update dataset upload command to account for new dataset schemas
+- Add auto sync enabled to batch create and update response
+- Use git cli idiomatic approach to auto sync flaggs with no-auto-sync instead of disable or false flags
+
+### Core
+
+- Rename auto_sync request field to auto_sync_enabled
+
+## 1.0.2
+
+### AI Task Builder
+
+- Add batch_items support to batch create and update commands
+
+### Core
+
+- Add instructions endpoint deprecation message (#438)
+
+## 1.0.1
+
+### Workspaces
+
+- Allow users to utilise active workspace on balance command
+
+## 1.0.0
+
+### AI Task Builder
+
+- Add aitaskbuilder batch export command
+- Add aitaskbuilder batch update command
+
+### Collections
+
+- Update collection rendering
+- Ensure that workspace options default to viper config
+- Move collection renderers to /cmd
+
+### Core
+
+- Add submissions TUI list view
+- Add invitations support
+- Add interactive drill-down to submission-counts command
+- Make workspace required on hook create
+- Add participant group create command
+- Add researcher create-participant command
+
+### Filters
+
+- Move filter view to ./cmd/filters
+- Add filter-set create command
+- Use dedicated request model and fix selected_range serialization
+
+### Participant Groups
+
+- Add participant group remove command with bulk and file support
+- Address code review feedback
+
+### Hooks
+
+- Add hook create command
+- Add create-secret command
+- Add hook subscription delete command
+
+### Study
+
+- Unified output format flags
+- Move study ui renderer to ./cmd
+- Add study submission-counts command
+- Add demographic-export and test-study CLI commands
+- Add status code check and improve error handling for study commands
+- Align demographic-export and test-study with API docs
+
+### Submissions
+
+- Update submission rendering
+- Add submission transition and bulk-approve commands
+- Add --file flag to submission bulk-approve command
+
+### Survey
+
+- Add survey list command
+- Add survey view command
+- Add survey create command
+- Add survey delete command
+- Add interactive and JSON output modes to survey list
+
+### Workspaces
+
+- Add workspace balance command
+
+## 0.0.66
+
+### Templates
+
+- Add template list and view commands for browsing embedded study and collection examples
+
+## 0.0.65
+
+### Filters
+
+- Add non-interactive mode to filters command
+- Split renderList into interactive and non-interactive functions
+
+### Core
+
+- Add missing fields to study and filter models
+- Align weightings keys with selected_values in example
+- Handle unknown currency code in RenderMoney without panic
+- Remove the `requirements` command which is no longer supported
+
+## 0.0.64
+
+### Collections
+
+- Add collection export command
+
+## 0.0.63
+
+- Maintenance and dependency updates
+
+## 0.0.62
+
+### Core
+
+- Add submission request-return command
+- Add min/max validation for free_text and free_text_with_unit instructions
+
+## 0.0.61
+
+### Study
+
+- Add study update command with JSON template support
+
+### Collections
+
+- Add exclusive option field to multiple choice instructions
+- Extract shared exclusive options validation logic
+- Remove exclusive options validation from CLI
+
 ## 0.0.60
 
 - Maintenance and dependency updates
@@ -440,4 +607,3 @@ Initial release of the `prolific` application.
 - Ability to get your user account details.
 - Ability to list and filter studies.
 - Ability to render details about a study, and the submissions.
-

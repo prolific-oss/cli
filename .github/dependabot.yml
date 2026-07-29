@@ -6,7 +6,7 @@ updates:
     schedule:
       interval: 'weekly'
     commit-message:
-      prefix: 'GHA'
+      prefix: 'chore(deps)'
 
   # Maintain dependencies for docker
   - package-ecosystem: 'docker'
@@ -14,7 +14,7 @@ updates:
     schedule:
       interval: 'weekly'
     commit-message:
-      prefix: 'docker'
+      prefix: 'chore(deps)'
 
   # Maintain dependencies for go
   - package-ecosystem: 'gomod'
@@ -22,7 +22,7 @@ updates:
     schedule:
       interval: 'daily'
     commit-message:
-      prefix: 'gomod'
+      prefix: 'chore(deps)'
     groups:
       development-dependencies:
         dependency-type: 'development'

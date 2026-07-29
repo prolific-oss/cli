@@ -77,17 +77,29 @@ type ListSubmissionsResponse struct {
 	*JSONAPIMeta
 }
 
-// ListRequirementsResponse is the response for the requirements request.
-type ListRequirementsResponse struct {
-	Results []model.Requirement `json:"results"`
-	*JSONAPILinks
-	*JSONAPIMeta
-}
-
 type ListFiltersResponse struct {
 	Results []model.Filter `json:"results"`
 	*JSONAPILinks
 	*JSONAPIMeta
+}
+
+// TransitionSubmissionResponse is the response for transitioning a submission.
+type TransitionSubmissionResponse struct {
+	ID          string  `json:"id"`
+	CompletedAt *string `json:"completed_at"`
+	EnteredCode *string `json:"entered_code"`
+	Participant string  `json:"participant"`
+	StartedAt   string  `json:"started_at"`
+	Status      string  `json:"status"`
+	StudyID     string  `json:"study_id"`
+}
+
+// RequestSubmissionReturnResponse is the response for requesting a submission return.
+type RequestSubmissionReturnResponse struct {
+	ID              string  `json:"id"`
+	Status          string  `json:"status"`
+	Participant     string  `json:"participant"`
+	ReturnRequested *string `json:"return_requested"`
 }
 
 // TransitionStudyResponse is the response for transitioning a study to another status.
@@ -108,6 +120,23 @@ type TransitionStudyResponse struct {
 	PeripheralRequirements  []any    `json:"peripheral_requirements"`
 	EligibilityRequirements []any    `json:"eligibility_requirements"`
 	Status                  string   `json:"status"`
+}
+
+// WorkspaceBalanceResponse is the response for the workspace balance endpoint.
+type WorkspaceBalanceResponse struct {
+	CurrencyCode     string `json:"currency_code"`
+	TotalBalance     int    `json:"total_balance"`
+	BalanceBreakdown struct {
+		Rewards int `json:"rewards"`
+		Fees    int `json:"fees"`
+		VAT     int `json:"vat"`
+	} `json:"balance_breakdown"`
+	AvailableBalance          int `json:"available_balance"`
+	AvailableBalanceBreakdown struct {
+		Rewards int `json:"rewards"`
+		Fees    int `json:"fees"`
+		VAT     int `json:"vat"`
+	} `json:"available_balance_breakdown"`
 }
 
 // ListCampaignsResponse is the response for the campaigns request.
@@ -168,6 +197,11 @@ type ListParticipantGroupsResponse struct {
 	*JSONAPIMeta
 }
 
+// CreateParticipantGroupResponse is the response for creating a participant group.
+type CreateParticipantGroupResponse struct {
+	model.ParticipantGroup
+}
+
 // ViewParticipantGroupResponse is the list of members in a group.
 type ViewParticipantGroupResponse struct {
 	Results []model.ParticipantGroupMembership `json:"results"`
@@ -177,6 +211,11 @@ type ListFilterSetsResponse struct {
 	Results []model.FilterSet `json:"results"`
 	*JSONAPILinks
 	*JSONAPIMeta
+}
+
+// CreateFilterSetResponse is the response for creating a filter set.
+type CreateFilterSetResponse struct {
+	model.FilterSet
 }
 
 // ListMessagesResponse is the response for the list messages endpoint.
@@ -195,6 +234,11 @@ type ListUnreadMessagesResponse struct {
 
 // GetAITaskBuilderBatchResponse is the response for the get AI Task Builder get batch endpoint.
 type GetAITaskBuilderBatchResponse struct {
+	model.AITaskBuilderBatch
+}
+
+// UpdateAITaskBuilderBatchResponse is the response for the update AI Task Builder batch endpoint.
+type UpdateAITaskBuilderBatchResponse struct {
 	model.AITaskBuilderBatch
 }
 
@@ -218,6 +262,26 @@ type GetAITaskBuilderResponsesResponse struct {
 // The API returns a simple array of task ID strings.
 type GetAITaskBuilderTasksResponse []string
 
+// GetAITaskBuilderTaskGroupsResponse is the response for the get AI Task Builder task groups endpoint.
+// The API returns a simple array of task group ID strings.
+type GetAITaskBuilderTaskGroupsResponse []string
+
+// GetAITaskBuilderDatasetResponse is the response for the get AI Task Builder dataset endpoint.
+type GetAITaskBuilderDatasetResponse struct {
+	ID                         string                   `json:"id"`
+	Name                       string                   `json:"name"`
+	CreatedAt                  string                   `json:"created_at"`
+	CreatedBy                  string                   `json:"created_by"`
+	WorkspaceID                string                   `json:"workspace_id"`
+	TotalDatapointCount        int                      `json:"total_datapoint_count"`
+	SchemaVersion              int                      `json:"schema_version"`
+	Status                     model.DatasetStatus      `json:"status,omitempty"`
+	Filename                   *string                  `json:"filename,omitempty"`
+	HasPredeterminedGroupingID *bool                    `json:"has_predetermined_grouping_id,omitempty"`
+	Schema                     *DatasetSchema           `json:"schema"`
+	Imports                    []model.DatasetImportJob `json:"imports"`
+}
+
 // GetAITaskBuilderDatasetStatusResponse is the response for the get AI Task Builder dataset status endpoint.
 type GetAITaskBuilderDatasetStatusResponse struct {
 	Status model.DatasetStatus `json:"status"`
@@ -225,10 +289,18 @@ type GetAITaskBuilderDatasetStatusResponse struct {
 
 // GetAITaskBuilderDatasetUploadURLResponse is the response for getting an upload URL for an AI Task Builder dataset.
 type GetAITaskBuilderDatasetUploadURLResponse struct {
-	DatasetID  string `json:"dataset_id"`
-	ExpiresAt  string `json:"expires_at"`
-	HTTPMethod string `json:"http_method"`
-	UploadURL  string `json:"upload_url"`
+	DatasetID   string `json:"dataset_id"`
+	ImportID    string `json:"import_id"`
+	UploadURL   string `json:"upload_url"`
+	HTTPMethod  string `json:"http_method"`
+	ContentType string `json:"content_type"`
+	ExpiresAt   string `json:"expires_at"`
+	FileKey     string `json:"file_key"`
+}
+
+// GetAITaskBuilderDatasetImportStatusResponse is the response for retrieving dataset import status.
+type GetAITaskBuilderDatasetImportStatusResponse struct {
+	model.DatasetImportJob
 }
 
 // CreateAITaskBuilderDatasetResponse is the response for creating a dataset
@@ -244,23 +316,18 @@ type CreateAITaskBuilderDatasetResponse struct {
 
 // CreateAITaskBuilderBatchResponse is the response for creating an AI Task Builder batch.
 type CreateAITaskBuilderBatchResponse struct {
-	ID                    string              `json:"id"`
-	CreatedAt             string              `json:"created_at"`
-	CreatedBy             string              `json:"created_by"`
-	Name                  string              `json:"name"`
-	Status                string              `json:"status"`
-	TotalTaskCount        int                 `json:"total_task_count"`
-	TotalInstructionCount int                 `json:"total_instruction_count"`
-	TotalTaskGroups       *int                `json:"total_task_groups,omitempty"`
-	WorkspaceID           string              `json:"workspace_id"`
-	Datasets              []DatasetReference  `json:"datasets"`
-	TaskDetails           TaskDetailsResponse `json:"task_details"`
-}
-
-// DatasetReference represents a dataset reference in the batch response
-type DatasetReference struct {
-	ID                  string `json:"id"`
-	TotalDatapointCount int    `json:"total_datapoint_count"`
+	ID                    string            `json:"id"`
+	CreatedAt             string            `json:"created_at"`
+	CreatedBy             string            `json:"created_by"`
+	Name                  string            `json:"name"`
+	Status                string            `json:"status"`
+	TotalTaskCount        int               `json:"total_task_count"`
+	TotalInstructionCount int               `json:"total_instruction_count"`
+	TotalTaskGroups       *int              `json:"total_task_groups,omitempty"`
+	WorkspaceID           string            `json:"workspace_id"`
+	AutoSyncEnabled       bool              `json:"auto_sync_enabled"`
+	Datasets              []model.Dataset   `json:"datasets"`
+	TaskDetails           model.TaskDetails `json:"task_details"`
 }
 
 // TaskDetailsResponse represents the task details in the batch response
@@ -295,6 +362,12 @@ type ResponseMeta struct {
 	Count int `json:"count"`
 }
 
+// TestStudyResponse is the response for creating a test run of a study.
+type TestStudyResponse struct {
+	StudyID  string `json:"study_id"`
+	StudyURL string `json:"study_url"`
+}
+
 // CredentialPoolResponse is the response for creating or updating a credential pool.
 type CredentialPoolResponse struct {
 	CredentialPoolID string `json:"credential_pool_id"`
@@ -310,6 +383,36 @@ type CredentialPoolSummary struct {
 // ListCredentialPoolsResponse is the response for listing credential pools.
 type ListCredentialPoolsResponse struct {
 	CredentialPools []CredentialPoolSummary `json:"credential_pools"`
+}
+
+// CreateTestParticipantResponse is the response for creating a test participant.
+type CreateTestParticipantResponse struct {
+	ParticipantID string `json:"participant_id"`
+}
+
+// CreateInvitationResponse is the response for creating invitations.
+type CreateInvitationResponse struct {
+	Invitations []model.Invitation `json:"invitations"`
+}
+
+// ListSurveysResponse is the response for the surveys API.
+type ListSurveysResponse struct {
+	Results []model.Survey `json:"results"`
+}
+
+// CreateSurveyResponse is the response for creating a survey.
+type CreateSurveyResponse struct {
+	model.Survey
+}
+
+// ListSurveyResponsesResponse is the response for listing survey responses.
+type ListSurveyResponsesResponse struct {
+	Results []model.SurveyResponse `json:"results"`
+}
+
+// CreateSurveyResponseResponse is the response for creating a survey response.
+type CreateSurveyResponseResponse struct {
+	model.SurveyResponse
 }
 
 // ListCollectionsResponse is the response for the collections API.
@@ -328,6 +431,40 @@ type ListStudyFeedbackResponse struct {
 // StudyRatingsResponse is the response for the study feedback ratings API,
 // keyed by rating id (e.g. clarity, ease, fairness).
 type StudyRatingsResponse map[string]model.StudyRating
+
+// CollectionExportResponse is the response for the collection export endpoints.
+// For POST (initiate): Status is "generating" (ExportID set) or "complete" (URL/ExpiresAt set).
+// For GET (poll): Status is "generating", "complete", or "failed".
+type CollectionExportResponse struct {
+	Status    string `json:"status"`
+	ExportID  string `json:"export_id,omitempty"`
+	URL       string `json:"url,omitempty"`
+	ExpiresAt string `json:"expires_at,omitempty"`
+}
+
+// BatchExportResponse is the response for the batch export endpoints.
+// For POST (initiate): Status is "generating" (ExportID set) or "complete" (URL/ExpiresAt set).
+// For GET (poll): Status is "generating", "complete", or "failed".
+type BatchExportResponse struct {
+	Status    string `json:"status"`
+	ExportID  string `json:"export_id,omitempty"`
+	URL       string `json:"url,omitempty"`
+	ExpiresAt string `json:"expires_at,omitempty"`
+}
+
+// AITaskBuilderBatchSyncResponse is the response for both starting a batch sync
+// and polling its status. Status is one of "queued", "processing", "complete",
+// or "failed". The outcome counts are populated on completion; Reason is set on
+// failure.
+type AITaskBuilderBatchSyncResponse struct {
+	Status              string `json:"status"`
+	SyncID              string `json:"sync_id,omitempty"`
+	TasksCreated        int    `json:"tasks_created,omitempty"`
+	DatapointsProcessed int    `json:"datapoints_processed,omitempty"`
+	GroupsCreated       int    `json:"groups_created,omitempty"`
+	GroupsExpanded      int    `json:"groups_expanded,omitempty"`
+	Reason              string `json:"reason,omitempty"`
+}
 
 // CreateBonusPaymentsResponse is the response for creating bonus payments.
 // Monetary fields are returned by the API as floats in minor currency units

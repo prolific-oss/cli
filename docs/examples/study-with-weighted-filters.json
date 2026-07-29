@@ -17,6 +17,7 @@
       ]
     }
   ],
+  "study_type": "QUOTA",
   "device_compatibility": ["mobile", "desktop", "tablet"],
   "peripheral_requirements": [],
   "estimated_completion_time": 1,
@@ -25,8 +26,8 @@
       "filter_id": "handedness",
       "selected_values": ["1", "2"],
       "weightings": {
-        "0": 1,
-        "1": 1
+        "1": 1,
+        "2": 1
       }
     }
   ],

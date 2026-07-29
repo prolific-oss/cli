@@ -3,11 +3,10 @@ package study
 import (
 	"fmt"
 	"io"
-	"log"
 
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/model"
-	studyui "github.com/prolific-oss/cli/ui/study"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -137,7 +136,7 @@ func createStudy(client client.API, opts CreateOptions, w io.Writer) error {
 	var s model.CreateStudy
 	err = v.Unmarshal(&s)
 	if err != nil {
-		log.Fatalf("unable to map %s to study model: %s", opts.TemplatePath, err)
+		return fmt.Errorf("unable to map %s to study model: %s", opts.TemplatePath, err)
 	}
 
 	study, err := client.CreateStudy(s)
@@ -158,7 +157,7 @@ func createStudy(client client.API, opts CreateOptions, w io.Writer) error {
 	}
 
 	if !opts.Silent {
-		fmt.Fprintln(w, studyui.RenderStudy(*study))
+		fmt.Fprintln(w, RenderStudy(*study))
 	}
 
 	return nil

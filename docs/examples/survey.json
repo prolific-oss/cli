@@ -1,0 +1,19 @@
+{
+  "title": "Screening Survey",
+  "sections": [
+    {
+      "title": "Demographics",
+      "questions": [
+        {
+          "title": "What is your handedness?",
+          "type": "single",
+          "answers": [
+            {"value": "Left"},
+            {"value": "Right"},
+            {"value": "Ambidextrous"}
+          ]
+        }
+      ]
+    }
+  ]
+}

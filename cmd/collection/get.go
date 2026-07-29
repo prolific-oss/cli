@@ -8,7 +8,6 @@ import (
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/ui"
-	"github.com/prolific-oss/cli/ui/collection"
 	"github.com/spf13/cobra"
 )
 
@@ -51,7 +50,7 @@ $ prolific collection get 123456789
 				return fmt.Errorf("error: %s", err.Error())
 			}
 
-			return collection.RenderCollection(coll, w)
+			return RenderCollection(coll, w)
 		},
 	}
 

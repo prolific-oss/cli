@@ -1,0 +1,153 @@
+name: Create Release
+
+# Push to main (ref is refs/heads/main) so environment deployment-branch rules
+# like "main only" work with production secrets. We only continue when a merged
+# PR in this push had the `release` label (see should-release job).
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: release-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  should-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      release: ${{ steps.check.outputs.release }}
+    steps:
+      - name: Check merged PRs in this push for release label
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          COUNT=$(jq '(.commits // []) | length' "$GITHUB_EVENT_PATH")
+          if [ "$COUNT" -eq 0 ]; then
+            mapfile -t candidates < <(printf '%s\n' '${{ github.sha }}')
+          else
+            mapfile -t candidates < <(jq -r '.commits[].id' "$GITHUB_EVENT_PATH")
+          fi
+
+          release=false
+          for sha in "${candidates[@]}"; do
+            [ -z "$sha" ] && continue
+            result=$(gh api \
+              "repos/${{ github.repository }}/commits/${sha}/pulls" \
+              --jq 'any(.[]; (.labels // []) | map(.name) | index("release") != null)')
+            if [ "$result" = "true" ]; then
+              release=true
+              break
+            fi
+          done
+
+          echo "release=${release}" >> "$GITHUB_OUTPUT"
+          echo "should_release=${release}"
+
+  finalize-release:
+    needs: should-release
+    if: needs.should-release.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    environment: main
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          token: ${{ secrets.REPO_CONTENTS_WRITE }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v7.0.0
+        with:
+          go-version-file: go.mod
+
+      - name: Extract version from CHANGELOG
+        id: version
+        run: |
+          set -euo pipefail
+          VERSION=$(go run ./scripts/changelog extract-version)
+          TAG="v${VERSION}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Finalizing release ${TAG} (from CHANGELOG.md)"
+
+      - name: Extract changelog notes
+        run: |
+          go run ./scripts/changelog extract \
+            --section "${{ steps.version.outputs.version }}" > RELEASE_NOTES.md
+          if [ ! -s RELEASE_NOTES.md ]; then
+            echo "::warning::No changelog entry found. Release notes will be empty."
+          fi
+
+      - name: Create tag and GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.REPO_CONTENTS_WRITE }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --notes-file RELEASE_NOTES.md
+
+  build:
+    needs: finalize-release
+    runs-on: ubuntu-latest
+    environment: main
+    name: Build
+    steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.finalize-release.outputs.tag }}
+          token: ${{ secrets.REPO_CONTENTS_WRITE }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v7.0.0
+        with:
+          go-version-file: go.mod
+
+      - name: Get dependencies
+        run: go mod download
+
+      - name: Build and upload release binaries
+        env:
+          GH_TOKEN: ${{ secrets.REPO_CONTENTS_WRITE }}
+        run: |
+          make clean
+
+          GOOSARCHES=(
+            darwin/amd64
+            darwin/arm64
+            freebsd/amd64
+            freebsd/386
+            linux/arm
+            linux/arm64
+            linux/amd64
+            linux/386
+            windows/amd64
+            windows/386
+          )
+
+          for GOOSARCH in "${GOOSARCHES[@]}"; do
+            GOOS=${GOOSARCH%/*}
+            ARCH=${GOOSARCH#*/}
+
+            printf '\n\nBuilding binary for %s/%s\n\n' "$GOOS" "$ARCH"
+
+            GIT_RELEASE=${{ needs.finalize-release.outputs.tag }} GOOS=${GOOS} GOARCH=${ARCH} make static-named
+          done
+
+          gh release upload ${{ needs.finalize-release.outputs.tag }} build/*

@@ -13,10 +13,14 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
+	"sync"
 
+	"github.com/prolific-oss/cli/agentenv"
 	"github.com/prolific-oss/cli/config"
 	"github.com/prolific-oss/cli/model"
+	"github.com/prolific-oss/cli/version"
 	"github.com/spf13/viper"
 	"golang.org/x/exp/slices"
 )
@@ -33,32 +37,47 @@ type API interface {
 
 	CreateStudy(model.CreateStudy) (*model.Study, error)
 	DuplicateStudy(ID string) (*model.Study, error)
-	GetEligibilityRequirements() (*ListRequirementsResponse, error)
 	GetStudies(status, projectID string) (*ListStudiesResponse, error)
 	GetStudy(ID string) (*model.Study, error)
 	GetSubmissions(ID string, limit, offset int) (*ListSubmissionsResponse, error)
 	GetStudyFeedback(studyID string, hasWrittenFeedback bool, limit, offset int) (*ListStudyFeedbackResponse, error)
 	GetStudyRatings(studyID string) (*StudyRatingsResponse, error)
+	RequestSubmissionReturn(ID string, reasons []string) (*RequestSubmissionReturnResponse, error)
+	TransitionSubmission(ID string, payload TransitionSubmissionPayload) (*TransitionSubmissionResponse, error)
+	BulkApproveSubmissions(payload BulkApproveSubmissionsPayload) error
 	TransitionStudy(ID, action string) (*TransitionStudyResponse, error)
-	UpdateStudy(ID string, study model.UpdateStudy) (*model.Study, error)
+	UpdateStudy(ID string, study any) (*model.Study, error)
+	GetStudySubmissionCounts(ID string) (*model.SubmissionCounts, error)
 	GetStudyCredentialsUsageReportCSV(ID string) (string, error)
+	ExportDemographics(ID string) (string, error)
+	TestStudy(ID string) (*TestStudyResponse, error)
 	CreateCredentialPool(credentials string, workspaceID string) (*CredentialPoolResponse, error)
-	UpdateCredentialPool(credentialPoolID string, credentials string, workspaceID string) (*CredentialPoolResponse, error)
+	UpdateCredentialPool(credentialPoolID string, credentials string) (*CredentialPoolResponse, error)
 	ListCredentialPools(workspaceID string) (*ListCredentialPoolsResponse, error)
 
 	GetCampaigns(workspaceID string, limit, offset int) (*ListCampaignsResponse, error)
 
 	GetCollections(workspaceID string, limit, offset int) (*ListCollectionsResponse, error)
 	GetCollection(ID string) (*model.Collection, error)
+	InitiateCollectionExport(collectionID string) (*CollectionExportResponse, error)
+	GetCollectionExportStatus(collectionID, exportID string) (*CollectionExportResponse, error)
 	UpdateCollection(ID string, collection model.UpdateCollection) (*model.Collection, error)
 
 	GetHooks(workspaceID string, enabled bool, limit, offset int) (*ListHooksResponse, error)
 	GetHookEventTypes() (*ListHookEventTypesResponse, error)
 	GetHookSecrets(workspaceID string) (*ListSecretsResponse, error)
+	CreateHookSecret(payload CreateSecretPayload) (*model.Secret, error)
 	GetEvents(subscriptionID string, limit, offset int) (*ListHookEventsResponse, error)
+	CreateHookSubscription(payload CreateHookPayload) (*model.Hook, string, error)
+	ConfirmHookSubscription(subscriptionID, secret string) (*model.Hook, error)
+	UpdateHookSubscription(subscriptionID string, payload UpdateHookPayload) (*model.Hook, error)
+	DeleteHookSubscription(subscriptionID string) error
 
 	GetWorkspaces(limit, offset int) (*ListWorkspacesResponse, error)
+	GetWorkspaceBalance(workspaceID string) (*WorkspaceBalanceResponse, error)
 	CreateWorkspace(workspace model.Workspace) (*CreateWorkspacesResponse, error)
+
+	CreateInvitation(invitation model.CreateInvitation) (*CreateInvitationResponse, error)
 
 	GetProjects(workspaceID string, limit, offset int) (*ListProjectsResponse, error)
 	CreateProject(workspaceID string, project model.Project) (*CreateProjectResponse, error)
@@ -66,11 +85,28 @@ type API interface {
 
 	GetParticipantGroups(workspaceID string, limit, offset int) (*ListParticipantGroupsResponse, error)
 	GetParticipantGroup(groupID string) (*ViewParticipantGroupResponse, error)
+	CreateParticipantGroup(group model.CreateParticipantGroup) (*CreateParticipantGroupResponse, error)
+	RemoveParticipantGroupMembers(groupID string, participantIDs []string) (*ViewParticipantGroupResponse, error)
+
+	CreateTestParticipant(email string) (*CreateTestParticipantResponse, error)
 
 	GetFilters() (*ListFiltersResponse, error)
 
 	GetFilterSets(workspaceID string, limit, offset int) (*ListFilterSetsResponse, error)
 	GetFilterSet(ID string) (*model.FilterSet, error)
+	CreateFilterSet(filterSet model.CreateFilterSet) (*CreateFilterSetResponse, error)
+
+	GetSurveys(researcherID string, limit, offset int) (*ListSurveysResponse, error)
+	GetSurvey(ID string) (*model.Survey, error)
+	CreateSurvey(survey model.CreateSurvey) (*CreateSurveyResponse, error)
+	DeleteSurvey(ID string) error
+
+	GetSurveyResponses(surveyID string, limit, offset int) (*ListSurveyResponsesResponse, error)
+	GetSurveyResponse(surveyID, responseID string) (*model.SurveyResponse, error)
+	CreateSurveyResponse(surveyID string, response model.CreateSurveyResponseRequest) (*CreateSurveyResponseResponse, error)
+	DeleteSurveyResponse(surveyID, responseID string) error
+	DeleteAllSurveyResponses(surveyID string) error
+	GetSurveyResponseSummary(surveyID string) (*model.SurveySummary, error)
 
 	GetMessages(userID *string, createdAfter *string) (*ListMessagesResponse, error)
 	SendMessage(body, recipientID, studyID string) error
@@ -87,12 +123,32 @@ type API interface {
 	CreateAITaskBuilderDataset(workspaceID string, payload CreateAITaskBuilderDatasetPayload) (*CreateAITaskBuilderDatasetResponse, error)
 	CreateAITaskBuilderCollection(payload model.CreateAITaskBuilderCollection) (*CreateAITaskBuilderCollectionResponse, error)
 	GetAITaskBuilderBatch(batchID string) (*GetAITaskBuilderBatchResponse, error)
+	GetAITaskBuilderDataset(datasetID string) (*GetAITaskBuilderDatasetResponse, error)
+	UpdateAITaskBuilderBatch(params UpdateBatchParams) (*UpdateAITaskBuilderBatchResponse, error)
 	GetAITaskBuilderBatchStatus(batchID string) (*GetAITaskBuilderBatchStatusResponse, error)
 	GetAITaskBuilderBatches(workspaceID string) (*GetAITaskBuilderBatchesResponse, error)
 	GetAITaskBuilderResponses(batchID string) (*GetAITaskBuilderResponsesResponse, error)
 	GetAITaskBuilderTasks(batchID string) (*GetAITaskBuilderTasksResponse, error)
+	GetAITaskBuilderTaskGroups(batchID string) (*GetAITaskBuilderTaskGroupsResponse, error)
+	InitiateBatchExport(batchID string) (*BatchExportResponse, error)
+	GetBatchExportStatus(batchID, exportID string) (*BatchExportResponse, error)
+	SyncAITaskBuilderBatch(batchID string) (*AITaskBuilderBatchSyncResponse, error)
+	GetAITaskBuilderBatchSyncStatus(batchID, syncID string) (*AITaskBuilderBatchSyncResponse, error)
 	GetAITaskBuilderDatasetStatus(datasetID string) (*GetAITaskBuilderDatasetStatusResponse, error)
 	GetAITaskBuilderDatasetUploadURL(datasetID, fileName string) (*GetAITaskBuilderDatasetUploadURLResponse, error)
+	GetAITaskBuilderDatasetImportStatus(datasetID, importID string) (*GetAITaskBuilderDatasetImportStatusResponse, error)
+}
+
+// UnrecognizedAPIError is returned by Execute when the response body does not match any known
+// error format. Callers can type-assert via errors.As to inspect the raw body and apply
+// their own formatting.
+type UnrecognizedAPIError struct {
+	StatusCode int
+	Body       []byte
+}
+
+func (e *UnrecognizedAPIError) Error() string {
+	return fmt.Sprintf("request failed with status %d: %s", e.StatusCode, string(e.Body))
 }
 
 // Client is responsible for interacting with the Prolific API.
@@ -101,6 +157,35 @@ type Client struct {
 	BaseURL string
 	Token   string
 	Debug   bool
+	Skill   string
+}
+
+// cliVersionPrefix is computed once since the CLI version can't change during
+// the process lifetime, avoiding a repeated debug.ReadBuildInfo() call on
+// every request in dev builds.
+var cliVersionPrefix = sync.OnceValue(func() string {
+	return "prolific-oss/cli/" + version.Get()
+})
+
+// ComposeUserAgent builds the User-Agent string sent with every outgoing
+// request: the CLI's own identity, followed by the detected driving AI
+// agent (if any), followed by the invoking skill/workflow (if any and
+// valid). Each token is independent and omitted when empty or invalid.
+func ComposeUserAgent(skill string) string {
+	ua := cliVersionPrefix()
+	if agent := agentenv.Detected(); agent != "" {
+		ua += " agent/" + agent
+	}
+	if skill != "" && agentenv.ValidHeaderValue(skill) {
+		ua += " skill/" + skill
+	}
+	return ua
+}
+
+// userAgent returns the composed User-Agent string for this client, folding
+// in the configured Skill.
+func (c *Client) userAgent() string {
+	return ComposeUserAgent(c.Skill)
 }
 
 // New will return a new Prolific client.
@@ -140,14 +225,14 @@ func (c *Client) Execute(method, url string, body any, response any) (*http.Resp
 	}
 
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("User-Agent", "prolific-oss/cli")
+	request.Header.Set("User-Agent", c.userAgent())
 	request.Header.Set("Authorization", fmt.Sprintf("Token %s", c.Token))
 
 	if c.Debug {
 		fmt.Println(request)
 	}
 
-	httpResponse, err := c.Client.Do(request) //nolint:gosec // G704: URL constructed from user-configured API base
+	httpResponse, err := c.Client.Do(request)
 	if err != nil {
 		return nil, err
 	}
@@ -173,8 +258,8 @@ func (c *Client) Execute(method, url string, body any, response any) (*http.Resp
 			return nil, fmt.Errorf("request failed: %s - %s", simpleError.Message, simpleError.Detail)
 		}
 
-		// If both fail, return generic error with status code
-		return nil, fmt.Errorf("request failed with status %d: %s", httpResponse.StatusCode, string(responseBody))
+		// If both fail, return a typed error so callers can inspect the raw body
+		return nil, &UnrecognizedAPIError{StatusCode: httpResponse.StatusCode, Body: responseBody}
 	}
 
 	if response != nil {
@@ -298,6 +383,24 @@ func (c *Client) GetStudy(ID string) (*model.Study, error) {
 	return &response, nil
 }
 
+// GetStudySubmissionCounts returns submission counts grouped by status for a study.
+func (c *Client) GetStudySubmissionCounts(ID string) (*model.SubmissionCounts, error) {
+	var response model.SubmissionCounts
+
+	url := fmt.Sprintf("/api/v1/studies/%s/submissions/counts/", ID)
+	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unable to get submission counts: %v", string(body))
+	}
+
+	return &response, nil
+}
+
 // GetSubmissions will return submission data for a given study.
 func (c *Client) GetSubmissions(ID string, limit, offset int) (*ListSubmissionsResponse, error) {
 	var response ListSubmissionsResponse
@@ -311,17 +414,45 @@ func (c *Client) GetSubmissions(ID string, limit, offset int) (*ListSubmissionsR
 	return &response, nil
 }
 
-// GetEligibilityRequirements will return requirement data.
-func (c *Client) GetEligibilityRequirements() (*ListRequirementsResponse, error) {
-	var response ListRequirementsResponse
+// RequestSubmissionReturn requests a participant to return a submission.
+func (c *Client) RequestSubmissionReturn(ID string, reasons []string) (*RequestSubmissionReturnResponse, error) {
+	var response RequestSubmissionReturnResponse
 
-	url := "/api/v1/eligibility-requirements/"
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	payload := RequestSubmissionReturnPayload{
+		Reasons: reasons,
+	}
+
+	url := fmt.Sprintf("/api/v1/submissions/%s/request-return/", ID)
+	_, err := c.Execute(http.MethodPost, url, payload, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, fmt.Errorf("unable to request submission return: %s", err)
 	}
 
 	return &response, nil
+}
+
+// TransitionSubmission will transition a submission to a new state.
+func (c *Client) TransitionSubmission(ID string, payload TransitionSubmissionPayload) (*TransitionSubmissionResponse, error) {
+	var response TransitionSubmissionResponse
+
+	url := fmt.Sprintf("/api/v1/submissions/%s/transition/", ID)
+	_, err := c.Execute(http.MethodPost, url, payload, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to transition submission: %s", err)
+	}
+
+	return &response, nil
+}
+
+// BulkApproveSubmissions will bulk approve multiple submissions.
+func (c *Client) BulkApproveSubmissions(payload BulkApproveSubmissionsPayload) error {
+	url := "/api/v1/submissions/bulk-approve/"
+	_, err := c.Execute(http.MethodPost, url, payload, nil)
+	if err != nil {
+		return fmt.Errorf("unable to bulk approve submissions: %s", err)
+	}
+
+	return nil
 }
 
 // TransitionStudy will move the study status to a desired state.
@@ -387,8 +518,37 @@ func (c *Client) GetCollection(ID string) (*model.Collection, error) {
 	return &response, nil
 }
 
+// InitiateCollectionExport starts a collection export job via POST.
+// Returns "generating" + ExportID (202) if a new job was enqueued,
+// or "complete" + URL immediately (200) if a valid export already exists.
+func (c *Client) InitiateCollectionExport(collectionID string) (*CollectionExportResponse, error) {
+	var response CollectionExportResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/collections/%s/export", collectionID)
+	_, err := c.Execute(http.MethodPost, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// GetCollectionExportStatus polls the status of an in-progress export job.
+// Returns "generating", "complete" (with URL), or "failed".
+func (c *Client) GetCollectionExportStatus(collectionID, exportID string) (*CollectionExportResponse, error) {
+	var response CollectionExportResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/collections/%s/export/%s", collectionID, exportID)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
 // UpdateStudy is responsible for updating the Study with a PATCH request.
-func (c *Client) UpdateStudy(ID string, study model.UpdateStudy) (*model.Study, error) {
+func (c *Client) UpdateStudy(ID string, study any) (*model.Study, error) {
 	var response model.Study
 
 	url := fmt.Sprintf("/api/v1/studies/%s/", ID)
@@ -418,6 +578,39 @@ func (c *Client) GetStudyCredentialsUsageReportCSV(ID string) (string, error) {
 	}
 
 	return string(responseBody), nil
+}
+
+// ExportDemographics triggers a demographic data export for all submissions in a study.
+func (c *Client) ExportDemographics(ID string) (string, error) {
+	url := fmt.Sprintf("/api/v1/studies/%s/demographic-export/", ID)
+	httpResponse, err := c.Execute(http.MethodPost, url, nil, nil)
+	if err != nil {
+		return "", fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	responseBody, err := io.ReadAll(httpResponse.Body)
+	if err != nil {
+		return "", fmt.Errorf("unable to read response body: %w", err)
+	}
+
+	return string(responseBody), nil
+}
+
+// TestStudy creates a test run of a study to validate configuration before going live.
+func (c *Client) TestStudy(ID string) (*TestStudyResponse, error) {
+	var response TestStudyResponse
+
+	url := fmt.Sprintf("/api/v1/studies/%s/test-study/", ID)
+	httpResponse, err := c.Execute(http.MethodPost, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code: expected 200, got %d", httpResponse.StatusCode)
+	}
+
+	return &response, nil
 }
 
 // GetHooks will return the subscriptions to event types for current user.
@@ -466,6 +659,23 @@ func (c *Client) GetHookSecrets(workspaceID string) (*ListSecretsResponse, error
 	return &response, nil
 }
 
+// CreateHookSecret will create (or replace) a secret for a Workspace.
+func (c *Client) CreateHookSecret(payload CreateSecretPayload) (*model.Secret, error) {
+	var response model.Secret
+
+	const url = "/api/v1/hooks/secrets/"
+	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusCreated {
+		return nil, fmt.Errorf("unable to create hook secret: %v", httpResponse.StatusCode)
+	}
+
+	return &response, nil
+}
+
 // GetEvents will return events created for a subscription
 func (c *Client) GetEvents(subscriptionID string, limit, offset int) (*ListHookEventsResponse, error) {
 	var response ListHookEventsResponse
@@ -479,7 +689,81 @@ func (c *Client) GetEvents(subscriptionID string, limit, offset int) (*ListHookE
 	return &response, nil
 }
 
-// GetWorkspaces will return you the workspaces you can see
+// CreateHookSubscription will create a new hook subscription for a workspace.
+// It returns the hook, the X-Hook-Secret header value needed to confirm the subscription, and any error.
+func (c *Client) CreateHookSubscription(payload CreateHookPayload) (*model.Hook, string, error) {
+	var response model.Hook
+
+	url := "/api/v1/hooks/subscriptions/"
+	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
+	if err != nil {
+		return nil, "", fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusCreated {
+		return nil, "", fmt.Errorf("unable to create hook subscription, status code: %v", httpResponse.StatusCode)
+	}
+
+	secret := httpResponse.Header.Get("X-Hook-Secret")
+	return &response, secret, nil
+}
+
+// ConfirmHookSubscription confirms a webhook subscription using the secret
+// returned in the X-Hook-Secret header when the subscription was created.
+func (c *Client) ConfirmHookSubscription(subscriptionID, secret string) (*model.Hook, error) {
+	var response model.Hook
+
+	payload := struct {
+		Secret string `json:"secret"`
+	}{
+		Secret: secret,
+	}
+
+	url := fmt.Sprintf("/api/v1/hooks/subscriptions/%s/", subscriptionID)
+	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to confirm webhook subscription %s: %s", subscriptionID, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unable to confirm webhook subscription %s, status code: %v", subscriptionID, httpResponse.StatusCode)
+	}
+
+	return &response, nil
+}
+
+// UpdateHookSubscription updates an existing webhook subscription.
+func (c *Client) UpdateHookSubscription(subscriptionID string, payload UpdateHookPayload) (*model.Hook, error) {
+	var response model.Hook
+
+	url := fmt.Sprintf("/api/v1/hooks/subscriptions/%s/", subscriptionID)
+	httpResponse, err := c.Execute(http.MethodPatch, url, payload, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to update hook subscription %s: %s", subscriptionID, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unable to update hook subscription %s, status code: %v", subscriptionID, httpResponse.StatusCode)
+	}
+
+	return &response, nil
+}
+
+// DeleteHookSubscription deletes a hook subscription by ID.
+func (c *Client) DeleteHookSubscription(subscriptionID string) error {
+	url := fmt.Sprintf("/api/v1/hooks/subscriptions/%s/", subscriptionID)
+	httpResponse, err := c.Execute(http.MethodDelete, url, nil, nil)
+	if err != nil {
+		return fmt.Errorf("unable to delete hook subscription %s: %s", subscriptionID, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("unable to delete hook subscription %s, status code: %v", subscriptionID, httpResponse.StatusCode)
+	}
+
+	return nil
+}
+
 func (c *Client) GetWorkspaces(limit, offset int) (*ListWorkspacesResponse, error) {
 	var response ListWorkspacesResponse
 
@@ -491,6 +775,19 @@ func (c *Client) GetWorkspaces(limit, offset int) (*ListWorkspacesResponse, erro
 
 	if httpResponse.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("status code was %v, so therefore unable to get workspaces", httpResponse.StatusCode)
+	}
+
+	return &response, nil
+}
+
+// GetWorkspaceBalance will return the balance for a workspace.
+func (c *Client) GetWorkspaceBalance(workspaceID string) (*WorkspaceBalanceResponse, error) {
+	var response WorkspaceBalanceResponse
+
+	url := fmt.Sprintf("/api/v1/workspaces/%s/balance/", workspaceID)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
 
 	return &response, nil
@@ -509,6 +806,24 @@ func (c *Client) CreateWorkspace(workspace model.Workspace) (*CreateWorkspacesRe
 	if httpResponse.StatusCode != http.StatusCreated {
 		body, _ := io.ReadAll(httpResponse.Body)
 		return nil, fmt.Errorf("unable to create workspace: %v", string(body))
+	}
+
+	return &response, nil
+}
+
+// CreateInvitation will create invitations for the given email addresses
+func (c *Client) CreateInvitation(invitation model.CreateInvitation) (*CreateInvitationResponse, error) {
+	var response CreateInvitationResponse
+
+	url := "/api/v1/invitations/"
+	httpResponse, err := c.Execute(http.MethodPost, url, invitation, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unable to create invitation: %v", string(body))
 	}
 
 	return &response, nil
@@ -583,6 +898,59 @@ func (c *Client) GetParticipantGroup(groupID string) (*ViewParticipantGroupRespo
 	return &response, nil
 }
 
+// CreateParticipantGroup will create a new participant group
+func (c *Client) CreateParticipantGroup(group model.CreateParticipantGroup) (*CreateParticipantGroupResponse, error) {
+	var response CreateParticipantGroupResponse
+
+	url := "/api/v1/participant-groups/"
+	_, err := c.Execute(http.MethodPost, url, group, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+func (c *Client) RemoveParticipantGroupMembers(groupID string, participantIDs []string) (*ViewParticipantGroupResponse, error) {
+	payload := RemoveParticipantGroupMembersPayload{
+		ParticipantIDs: participantIDs,
+	}
+	var response ViewParticipantGroupResponse
+
+	url := fmt.Sprintf("/api/v1/participant-groups/%s/participants/", groupID)
+	httpResponse, err := c.Execute(http.MethodDelete, url, payload, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to remove participants from group %s: %s", groupID, err)
+	}
+	if httpResponse.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unable to remove participants from group %s, status code: %v", groupID, httpResponse.StatusCode)
+	}
+
+	return &response, nil
+}
+
+// CreateTestParticipant creates a test participant for the researcher with the given email.
+func (c *Client) CreateTestParticipant(email string) (*CreateTestParticipantResponse, error) {
+	var response CreateTestParticipantResponse
+
+	payload := struct {
+		Email string `json:"email"`
+	}{Email: email}
+
+	url := "/api/v1/researchers/participants/"
+	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unable to create test participant (status %d): %s", httpResponse.StatusCode, string(body))
+	}
+
+	return &response, nil
+}
+
 func (c *Client) GetFilters() (*ListFiltersResponse, error) {
 	var response ListFiltersResponse
 
@@ -620,6 +988,167 @@ func (c *Client) GetFilterSet(ID string) (*model.FilterSet, error) {
 
 	if httpResponse.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("status code was %v, so therefore unable to get filter set: %v", httpResponse.StatusCode, ID)
+	}
+
+	return &response, nil
+}
+
+// CreateFilterSet will create a new filter set
+func (c *Client) CreateFilterSet(filterSet model.CreateFilterSet) (*CreateFilterSetResponse, error) {
+	var response CreateFilterSetResponse
+
+	url := "/api/v1/filter-sets/"
+	_, err := c.Execute(http.MethodPost, url, filterSet, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// GetSurveys will return the surveys for a researcher
+func (c *Client) GetSurveys(researcherID string, limit, offset int) (*ListSurveysResponse, error) {
+	var response ListSurveysResponse
+
+	url := fmt.Sprintf("/api/v1/surveys/?researcher_id=%s&limit=%v&offset=%v", researcherID, limit, offset)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// GetSurvey will return the survey for the given survey ID
+func (c *Client) GetSurvey(ID string) (*model.Survey, error) {
+	var response model.Survey
+
+	url := fmt.Sprintf("/api/v1/surveys/%s/", ID)
+	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("status code was %v, so therefore unable to get survey: %v", httpResponse.StatusCode, ID)
+	}
+
+	return &response, nil
+}
+
+// CreateSurvey will create a new survey
+func (c *Client) CreateSurvey(survey model.CreateSurvey) (*CreateSurveyResponse, error) {
+	var response CreateSurveyResponse
+
+	url := "/api/v1/surveys/"
+	_, err := c.Execute(http.MethodPost, url, survey, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// DeleteSurvey will delete the survey with the given ID
+func (c *Client) DeleteSurvey(ID string) error {
+	url := fmt.Sprintf("/api/v1/surveys/%s/", ID)
+	httpResponse, err := c.Execute(http.MethodDelete, url, nil, nil)
+	if err != nil {
+		return fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("status code was %v, so therefore unable to delete survey: %v", httpResponse.StatusCode, ID)
+	}
+
+	return nil
+}
+
+// GetSurveyResponses will return all responses for a survey
+func (c *Client) GetSurveyResponses(surveyID string, limit, offset int) (*ListSurveyResponsesResponse, error) {
+	var response ListSurveyResponsesResponse
+
+	url := fmt.Sprintf("/api/v1/surveys/%s/responses/?limit=%v&offset=%v", surveyID, limit, offset)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// GetSurveyResponse will return a single survey response
+func (c *Client) GetSurveyResponse(surveyID, responseID string) (*model.SurveyResponse, error) {
+	var response model.SurveyResponse
+
+	url := fmt.Sprintf("/api/v1/surveys/%s/responses/%s", surveyID, responseID)
+	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("status code was %v, so therefore unable to get survey response: %v", httpResponse.StatusCode, responseID)
+	}
+
+	return &response, nil
+}
+
+// CreateSurveyResponse will create a new survey response
+func (c *Client) CreateSurveyResponse(surveyID string, surveyResponse model.CreateSurveyResponseRequest) (*CreateSurveyResponseResponse, error) {
+	var response CreateSurveyResponseResponse
+
+	url := fmt.Sprintf("/api/v1/surveys/%s/responses/", surveyID)
+	_, err := c.Execute(http.MethodPost, url, surveyResponse, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return &response, nil
+}
+
+// DeleteSurveyResponse will delete a single survey response
+func (c *Client) DeleteSurveyResponse(surveyID, responseID string) error {
+	url := fmt.Sprintf("/api/v1/surveys/%s/responses/%s", surveyID, responseID)
+	httpResponse, err := c.Execute(http.MethodDelete, url, nil, nil)
+	if err != nil {
+		return fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("status code was %v, so therefore unable to delete survey response: %v", httpResponse.StatusCode, responseID)
+	}
+
+	return nil
+}
+
+// DeleteAllSurveyResponses will delete all responses for a survey
+func (c *Client) DeleteAllSurveyResponses(surveyID string) error {
+	url := fmt.Sprintf("/api/v1/surveys/%s/responses/", surveyID)
+	httpResponse, err := c.Execute(http.MethodDelete, url, nil, nil)
+	if err != nil {
+		return fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("status code was %v, so therefore unable to delete all survey responses for survey: %v", httpResponse.StatusCode, surveyID)
+	}
+
+	return nil
+}
+
+// GetSurveyResponseSummary will return the response summary for a survey
+func (c *Client) GetSurveyResponseSummary(surveyID string) (*model.SurveySummary, error) {
+	var response model.SurveySummary
+
+	url := fmt.Sprintf("/api/v1/surveys/%s/responses/summary/", surveyID)
+	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("status code was %v, so therefore unable to get survey response summary for survey: %v", httpResponse.StatusCode, surveyID)
 	}
 
 	return &response, nil
@@ -769,6 +1298,67 @@ func (c *Client) PayBonusPayments(id string) error {
 	return nil
 }
 
+// UpdateAITaskBuilderBatch will update an AI Task Builder batch.
+func (c *Client) UpdateAITaskBuilderBatch(params UpdateBatchParams) (*UpdateAITaskBuilderBatchResponse, error) {
+	var response UpdateAITaskBuilderBatchResponse
+
+	payload := UpdateAITaskBuilderBatchPayload{
+		Name:        params.Name,
+		DatasetID:   params.DatasetID,
+		TaskDetails: params.TaskDetails,
+		BatchItems:  params.BatchItems,
+		AutoSync:    params.AutoSync,
+	}
+
+	url := fmt.Sprintf("/api/v1/data-collection/batches/%s", params.BatchID)
+	httpResponse, err := c.Execute(http.MethodPatch, url, payload, &response)
+	if err != nil {
+		var apiErr *UnrecognizedAPIError
+		if errors.As(err, &apiErr) {
+			return nil, fmt.Errorf("unable to update batch: %s", formatBatchErrorBody(apiErr.Body))
+		}
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unable to update batch: %s", formatBatchErrorBody(body))
+	}
+
+	return &response, nil
+}
+
+// formatBatchErrorBody returns a human-readable error string from a batch API error response body.
+// For INVALID_BATCH_ITEMS errors it formats each validation issue; otherwise it returns the raw body.
+func formatBatchErrorBody(body []byte) string {
+	var apiErr struct {
+		Type   string `json:"type"`
+		Issues []struct {
+			Page    int    `json:"page"`
+			Row     int    `json:"row"`
+			Column  int    `json:"column"`
+			Item    int    `json:"item"`
+			Type    string `json:"type"`
+			Field   string `json:"field,omitempty"`
+			Message string `json:"message"`
+		} `json:"issues"`
+	}
+	if err := json.Unmarshal(body, &apiErr); err != nil || apiErr.Type != "INVALID_BATCH_ITEMS" {
+		return string(body)
+	}
+
+	msg := "batch_items validation failed:"
+	for _, issue := range apiErr.Issues {
+		location := fmt.Sprintf("Page %d, Row %d, Column %d, Item %d (%s)",
+			issue.Page+1, issue.Row+1, issue.Column+1, issue.Item+1, issue.Type)
+		if issue.Field != "" {
+			location = fmt.Sprintf("%s %q", location, issue.Field)
+		}
+		msg += fmt.Sprintf("\n  %s: %s", location, issue.Message)
+	}
+	return msg
+}
+
 // GetAITaskBuilderBatch will return details of an AI Task Builder batch.
 func (c *Client) GetAITaskBuilderBatch(batchID string) (*GetAITaskBuilderBatchResponse, error) {
 	var response GetAITaskBuilderBatchResponse
@@ -830,6 +1420,109 @@ func (c *Client) GetAITaskBuilderTasks(batchID string) (*GetAITaskBuilderTasksRe
 	return &response, nil
 }
 
+// GetAITaskBuilderTaskGroups will return the task group IDs for an AI Task Builder batch.
+func (c *Client) GetAITaskBuilderTaskGroups(batchID string) (*GetAITaskBuilderTaskGroupsResponse, error) {
+	var response GetAITaskBuilderTaskGroupsResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/task-groups", batchID)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+	return &response, nil
+}
+
+// InitiateBatchExport starts a batch export job via POST.
+// Returns "generating" + ExportID (202) if a new job was enqueued,
+// or "complete" + URL immediately (200) if a valid export already exists.
+func (c *Client) InitiateBatchExport(batchID string) (*BatchExportResponse, error) {
+	var response BatchExportResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/export", batchID)
+	httpResponse, err := c.Execute(http.MethodPost, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK && httpResponse.StatusCode != http.StatusAccepted {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+	}
+
+	return &response, nil
+}
+
+// GetBatchExportStatus polls the status of an in-progress batch export job.
+// Returns "generating", "complete" (with URL), or "failed".
+func (c *Client) GetBatchExportStatus(batchID, exportID string) (*BatchExportResponse, error) {
+	var response BatchExportResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/export/%s", batchID, exportID)
+	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+	}
+
+	return &response, nil
+}
+
+// SyncAITaskBuilderBatch starts an async sync job that extends a batch with tasks
+// created from datapoints appended to its dataset since setup or the last sync.
+// Returns the created job (status "queued") including its sync_id.
+func (c *Client) SyncAITaskBuilderBatch(batchID string) (*AITaskBuilderBatchSyncResponse, error) {
+	var response AITaskBuilderBatchSyncResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/sync", batchID)
+	httpResponse, err := c.Execute(http.MethodPost, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK && httpResponse.StatusCode != http.StatusAccepted {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+	}
+
+	return &response, nil
+}
+
+// GetAITaskBuilderBatchSyncStatus polls the status of an in-progress batch sync
+// job. Returns "queued", "processing", "complete" (with outcome counts), or
+// "failed" (with a reason).
+func (c *Client) GetAITaskBuilderBatchSyncStatus(batchID, syncID string) (*AITaskBuilderBatchSyncResponse, error) {
+	var response AITaskBuilderBatchSyncResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/syncs/%s", batchID, syncID)
+	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+	}
+
+	return &response, nil
+}
+
+// GetAITaskBuilderDataset will return an AI Task Builder dataset by ID.
+func (c *Client) GetAITaskBuilderDataset(datasetID string) (*GetAITaskBuilderDatasetResponse, error) {
+	var response GetAITaskBuilderDatasetResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/datasets/%s", datasetID)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+	return &response, nil
+}
+
 // GetAITaskBuilderDatasetStatus will return the status of an AI Task Builder dataset.
 func (c *Client) GetAITaskBuilderDatasetStatus(datasetID string) (*GetAITaskBuilderDatasetStatusResponse, error) {
 	var response GetAITaskBuilderDatasetStatusResponse
@@ -846,11 +1539,35 @@ func (c *Client) GetAITaskBuilderDatasetStatus(datasetID string) (*GetAITaskBuil
 func (c *Client) GetAITaskBuilderDatasetUploadURL(datasetID, fileName string) (*GetAITaskBuilderDatasetUploadURLResponse, error) {
 	var response GetAITaskBuilderDatasetUploadURLResponse
 
-	url := fmt.Sprintf("/api/v1/data-collection/datasets/%s/upload-url/%s.csv/", datasetID, fileName)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	url := fmt.Sprintf("/api/v1/data-collection/datasets/%s/upload-url/%s", datasetID, fileName)
+	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
+
+	if httpResponse.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+	}
+
+	return &response, nil
+}
+
+// GetAITaskBuilderDatasetImportStatus returns the status of a dataset import job.
+func (c *Client) GetAITaskBuilderDatasetImportStatus(datasetID, importID string) (*GetAITaskBuilderDatasetImportStatusResponse, error) {
+	var response GetAITaskBuilderDatasetImportStatusResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/datasets/%s/imports/%s", datasetID, importID)
+	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+	}
+
 	return &response, nil
 }
 
@@ -867,17 +1584,23 @@ func (c *Client) CreateAITaskBuilderBatch(params CreateBatchParams) (*CreateAITa
 			TaskIntroduction: params.TaskIntroduction,
 			TaskSteps:        params.TaskSteps,
 		},
+		BatchItems: params.BatchItems,
+		AutoSync:   params.AutoSync,
 	}
 
 	url := "/api/v1/data-collection/batches"
 	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
 	if err != nil {
+		var apiErr *UnrecognizedAPIError
+		if errors.As(err, &apiErr) {
+			return nil, fmt.Errorf("unable to create batch: %s", formatBatchErrorBody(apiErr.Body))
+		}
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
 
 	if httpResponse.StatusCode != http.StatusCreated {
 		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unable to create batch: %v", string(body))
+		return nil, fmt.Errorf("unable to create batch: %s", formatBatchErrorBody(body))
 	}
 
 	return &response, nil
@@ -896,6 +1619,15 @@ func (c *Client) CreateAITaskBuilderInstructions(batchID string, instructions Cr
 	if httpResponse.StatusCode != http.StatusCreated {
 		body, _ := io.ReadAll(httpResponse.Body)
 		return nil, fmt.Errorf("unable to create instructions: %v", string(body))
+	}
+
+	if httpResponse.Header.Get("Deprecation") != "" {
+		sunset := httpResponse.Header.Get("Sunset")
+		fmt.Fprintln(os.Stderr, "Warning: This instructions endpoint is deprecated.")
+		if sunset != "" {
+			fmt.Fprintf(os.Stderr, "It will be sunset on: %s\n", sunset)
+		}
+		fmt.Fprintln(os.Stderr, "Manage instructions via batch_items instead.")
 	}
 
 	return &response, nil
@@ -989,7 +1721,7 @@ func (c *Client) CreateCredentialPool(credentials string, workspaceID string) (*
 
 // UpdateCredentialPool updates an existing credential pool with new credentials.
 // credentials should be a comma-separated string with newlines between entries.
-func (c *Client) UpdateCredentialPool(credentialPoolID string, credentials string, workspaceID string) (*CredentialPoolResponse, error) {
+func (c *Client) UpdateCredentialPool(credentialPoolID string, credentials string) (*CredentialPoolResponse, error) {
 	var response CredentialPoolResponse
 
 	payload := UpdateCredentialPoolPayload{

@@ -23,6 +23,10 @@ in the the Prolific Platform.`,
 		NewEventTypeCommand("event-types", client, w),
 		NewListSecretCommand("secrets", client, w),
 		NewEventListCommand("events", client, w),
+		NewCreateSubscriptionCommand(client, w),
+		NewUpdateSubscriptionCommand(client, w),
+		NewDeleteSubscriptionCommand(client, w),
+		NewCreateSecretCommand(client, w),
 	)
 
 	return cmd

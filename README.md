@@ -199,6 +199,10 @@ If any arguments are omitted, Claude will ask for them interactively.
 3. Implements model, client, command, UI renderers, mocks, and tests
 4. Verifies with `make test` and `make lint`
 
+## Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on how to get started.
+
 ## Release Process
 
 Releases are managed via GitHub Releases with changelog generation powered by [git-cliff](https://git-cliff.org/).
@@ -213,22 +217,21 @@ This generates grouped release notes from conventional commits, merges any hand-
 
 ### 2. Create a release PR
 
-Create a PR with the updated `CHANGELOG.md`, get it reviewed, and merge to `main`.
+Create a PR with the updated `CHANGELOG.md` and apply the `release` label.
 
-### 3. Create a GitHub Release
+One CI gate will validate the PR:
 
-1. Go to [Releases](https://github.com/prolific-oss/cli/releases)
-2. Click "Draft a new release"
-3. Create a new tag matching the version (e.g., `v0.0.60`)
-4. Title the release with the version number
-5. Copy the release notes from the new `CHANGELOG.md` entry into the release description
-6. Publish the release
+- **Changelog gate** — confirms `CHANGELOG.md` is modified when the `release` label is present.
 
-### 4. Automated Build
+### 3. Merge to trigger the release
 
-The release workflow automatically:
+Merging the PR to `main` triggers `.github/workflows/create-release.yml` on that push. The workflow only performs a release when the **merged PR has the `release` label** (it checks linked PRs for that label); other pushes to `main` do not create tags or releases.
 
-- Builds binaries for multiple platforms (darwin, linux, windows, freebsd)
-- Uploads binaries to the GitHub Release as assets
+When a release runs, it automatically:
+
+1. Extracts the version from the top-most `## x.y.z` section in `CHANGELOG.md`
+2. Creates and pushes a `vx.y.z` git tag
+3. Creates a GitHub Release titled `vx.y.z` (always use the `v` prefix for tags and release names, e.g. `v1.0.1`, not `1.0.1`) with the matching changelog section as release notes
+4. Builds binaries for multiple platforms (darwin, linux, windows, freebsd) and uploads them to the release
 
 Users can then download binaries from the release page or use `go install`.
