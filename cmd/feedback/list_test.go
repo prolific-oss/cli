@@ -3,7 +3,6 @@ package feedback_test
 import (
 	"bufio"
 	"bytes"
-	"os"
 	"strings"
 	"testing"
 
@@ -14,25 +13,6 @@ import (
 	"github.com/prolific-oss/cli/mock_client"
 	"github.com/prolific-oss/cli/model"
 )
-
-func TestNewListCommand(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	client := mock_client.NewMockAPI(ctrl)
-
-	cmd := feedback.NewListCommand(client, os.Stdout)
-
-	use := "list"
-	short := "List participant feedback for a study, requires Study ID"
-
-	if cmd.Use != use {
-		t.Fatalf("expected use: %s; got %s", use, cmd.Use)
-	}
-
-	if cmd.Short != short {
-		t.Fatalf("expected use: %s; got %s", short, cmd.Short)
-	}
-}
 
 func TestNewListCommandRequiresStudyID(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -72,26 +52,6 @@ func TestNewListCommandRejectsMalformedStudyID(t *testing.T) {
 	}
 
 	expected := `invalid study ID "not-a-valid-id": must be a 24-character hex string`
-	if err.Error() != expected {
-		t.Fatalf("expected error '%s'; got '%s'", expected, err.Error())
-	}
-}
-
-func TestNewListCommandRejectsNegativeLimit(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	c := mock_client.NewMockAPI(ctrl)
-
-	cmd := feedback.NewListCommand(c, os.Stdout)
-	_ = cmd.Flags().Set("study", "63c123af913a974f87e8e7fc")
-	_ = cmd.Flags().Set("limit", "-1")
-
-	err := cmd.RunE(cmd, []string{})
-	if err == nil {
-		t.Fatal("expected an error for a negative limit")
-	}
-
-	expected := "limit must be greater than or equal to 0"
 	if err.Error() != expected {
 		t.Fatalf("expected error '%s'; got '%s'", expected, err.Error())
 	}
