@@ -21,6 +21,7 @@ you to retrieve that feedback programmatically.`,
 
 	cmd.AddCommand(
 		NewListCommand(client, w),
+		NewRatingsCommand(client, w),
 	)
 	return cmd
 }
