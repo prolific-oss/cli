@@ -22,25 +22,32 @@ Usage:
   prolific [command]
 
 Available Commands:
-  campaign     Provide details about your campaigns
-  completion   Generate the autocompletion script for the specified shell
-  credentials  Manage credential pools
-  filter-sets  Manage and view your filter sets
-  help         Help about any command
-  hook         Manage and view your hook subscriptions
-  message      Send and retrieve messages
-  participant  Manage and view your participant groups
-  project      Manage and view your projects in a workspace
-  requirements List all eligibility requirements available for your study
-  studies      List all of your studies
-  study        Manage and view your studies
-  submission   Manage and view your study submissions
-  whoami       View details about your account
-  workspace    Manage and view your workspaces
+  aitaskbuilder AI Task Builder tools and utilities
+  bonus         Create and pay bonuses for study participants
+  campaign      Provide details about your campaigns
+  collection    Manage and view your collections
+  completion    Generate the autocompletion script for the specified shell
+  credentials   Manage credential pools
+  filter-sets   Manage and view your filter sets
+  filters       List all filters available for your study
+  help          Help about any command
+  hook          Manage and view your hook subscriptions
+  invitation    Manage workspace invitations
+  message       Send and retrieve messages
+  participant   Manage and view your participant groups
+  project       Manage and view your projects in a workspace
+  researcher    Manage researcher resources
+  studies       List all of your studies
+  study         Manage and view your studies
+  submission    Manage and view your study submissions
+  template      Browse and retrieve study and collection templates
+  whoami        View details about your account
+  workspace     Manage and view your workspaces
 
 Flags:
       --config string   config file (default is $HOME/.config/prolific-oss/prolific.yaml)
   -h, --help            help for prolific
+      --skill string    Optional identifier for the AI skill/workflow invoking this command; folded into the User-Agent header sent with API requests
   -v, --version         version for prolific
 
 Use "prolific [command] --help" for more information about a command.
