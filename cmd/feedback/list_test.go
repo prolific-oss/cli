@@ -3,6 +3,7 @@ package feedback_test
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"strings"
 	"testing"
 
@@ -13,6 +14,8 @@ import (
 	"github.com/prolific-oss/cli/mock_client"
 	"github.com/prolific-oss/cli/model"
 )
+
+const feedbackTestStudyID = "study-id"
 
 func TestNewListCommandRequiresStudyID(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -35,25 +38,40 @@ func TestNewListCommandRequiresStudyID(t *testing.T) {
 	}
 }
 
-func TestNewListCommandRejectsMalformedStudyID(t *testing.T) {
+func TestNewListCommandPassesStudyIDToAPI(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
+
+	studyID := "not-a-valid-id"
+	feedbackResponse := client.ListStudyFeedbackResponse{
+		Results: []model.StudyFeedback{},
+		JSONAPIMeta: &client.JSONAPIMeta{
+			Meta: struct {
+				Count int `json:"count"`
+			}{},
+		},
+	}
+
+	c.EXPECT().
+		GetStudyFeedback(
+			gomock.Eq(studyID),
+			gomock.Eq(false),
+			gomock.Eq(client.DefaultRecordLimit),
+			gomock.Eq(client.DefaultRecordOffset),
+		).
+		Return(&feedbackResponse, nil)
 
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
 
 	cmd := feedback.NewListCommand(c, writer)
-	_ = cmd.Flags().Set("study", "not-a-valid-id")
+	_ = cmd.Flags().Set("study", studyID)
+	_ = cmd.Flags().Set("table", "true")
 	err := cmd.RunE(cmd, []string{})
 
-	if err == nil {
-		t.Fatal("expected an error for a malformed study ID")
-	}
-
-	expected := `invalid study ID "not-a-valid-id": must be a 24-character hex string`
-	if err.Error() != expected {
-		t.Fatalf("expected error '%s'; got '%s'", expected, err.Error())
+	if err != nil {
+		t.Fatalf("did not expect error, got %v", err)
 	}
 }
 
@@ -91,21 +109,14 @@ func TestNewListCommandCallsAPI(t *testing.T) {
 		},
 	}
 
-	ratingsResponse := client.StudyRatingsResponse{
-		"clarity_rating":    model.StudyRating{AverageRating: &clarity, TotalCount: 1},
-		"difficulty_rating": model.StudyRating{AverageRating: &ease, TotalCount: 1},
-		"fairness_rating":   model.StudyRating{AverageRating: &fairness, TotalCount: 1},
-	}
-
 	c.
 		EXPECT().
-		GetStudyRatings(gomock.Eq(studyID)).
-		Return(&ratingsResponse, nil).
-		AnyTimes()
-
-	c.
-		EXPECT().
-		GetStudyFeedback(gomock.Eq(studyID), gomock.Eq(false), gomock.Eq(0), gomock.Eq(0)).
+		GetStudyFeedback(
+			gomock.Eq(studyID),
+			gomock.Eq(false),
+			gomock.Eq(client.DefaultRecordLimit),
+			gomock.Eq(client.DefaultRecordOffset),
+		).
 		Return(&feedbackResponse, nil).
 		AnyTimes()
 
@@ -114,6 +125,7 @@ func TestNewListCommandCallsAPI(t *testing.T) {
 
 	cmd := feedback.NewListCommand(c, writer)
 	_ = cmd.Flags().Set("study", studyID)
+	_ = cmd.Flags().Set("table", "true")
 	err := cmd.RunE(cmd, []string{studyID})
 
 	if err != nil {
@@ -134,5 +146,146 @@ func TestNewListCommandCallsAPI(t *testing.T) {
 
 	if !strings.Contains(actual, "Showing 1 record of 1") {
 		t.Fatalf("expected output to contain record counter, got: %s", actual)
+	}
+}
+
+func TestNewListCommandSupportsStandardOutputFlags(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+	cmd := feedback.NewListCommand(c, writer)
+
+	for shorthand, name := range map[string]string{
+		"j": "json",
+		"t": "table",
+		"c": "csv",
+		"n": "non-interactive",
+	} {
+		flag := cmd.Flags().ShorthandLookup(shorthand)
+		if flag == nil || flag.Name != name {
+			t.Fatalf("expected -%s to map to --%s", shorthand, name)
+		}
+	}
+
+	nonInteractive := cmd.Flags().Lookup("non-interactive")
+	if nonInteractive == nil || !nonInteractive.Hidden {
+		t.Fatal("expected --non-interactive to be a hidden compatibility flag")
+	}
+}
+
+func TestNewListCommandMachineReadableOutput(t *testing.T) {
+	tests := []struct {
+		name     string
+		flag     string
+		response client.ListStudyFeedbackResponse
+		expected []string
+	}{
+		{
+			name: "JSON preserves nested ratings",
+			flag: "json",
+			response: func() client.ListStudyFeedbackResponse {
+				clarity := 4.5
+				return client.ListStudyFeedbackResponse{
+					Results: []model.StudyFeedback{
+						{
+							ParticipantID: "919",
+							Ratings: model.StudyFeedbackRatings{
+								Clarity: &clarity,
+							},
+						},
+					},
+				}
+			}(),
+			expected: []string{`"participant_id": "919"`, `"ratings": {`, `"clarity": 4.5`},
+		},
+		{
+			name: "CSV uses flat presentation rows",
+			flag: "csv",
+			response: func() client.ListStudyFeedbackResponse {
+				clarity := 4.5
+				return client.ListStudyFeedbackResponse{
+					Results: []model.StudyFeedback{
+						{
+							ParticipantID: "919",
+							Ratings: model.StudyFeedbackRatings{
+								Clarity: &clarity,
+							},
+						},
+					},
+				}
+			}(),
+			expected: []string{
+				"ParticipantID,Category,Clarity,Ease,Fairness,Text",
+				"919,-,4.5,-,-,-",
+			},
+		},
+		{
+			name:     "empty JSON is an array",
+			flag:     "json",
+			response: client.ListStudyFeedbackResponse{},
+			expected: []string{"[]"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			c := mock_client.NewMockAPI(ctrl)
+
+			c.EXPECT().
+				GetStudyFeedback(
+					gomock.Eq(feedbackTestStudyID),
+					gomock.Eq(false),
+					gomock.Eq(client.DefaultRecordLimit),
+					gomock.Eq(client.DefaultRecordOffset),
+				).
+				Return(&tt.response, nil)
+
+			var b bytes.Buffer
+			writer := bufio.NewWriter(&b)
+			cmd := feedback.NewListCommand(c, writer)
+			_ = cmd.Flags().Set("study", feedbackTestStudyID)
+			_ = cmd.Flags().Set(tt.flag, "true")
+
+			if err := cmd.RunE(cmd, nil); err != nil {
+				t.Fatalf("did not expect error, got %v", err)
+			}
+			writer.Flush()
+
+			actual := b.String()
+			for _, expected := range tt.expected {
+				if !strings.Contains(actual, expected) {
+					t.Fatalf("expected output to contain %q, got: %s", expected, actual)
+				}
+			}
+		})
+	}
+}
+
+func TestNewListCommandReturnsAPIError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	c.EXPECT().
+		GetStudyFeedback(
+			gomock.Eq(feedbackTestStudyID),
+			gomock.Eq(false),
+			gomock.Eq(client.DefaultRecordLimit),
+			gomock.Eq(client.DefaultRecordOffset),
+		).
+		Return(nil, errors.New("API error"))
+
+	cmd := feedback.NewListCommand(c, &bytes.Buffer{})
+	_ = cmd.Flags().Set("study", feedbackTestStudyID)
+	_ = cmd.Flags().Set("json", "true")
+
+	err := cmd.RunE(cmd, nil)
+	if err == nil || err.Error() != "error: API error" {
+		t.Fatalf("expected API error, got %v", err)
 	}
 }
