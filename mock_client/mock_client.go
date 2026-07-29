@@ -604,6 +604,36 @@ func (mr *MockAPIMockRecorder) GetStudyCredentialsUsageReportCSV(ID interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStudyCredentialsUsageReportCSV", reflect.TypeOf((*MockAPI)(nil).GetStudyCredentialsUsageReportCSV), ID)
 }
 
+// GetStudyFeedback mocks base method.
+func (m *MockAPI) GetStudyFeedback(studyID string, hasWrittenFeedback bool, limit, offset int) (*client.ListStudyFeedbackResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetStudyFeedback", studyID, hasWrittenFeedback, limit, offset)
+	ret0, _ := ret[0].(*client.ListStudyFeedbackResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetStudyFeedback indicates an expected call of GetStudyFeedback.
+func (mr *MockAPIMockRecorder) GetStudyFeedback(studyID, hasWrittenFeedback, limit, offset interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStudyFeedback", reflect.TypeOf((*MockAPI)(nil).GetStudyFeedback), studyID, hasWrittenFeedback, limit, offset)
+}
+
+// GetStudyRatings mocks base method.
+func (m *MockAPI) GetStudyRatings(studyID string) (*client.StudyRatingsResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetStudyRatings", studyID)
+	ret0, _ := ret[0].(*client.StudyRatingsResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetStudyRatings indicates an expected call of GetStudyRatings.
+func (mr *MockAPIMockRecorder) GetStudyRatings(studyID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStudyRatings", reflect.TypeOf((*MockAPI)(nil).GetStudyRatings), studyID)
+}
+
 // GetSubmissions mocks base method.
 func (m *MockAPI) GetSubmissions(ID string, limit, offset int) (*client.ListSubmissionsResponse, error) {
 	m.ctrl.T.Helper()

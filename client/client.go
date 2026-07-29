@@ -37,6 +37,8 @@ type API interface {
 	GetStudies(status, projectID string) (*ListStudiesResponse, error)
 	GetStudy(ID string) (*model.Study, error)
 	GetSubmissions(ID string, limit, offset int) (*ListSubmissionsResponse, error)
+	GetStudyFeedback(studyID string, hasWrittenFeedback bool, limit, offset int) (*ListStudyFeedbackResponse, error)
+	GetStudyRatings(studyID string) (*StudyRatingsResponse, error)
 	TransitionStudy(ID, action string) (*TransitionStudyResponse, error)
 	UpdateStudy(ID string, study model.UpdateStudy) (*model.Study, error)
 	GetStudyCredentialsUsageReportCSV(ID string) (string, error)

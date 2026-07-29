@@ -318,6 +318,17 @@ type ListCollectionsResponse struct {
 	*JSONAPIMeta
 }
 
+// ListStudyFeedbackResponse is the response for the study feedback responses API.
+type ListStudyFeedbackResponse struct {
+	Results []model.StudyFeedback `json:"results"`
+	*JSONAPILinks
+	*JSONAPIMeta
+}
+
+// StudyRatingsResponse is the response for the study feedback ratings API,
+// keyed by rating id (e.g. clarity, ease, fairness).
+type StudyRatingsResponse map[string]model.StudyRating
+
 // CreateBonusPaymentsResponse is the response for creating bonus payments.
 // Monetary fields are returned by the API as floats in minor currency units
 // (e.g., 100.0 = £1.00). Divide by 100 before display via ui.RenderMoney().
