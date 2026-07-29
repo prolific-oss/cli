@@ -292,7 +292,7 @@ func (c *Client) GetMe() (*MeResponse, error) {
 	var response MeResponse
 
 	url := "/api/v1/users/me"
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().Get(url, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
@@ -636,7 +636,7 @@ func (c *Client) GetHookEventTypes() (*ListHookEventTypesResponse, error) {
 	var response ListHookEventTypesResponse
 
 	url := "/api/v1/hooks/event-types/"
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().Get(url, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
@@ -927,6 +927,24 @@ func (c *Client) RemoveParticipantGroupMembers(groupID string, participantIDs []
 	return &response, nil
 }
 
+func (c *Client) AddParticipantGroupMembers(groupID string, participantIDs []string) (*ViewParticipantGroupResponse, error) {
+	payload := AddParticipantGroupMembersPayload{
+		ParticipantIDs: participantIDs,
+	}
+	var response ViewParticipantGroupResponse
+
+	url := fmt.Sprintf("/api/v1/participant-groups/%s/participants/", groupID)
+	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to add participants to group %s: %s", groupID, err)
+	}
+	if httpResponse.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unable to add participants to group %s, status code: %v", groupID, httpResponse.StatusCode)
+	}
+
+	return &response, nil
+}
+
 // CreateTestParticipant creates a test participant for the researcher with the given email.
 func (c *Client) CreateTestParticipant(email string) (*CreateTestParticipantResponse, error) {
 	var response CreateTestParticipantResponse
@@ -953,7 +971,7 @@ func (c *Client) GetFilters() (*ListFiltersResponse, error) {
 	var response ListFiltersResponse
 
 	url := "/api/v1/filters/"
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().Get(url, &response)
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
 	}
