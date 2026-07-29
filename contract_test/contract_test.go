@@ -312,7 +312,9 @@ var operations = []operation{
 	}},
 
 	// Reward Recommendations
-	{operationID: "calculate-reward-recommendations", skip: "OUTOFSCOPE: reward recommendations not needed in CLI"},
+	{operationID: "calculate-reward-recommendations", call: func(c *client.Client) {
+		c.GetRewardRecommendations("ws-id", "GBP", []string{"mandarin", "spanish"})
+	}},
 
 	// Well-known endpoints
 	{operationID: "get-study-jwks", skip: "OUTOFSCOPE: JWKS endpoint not needed in CLI"},
