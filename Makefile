@@ -42,7 +42,7 @@ install: install-binary ## Install dependencies and the prolific binary
 	cp scripts/hooks/commit-msg .git/hooks/commit-msg
 	go install github.com/golang/mock/mockgen@master
 	go install github.com/securego/gosec/v2/cmd/gosec@latest
-	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
+	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.11.2
 	go install golang.org/x/tools/cmd/goimports@latest
 	go get ./...
 
@@ -54,6 +54,10 @@ install-binary: ## Install the prolific binary to $GOPATH/bin
 format: ## Format all Go code
 	gofmt -w .
 	goimports -w .
+
+.PHONY: fix
+fix: ## Auto-migrate to modern Go syntax
+	go fix ./...
 
 .PHONY: format-changed
 format-changed: ## Format only changed Go files
@@ -75,14 +79,14 @@ build: ## Build the application
 .PHONY: static
 static: ## Build the application
 	CGO_ENABLED=0 go build \
-		-ldflags "-extldflags -static -X github.com/$(GIT_ORG)/cli/version.GITCOMMIT=$(VERSION)" \
+		-ldflags "-extldflags -static -X github.com/$(GIT_ORG)/cli/version.Version=$(VERSION)" \
 		-o $(NAME) ./cmd/prolific
 
 .PHONY: static-named
 static-named: ## Build the application with named outputs
 	GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 \
 		go build \
-		-ldflags "-extldflags -static -X github.com/$(GIT_ORG)/cli/version.GITCOMMIT=$(VERSION)" \
+		-ldflags "-extldflags -static -X github.com/$(GIT_ORG)/cli/version.Version=$(VERSION)" \
 		-o $(OUT_PATH) ./cmd/prolific
 
 	md5sum $(OUT_PATH) > $(OUT_PATH).md5 || md5 $(OUT_PATH) > $(OUT_PATH).md5
@@ -108,9 +112,15 @@ all: clean install build test
 static-all: clean install static test
 
 .PHONY: changelog
-changelog: ## Generate grouped changelog for a release (Usage: make changelog VERSION=0.0.61)
-	@if [ -z "$(VERSION)" ]; then echo "Usage: make changelog VERSION=0.0.61"; exit 1; fi
-	git cliff $$(git describe --tags --abbrev=0)..HEAD --tag v$(VERSION) --strip header --config cliff.toml -o CLIFF_NOTES.md
+changelog: ## Generate grouped changelog for a release (Usage: make changelog VERSION=0.0.61 — numeric only; tag/release will be v0.0.61)
+	@if [ -z "$(VERSION)" ]; then echo "Usage: make changelog VERSION=0.0.61 (published tag is v0.0.61)"; exit 1; fi
+	@go run ./scripts/changelog validate-version "$(VERSION)"
+	@command -v git-cliff >/dev/null 2>&1 || { \
+ 		echo "Error: git-cliff is required to generate the changelog but was not found in PATH."; \
+ 		echo "Please install git-cliff (run `brew install git-cliff` or see https://git-cliff.org/docs/installation/) and try again."; \
+ 		exit 1; \
+ 	}
+	git-cliff $$(git describe --tags --abbrev=0)..HEAD --tag v$(VERSION) --strip header --config cliff.toml -o CLIFF_NOTES.md
 	go run ./scripts/changelog transform --input CLIFF_NOTES.md --output CLIFF_NOTES.md
 	go run ./scripts/changelog extract --section next --strip-comments > MANUAL_NOTES.md
 	go run ./scripts/changelog merge --manual MANUAL_NOTES.md --generated CLIFF_NOTES.md --output RELEASE_NOTES.md

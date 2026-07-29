@@ -6,7 +6,7 @@ import (
 
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/model"
-	studyui "github.com/prolific-oss/cli/ui/study"
+
 	"github.com/spf13/cobra"
 )
 
@@ -50,7 +50,7 @@ $ prolific study increase-places 64395e9c2332b8a59a65d51e --places 5000`,
 				return err
 			}
 
-			fmt.Fprintln(w, studyui.RenderStudy(*updatedStudy))
+			fmt.Fprintln(w, RenderStudy(*updatedStudy))
 
 			return nil
 		},

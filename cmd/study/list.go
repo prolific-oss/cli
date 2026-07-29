@@ -5,21 +5,26 @@ import (
 	"io"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/list"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/model"
-	"github.com/prolific-oss/cli/ui/study"
+	"github.com/prolific-oss/cli/ui"
 	"github.com/spf13/cobra"
 )
 
-// ListOptions is the options for the listing studies command.
+// defaultListFields is the default fields shown when the user has not specified --fields.
+const defaultListFields = "ID,Name,Status"
+
 type ListOptions struct {
-	Args           []string
-	Csv            bool
-	Fields         string
-	NonInteractive bool
-	ProjectID      string
-	Status         string
-	Underpaying    bool
+	Args        []string
+	Fields      string
+	Output      shared.OutputOptions
+	ProjectID   string
+	Status      string
+	Underpaying bool
 }
 
 // NewListCommand creates a new `study list` command to give you details about
@@ -40,22 +45,27 @@ interface. When you have found the study you want to look into in more detail,
 press enter.
 $ prolific study list
 
-You can provide a non-iterative experience, if you want to get details in the
-terminal, or into another application
-$ prolific study list -n
+You can output as a table, useful for terminal, or into another application
+$ prolific study list --table
+$ prolific study list -t
+
+You can output as CSV
+$ prolific study list --csv
+$ prolific study list -c
+
+You can output as JSON
+$ prolific study list --json
+$ prolific study list -j
+
+You can specify the fields you want to render in table or CSV output
+$ prolific study list -f ID,InternalName,TotalCost -t
+$ prolific study list -f ID,InternalName,TotalCost -c
 
 You can filter the studies by the project they are assigned to
 $ prolific study list -p 6261321e223a605c7a4f7561
 
 You can filter the studies by their status, for example your active studies
 $ prolific study list -s active
-
-You can render the results as a CSV format
-$ prolific study list -c
-
-You can specify the fields you want to render in either the non-iterative or CSV
-view
-$ prolific study list -f ID,InternalName,TotalCost -c
 
 The fields you can use are
 - ID
@@ -90,16 +100,6 @@ The fields you can use are
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
 
-			renderer := study.ListRenderer{}
-
-			if opts.Csv {
-				renderer.SetStrategy(&study.CsvRenderer{})
-			} else if opts.NonInteractive {
-				renderer.SetStrategy(&study.NonInteractiveRenderer{})
-			} else {
-				renderer.SetStrategy(&study.InteractiveRenderer{})
-			}
-
 			studies, err := client.GetStudies(opts.Status, opts.ProjectID)
 			if err != nil {
 				return err
@@ -109,11 +109,32 @@ The fields you can use are
 				studies = filterByUnderpaying(*studies)
 			}
 
-			err = renderer.Render(client, *studies, study.ListUsedOptions{
-				Status: opts.Status, NonInteractive: opts.NonInteractive, Fields: opts.Fields, ProjectID: opts.ProjectID,
-			}, w)
-			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+			format := shared.ResolveFormat(opts.Output)
+			fields := opts.Fields
+			if fields == "" {
+				fields = defaultListFields
+			}
+			switch format {
+			case "json":
+				r := ui.JSONRenderer[model.Study]{}
+				if err := r.Render(studies.Results, w); err != nil {
+					return fmt.Errorf("error: %s", err)
+				}
+			case "csv":
+				r := ui.CsvRenderer[model.Study]{}
+				if err := r.Render(studies.Results, fields, w); err != nil {
+					return fmt.Errorf("error: %s", err)
+				}
+			case "table":
+				r := ui.TableRenderer[model.Study]{}
+				if err := r.Render(studies.Results, fields, w); err != nil {
+					return fmt.Errorf("error: %s", err)
+				}
+			default:
+				r := &InteractiveRenderer{}
+				if err := r.Render(client, *studies, w); err != nil {
+					return fmt.Errorf("error: %s", err)
+				}
 			}
 
 			return nil
@@ -122,11 +143,10 @@ The fields you can use are
 
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.Status, "status", "s", model.StatusAll, fmt.Sprintf("The status you want to filter on: %s.", strings.Join(model.StudyListStatus, ", ")))
-	flags.BoolVarP(&opts.NonInteractive, "non-interactive", "n", false, "Render the list details straight to the terminal.")
-	flags.BoolVarP(&opts.Csv, "csv", "c", false, "Render the list details in a CSV format.")
 	flags.BoolVarP(&opts.Underpaying, "underpaying", "u", false, "Filter by underpaying studies.")
-	flags.StringVarP(&opts.Fields, "fields", "f", "", "Comma separated list of fields you want to display in non-interactive/csv mode.")
+	flags.StringVarP(&opts.Fields, "fields", "f", "", "Comma separated list of fields you want to display in table or csv mode.")
 	flags.StringVarP(&opts.ProjectID, "project", "p", "", "Get studies for a given project ID.")
+	shared.AddOutputFlags(cmd, &opts.Output)
 
 	return cmd
 }
@@ -141,4 +161,80 @@ func filterByUnderpaying(studies client.ListStudiesResponse) *client.ListStudies
 
 	studies.Results = filtered
 	return &studies
+}
+
+// InteractiveRenderer runs the bubbles UI framework to provide a rich
+// UI experience for the user.
+type InteractiveRenderer struct{}
+
+// Render will render the list in an interactive manner.
+func (r *InteractiveRenderer) Render(c client.API, studies client.ListStudiesResponse, w io.Writer) error {
+	var items []list.Item
+	studyMap := make(map[string]model.Study)
+
+	for _, s := range studies.Results {
+		items = append(items, s)
+		studyMap[s.ID] = s
+	}
+
+	lv := ListView{
+		List:    list.New(items, list.NewDefaultDelegate(), 0, 0),
+		Studies: studyMap,
+		Client:  c,
+	}
+	lv.List.Title = "My studies"
+
+	p := tea.NewProgram(lv)
+	if _, err := p.Run(); err != nil {
+		return fmt.Errorf("cannot render studies: %s", err)
+	}
+
+	return nil
+}
+
+// ListView is responsible for presenting a list view to the user.
+type ListView struct {
+	List    list.Model
+	Studies map[string]model.Study
+	Study   *model.Study
+	Client  client.API
+}
+
+// Init will initialise the view.
+func (lv ListView) Init() tea.Cmd {
+	return nil
+}
+
+// Update will update the view.
+func (lv ListView) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		if msg.String() == "ctrl+c" {
+			return lv, tea.Quit
+		}
+
+		if msg.String() == "enter" {
+			i, ok := lv.List.SelectedItem().(model.Study)
+			if ok {
+				lv.Study = &i
+			}
+			return lv, tea.Quit
+		}
+
+	case tea.WindowSizeMsg:
+		h, v := lipgloss.NewStyle().GetFrameSize()
+		lv.List.SetSize(msg.Width-h, msg.Height-v)
+	}
+
+	var cmd tea.Cmd
+	lv.List, cmd = lv.List.Update(msg)
+	return lv, cmd
+}
+
+// View will render the view.
+func (lv ListView) View() string {
+	if lv.Study != nil {
+		return RenderStudy(*lv.Study)
+	}
+	return lv.List.View()
 }

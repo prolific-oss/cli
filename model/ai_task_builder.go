@@ -18,6 +18,7 @@ type AITaskBuilderBatch struct {
 	WorkspaceID           string                       `json:"workspace_id"`
 	SchemaVersion         int                          `json:"schema_version"`
 	TaskDetails           TaskDetails                  `json:"task_details"`
+	AutoSyncEnabled       bool                         `json:"auto_sync_enabled"`
 }
 
 // AITaskBuilderBatchStatus represents the status of an AI Task Builder batch.
@@ -50,6 +51,64 @@ const (
 	DatasetStatusError DatasetStatus = "ERROR"
 )
 
+// DatasetImportFormat represents the file format for a dataset import.
+type DatasetImportFormat string
+
+const (
+	// DatasetImportFormatCSV uploads comma-separated values.
+	DatasetImportFormatCSV DatasetImportFormat = "csv"
+	// DatasetImportFormatJSONL uploads JSON Lines.
+	DatasetImportFormatJSONL DatasetImportFormat = "jsonl"
+)
+
+// DatasetImportJobStatus represents the status of a dataset import job.
+type DatasetImportJobStatus string
+
+const (
+	// DatasetImportJobStatusUninitialised means the import was created but the upload has not started.
+	DatasetImportJobStatusUninitialised DatasetImportJobStatus = "uninitialised"
+	// DatasetImportJobStatusQueued means the upload completed and is waiting to be processed.
+	DatasetImportJobStatusQueued DatasetImportJobStatus = "queued"
+	// DatasetImportJobStatusProcessing means the import is currently being processed.
+	DatasetImportJobStatusProcessing DatasetImportJobStatus = "processing"
+	// DatasetImportJobStatusComplete means all records were accepted.
+	DatasetImportJobStatusComplete DatasetImportJobStatus = "complete"
+	// DatasetImportJobStatusPartial means some records were accepted and some were rejected.
+	DatasetImportJobStatusPartial DatasetImportJobStatus = "partial"
+	// DatasetImportJobStatusFailed means the import could not be processed.
+	DatasetImportJobStatusFailed DatasetImportJobStatus = "failed"
+	// DatasetImportJobStatusPendingSchema means processing is waiting for a dataset schema to be defined.
+	DatasetImportJobStatusPendingSchema DatasetImportJobStatus = "pending_schema"
+)
+
+// DatasetImportJobRecordError represents a record-level import error.
+type DatasetImportJobRecordError struct {
+	RecordIndex int    `json:"record_index"`
+	Field       string `json:"field"`
+	Reason      string `json:"reason"`
+}
+
+// DatasetImportJob represents the status of a single dataset upload/import.
+type DatasetImportJob struct {
+	DatasetID           string                        `json:"dataset_id"`
+	ImportID            string                        `json:"import_id"`
+	Type                string                        `json:"type"`
+	Filename            string                        `json:"filename,omitempty"`
+	CreatedAt           string                        `json:"created_at"`
+	UpdatedAt           string                        `json:"updated_at"`
+	ProcessingStartedAt string                        `json:"processing_started_at,omitempty"`
+	ProcessedOffset     *int                          `json:"processed_offset,omitempty"`
+	WrittenCount        *int                          `json:"written_count,omitempty"`
+	DuplicateSeenCount  *int                          `json:"duplicate_seen_count,omitempty"`
+	RejectedSeenCount   *int                          `json:"rejected_seen_count,omitempty"`
+	Status              DatasetImportJobStatus        `json:"status"`
+	AcceptedCount       *int                          `json:"accepted_count,omitempty"`
+	DuplicateCount      *int                          `json:"duplicate_count,omitempty"`
+	RejectedCount       *int                          `json:"rejected_count,omitempty"`
+	Errors              []DatasetImportJobRecordError `json:"errors,omitempty"`
+	Reason              string                        `json:"reason,omitempty"`
+}
+
 // TaskDetails represents the task configuration details.
 type TaskDetails struct {
 	TaskName         string `json:"task_name" mapstructure:"task_name"`
@@ -59,9 +118,10 @@ type TaskDetails struct {
 
 // InstructionOption represents an option for multiple choice instructions.
 type InstructionOption struct {
-	Label   string `json:"label"`
-	Value   string `json:"value"`
-	Heading string `json:"heading,omitempty"`
+	Label     string `json:"label"`
+	Value     string `json:"value"`
+	Heading   string `json:"heading,omitempty"`
+	Exclusive bool   `json:"exclusive,omitempty"`
 }
 
 // UnitPosition represents the position of the unit relative to the text input.
@@ -88,6 +148,7 @@ type Instruction struct {
 	UnitPosition         UnitPosition        `json:"unit_position,omitempty"`
 	HelperText           string              `json:"helper_text,omitempty"`
 	PlaceholderTextInput string              `json:"placeholder_text_input,omitempty"`
+	Validation           *ValidationRule     `json:"validation,omitempty"`
 	AcceptedFileTypes    []string            `json:"accepted_file_types,omitempty"`
 	MaxFileSizeMB        *float64            `json:"max_file_size_mb,omitempty"`
 	MinFileCount         *int                `json:"min_file_count,omitempty"`
@@ -191,6 +252,7 @@ type CollectionPageItem struct {
 	PlaceholderTextInput string              `json:"placeholder_text_input,omitempty" mapstructure:"placeholder_text_input"`
 	DisableDropdown      *bool               `json:"disable_dropdown,omitempty" mapstructure:"disable_dropdown"`
 	HelperText           string              `json:"helper_text,omitempty" mapstructure:"helper_text"`
+	Validation           *ValidationRule     `json:"validation,omitempty" mapstructure:"validation"`
 
 	// Unit fields (for free_text_with_unit)
 	UnitOptions  []UnitOption `json:"unit_options,omitempty" mapstructure:"unit_options"`

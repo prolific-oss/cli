@@ -3,7 +3,12 @@
     "type": "free_text",
     "created_by": "Sean",
     "description": "Please explain your reasoning for the choice you made above.",
-    "placeholder_text_input": "Enter your explanation here..."
+    "placeholder_text_input": "Enter your explanation here...",
+    "validation": {
+      "type": "string",
+      "min": 10,
+      "max": 500
+    }
   },
   {
     "type": "multiple_choice",
@@ -22,6 +27,31 @@
       {
         "label": "Both are equally accurate",
         "value": "both_equal"
+      }
+    ]
+  },
+  {
+    "type": "multiple_choice",
+    "created_by": "Sean",
+    "description": "Which medications are you currently taking? Select all that apply.",
+    "answer_limit": -1,
+    "options": [
+      {
+        "label": "Aspirin",
+        "value": "aspirin"
+      },
+      {
+        "label": "Ibuprofen",
+        "value": "ibuprofen"
+      },
+      {
+        "label": "Paracetamol",
+        "value": "paracetamol"
+      },
+      {
+        "label": "None of the above",
+        "value": "none",
+        "exclusive": true
       }
     ]
   },
@@ -57,11 +87,13 @@
     "unit_options": [
       {
         "label": "°C",
-        "value": "celsius"
+        "value": "celsius",
+        "validation": { "type": "number", "min": 30, "max": 45 }
       },
       {
         "label": "°F",
-        "value": "fahrenheit"
+        "value": "fahrenheit",
+        "validation": { "type": "number", "min": 86, "max": 113 }
       }
     ],
     "default_unit": "celsius",

@@ -4,6 +4,8 @@
 // Usage:
 //
 //	go run ./scripts/changelog extract --section next --strip-comments
+//	go run ./scripts/changelog extract-version
+//	go run ./scripts/changelog validate-version 0.1.0
 //	go run ./scripts/changelog merge --manual MANUAL.md --generated CLIFF.md --output MERGED.md
 //	go run ./scripts/changelog update --version 0.1.0 --notes NOTES.md
 package main
@@ -25,11 +27,12 @@ var (
 	reBlankLines     = regexp.MustCompile(`\n{3,}`)
 	reVersionHeading = regexp.MustCompile(`^## \d`)
 	reChangelogTitle = regexp.MustCompile(`(?m)(# CHANGELOG\n+)`)
+	reStrictSemver   = regexp.MustCompile(`^[0-9]+\.[0-9]+\.[0-9]+$`)
 )
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stderr, "usage: changelog <extract|merge|update|transform> [flags]")
+		fmt.Fprintln(os.Stderr, "usage: changelog <extract|extract-version|validate-version|merge|update|transform> [flags]")
 		os.Exit(1)
 	}
 
@@ -39,6 +42,10 @@ func main() {
 	switch cmd {
 	case "extract":
 		runExtract()
+	case "extract-version":
+		runExtractVersion()
+	case "validate-version":
+		runValidateVersion()
 	case "merge":
 		runMerge()
 	case "update":
@@ -96,6 +103,52 @@ func runExtract() {
 	fmt.Print(result)
 }
 
+// StrictSemver reports whether s is major.minor.patch with digits only (no v prefix,
+// no pre-release metadata). This must match ExtractReleaseVersion and the changelog
+// release workflow.
+func StrictSemver(s string) bool {
+	return reStrictSemver.MatchString(strings.TrimSpace(s))
+}
+
+func runValidateVersion() {
+	if len(os.Args) < 2 {
+		fmt.Fprintln(os.Stderr, "validate-version: version argument required (strict x.y.z, no v prefix)")
+		os.Exit(1)
+	}
+	v := strings.TrimSpace(os.Args[1])
+	if !StrictSemver(v) {
+		fmt.Fprintf(os.Stderr, "validate-version: %q is invalid — use strict semver x.y.z with digits only (e.g. 0.0.61, not v0.0.61)\n", v)
+		os.Exit(1)
+	}
+}
+
+func runExtractVersion() {
+	fs := flag.NewFlagSet("extract-version", flag.ContinueOnError)
+	changelogPath := fs.String("changelog", "CHANGELOG.md", "path to changelog file")
+	if err := fs.Parse(os.Args[1:]); err != nil {
+		fmt.Fprintf(os.Stderr, "extract-version: %v\n", err)
+		os.Exit(1)
+	}
+
+	path, err := resolvePath(*changelogPath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "extract-version: %v\n", err)
+		os.Exit(1)
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "extract-version: %v\n", err)
+		os.Exit(1)
+	}
+
+	version, ok := ExtractReleaseVersion(string(data))
+	if !ok {
+		fmt.Fprintln(os.Stderr, "extract-version: no ## x.y.z release section found (skipping ## next); run make changelog VERSION=x.y.z before merging")
+		os.Exit(1)
+	}
+	fmt.Print(version)
+}
+
 func runMerge() {
 	fs := flag.NewFlagSet("merge", flag.ContinueOnError)
 	manual := fs.String("manual", "", "path to manual notes file")
@@ -140,6 +193,10 @@ func runUpdate() {
 
 	if *version == "" {
 		fmt.Fprintln(os.Stderr, "update: --version is required")
+		os.Exit(1)
+	}
+	if !StrictSemver(*version) {
+		fmt.Fprintf(os.Stderr, "update: --version must be strict x.y.z (digits only, no v prefix), got %q\n", *version)
 		os.Exit(1)
 	}
 	if *notes == "" {
@@ -192,6 +249,27 @@ func readFileOrEmpty(raw string) string {
 		return ""
 	}
 	return strings.TrimSpace(string(data))
+}
+
+// ExtractReleaseVersion scans changelog top to bottom for ## headings and
+// returns the first heading text that is strict semver x.y.z (major.minor.patch
+// digits only), excluding the literal section title "next". This matches the
+// release workflow: the current release block is the first versioned section
+// after ## next in a typical CHANGELOG.
+func ExtractReleaseVersion(changelog string) (version string, ok bool) {
+	for _, line := range strings.Split(changelog, "\n") {
+		if !strings.HasPrefix(line, "## ") {
+			continue
+		}
+		heading := strings.TrimSpace(strings.TrimPrefix(line, "## "))
+		if heading == "next" {
+			continue
+		}
+		if StrictSemver(heading) {
+			return heading, true
+		}
+	}
+	return "", false
 }
 
 // ExtractSection extracts the content between a ## <section> heading and the
@@ -343,7 +421,7 @@ func gitDiffTree(hash string) ([]string, error) {
 		return nil, fmt.Errorf("git diff-tree %s: %w", hash, err)
 	}
 	var files []string
-	for _, line := range strings.Split(strings.TrimSpace(string(out)), "\n") {
+	for line := range strings.SplitSeq(strings.TrimSpace(string(out)), "\n") {
 		if line != "" {
 			files = append(files, line)
 		}
@@ -382,7 +460,7 @@ func TransformChangelog(input string, diffTreeFn func(string) ([]string, error))
 	}
 	grouped := make(map[string][]entry)
 
-	for _, line := range strings.Split(input, "\n") {
+	for line := range strings.SplitSeq(input, "\n") {
 		parsed, ok := ParseMarkerLine(line)
 		if !ok {
 			continue

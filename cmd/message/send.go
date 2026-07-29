@@ -51,7 +51,7 @@ Please make sure you quote the message with "" for the -b flag.
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.RecipientID, "recipient", "r", "", "Specify the recipient.")
 	flags.StringVarP(&opts.StudyID, "study", "s", "", "Specify the study to which the message relates.")
-	flags.StringVarP(&opts.Body, "body", "b", "", "Specific the body of message.")
+	flags.StringVarP(&opts.Body, "body", "b", "", "Specify the body of message.")
 
 	return cmd
 }

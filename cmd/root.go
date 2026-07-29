@@ -19,12 +19,15 @@ import (
 	"github.com/prolific-oss/cli/cmd/filters"
 	"github.com/prolific-oss/cli/cmd/filtersets"
 	"github.com/prolific-oss/cli/cmd/hook"
+	"github.com/prolific-oss/cli/cmd/invitation"
 	"github.com/prolific-oss/cli/cmd/message"
 	"github.com/prolific-oss/cli/cmd/participantgroup"
 	"github.com/prolific-oss/cli/cmd/project"
-	requirement "github.com/prolific-oss/cli/cmd/requirements"
+	"github.com/prolific-oss/cli/cmd/researcher"
 	"github.com/prolific-oss/cli/cmd/study"
 	"github.com/prolific-oss/cli/cmd/submission"
+	"github.com/prolific-oss/cli/cmd/survey"
+	"github.com/prolific-oss/cli/cmd/template"
 	"github.com/prolific-oss/cli/cmd/user"
 	"github.com/prolific-oss/cli/cmd/workspace"
 	"github.com/prolific-oss/cli/version"
@@ -60,12 +63,14 @@ func NewRootCommand() *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:     ApplicationName,
 		Short:   "CLI application for retrieving data from the Prolific Platform",
-		Version: version.GITCOMMIT,
+		Version: version.Get(),
 	}
 
 	cmd.PersistentFlags().StringVar(&cfgFile, "config", "", fmt.Sprintf("config file (default is $HOME/.config/prolific-oss/%s.yaml)", ApplicationName))
 
 	client := client.New()
+
+	cmd.PersistentFlags().StringVar(&client.Skill, "skill", "", "Optional identifier for the AI skill/workflow invoking this command; folded into the User-Agent header sent with API requests")
 
 	w := os.Stdout
 
@@ -79,13 +84,16 @@ func NewRootCommand() *cobra.Command {
 		filters.NewListCommand(&client, w),
 		filtersets.NewFilterSetCommand(&client, w),
 		hook.NewHookCommand(&client, w),
+		invitation.NewInvitationCommand(&client, w),
 		message.NewMessageCommand(&client, w),
 		participantgroup.NewParticipantCommand(&client, w),
 		project.NewProjectCommand(&client, w),
-		requirement.NewListCommand(&client, w),
+		researcher.NewResearcherCommand(&client, w),
 		study.NewListCommand("studies", &client, w),
 		study.NewStudyCommand(&client, w),
 		submission.NewSubmissionCommand(&client, w),
+		survey.NewSurveyCommand(&client, w),
+		template.NewTemplateCommand(w),
 		user.NewMeCommand(&client, w),
 		workspace.NewWorkspaceCommand(&client, w),
 	)

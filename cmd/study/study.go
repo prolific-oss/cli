@@ -18,11 +18,15 @@ func NewStudyCommand(client client.API, w io.Writer) *cobra.Command {
 		NewListCommand("list", client, w),
 		NewViewCommand(client, w),
 		NewCreateCommand(client, w),
+		NewUpdateCommand(client, w),
 		NewDuplicateCommand(client, w),
 		NewIncreasePlacesCommand(client, w),
 		NewSetCredentialPoolCommand(client, w),
 		NewTransitionCommand(client, w),
 		NewCredentialsReportCommand(client, w),
+		NewSubmissionCountsCommand(client, w),
+		NewDemographicExportCommand(client, w),
+		NewTestStudyCommand(client, w),
 	)
 	return cmd
 }

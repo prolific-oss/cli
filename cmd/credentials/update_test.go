@@ -99,7 +99,7 @@ Credential Pool ID: pool123456
 			// Only expect API call if we have enough args and credentials
 			if len(tt.args) > 1 {
 				c.EXPECT().
-					UpdateCredentialPool(tt.args[0], gomock.Any(), "").
+					UpdateCredentialPool(tt.args[0], gomock.Any()).
 					Return(tt.mockReturn, tt.mockError).
 					Times(1)
 			}
@@ -148,7 +148,7 @@ func TestUpdateCredentialPoolFromFile(t *testing.T) {
 	credFile := createTempCredentialsFile(t, credContent)
 
 	c.EXPECT().
-		UpdateCredentialPool(testCredPoolID, credContent, "").
+		UpdateCredentialPool(testCredPoolID, credContent).
 		Return(&client.CredentialPoolResponse{
 			CredentialPoolID: testCredPoolID,
 		}, nil).
@@ -182,7 +182,7 @@ func TestUpdateCredentialPoolFromFileWithTrailingNewline(t *testing.T) {
 	credFile := createTempCredentialsFile(t, testCredentials+"\n")
 
 	c.EXPECT().
-		UpdateCredentialPool(testCredPoolID, testCredentials, "").
+		UpdateCredentialPool(testCredPoolID, testCredentials).
 		Return(&client.CredentialPoolResponse{
 			CredentialPoolID: testCredPoolID,
 		}, nil).

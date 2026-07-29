@@ -182,8 +182,8 @@ func createDataset(datasetName string) (string, error) {
 	}
 
 	// Parse the output to extract the dataset ID
-	lines := strings.Split(string(output), "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(string(output), "\n")
+	for line := range lines {
 		if strings.HasPrefix(line, "ID:") {
 			// Split on colon and trim whitespace to handle variable spacing
 			parts := strings.SplitN(line, ":", 2)
@@ -250,8 +250,8 @@ func createBatch(batchName, datasetID string) (string, error) {
 	}
 
 	// Parse the output to extract the batch ID
-	lines := strings.Split(string(output), "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(string(output), "\n")
+	for line := range lines {
 		if strings.HasPrefix(line, "ID:") {
 			// Split on colon and trim whitespace to handle variable spacing
 			parts := strings.SplitN(line, ":", 2)
@@ -376,8 +376,8 @@ func createStudy(batchID string) (string, error) {
 
 	// Parse the output to extract the study ID
 	// Study output format: "ID:                        <study_id>\n" (with spacing)
-	lines := strings.Split(string(output), "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(string(output), "\n")
+	for line := range lines {
 		if strings.HasPrefix(line, "ID:") {
 			// Split on colon and trim whitespace to handle variable spacing
 			parts := strings.SplitN(line, ":", 2)

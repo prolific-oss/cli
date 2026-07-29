@@ -7,7 +7,7 @@ import (
 
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/model"
-	studyui "github.com/prolific-oss/cli/ui/study"
+
 	"github.com/spf13/cobra"
 )
 
@@ -43,7 +43,7 @@ func NewTransitionCommand(client client.API, w io.Writer) *cobra.Command {
 
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.Action, "action", "a", "", fmt.Sprintf("Transition a study, it can be one of %s", strings.Join(model.TransitionList, ", ")))
-	flags.BoolVarP(&opts.Silent, "silent", "s", false, "Silently create the study. It will not render the study once created.")
+	flags.BoolVarP(&opts.Silent, "silent", "s", false, "Silently transition the study. It will not render the study after transitioning.")
 
 	return cmd
 }
@@ -64,7 +64,7 @@ func transitionStudy(client client.API, opts TransitionOptions, w io.Writer) err
 			return err
 		}
 
-		fmt.Fprintln(w, studyui.RenderStudy(*study))
+		fmt.Fprintln(w, RenderStudy(*study))
 	}
 
 	return nil
