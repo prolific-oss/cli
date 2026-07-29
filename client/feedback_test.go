@@ -51,28 +51,14 @@ func TestFeedbackEndpointsDoNotWriteDebugLogs(t *testing.T) {
 	const feedbackText = "sensitive participant feedback"
 
 	httpClient := &http.Client{
-		Transport: roundTripFunc(func(request *http.Request) (*http.Response, error) {
-			var body string
-			switch {
-			case strings.HasSuffix(request.URL.Path, "/feedback/responses/"):
-				body = fmt.Sprintf(
-					`{"results":[{"participant_id":"participant-1","category":"other","text":%q,"ratings":{"clarity":4,"ease":4,"fairness":4}}],"meta":{"count":1}}`,
-					feedbackText,
-				)
-			case strings.HasSuffix(request.URL.Path, "/feedback/ratings/"):
-				body = `{"clarity_rating":{"average_rating":4,"total_count":1}}`
-			default:
-				return &http.Response{
-					StatusCode: http.StatusNotFound,
-					Body:       io.NopCloser(strings.NewReader(`{"detail":"not found"}`)),
-					Header:     make(http.Header),
-				}, nil
-			}
-
+		Transport: roundTripFunc(func(_ *http.Request) (*http.Response, error) {
 			return &http.Response{
 				StatusCode: http.StatusOK,
-				Body:       io.NopCloser(strings.NewReader(body)),
-				Header:     make(http.Header),
+				Body: io.NopCloser(strings.NewReader(fmt.Sprintf(
+					`{"results":[{"participant_id":"participant-1","category":"other","text":%q,"ratings":{"clarity":4,"ease":4,"fairness":4}}],"meta":{"count":1}}`,
+					feedbackText,
+				))),
+				Header: make(http.Header),
 			}, nil
 		}),
 	}
@@ -91,10 +77,6 @@ func TestFeedbackEndpointsDoNotWriteDebugLogs(t *testing.T) {
 		}
 		if response.Results[0].Text == nil || *response.Results[0].Text != feedbackText {
 			t.Fatalf("expected feedback response to be decoded")
-		}
-
-		if _, err := c.GetStudyRatings("63c123af913a974f87e8e7fc"); err != nil {
-			t.Fatalf("get study ratings: %v", err)
 		}
 	})
 

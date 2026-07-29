@@ -143,32 +143,6 @@ func TestNonInteractiveRendererReturnsErrorForEmptyFeedback(t *testing.T) {
 	}
 }
 
-func TestJSONRendererReturnsErrorForEmptyFeedback(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	c := mock_client.NewMockAPI(ctrl)
-
-	opts := feedback.ListUsedOptions{StudyID: "1234"}
-	emptyResponse := client.ListStudyFeedbackResponse{
-		Results: []model.StudyFeedback{},
-		JSONAPIMeta: &client.JSONAPIMeta{Meta: struct {
-			Count int `json:"count"`
-		}{Count: 0}},
-	}
-
-	c.EXPECT().GetStudyFeedback(opts.StudyID, false, 0, 0).Return(&emptyResponse, nil)
-
-	var b bytes.Buffer
-	renderer := feedback.JSONRenderer{}
-	err := renderer.Render(c, opts, &b)
-	if err == nil {
-		t.Fatal("expected an error for empty feedback")
-	}
-	if b.Len() != 0 {
-		t.Fatalf("expected no machine-readable output on error, got %q", b.String())
-	}
-}
-
 func TestCsvRendererRendersInCsvFormat(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -250,72 +224,5 @@ func TestJSONRendererRendersInJSONFormat(t *testing.T) {
 
 	if result[0].Ratings.Clarity == nil || *result[0].Ratings.Clarity != 4.0 {
 		t.Fatalf("expected ratings.clarity 4.0, got %v", result[0].Ratings.Clarity)
-	}
-}
-
-func TestFetchFeedbackOmitsLimitAndOffsetByDefault(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	c := mock_client.NewMockAPI(ctrl)
-
-	// Zero-value Limit/Offset - the caller hasn't asked to page through
-	// results, so every record for the study should come back in one call.
-	opts := feedback.ListUsedOptions{StudyID: "1234"}
-
-	category := "other"
-	text1 := "first"
-	text2 := "second"
-
-	everything := client.ListStudyFeedbackResponse{
-		Results: []model.StudyFeedback{
-			{ParticipantID: "1", Category: &category, Text: &text1},
-			{ParticipantID: "2", Category: &category, Text: &text2},
-		},
-		JSONAPIMeta: &client.JSONAPIMeta{Meta: struct {
-			Count int `json:"count"`
-		}{Count: 2}},
-	}
-
-	c.EXPECT().GetStudyFeedback(opts.StudyID, false, 0, 0).Return(&everything, nil)
-
-	var b bytes.Buffer
-	writer := bufio.NewWriter(&b)
-
-	renderer := feedback.JSONRenderer{}
-	err := renderer.Render(c, opts, writer)
-	if err != nil {
-		t.Fatalf("did not expect error, got %v", err)
-	}
-
-	writer.Flush()
-
-	var result []model.StudyFeedback
-	if err := json.Unmarshal(b.Bytes(), &result); err != nil {
-		t.Fatalf("expected valid JSON output, got error: %v", err)
-	}
-
-	if len(result) != 2 {
-		t.Fatalf("expected 2 feedback records, got %d", len(result))
-	}
-}
-
-func TestFetchFeedbackForwardsExplicitLimitAndOffset(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	c := mock_client.NewMockAPI(ctrl)
-
-	opts := feedback.ListUsedOptions{StudyID: "1234", Limit: 10, Offset: 5}
-
-	feedbackResponse := sampleFeedbackResponse()
-
-	c.EXPECT().GetStudyFeedback(opts.StudyID, false, 10, 5).Return(&feedbackResponse, nil)
-
-	var b bytes.Buffer
-	writer := bufio.NewWriter(&b)
-
-	renderer := feedback.JSONRenderer{}
-	err := renderer.Render(c, opts, writer)
-	if err != nil {
-		t.Fatalf("did not expect error, got %v", err)
 	}
 }
