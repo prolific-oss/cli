@@ -4,22 +4,20 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"regexp"
 
 	"github.com/prolific-oss/cli/client"
-	"github.com/prolific-oss/cli/ui/feedback"
+	"github.com/prolific-oss/cli/cmd/shared"
+	"github.com/prolific-oss/cli/model"
+	"github.com/prolific-oss/cli/ui"
+	feedbackui "github.com/prolific-oss/cli/ui/feedback"
 	"github.com/spf13/cobra"
 )
-
-// studyIDPattern matches the study ID format accepted by the feedback API.
-var studyIDPattern = regexp.MustCompile(`^[a-f\d]{24}$`)
 
 // ListOptions is the options for the listing study feedback command.
 type ListOptions struct {
 	Args               []string
 	Study              string
-	Json               bool
-	Csv                bool
+	Output             shared.OutputOptions
 	HasWrittenFeedback bool
 	Limit              int
 	Offset             int
@@ -39,11 +37,10 @@ Retrieves permissioned, record-level participant feedback for a study,
 including written feedback and clarity, ease and fairness ratings, through
 the same permissioned server-side path used by the Feedback dashboard.
 
-By default, every feedback record for the study is returned in one response.
-Pass --limit (and optionally --offset) to page through results instead.`,
+By default, up to 200 feedback records are returned. Pass --limit 0 to fetch
+every record, or use --limit and --offset to page through results.`,
 		Example: `
-You can list all feedback for a given study, along with the study's aggregated
-ratings
+You can list all feedback for a given study
 $ prolific feedback list -s 63c123af913a974f87e8e7fc
 
 You can filter to only feedback that includes written text
@@ -64,33 +61,51 @@ $ prolific feedback list -s 63c123af913a974f87e8e7fc -c`,
 				return errors.New("please provide a study ID")
 			}
 
-			if !studyIDPattern.MatchString(opts.Study) {
-				return fmt.Errorf("invalid study ID %q: must be a 24-character hex string", opts.Study)
-			}
-
 			if opts.Limit < 0 {
 				return errors.New("limit must be greater than or equal to 0")
 			}
 
-			renderer := feedback.ListRenderer{}
-
-			if opts.Json {
-				renderer.SetStrategy(&feedback.JSONRenderer{})
-			} else if opts.Csv {
-				renderer.SetStrategy(&feedback.CsvRenderer{})
-			} else {
-				renderer.SetStrategy(&feedback.NonInteractiveRenderer{})
+			response, err := c.GetStudyFeedback(
+				opts.Study,
+				opts.HasWrittenFeedback,
+				opts.Limit,
+				opts.Offset,
+			)
+			if err != nil {
+				return fmt.Errorf("error: %s", err)
 			}
 
-			err := renderer.Render(c, feedback.ListUsedOptions{
-				StudyID:            opts.Study,
-				HasWrittenFeedback: opts.HasWrittenFeedback,
-				Limit:              opts.Limit,
-				Offset:             opts.Offset,
-			}, w)
+			records := response.Results
+			if records == nil {
+				records = []model.StudyFeedback{}
+			}
+			total := len(records)
+			if response.JSONAPIMeta != nil {
+				total = response.Meta.Count
+			}
 
-			if err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+			switch shared.ResolveFormat(opts.Output) {
+			case "json":
+				renderer := ui.JSONRenderer[model.StudyFeedback]{}
+				if err := renderer.Render(records, w); err != nil {
+					return fmt.Errorf("error: %s", err)
+				}
+			case "csv":
+				renderer := ui.CsvRenderer[feedbackui.ListItem]{}
+				if err := renderer.Render(feedbackui.NewListItems(records), feedbackui.ListFields, w); err != nil {
+					return fmt.Errorf("error: %s", err)
+				}
+			case "table":
+				renderer := ui.TableRenderer[feedbackui.ListItem]{}
+				if err := renderer.Render(feedbackui.NewListItems(records), feedbackui.ListFields, w); err != nil {
+					return fmt.Errorf("error: %s", err)
+				}
+				fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(records), total))
+			default:
+				renderer := feedbackui.InteractiveRenderer{}
+				if err := renderer.Render(records, w); err != nil {
+					return fmt.Errorf("error: %s", err)
+				}
 			}
 
 			return nil
@@ -100,10 +115,9 @@ $ prolific feedback list -s 63c123af913a974f87e8e7fc -c`,
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.Study, "study", "s", "", "The study you want feedback for (required).")
 	flags.BoolVar(&opts.HasWrittenFeedback, "has-written-feedback", false, "Only return feedback that includes written text.")
-	flags.BoolVar(&opts.Json, "json", false, "Render the results in JSON format for machine-readable output.")
-	flags.BoolVarP(&opts.Csv, "csv", "c", false, "Render the results in a CSV format.")
-	flags.IntVarP(&opts.Limit, "limit", "l", 0, "Limit the number of feedback records returned per page. Omit to fetch every record for the study.")
+	flags.IntVarP(&opts.Limit, "limit", "l", client.DefaultRecordLimit, "Limit the number of feedback records returned per page. Use 0 to fetch every record.")
 	flags.IntVarP(&opts.Offset, "offset", "o", client.DefaultRecordOffset, "The number of feedback records to offset.")
+	shared.AddOutputFlags(cmd, &opts.Output)
 
 	return cmd
 }
