@@ -1,7 +1,6 @@
 package feedback
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -29,7 +28,10 @@ func NewRatingsCommand(c client.API, w io.Writer) *cobra.Command {
 		Long: `View aggregate participant ratings for a study
 
 Shows the average clarity, ease and fairness ratings and the number of
-responses contributing to each rating.`,
+responses contributing to each rating.
+
+JSON, CSV and table output all render the same rating rows, so the rating
+names and response counts match whichever format you pick.`,
 		Example: `
 View aggregate ratings for a study
 $ prolific feedback ratings -s 63c123af913a974f87e8e7fc
@@ -51,9 +53,8 @@ $ prolific feedback ratings -s 63c123af913a974f87e8e7fc --csv`,
 
 			switch shared.ResolveFormat(opts.Output) {
 			case "json":
-				encoder := json.NewEncoder(w)
-				encoder.SetIndent("", "  ")
-				if err := encoder.Encode(ratings); err != nil {
+				renderer := ui.JSONRenderer[feedbackui.RatingSummary]{}
+				if err := renderer.Render(feedbackui.NewRatingSummaries(*ratings), w); err != nil {
 					return fmt.Errorf("error: %s", err)
 				}
 			case "csv":

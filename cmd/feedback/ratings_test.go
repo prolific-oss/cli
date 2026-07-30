@@ -52,7 +52,7 @@ func TestNewRatingsCommandOutputFormats(t *testing.T) {
 		{
 			name:     "JSON",
 			flag:     "json",
-			expected: []string{`"clarity_rating"`, `"average_rating": 4.5`, `"total_count": 2`},
+			expected: []string{`"rating": "clarity"`, `"average_rating": 4.5`, `"total_count": 2`, `"rating": "ease"`, `"rating": "fairness"`},
 		},
 		{
 			name:     "CSV",
