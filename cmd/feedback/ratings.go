@@ -1,7 +1,6 @@
 package feedback
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -51,9 +50,8 @@ $ prolific feedback ratings -s 63c123af913a974f87e8e7fc --csv`,
 
 			switch shared.ResolveFormat(opts.Output) {
 			case "json":
-				encoder := json.NewEncoder(w)
-				encoder.SetIndent("", "  ")
-				if err := encoder.Encode(ratings); err != nil {
+				renderer := ui.JSONRenderer[feedbackui.RatingRow]{}
+				if err := renderer.Render(feedbackui.NewRatingRows(*ratings), w); err != nil {
 					return fmt.Errorf("error: %s", err)
 				}
 			case "csv":

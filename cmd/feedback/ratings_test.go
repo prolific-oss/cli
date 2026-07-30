@@ -52,7 +52,7 @@ func TestNewRatingsCommandOutputFormats(t *testing.T) {
 		{
 			name:     "JSON",
 			flag:     "json",
-			expected: []string{`"clarity_rating"`, `"average_rating": 4.5`, `"total_count": 2`},
+			expected: []string{`"rating": "clarity"`, `"rating": "ease"`, `"rating": "fairness"`, `"average": 4.5`, `"responses": 2`},
 		},
 		{
 			name:     "CSV",
@@ -88,6 +88,9 @@ func TestNewRatingsCommandOutputFormats(t *testing.T) {
 				if !strings.Contains(actual, expected) {
 					t.Fatalf("expected output to contain %q, got: %s", expected, actual)
 				}
+			}
+			if tt.flag == "json" && (strings.Contains(actual, "clarity_rating") || strings.Contains(actual, "difficulty_rating") || strings.Contains(actual, "fairness_rating")) {
+				t.Fatalf("expected JSON output to use display labels, not raw API rating IDs, got: %s", actual)
 			}
 		})
 	}

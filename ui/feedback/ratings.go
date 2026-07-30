@@ -16,6 +16,30 @@ var studyRatingIDs = []studyRatingID{
 	{ID: "fairness_rating", Label: "fairness"},
 }
 
+// RatingRow is the presentation model for one aggregate study rating in JSON
+// output. Average is kept as *float64 so JSON renders null/a number instead
+// of the "-" placeholder the table/CSV formats use.
+type RatingRow struct {
+	Rating    string   `json:"rating"`
+	Average   *float64 `json:"average"`
+	Responses int      `json:"responses"`
+}
+
+// NewRatingRows converts the ratings response map into deterministic rows
+// for JSON output, using the same rating IDs/labels as NewRatingItems.
+func NewRatingRows(ratings client.StudyRatingsResponse) []RatingRow {
+	rows := make([]RatingRow, 0, len(studyRatingIDs))
+	for _, rating := range studyRatingIDs {
+		summary := ratings[rating.ID]
+		rows = append(rows, RatingRow{
+			Rating:    rating.Label,
+			Average:   summary.AverageRating,
+			Responses: summary.TotalCount,
+		})
+	}
+	return rows
+}
+
 // RatingItem is the presentation model for one aggregate study rating.
 type RatingItem struct {
 	Rating    string
