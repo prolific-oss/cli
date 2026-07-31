@@ -292,9 +292,8 @@ func (c *Client) GetMe() (*MeResponse, error) {
 	var response MeResponse
 
 	url := "/api/v1/users/me"
-	_, err := c.ExecuteBuilder().Get(url, &response)
-	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	if _, err := c.ExecuteBuilder().Get(url, &response); err != nil {
+		return nil, err
 	}
 
 	return &response, nil
@@ -636,9 +635,8 @@ func (c *Client) GetHookEventTypes() (*ListHookEventTypesResponse, error) {
 	var response ListHookEventTypesResponse
 
 	url := "/api/v1/hooks/event-types/"
-	_, err := c.ExecuteBuilder().Get(url, &response)
-	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	if _, err := c.ExecuteBuilder().Get(url, &response); err != nil {
+		return nil, err
 	}
 
 	return &response, nil
@@ -971,9 +969,8 @@ func (c *Client) GetFilters() (*ListFiltersResponse, error) {
 	var response ListFiltersResponse
 
 	url := "/api/v1/filters/"
-	_, err := c.ExecuteBuilder().Get(url, &response)
-	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	if _, err := c.ExecuteBuilder().Get(url, &response); err != nil {
+		return nil, err
 	}
 
 	return &response, nil
