@@ -11,9 +11,7 @@
 
 ![GitHub Badge](https://github.com/prolific-oss/cli/actions/workflows/go.yml/badge.svg)
 
-CLI application for getting information out of [Prolific](https://www.prolific.com) about your research studies.
-
-This CLI is an **experimental, open, proof of concept** project from engineers at Prolific. As such, there *may* be discrepancies with the Prolific API.
+The CLI for all [Prolific](https://www.prolific.com) interactions — built for humans and AI agents.
 
 ```text
 CLI application for retrieving data from the Prolific Platform
@@ -190,11 +188,11 @@ Or provide arguments directly (ticket, resource, command, command-type):
 
 **Argument order:** `[ticket] [resource] [command] [command-type]`
 
-| Argument | Description | Examples |
-|----------|-------------|----------|
-| `ticket` | Jira ticket number | DCP-2190 |
-| `resource` | Resource name | collection, study, workspace |
-| `command` | Command name | list, get, create, publish |
+| Argument       | Description             | Examples                           |
+| -------------- | ----------------------- | ---------------------------------- |
+| `ticket`       | Jira ticket number      | DCP-2190                           |
+| `resource`     | Resource name           | collection, study, workspace       |
+| `command`      | Command name            | list, get, create, publish         |
 | `command-type` | Command type (optional) | LIST, VIEW, CREATE, UPDATE, ACTION |
 
 If any arguments are omitted, Claude will ask for them interactively.
