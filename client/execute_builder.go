@@ -20,12 +20,22 @@ func (c *Client) ExecuteBuilder() *ExecuteBuilder {
 }
 
 func (b *ExecuteBuilder) Get(url string, response any) (*http.Response, error) {
-	return b.GetRequest(url).Status(200).Decode(response).Execute()
+	return b.GetRequest(url).Status(http.StatusOK).Decode(response).Execute()
 }
 
 func (b *ExecuteBuilder) GetRequest(url string) *ExecuteBuilder {
-	b.method = http.MethodGet
+	return b.newRequest(http.MethodGet, url)
+}
+
+// newRequest clears any state carried over from a previous request, so a
+// builder that is held and reused cannot send an earlier request's body or
+// accept an earlier request's statuses.
+func (b *ExecuteBuilder) newRequest(method, url string) *ExecuteBuilder {
+	b.method = method
 	b.url = url
+	b.body = nil
+	b.response = nil
+	b.expectedStatuses = nil
 	return b
 }
 
