@@ -83,6 +83,11 @@ type ListFiltersResponse struct {
 	*JSONAPIMeta
 }
 
+// RewardRecommendationsResponse is the response for the reward
+// recommendations endpoint. The API guarantees the first item is the most
+// recent set of rates.
+type RewardRecommendationsResponse []model.RewardRecommendation
+
 // TransitionSubmissionResponse is the response for transitioning a submission.
 type TransitionSubmissionResponse struct {
 	ID          string  `json:"id"`

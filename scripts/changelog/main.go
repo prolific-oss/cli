@@ -355,6 +355,7 @@ var areaMapping = []struct {
 	{"cmd/filters/", "Filters"},
 	{"cmd/filtersets/", "Filters"},
 	{"cmd/requirements/", "Requirements"},
+	{"cmd/rewardrecommendations/", "Reward Recommendations"},
 	{"cmd/user/", "User"},
 	{"model/", "Core"},
 	{"client/", "Core"},
@@ -446,6 +447,7 @@ var areaOrder = []string{
 	"Hooks",
 	"Filters",
 	"Requirements",
+	"Reward Recommendations",
 	"User",
 	"Core",
 }

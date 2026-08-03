@@ -90,6 +90,8 @@ type API interface {
 
 	GetFilters() (*ListFiltersResponse, error)
 
+	GetRewardRecommendations(workspaceID, currency string, screenerIDs []string) (*RewardRecommendationsResponse, error)
+
 	GetFilterSets(workspaceID string, limit, offset int) (*ListFilterSetsResponse, error)
 	GetFilterSet(ID string) (*model.FilterSet, error)
 	CreateFilterSet(filterSet model.CreateFilterSet) (*CreateFilterSetResponse, error)
@@ -971,6 +973,28 @@ func (c *Client) GetFilters() (*ListFiltersResponse, error) {
 	url := "/api/v1/filters/"
 	if _, err := c.ExecuteBuilder().Get(url, &response); err != nil {
 		return nil, err
+	}
+
+	return &response, nil
+}
+
+// GetRewardRecommendations will return Prolific's recommended reward-per-hour
+// rates for a workspace and currency, optionally scoped to a set of screener
+// filter IDs.
+func (c *Client) GetRewardRecommendations(workspaceID, currency string, screenerIDs []string) (*RewardRecommendationsResponse, error) {
+	var response RewardRecommendationsResponse
+
+	query := url.Values{}
+	query.Set("workspace_id", workspaceID)
+	query.Set("currency", currency)
+	if len(screenerIDs) > 0 {
+		query.Set("screener_ids", strings.Join(screenerIDs, ","))
+	}
+
+	requestURL := "/api/v1/reward-recommendations/?" + query.Encode()
+	_, err := c.Execute(http.MethodGet, requestURL, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", requestURL, err)
 	}
 
 	return &response, nil

@@ -474,6 +474,7 @@ func TestAreaForFiles(t *testing.T) {
 		{"majority wins", []string{"cmd/study/list.go", "cmd/study/get.go", "cmd/workspace/list.go"}, "Study"},
 		{"model and client map to Core", []string{"model/study.go", "client/client.go"}, "Core"},
 		{"filters and filtersets both map to Filters", []string{"cmd/filters/list.go", "cmd/filtersets/list.go"}, "Filters"},
+		{"reward recommendations files", []string{"cmd/rewardrecommendations/reward_recommendations.go"}, "Reward Recommendations"},
 		{"unrecognised files return empty", []string{"README.md", "Makefile"}, ""},
 		{"mixed unrecognised and user-facing keeps user-facing", []string{"scripts/foo.sh", "cmd/study/list.go"}, "Study"},
 		{"empty file list returns empty", []string{}, ""},
