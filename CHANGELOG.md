@@ -4,6 +4,10 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+### Reward Recommendations
+
+- Add reward-recommendations command
+
 ## 1.1.0
 
 ### AI Task Builder
