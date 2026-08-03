@@ -77,6 +77,11 @@ type RemoveParticipantGroupMembersPayload struct {
 	ParticipantIDs []string `json:"participant_ids"`
 }
 
+// AddParticipantGroupMembersPayload represents the JSON payload for adding participants to a group.
+type AddParticipantGroupMembersPayload struct {
+	ParticipantIDs []string `json:"participant_ids"`
+}
+
 // DatasetSchemaField describes a single field in a dataset schema.
 type DatasetSchemaField struct {
 	Type  string `json:"type"`

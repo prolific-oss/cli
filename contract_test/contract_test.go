@@ -203,12 +203,12 @@ var operations = []operation{
 	{operationID: "update-task-builder-dataset", skip: "OUTOFSCOPE: no CLI command for updating a dataset"},
 	{operationID: "append-dataset-datapoints", skip: "OUTOFSCOPE: no CLI command for appending datapoints to a dataset"},
 	{operationID: "get-dataset-upload-url", call: func(c *client.Client) { c.GetAITaskBuilderDatasetUploadURL("ds-id", "data.jsonl") }},
-	{operationID: "get-task-builder-dataset", skip: "OUTOFSCOPE: no CLI command for retrieving a specific dataset by ID"},
+	{operationID: "get-task-builder-dataset", call: func(c *client.Client) { c.GetAITaskBuilderDataset("ds-id") }},
 	{operationID: "get-task-builder-dataset-status", call: func(c *client.Client) { c.GetAITaskBuilderDatasetStatus("ds-id") }},
 	{operationID: "get-dataset-import-status", call: func(c *client.Client) {
 		c.GetAITaskBuilderDatasetImportStatus("ds-id", "import-id")
 	}},
-	{operationID: "get-schema-migration-status", skip: "OUTOFSCOPE: no CLI command for schema migration status"},
+	{operationID: "get-schema-migration-status", skip: "OUTOFSCOPE: no CLI command for dataset schema migration status"},
 
 	// AI Task Builder — Instructions
 	{operationID: "get-task-builder-instructions", skip: "OUTOFSCOPE: no CLI command for getting task builder instructions"},
@@ -280,6 +280,7 @@ var operations = []operation{
 		})
 	}},
 	{operationID: "get-project-studies", call: func(c *client.Client) { c.GetStudies("", "proj-id") }},
+	{operationID: "delete-project-study", skip: "OUTOFSCOPE: no CLI command for deleting a study"},
 	{operationID: "get-study", call: func(c *client.Client) { c.GetStudy("study-id") }},
 	{operationID: "delete-study", skip: "OUTOFSCOPE: no CLI command for deleting a study"},
 	{operationID: "update-study", call: func(c *client.Client) {

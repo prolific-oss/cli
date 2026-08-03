@@ -15,6 +15,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/prolific-oss/cli/agentenv"
 	"github.com/prolific-oss/cli/config"
@@ -122,11 +123,13 @@ type API interface {
 	CreateAITaskBuilderDataset(workspaceID string, payload CreateAITaskBuilderDatasetPayload) (*CreateAITaskBuilderDatasetResponse, error)
 	CreateAITaskBuilderCollection(payload model.CreateAITaskBuilderCollection) (*CreateAITaskBuilderCollectionResponse, error)
 	GetAITaskBuilderBatch(batchID string) (*GetAITaskBuilderBatchResponse, error)
+	GetAITaskBuilderDataset(datasetID string) (*GetAITaskBuilderDatasetResponse, error)
 	UpdateAITaskBuilderBatch(params UpdateBatchParams) (*UpdateAITaskBuilderBatchResponse, error)
 	GetAITaskBuilderBatchStatus(batchID string) (*GetAITaskBuilderBatchStatusResponse, error)
 	GetAITaskBuilderBatches(workspaceID string) (*GetAITaskBuilderBatchesResponse, error)
 	GetAITaskBuilderResponses(batchID string) (*GetAITaskBuilderResponsesResponse, error)
 	GetAITaskBuilderTasks(batchID string) (*GetAITaskBuilderTasksResponse, error)
+	GetAITaskBuilderTaskGroups(batchID string) (*GetAITaskBuilderTaskGroupsResponse, error)
 	InitiateBatchExport(batchID string) (*BatchExportResponse, error)
 	GetBatchExportStatus(batchID, exportID string) (*BatchExportResponse, error)
 	SyncAITaskBuilderBatch(batchID string) (*AITaskBuilderBatchSyncResponse, error)
@@ -154,6 +157,35 @@ type Client struct {
 	BaseURL string
 	Token   string
 	Debug   bool
+	Skill   string
+}
+
+// cliVersionPrefix is computed once since the CLI version can't change during
+// the process lifetime, avoiding a repeated debug.ReadBuildInfo() call on
+// every request in dev builds.
+var cliVersionPrefix = sync.OnceValue(func() string {
+	return "prolific-oss/cli/" + version.Get()
+})
+
+// ComposeUserAgent builds the User-Agent string sent with every outgoing
+// request: the CLI's own identity, followed by the detected driving AI
+// agent (if any), followed by the invoking skill/workflow (if any and
+// valid). Each token is independent and omitted when empty or invalid.
+func ComposeUserAgent(skill string) string {
+	ua := cliVersionPrefix()
+	if agent := agentenv.Detected(); agent != "" {
+		ua += " agent/" + agent
+	}
+	if skill != "" && agentenv.ValidHeaderValue(skill) {
+		ua += " skill/" + skill
+	}
+	return ua
+}
+
+// userAgent returns the composed User-Agent string for this client, folding
+// in the configured Skill.
+func (c *Client) userAgent() string {
+	return ComposeUserAgent(c.Skill)
 }
 
 // New will return a new Prolific client.
@@ -192,13 +224,8 @@ func (c *Client) Execute(method, url string, body any, response any) (*http.Resp
 		return nil, err
 	}
 
-	userAgent := "prolific-oss/cli/" + version.Get()
-	if agent := agentenv.Detected(); agent != "" {
-		userAgent += " agent/" + agent
-	}
-
 	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("User-Agent", userAgent)
+	request.Header.Set("User-Agent", c.userAgent())
 	request.Header.Set("Authorization", fmt.Sprintf("Token %s", c.Token))
 
 	if c.Debug {
@@ -267,9 +294,8 @@ func (c *Client) GetMe() (*MeResponse, error) {
 	var response MeResponse
 
 	url := "/api/v1/users/me"
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
-	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	if _, err := c.ExecuteBuilder().Get(url, &response); err != nil {
+		return nil, err
 	}
 
 	return &response, nil
@@ -611,9 +637,8 @@ func (c *Client) GetHookEventTypes() (*ListHookEventTypesResponse, error) {
 	var response ListHookEventTypesResponse
 
 	url := "/api/v1/hooks/event-types/"
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
-	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	if _, err := c.ExecuteBuilder().Get(url, &response); err != nil {
+		return nil, err
 	}
 
 	return &response, nil
@@ -902,6 +927,24 @@ func (c *Client) RemoveParticipantGroupMembers(groupID string, participantIDs []
 	return &response, nil
 }
 
+func (c *Client) AddParticipantGroupMembers(groupID string, participantIDs []string) (*ViewParticipantGroupResponse, error) {
+	payload := AddParticipantGroupMembersPayload{
+		ParticipantIDs: participantIDs,
+	}
+	var response ViewParticipantGroupResponse
+
+	url := fmt.Sprintf("/api/v1/participant-groups/%s/participants/", groupID)
+	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to add participants to group %s: %s", groupID, err)
+	}
+	if httpResponse.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unable to add participants to group %s, status code: %v", groupID, httpResponse.StatusCode)
+	}
+
+	return &response, nil
+}
+
 // CreateTestParticipant creates a test participant for the researcher with the given email.
 func (c *Client) CreateTestParticipant(email string) (*CreateTestParticipantResponse, error) {
 	var response CreateTestParticipantResponse
@@ -928,9 +971,8 @@ func (c *Client) GetFilters() (*ListFiltersResponse, error) {
 	var response ListFiltersResponse
 
 	url := "/api/v1/filters/"
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
-	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	if _, err := c.ExecuteBuilder().Get(url, &response); err != nil {
+		return nil, err
 	}
 
 	return &response, nil
@@ -1415,6 +1457,18 @@ func (c *Client) GetAITaskBuilderTasks(batchID string) (*GetAITaskBuilderTasksRe
 	return &response, nil
 }
 
+// GetAITaskBuilderTaskGroups will return the task group IDs for an AI Task Builder batch.
+func (c *Client) GetAITaskBuilderTaskGroups(batchID string) (*GetAITaskBuilderTaskGroupsResponse, error) {
+	var response GetAITaskBuilderTaskGroupsResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/task-groups", batchID)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+	return &response, nil
+}
+
 // InitiateBatchExport starts a batch export job via POST.
 // Returns "generating" + ExportID (202) if a new job was enqueued,
 // or "complete" + URL immediately (200) if a valid export already exists.
@@ -1491,6 +1545,18 @@ func (c *Client) GetAITaskBuilderBatchSyncStatus(batchID, syncID string) (*AITas
 		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
 	}
 
+	return &response, nil
+}
+
+// GetAITaskBuilderDataset will return an AI Task Builder dataset by ID.
+func (c *Client) GetAITaskBuilderDataset(datasetID string) (*GetAITaskBuilderDatasetResponse, error) {
+	var response GetAITaskBuilderDatasetResponse
+
+	url := fmt.Sprintf("/api/v1/data-collection/datasets/%s", datasetID)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
 	return &response, nil
 }
 

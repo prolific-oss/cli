@@ -155,7 +155,7 @@ func TestNewBatchSetupCommandMissingRequiredFlags(t *testing.T) {
 		},
 		{
 			name:        "missing dataset-id flag",
-			args:        []string{"--batch-id", "01954894-65b3-779e-aaf6-348698e23634", "--tasks-per-group", "3"},
+			args:        []string{"--batch-id", testBatchUUID, "--tasks-per-group", "3"},
 			expectedErr: `required flag(s) "dataset-id" not set`,
 		},
 		{

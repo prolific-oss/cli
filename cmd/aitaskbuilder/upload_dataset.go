@@ -1,11 +1,15 @@
 package aitaskbuilder
 
 import (
+	"bufio"
 	"context"
+	"encoding/csv"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"slices"
@@ -26,6 +30,23 @@ const (
 
 // DatasetUploadPollSleep is the sleep function used between dataset import status polls.
 var DatasetUploadPollSleep func(time.Duration) = time.Sleep
+
+var validAudioURLFileExtensions = map[string]bool{
+	".aac": true,
+	".m4a": true,
+	".mp3": true,
+	".wav": true,
+}
+
+const supportedAudioURLFileExtensions = ".aac, .m4a, .mp3, .wav"
+
+var validVideoURLFileExtensions = map[string]bool{
+	".mp4":  true,
+	".webm": true,
+	".mov":  true,
+}
+
+const supportedVideoURLFileExtensions = ".mp4, .webm, .mov"
 
 // DatasetUploadOptions are the options for uploading to an AI Task Builder dataset.
 type DatasetUploadOptions struct {
@@ -107,6 +128,15 @@ func uploadDatasetFile(client client.API, opts DatasetUploadOptions, w io.Writer
 
 	uploadRequest, err := prepareDatasetUploadRequest(opts.FilePath, opts.Format)
 	if err != nil {
+		return err
+	}
+
+	dataset, err := client.GetAITaskBuilderDataset(opts.DatasetID)
+	if err != nil {
+		return fmt.Errorf("failed to get dataset: %w", err)
+	}
+
+	if err := validateMediaURLFields(opts.FilePath, uploadRequest.Format, dataset.Schema); err != nil {
 		return err
 	}
 
@@ -255,6 +285,197 @@ func uploadFileToPresignedURL(filePath, uploadURL, method, contentType string) e
 	}
 
 	return nil
+}
+
+// mediaURLFieldConfig describes how to validate the values of a single media URL field.
+type mediaURLFieldConfig struct {
+	mediaLabel          string
+	extensions          map[string]bool
+	supportedExtensions string
+}
+
+// mediaURLFieldConfigsByType maps a dataset schema field type to its media URL validation config.
+var mediaURLFieldConfigsByType = map[string]mediaURLFieldConfig{
+	"audio_url": {mediaLabel: "audio", extensions: validAudioURLFileExtensions, supportedExtensions: supportedAudioURLFileExtensions},
+	"video_url": {mediaLabel: "video", extensions: validVideoURLFileExtensions, supportedExtensions: supportedVideoURLFileExtensions},
+}
+
+// validateMediaURLFields validates all media URL fields (audio and video) in a single pass over the upload file.
+func validateMediaURLFields(filePath string, format model.DatasetImportFormat, schema *client.DatasetSchema) error {
+	if schema == nil {
+		return nil
+	}
+
+	mediaFieldConfigs := make(map[string]mediaURLFieldConfig)
+	for fieldName, field := range schema.Fields {
+		if config, ok := mediaURLFieldConfigsByType[field.Type]; ok {
+			mediaFieldConfigs[fieldName] = config
+		}
+	}
+
+	if len(mediaFieldConfigs) == 0 {
+		return nil
+	}
+
+	switch format {
+	case model.DatasetImportFormatCSV:
+		return validateMediaURLFieldsInCSV(filePath, mediaFieldConfigs)
+	case model.DatasetImportFormatJSONL:
+		return validateMediaURLFieldsInJSONL(filePath, mediaFieldConfigs)
+	default:
+		return nil
+	}
+}
+
+func validateMediaURLFieldsInCSV(filePath string, mediaFieldConfigs map[string]mediaURLFieldConfig) error {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to open file %s: %w", filePath, err)
+	}
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+	headers, err := reader.Read()
+	if err != nil {
+		return fmt.Errorf("failed to read CSV header from %s: %w", filePath, err)
+	}
+
+	mediaColumnIndexes := make(map[int]string)
+	for idx, header := range headers {
+		fieldName := strings.TrimSpace(header)
+		if _, ok := mediaFieldConfigs[fieldName]; ok {
+			mediaColumnIndexes[idx] = fieldName
+		}
+	}
+
+	if len(mediaColumnIndexes) == 0 {
+		return nil
+	}
+
+	recordIndex := 1
+	for {
+		record, err := reader.Read()
+		if errors.Is(err, io.EOF) {
+			return nil
+		}
+		if err != nil {
+			return fmt.Errorf("failed to read CSV record %d from %s: %w", recordIndex, filePath, err)
+		}
+
+		for idx, fieldName := range mediaColumnIndexes {
+			if idx >= len(record) {
+				continue
+			}
+
+			if err := validateMediaURLValue(recordIndex, fieldName, record[idx], mediaFieldConfigs[fieldName]); err != nil {
+				return err
+			}
+		}
+
+		recordIndex++
+	}
+}
+
+func ValidateAudioURLFieldsInJSONL(filePath string, audioFields map[string]struct{}) error {
+	return validateMediaURLFieldsInJSONL(filePath, mediaFieldConfigMap(audioFields, mediaURLFieldConfigsByType["audio_url"]))
+}
+
+func ValidateVideoURLFieldsInJSONL(filePath string, videoFields map[string]struct{}) error {
+	return validateMediaURLFieldsInJSONL(filePath, mediaFieldConfigMap(videoFields, mediaURLFieldConfigsByType["video_url"]))
+}
+
+func mediaFieldConfigMap(fields map[string]struct{}, config mediaURLFieldConfig) map[string]mediaURLFieldConfig {
+	mediaFieldConfigs := make(map[string]mediaURLFieldConfig, len(fields))
+	for fieldName := range fields {
+		mediaFieldConfigs[fieldName] = config
+	}
+
+	return mediaFieldConfigs
+}
+
+func validateMediaURLFieldsInJSONL(filePath string, mediaFieldConfigs map[string]mediaURLFieldConfig) error {
+	file, err := os.Open(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to open file %s: %w", filePath, err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	scanner.Buffer(make([]byte, 0, 64*1024), 10*1024*1024)
+
+	recordIndex := 1
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" {
+			recordIndex++
+			continue
+		}
+
+		record := make(map[string]any)
+		if err := json.Unmarshal([]byte(line), &record); err != nil {
+			return fmt.Errorf("failed to parse JSONL record %d from %s: %w", recordIndex, filePath, err)
+		}
+
+		for fieldName, config := range mediaFieldConfigs {
+			value, ok := record[fieldName]
+			if !ok || value == nil {
+				continue
+			}
+
+			valueString, ok := value.(string)
+			if !ok {
+				return fmt.Errorf(
+					"record %d field %s: %s URL must be a string ending with one of %s",
+					recordIndex,
+					fieldName,
+					config.mediaLabel,
+					config.supportedExtensions,
+				)
+			}
+
+			if err := validateMediaURLValue(recordIndex, fieldName, valueString, config); err != nil {
+				return err
+			}
+		}
+
+		recordIndex++
+	}
+
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("failed to read JSONL file %s: %w", filePath, err)
+	}
+
+	return nil
+}
+
+func validateMediaURLValue(recordIndex int, fieldName, value string, config mediaURLFieldConfig) error {
+	trimmedValue := strings.TrimSpace(value)
+	if trimmedValue == "" {
+		return nil
+	}
+
+	if !hasSupportedURLExtension(trimmedValue, config.extensions) {
+		return fmt.Errorf(
+			"record %d field %s: %s URL %q must end with one of %s",
+			recordIndex,
+			fieldName,
+			config.mediaLabel,
+			trimmedValue,
+			config.supportedExtensions,
+		)
+	}
+
+	return nil
+}
+
+func hasSupportedURLExtension(value string, extensions map[string]bool) bool {
+	parsedURL, err := url.ParseRequestURI(value)
+	if err != nil || parsedURL.Scheme == "" || parsedURL.Host == "" {
+		return false
+	}
+
+	extension := strings.ToLower(filepath.Ext(parsedURL.Path))
+	return extensions[extension]
 }
 
 func waitForDatasetImport(

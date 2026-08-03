@@ -12,7 +12,7 @@ type agentSource struct {
 }
 
 var sources = []agentSource{
-	{"CLAUDE_CODE", "claude-code"},
+	{"CLAUDECODE", "claude-code"},
 	{"ANTIGRAVITY_AGENT", "antigravity"},
 	{"AI_AGENT", ""},
 	{"LLM_AGENT", ""},
@@ -32,7 +32,7 @@ func Detected() string {
 		if name == "" { // generic var: forward its value
 			name = val
 		}
-		if !validHeaderValue(name) {
+		if !ValidHeaderValue(name) {
 			continue
 		}
 		return name // first usable match wins
@@ -40,10 +40,11 @@ func Detected() string {
 	return ""
 }
 
-// validHeaderValue reports whether s is safe to embed as a single
-// space-separated User-Agent token: no control characters, and no
-// whitespace (which would split the token across multiple segments).
-func validHeaderValue(s string) bool {
+// ValidHeaderValue reports whether s is safe to embed as a single
+// space-separated User-Agent token: no ASCII control characters (0x00-0x1F),
+// DEL (0x7F), or the ASCII space character. Other Unicode whitespace is not
+// rejected but is not expected from the known env vars or --skill input.
+func ValidHeaderValue(s string) bool {
 	for i := 0; i < len(s); i++ {
 		b := s[i]
 		if b < 0x20 || b == 0x7f || b == ' ' {

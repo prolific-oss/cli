@@ -17,6 +17,7 @@ const (
 	ErrFilePathRequired               = "file path is required"
 	ErrInstructionInputRequired       = "either instructions file (-f) or JSON string (-j) must be provided"
 	ErrNameRequired                   = "name is required"
+	ErrNoTaskGroupsFound              = "no task groups found for batch"
 	ErrSchemaInvalidJSON              = "schema contains invalid JSON"
 	ErrSchemaStrictSetInBoth          = "cannot set strict in both --schema and --strict"
 	ErrStrictRequiresSchema           = "--strict requires --schema"
