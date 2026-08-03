@@ -46,6 +46,7 @@ const (
 	InstructionTypeMultipleChoiceWithFreeText InstructionType = "multiple_choice_with_free_text"
 	InstructionTypeFreeTextWithUnit           InstructionType = "free_text_with_unit"
 	InstructionTypeFileUpload                 InstructionType = "file_upload"
+	InstructionTypeStarRating                 InstructionType = "star_rating"
 
 	// Content block types (non-interactive - for context or guidance)
 	ContentBlockTypeRichText InstructionType = "rich_text"
@@ -93,7 +94,7 @@ type PageInstruction struct {
 	Type  InstructionType `json:"type" yaml:"type" mapstructure:"type"`
 	Order int             `json:"order" yaml:"order" mapstructure:"order"`
 
-	// Required for instruction types (free_text, multiple_choice, multiple_choice_with_free_text, free_text_with_unit, file_upload)
+	// Required for instruction types (free_text, multiple_choice, multiple_choice_with_free_text, free_text_with_unit, file_upload, star_rating)
 	Description string `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description"`
 
 	// Optional - for free_text and free_text_with_unit types
@@ -116,6 +117,9 @@ type PageInstruction struct {
 	MaxFileSizeMB     *float64 `json:"max_file_size_mb,omitempty" yaml:"max_file_size_mb,omitempty" mapstructure:"max_file_size_mb"`
 	MinFileCount      *int     `json:"min_file_count,omitempty" yaml:"min_file_count,omitempty" mapstructure:"min_file_count"`
 	MaxFileCount      *int     `json:"max_file_count,omitempty" yaml:"max_file_count,omitempty" mapstructure:"max_file_count"`
+
+	// Optional - for star_rating type (number of stars, 1-10, defaults to 5)
+	MaxStars *int `json:"max_stars,omitempty" yaml:"max_stars,omitempty" mapstructure:"max_stars"`
 
 	// Content block fields - for rich_text type
 	Content       string        `json:"content,omitempty" yaml:"content,omitempty" mapstructure:"content"`
