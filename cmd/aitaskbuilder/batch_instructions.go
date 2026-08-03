@@ -38,7 +38,8 @@ The instructions should be an array of instruction objects with the following ty
 - free_text: Instructions requiring text input
 - multiple_choice_with_free_text: Instructions with options and text input
 - free_text_with_unit: Instructions requiring text input with unit selection (e.g., weight with kg/lbs)
-- file_upload: Instructions for uploading files (e.g., images, documents)`,
+- file_upload: Instructions for uploading files (e.g., images, documents)
+- star_rating: Instructions where participants pick a star rating from 1 to max_stars (max_stars is 1-10, defaults to 5)`,
 		Example: `
 Add instructions from a file:
 $ prolific aitaskbuilder batch instructions -b <batch_id> -f instructions.json
@@ -156,6 +157,7 @@ func validateInstructions(instructions client.CreateAITaskBuilderInstructionsPay
 		client.InstructionTypeMultipleChoiceWithFreeText: true,
 		client.InstructionTypeFreeTextWithUnit:           true,
 		client.InstructionTypeFileUpload:                 true,
+		client.InstructionTypeStarRating:                 true,
 	}
 
 	for i, instruction := range instructions.Instructions {
@@ -182,7 +184,7 @@ func validateInstructionBasicFields(instruction client.Instruction, index int, v
 	}
 
 	if !validTypes[instruction.Type] {
-		return fmt.Errorf("instruction %d: invalid type '%s'. Must be one of: multiple_choice, free_text, multiple_choice_with_free_text, free_text_with_unit, file_upload", index+1, instruction.Type)
+		return fmt.Errorf("instruction %d: invalid type '%s'. Must be one of: multiple_choice, free_text, multiple_choice_with_free_text, free_text_with_unit, file_upload, star_rating", index+1, instruction.Type)
 	}
 
 	if instruction.CreatedBy == "" {
@@ -214,6 +216,21 @@ func validateInstructionTypeSpecificFields(instruction client.Instruction, index
 	// Validate file upload fields for file_upload
 	if instruction.Type == client.InstructionTypeFileUpload {
 		return validateFileUpload(instruction, index)
+	}
+
+	// Validate star rating fields for star_rating
+	if instruction.Type == client.InstructionTypeStarRating {
+		return validateStarRating(instruction, index)
+	}
+
+	return nil
+}
+
+// validateStarRating validates star_rating specific fields. max_stars is optional
+// (the API defaults it to 5); when provided it must be between 1 and 10.
+func validateStarRating(instruction client.Instruction, index int) error {
+	if instruction.MaxStars != nil && (*instruction.MaxStars < 1 || *instruction.MaxStars > 10) {
+		return fmt.Errorf("instruction %d: max_stars must be between 1 and 10, got %d", index+1, *instruction.MaxStars)
 	}
 
 	return nil

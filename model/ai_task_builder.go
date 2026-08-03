@@ -153,6 +153,7 @@ type Instruction struct {
 	MaxFileSizeMB        *float64            `json:"max_file_size_mb,omitempty"`
 	MinFileCount         *int                `json:"min_file_count,omitempty"`
 	MaxFileCount         *int                `json:"max_file_count,omitempty"`
+	MaxStars             *int                `json:"max_stars,omitempty"`
 }
 
 // AITaskBuilderResponse represents a response from an AI Task Builder batch task.
@@ -187,6 +188,7 @@ const (
 	AITaskBuilderResponseTypeMultipleChoiceWithFreeText AITaskBuilderResponseType = "multiple_choice_with_free_text"
 	AITaskBuilderResponseTypeFreeTextWithUnit           AITaskBuilderResponseType = "free_text_with_unit"
 	AITaskBuilderResponseTypeFileUpload                 AITaskBuilderResponseType = "file_upload"
+	AITaskBuilderResponseTypeStarRating                 AITaskBuilderResponseType = "star_rating"
 )
 
 // AITaskBuilderAnswerOption represents an answer option in a response.
@@ -196,8 +198,9 @@ const (
 // - multiple_choice: value
 // - multiple_choice_with_free_text: value, explanation
 // - file_upload: file_key, file_name, file_size_mb, content_type
+// - star_rating: value (the selected rating, e.g. "3")
 type AITaskBuilderAnswerOption struct {
-	// For free_text, free_text_with_unit, multiple_choice, multiple_choice_with_free_text
+	// For free_text, free_text_with_unit, multiple_choice, multiple_choice_with_free_text, star_rating
 	Value string `json:"value,omitempty"`
 	// For free_text_with_unit
 	Unit string `json:"unit,omitempty"`
@@ -245,7 +248,7 @@ type CollectionPageItem struct {
 	Order int    `json:"order" mapstructure:"order"`
 	Type  string `json:"type" mapstructure:"type"`
 
-	// Instruction fields (for free_text, multiple_choice, multiple_choice_with_free_text, free_text_with_unit, file_upload)
+	// Instruction fields (for free_text, multiple_choice, multiple_choice_with_free_text, free_text_with_unit, file_upload, star_rating)
 	Description          string              `json:"description,omitempty" mapstructure:"description"`
 	Options              []InstructionOption `json:"options,omitempty" mapstructure:"options"`
 	AnswerLimit          *int                `json:"answer_limit,omitempty" mapstructure:"answer_limit"`
@@ -264,6 +267,9 @@ type CollectionPageItem struct {
 	MaxFileSizeMB     *float64 `json:"max_file_size_mb,omitempty" mapstructure:"max_file_size_mb"`
 	MinFileCount      *int     `json:"min_file_count,omitempty" mapstructure:"min_file_count"`
 	MaxFileCount      *int     `json:"max_file_count,omitempty" mapstructure:"max_file_count"`
+
+	// Star rating fields (for star_rating)
+	MaxStars *int `json:"max_stars,omitempty" mapstructure:"max_stars"`
 
 	// Content block fields (for rich_text)
 	Content       string        `json:"content,omitempty" mapstructure:"content"`

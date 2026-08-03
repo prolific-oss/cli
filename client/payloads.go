@@ -161,6 +161,8 @@ const (
 	InstructionTypeFreeTextWithUnit InstructionType = "free_text_with_unit"
 	// InstructionTypeFileUpload represents a file upload instruction.
 	InstructionTypeFileUpload InstructionType = "file_upload"
+	// InstructionTypeStarRating represents a star rating instruction.
+	InstructionTypeStarRating InstructionType = "star_rating"
 )
 
 // InstructionOption represents an option for multiple choice instructions
@@ -202,6 +204,7 @@ type Instruction struct {
 	MaxFileSizeMB        *float64            `json:"max_file_size_mb,omitempty"`
 	MinFileCount         *int                `json:"min_file_count,omitempty"`
 	MaxFileCount         *int                `json:"max_file_count,omitempty"`
+	MaxStars             *int                `json:"max_stars,omitempty"`
 }
 
 // CreateAITaskBuilderInstructionsPayload represents the JSON payload for creating AI Task Builder instructions

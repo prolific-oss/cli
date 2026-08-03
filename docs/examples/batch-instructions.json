@@ -128,5 +128,11 @@
     "max_file_size_mb": 10.0,
     "min_file_count": 2,
     "max_file_count": 5
+  },
+  {
+    "type": "star_rating",
+    "created_by": "Sean",
+    "description": "How would you rate the overall quality of this response?",
+    "max_stars": 5
   }
 ]

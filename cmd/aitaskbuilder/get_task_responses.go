@@ -155,6 +155,12 @@ func renderAITaskBuilderResponses(c client.API, opts BatchGetResponsesOptions, w
 			} else {
 				fmt.Fprintf(w, "    Uploaded Files: \n")
 			}
+		case model.AITaskBuilderResponseTypeStarRating:
+			if len(resp.Response.Answer) > 0 && resp.Response.Answer[0].Value != "" {
+				fmt.Fprintf(w, "    Star Rating: %s\n", resp.Response.Answer[0].Value)
+			} else {
+				fmt.Fprintf(w, "    Star Rating: \n")
+			}
 		}
 
 		if i < len(response.Results)-1 {

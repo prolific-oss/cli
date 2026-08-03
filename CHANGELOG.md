@@ -4,6 +4,10 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+### AI Task Builder
+
+- Support the `star_rating` instruction type (participants pick a rating from 1 to `max_stars`, where `max_stars` is 1-10 and defaults to 5)
+
 ## 1.1.0
 
 ### AI Task Builder
