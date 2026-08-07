@@ -45,6 +45,12 @@ batch_items can be set from a file (-f) or inline JSON (-j), or cleared with
 --clear-batch-items. Clearing batch_items also deletes all associated instructions
 and content blocks for the batch.
 
+Each page may also set display_position to "intro" or "outro" to render once — before
+or after the repeating task loop — instead of once per datapoint. Omit the field (or
+set it to "body") for the default repeating behaviour. intro/outro pages may only
+contain rich_text/image content blocks, not instructions or dataset_field refs. See
+docs/examples/batch-items-with-intro-outro.json for an example.
+
 --auto-sync enables automatic sync; --no-auto-sync disables it. They are mutually exclusive.`,
 		Example: `
 Update a batch name:
@@ -61,6 +67,9 @@ $ prolific aitaskbuilder batch update -b 497f6eca-6276-4993-bfeb-53cbbbba6f08 -n
 
 Set batch_items from a file:
 $ prolific aitaskbuilder batch update -b 497f6eca-6276-4993-bfeb-53cbbbba6f08 -f batch-items.json
+
+Add an intro page that renders once instead of once per datapoint:
+$ prolific aitaskbuilder batch update -b 497f6eca-6276-4993-bfeb-53cbbbba6f08 -j '[{"display_position":"intro","rows":[{"columns":[{"items":[{"type":"rich_text","content":"<p>Welcome! Please review each response carefully before answering.</p>"}]}]}]},{"rows":[{"columns":[{"items":[{"type":"free_text","description":"Please describe your observations."},{"type":"multiple_choice","description":"How confident are you in your answer?","answer_limit":1,"options":[{"label":"Very confident","value":"very_confident"},{"label":"Somewhat confident","value":"somewhat_confident"},{"label":"Not confident","value":"not_confident"}]}]}]}]}]'
 
 Clear batch_items:
 $ prolific aitaskbuilder batch update -b 497f6eca-6276-4993-bfeb-53cbbbba6f08 --clear-batch-items

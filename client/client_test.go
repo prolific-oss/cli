@@ -44,6 +44,14 @@ func TestFormatBatchErrorBody(t *testing.T) {
 			body:     []byte(`{"type":"INVALID_BATCH_ITEMS","issues":[{"page":0,"row":0,"column":0,"item":0,"type":"free_text","message":"description is required"},{"page":1,"row":2,"column":1,"item":3,"type":"multiple_choice","message":"answer_limit exceeds number of options"}]}`),
 			expected: "batch_items validation failed:\n  Page 1, Row 1, Column 1, Item 1 (free_text): description is required\n  Page 2, Row 3, Column 2, Item 4 (multiple_choice): answer_limit exceeds number of options",
 		},
+		{
+			// A non-content-block item (e.g. an instruction) on a display_position "intro"/"outro"
+			// page — see DISPLAY_POSITION_CONTENT_ONLY_MESSAGE in data-collection-tool. No `field`
+			// is set for this issue type, so it should format the same as any other fieldless issue.
+			name:     "INVALID_BATCH_ITEMS with display_position content-only violation",
+			body:     []byte(`{"type":"INVALID_BATCH_ITEMS","issues":[{"page":0,"row":0,"column":0,"item":0,"type":"free_text","message":"Pages with display_position \"intro\" or \"outro\" may only contain image or rich_text content blocks"}]}`),
+			expected: `batch_items validation failed:` + "\n" + `  Page 1, Row 1, Column 1, Item 1 (free_text): Pages with display_position "intro" or "outro" may only contain image or rich_text content blocks`,
+		},
 	}
 
 	for _, tt := range tests {

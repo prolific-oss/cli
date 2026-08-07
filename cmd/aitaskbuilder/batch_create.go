@@ -38,6 +38,12 @@ Optionally, supply batch_items to define the participant task layout as a struct
 JSON schema (pages → rows → columns → items). Provide batch_items from a file with
 -f or as an inline JSON string with -j. See docs/examples/batch-items.json for an example.
 
+Each page may also set display_position to "intro" or "outro" to render once — before
+or after the repeating task loop — instead of once per datapoint. Omit the field (or
+set it to "body") for the default repeating behaviour. intro/outro pages may only
+contain rich_text/image content blocks, not instructions or dataset_field refs. See
+docs/examples/batch-items-with-intro-outro.json for an example.
+
 Set --auto-sync to automatically add new dataset datapoints to the batch as they
 arrive; it defaults to false.`,
 		Example: `
@@ -49,6 +55,9 @@ $ prolific aitaskbuilder batch create -n "My Batch" -w <workspace_id> -d <datase
 
 Create a batch with inline batch_items JSON:
 $ prolific aitaskbuilder batch create -n "My Batch" -w <workspace_id> -d <dataset_id> --task-name "Task" --task-introduction "Intro" --task-steps "Steps" -j '[{"rows":[{"columns":[{"items":[{"type":"free_text","description":"Describe your observations."}]}]}]}]'
+
+Create a batch with intro/outro pages that render once instead of once per datapoint:
+$ prolific aitaskbuilder batch create -n "My Batch" -w <workspace_id> -d <dataset_id> --task-name "Task" --task-introduction "Intro" --task-steps "Steps" -j '[{"display_position":"intro","rows":[{"columns":[{"items":[{"type":"rich_text","content":"<p>Welcome!</p>"}]}]}]},{"rows":[{"columns":[{"items":[{"type":"free_text","description":"Describe your observations."}]}]}]},{"display_position":"outro","rows":[{"columns":[{"items":[{"type":"rich_text","content":"<p>Thank you!</p>"}]}]}]}]'
 
 Create a batch with auto-sync enabled:
 $ prolific aitaskbuilder batch create -n "My Batch" -w <workspace_id> -d <dataset_id> --task-name "Task" --task-introduction "Intro" --task-steps "Steps" --auto-sync
