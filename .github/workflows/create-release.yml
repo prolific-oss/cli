@@ -166,6 +166,7 @@ jobs:
         with:
           repository: prolific-oss/homebrew-tap
           token: ${{ secrets.REPO_CONTENTS_WRITE }}
+          fetch-depth: 0
 
       - name: Bump formula
         env:

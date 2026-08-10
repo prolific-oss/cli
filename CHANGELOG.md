@@ -4,6 +4,12 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+## 1.2.1
+
+### Core
+
+- Releases now automatically bump the version in the [prolific-oss/homebrew-tap](https://github.com/prolific-oss/homebrew-tap) formula, opening a PR there
+
 ## 1.2.0
 
 ### Reward Recommendations
