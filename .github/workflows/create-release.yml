@@ -151,3 +151,56 @@ jobs:
           done
 
           gh release upload ${{ needs.finalize-release.outputs.tag }} build/*
+
+  update-homebrew-tap:
+    needs: [finalize-release, build]
+    runs-on: ubuntu-latest
+    environment: main
+    steps:
+      - name: Check out homebrew-tap
+        uses: actions/checkout@v7
+        with:
+          repository: prolific-oss/homebrew-tap
+          token: ${{ secrets.REPO_CONTENTS_WRITE }}
+
+      - name: Bump formula
+        env:
+          GH_TOKEN: ${{ secrets.REPO_CONTENTS_WRITE }}
+        run: |
+          set -euo pipefail
+          VERSION="${{ needs.finalize-release.outputs.tag }}"
+          VERSION="${VERSION#v}"
+          [ -n "$VERSION" ] || { echo "::error::empty version from finalize-release"; exit 1; }
+
+          {
+            echo "### Homebrew tap update"
+            echo "- cli release: [v${VERSION}](https://github.com/prolific-oss/cli/releases/tag/v${VERSION})"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          ./scripts/bump-formula.sh "$VERSION"
+
+          if git diff --quiet; then
+            echo "Formula already up to date, nothing to do." | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          BRANCH="bump-prolific-${VERSION}"
+          git config user.name "Prolific Automation"
+          git config user.email "prolific-automation@prolific.com"
+          git checkout -b "$BRANCH"
+          git commit -am "chore: bump prolific to v${VERSION}"
+          git push --force-with-lease origin "$BRANCH"
+
+          if gh pr view --repo prolific-oss/homebrew-tap "$BRANCH" >/dev/null 2>&1; then
+            echo "- PR for \`$BRANCH\` already exists, skipped creating a new one." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          PR_URL=$(gh pr create \
+            --repo prolific-oss/homebrew-tap \
+            --title "chore: bump prolific to v${VERSION}" \
+            --body "Automated bump triggered by [prolific-oss/cli v${VERSION}](https://github.com/prolific-oss/cli/releases/tag/v${VERSION})." \
+            --head "$BRANCH" \
+            --base main)
+
+          echo "- tap PR: ${PR_URL}" >> "$GITHUB_STEP_SUMMARY"
