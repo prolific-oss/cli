@@ -4,9 +4,21 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+## 1.2.0
+
 ### Reward Recommendations
 
 - Add reward-recommendations command
+
+### AI Task Builder
+
+- Document display_position for aitaskbuilder batches
+
+### Core
+
+- Add execute builder following fluent interface pattern
+- Use http statusOK instead of magic number 200
+- Refactor client execute to ensure no double wrapping errors
 
 ## 1.1.0
 
