@@ -13,6 +13,8 @@
 
 The CLI for all [Prolific](https://www.prolific.com) interactions — built for humans and AI agents.
 
+> `brew install prolific-oss/tap/prolific` see [Installation](#installation) for other options.
+
 ```text
 CLI application for retrieving data from the Prolific Platform
 
@@ -117,6 +119,15 @@ export PROLIFIC_URL="https://api.prolific.com"
 ## Installation
 
 You can install this application a few ways:
+
+<details>
+<summary>Installation via Homebrew</summary>
+
+```shell
+brew install prolific-oss/tap/prolific
+```
+
+</details>
 
 <details>
 <summary>Installation via Git</summary>
