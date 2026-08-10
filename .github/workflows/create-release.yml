@@ -156,6 +156,10 @@ jobs:
     needs: [finalize-release, build]
     runs-on: ubuntu-latest
     environment: main
+    env:
+      # Use a fixed, known-good version of the bump script so a change to
+      # homebrew-tap's default branch can't change what this job runs.
+      BUMP_SCRIPT_SHA: 6ec159784b39ec9c01f39bbacef41e183ced8570
     steps:
       - name: Check out homebrew-tap
         uses: actions/checkout@v7
@@ -177,7 +181,9 @@ jobs:
             echo "- cli release: [v${VERSION}](https://github.com/prolific-oss/cli/releases/tag/v${VERSION})"
           } >> "$GITHUB_STEP_SUMMARY"
 
-          ./scripts/bump-formula.sh "$VERSION"
+          git show "${BUMP_SCRIPT_SHA}:scripts/bump-formula.sh" > /tmp/bump-formula.sh
+          chmod +x /tmp/bump-formula.sh
+          /tmp/bump-formula.sh "$VERSION"
 
           if git diff --quiet; then
             echo "Formula already up to date, nothing to do." | tee -a "$GITHUB_STEP_SUMMARY"
@@ -188,7 +194,8 @@ jobs:
           git config user.name "Prolific Automation"
           git config user.email "prolific-automation@prolific.com"
           git checkout -b "$BRANCH"
-          git commit -am "chore: bump prolific to v${VERSION}"
+          git add -A
+          git commit -m "chore: bump prolific to v${VERSION}"
           git push --force-with-lease origin "$BRANCH"
 
           if gh pr view --repo prolific-oss/homebrew-tap "$BRANCH" >/dev/null 2>&1; then
