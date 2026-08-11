@@ -30,10 +30,10 @@ func (i feedbackListItem) Title() string {
 
 func (i feedbackListItem) Description() string {
 	return fmt.Sprintf(
-		"%s · clarity %s · ease %s · fairness %s",
+		"%s · clarity %s · difficulty %s · fairness %s",
 		formatOptionalString(i.feedback.Category),
 		formatRating(i.feedback.Ratings.Clarity),
-		formatRating(i.feedback.Ratings.Ease),
+		formatRating(i.feedback.Ratings.Difficulty),
 		formatRating(i.feedback.Ratings.Fairness),
 	)
 }
@@ -109,7 +109,7 @@ func (lv ListView) View() string {
 	content.WriteString(fmt.Sprintf("Participant: %s\n", lv.Feedback.ParticipantID))
 	content.WriteString(fmt.Sprintf("Category:    %s\n", formatOptionalString(lv.Feedback.Category)))
 	content.WriteString(fmt.Sprintf("Clarity:     %s\n", formatRating(lv.Feedback.Ratings.Clarity)))
-	content.WriteString(fmt.Sprintf("Ease:        %s\n", formatRating(lv.Feedback.Ratings.Ease)))
+	content.WriteString(fmt.Sprintf("Difficulty:  %s\n", formatRating(lv.Feedback.Ratings.Difficulty)))
 	content.WriteString(fmt.Sprintf("Fairness:    %s\n", formatRating(lv.Feedback.Ratings.Fairness)))
 	content.WriteString(fmt.Sprintf("Text:        %s\n", formatOptionalString(lv.Feedback.Text)))
 	return content.String()

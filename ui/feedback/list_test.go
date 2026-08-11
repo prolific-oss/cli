@@ -11,7 +11,7 @@ import (
 
 func sampleFeedbackResponse() client.ListStudyFeedbackResponse {
 	clarity := 4.0
-	ease := 3.0
+	difficulty := 3.0
 	fairness := 5.0
 	category := "study-not-as-described"
 	text := "Instructions, were confusing."
@@ -23,9 +23,9 @@ func sampleFeedbackResponse() client.ListStudyFeedbackResponse {
 				Category:      &category,
 				Text:          &text,
 				Ratings: model.StudyFeedbackRatings{
-					Clarity:  &clarity,
-					Ease:     &ease,
-					Fairness: &fairness,
+					Clarity:    &clarity,
+					Difficulty: &difficulty,
+					Fairness:   &fairness,
 				},
 			},
 			{
@@ -46,7 +46,7 @@ func TestNewListItems(t *testing.T) {
 	if first.ParticipantID != "919" ||
 		first.Category != "study-not-as-described" ||
 		first.Clarity != "4" ||
-		first.Ease != "3" ||
+		first.Difficulty != "3" ||
 		first.Fairness != "5" ||
 		first.Text != "Instructions, were confusing." {
 		t.Fatalf("unexpected first item: %#v", first)
@@ -55,7 +55,7 @@ func TestNewListItems(t *testing.T) {
 	second := items[1]
 	if second.Category != "-" ||
 		second.Clarity != "-" ||
-		second.Ease != "-" ||
+		second.Difficulty != "-" ||
 		second.Fairness != "-" ||
 		second.Text != "-" {
 		t.Fatalf("expected missing values to render as dashes, got %#v", second)

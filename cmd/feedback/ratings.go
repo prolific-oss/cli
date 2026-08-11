@@ -27,7 +27,7 @@ func NewRatingsCommand(c client.API, w io.Writer) *cobra.Command {
 		Short: "View aggregate participant ratings for a study",
 		Long: `View aggregate participant ratings for a study
 
-Shows the average clarity, ease and fairness ratings and the number of
+Shows the average clarity, difficulty and fairness ratings and the number of
 responses contributing to each rating.`,
 		Example: `
 View aggregate ratings for a study
