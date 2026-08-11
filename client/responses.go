@@ -426,6 +426,17 @@ type ListCollectionsResponse struct {
 	*JSONAPIMeta
 }
 
+// ListStudyFeedbackResponse is the response for the study feedback responses API.
+type ListStudyFeedbackResponse struct {
+	Results []model.StudyFeedback `json:"results"`
+	*JSONAPILinks
+	*JSONAPIMeta
+}
+
+// StudyRatingsResponse is the response for the study feedback ratings API,
+// keyed by rating id (e.g. clarity, difficulty, fairness).
+type StudyRatingsResponse map[string]model.StudyRating
+
 // CollectionExportResponse is the response for the collection export endpoints.
 // For POST (initiate): Status is "generating" (ExportID set) or "complete" (URL/ExpiresAt set).
 // For GET (poll): Status is "generating", "complete", or "failed".

@@ -16,11 +16,11 @@ import (
 
 func sampleRatingsResponse() client.StudyRatingsResponse {
 	clarity := 4.5
-	ease := 3.0
+	difficulty := 3.0
 	fairness := 5.0
 	return client.StudyRatingsResponse{
 		"clarity_rating":    model.StudyRating{AverageRating: &clarity, TotalCount: 2},
-		"difficulty_rating": model.StudyRating{AverageRating: &ease, TotalCount: 3},
+		"difficulty_rating": model.StudyRating{AverageRating: &difficulty, TotalCount: 3},
 		"fairness_rating":   model.StudyRating{AverageRating: &fairness, TotalCount: 4},
 	}
 }
@@ -47,17 +47,17 @@ func TestNewRatingsCommandOutputFormats(t *testing.T) {
 		{
 			name:     "table",
 			flag:     "table",
-			expected: []string{"Rating", "Average", "Responses", "clarity", "4.5", "ease", "fairness"},
+			expected: []string{"Rating", "Average", "Responses", "clarity", "4.5", "difficulty", "fairness"},
 		},
 		{
 			name:     "JSON",
 			flag:     "json",
-			expected: []string{`"rating": "clarity"`, `"rating": "ease"`, `"rating": "fairness"`, `"average": 4.5`, `"responses": 2`},
+			expected: []string{`"rating": "clarity"`, `"rating": "difficulty"`, `"rating": "fairness"`, `"average": 4.5`, `"responses": 2`},
 		},
 		{
 			name:     "CSV",
 			flag:     "csv",
-			expected: []string{"Rating,Average,Responses", "clarity,4.5,2", "ease,3,3", "fairness,5,4"},
+			expected: []string{"Rating,Average,Responses", "clarity,4.5,2", "difficulty,3,3", "fairness,5,4"},
 		},
 	}
 

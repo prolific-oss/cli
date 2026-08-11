@@ -82,7 +82,7 @@ func TestNewListCommandCallsAPI(t *testing.T) {
 
 	studyID := "63c123af913a974f87e8e7fc"
 	clarity := 4.5
-	ease := 3.0
+	difficulty := 3.0
 	fairness := 5.0
 	category := "study-not-as-described"
 	text := "The task was confusing."
@@ -94,9 +94,9 @@ func TestNewListCommandCallsAPI(t *testing.T) {
 				Category:      &category,
 				Text:          &text,
 				Ratings: model.StudyFeedbackRatings{
-					Clarity:  &clarity,
-					Ease:     &ease,
-					Fairness: &fairness,
+					Clarity:    &clarity,
+					Difficulty: &difficulty,
+					Fairness:   &fairness,
 				},
 			},
 		},
@@ -199,7 +199,7 @@ func TestNewListCommandMachineReadableOutput(t *testing.T) {
 					},
 				}
 			}(),
-			expected: []string{`"participant_id": "919"`, `"ratings": {`, `"clarity": 4.5`},
+			expected: []string{`"participant_id": "919"`, `"ratings": {`, `"clarity_rating": 4.5`},
 		},
 		{
 			name: "CSV uses flat presentation rows",
@@ -218,7 +218,7 @@ func TestNewListCommandMachineReadableOutput(t *testing.T) {
 				}
 			}(),
 			expected: []string{
-				"ParticipantID,Category,Clarity,Ease,Fairness,Text",
+				"ParticipantID,Category,Clarity,Difficulty,Fairness,Text",
 				"919,-,4.5,-,-,-",
 			},
 		},

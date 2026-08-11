@@ -26,8 +26,8 @@ func TestNewRatingItems(t *testing.T) {
 		t.Fatalf("unexpected clarity row: %#v", items[0])
 	}
 
-	if items[1].Rating != "ease" || items[1].Average != "-" || items[1].Responses != 0 {
-		t.Fatalf("unexpected ease row: %#v", items[1])
+	if items[1].Rating != "difficulty" || items[1].Average != "-" || items[1].Responses != 0 {
+		t.Fatalf("unexpected difficulty row: %#v", items[1])
 	}
 
 	if items[2].Rating != "fairness" {
@@ -57,8 +57,8 @@ func TestNewRatingRows(t *testing.T) {
 		t.Fatalf("unexpected clarity row: %#v", rows[0])
 	}
 
-	if rows[1].Rating != "ease" || rows[1].Average != nil || rows[1].Responses != 0 {
-		t.Fatalf("unexpected ease row: %#v", rows[1])
+	if rows[1].Rating != "difficulty" || rows[1].Average != nil || rows[1].Responses != 0 {
+		t.Fatalf("unexpected difficulty row: %#v", rows[1])
 	}
 
 	if rows[2].Rating != "fairness" {

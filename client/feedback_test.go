@@ -55,7 +55,7 @@ func TestFeedbackEndpointsDoNotWriteDebugLogs(t *testing.T) {
 			return &http.Response{
 				StatusCode: http.StatusOK,
 				Body: io.NopCloser(strings.NewReader(fmt.Sprintf(
-					`{"results":[{"participant_id":"participant-1","category":"other","text":%q,"ratings":{"clarity":4,"ease":4,"fairness":4}}],"meta":{"count":1}}`,
+					`{"results":[{"participant_id":"participant-1","category":"other","text":%q,"ratings":{"clarity_rating":4,"difficulty_rating":4,"fairness_rating":4}}],"meta":{"count":1}}`,
 					feedbackText,
 				))),
 				Header: make(http.Header),

@@ -12,7 +12,7 @@ type studyRatingID struct {
 
 var studyRatingIDs = []studyRatingID{
 	{ID: "clarity_rating", Label: "clarity"},
-	{ID: "difficulty_rating", Label: "ease"},
+	{ID: "difficulty_rating", Label: "difficulty"},
 	{ID: "fairness_rating", Label: "fairness"},
 }
 
