@@ -7,7 +7,7 @@ import (
 )
 
 // ListFields are the feedback fields shown in table and CSV output.
-const ListFields = "ParticipantID,Category,Clarity,Ease,Fairness,Text"
+const ListFields = "ParticipantID,Category,Clarity,Difficulty,Fairness,Text"
 
 // ListItem is the flat presentation model used by table and CSV renderers.
 // The API model remains nested so JSON output preserves the API response shape.
@@ -15,7 +15,7 @@ type ListItem struct {
 	ParticipantID string
 	Category      string
 	Clarity       string
-	Ease          string
+	Difficulty    string
 	Fairness      string
 	Text          string
 }
@@ -28,7 +28,7 @@ func NewListItems(records []model.StudyFeedback) []ListItem {
 			ParticipantID: record.ParticipantID,
 			Category:      formatOptionalString(record.Category),
 			Clarity:       formatRating(record.Ratings.Clarity),
-			Ease:          formatRating(record.Ratings.Ease),
+			Difficulty:    formatRating(record.Ratings.Difficulty),
 			Fairness:      formatRating(record.Ratings.Fairness),
 			Text:          formatOptionalString(record.Text),
 		})

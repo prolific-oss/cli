@@ -34,7 +34,7 @@ func NewListCommand(c client.API, w io.Writer) *cobra.Command {
 		Long: `List participant feedback for a study
 
 Retrieves permissioned, record-level participant feedback for a study,
-including written feedback and clarity, ease and fairness ratings, through
+including written feedback and clarity, difficulty and fairness ratings, through
 the same permissioned server-side path used by the Feedback dashboard.
 
 By default, up to 200 feedback records are returned. Pass --limit 0 to fetch
