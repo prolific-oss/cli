@@ -1551,14 +1551,13 @@ func (c *Client) GetAITaskBuilderBatchSyncStatus(batchID, syncID string) (*AITas
 	var response AITaskBuilderBatchSyncResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/syncs/%s", batchID, syncID)
-	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().
+		GetRequest(url).
+		Status(http.StatusOK).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+		return nil, err
 	}
 
 	return &response, nil
@@ -1569,9 +1568,9 @@ func (c *Client) GetAITaskBuilderDataset(datasetID string) (*GetAITaskBuilderDat
 	var response GetAITaskBuilderDatasetResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/datasets/%s", datasetID)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 	return &response, nil
 }
@@ -1581,9 +1580,9 @@ func (c *Client) GetAITaskBuilderDatasetStatus(datasetID string) (*GetAITaskBuil
 	var response GetAITaskBuilderDatasetStatusResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/datasets/%s/status", datasetID)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 	return &response, nil
 }
@@ -1593,14 +1592,13 @@ func (c *Client) GetAITaskBuilderDatasetUploadURL(datasetID, fileName string) (*
 	var response GetAITaskBuilderDatasetUploadURLResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/datasets/%s/upload-url/%s", datasetID, fileName)
-	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().
+		GetRequest(url).
+		Status(http.StatusCreated).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusCreated {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+		return nil, err
 	}
 
 	return &response, nil
@@ -1611,14 +1609,13 @@ func (c *Client) GetAITaskBuilderDatasetImportStatus(datasetID, importID string)
 	var response GetAITaskBuilderDatasetImportStatusResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/datasets/%s/imports/%s", datasetID, importID)
-	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().
+		GetRequest(url).
+		Status(http.StatusOK).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+		return nil, err
 	}
 
 	return &response, nil
@@ -1642,13 +1639,17 @@ func (c *Client) CreateAITaskBuilderBatch(params CreateBatchParams) (*CreateAITa
 	}
 
 	url := "/api/v1/data-collection/batches"
-	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
+	httpResponse, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(payload).
+		Decode(&response).
+		Execute()
 	if err != nil {
 		var apiErr *UnrecognizedAPIError
 		if errors.As(err, &apiErr) {
 			return nil, fmt.Errorf("unable to create batch: %s", formatBatchErrorBody(apiErr.Body))
 		}
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	if httpResponse.StatusCode != http.StatusCreated {
@@ -1664,14 +1665,14 @@ func (c *Client) CreateAITaskBuilderInstructions(batchID string, instructions Cr
 	var response CreateAITaskBuilderInstructionsResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/instructions", batchID)
-	httpResponse, err := c.Execute(http.MethodPost, url, instructions, &response)
+	httpResponse, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(instructions).
+		Status(http.StatusCreated).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusCreated {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unable to create instructions: %v", string(body))
+		return nil, err
 	}
 
 	if httpResponse.Header.Get("Deprecation") != "" {
@@ -1696,14 +1697,13 @@ func (c *Client) SetupAITaskBuilderBatch(batchID, datasetID string, tasksPerGrou
 	}
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/setup", batchID)
-	httpResponse, err := c.Execute(http.MethodPost, url, payload, nil)
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(payload).
+		Status(http.StatusAccepted).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	// Check for 202 Accepted status
-	if httpResponse.StatusCode != http.StatusAccepted {
-		return nil, fmt.Errorf("unexpected status code: %d", httpResponse.StatusCode)
+		return nil, err
 	}
 
 	return &response, nil
@@ -1718,14 +1718,14 @@ func (c *Client) CreateAITaskBuilderDataset(workspaceID string, payload CreateAI
 	payload.WorkspaceID = workspaceID
 
 	url := "/api/v1/data-collection/datasets"
-	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(payload).
+		Status(http.StatusCreated).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusCreated {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unable to create dataset: %v", string(body))
+		return nil, err
 	}
 
 	return &response, nil
@@ -1736,14 +1736,14 @@ func (c *Client) CreateAITaskBuilderCollection(payload model.CreateAITaskBuilder
 	var response CreateAITaskBuilderCollectionResponse
 
 	url := "/api/v1/data-collection/collections"
-	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(payload).
+		Status(http.StatusCreated).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusCreated {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unable to create collection: %v", string(body))
+		return nil, err
 	}
 
 	return &response, nil
@@ -1760,13 +1760,14 @@ func (c *Client) CreateCredentialPool(credentials string, workspaceID string) (*
 	}
 
 	endpointURL := "/api/v1/credentials/"
-	httpResponse, err := c.Execute(http.MethodPost, endpointURL, payload, &response)
+	_, err := c.ExecuteBuilder().
+		PostRequest(endpointURL).
+		Body(payload).
+		Status(http.StatusCreated).
+		Decode(&response).
+		Execute()
 	if err != nil {
 		return nil, err
-	}
-
-	if httpResponse.StatusCode != http.StatusCreated {
-		return nil, fmt.Errorf("unexpected status code: expected 201, got %d", httpResponse.StatusCode)
 	}
 
 	return &response, nil
@@ -1782,13 +1783,14 @@ func (c *Client) UpdateCredentialPool(credentialPoolID string, credentials strin
 	}
 
 	endpointURL := fmt.Sprintf("/api/v1/credentials/%s/", credentialPoolID)
-	httpResponse, err := c.Execute(http.MethodPatch, endpointURL, payload, &response)
+	_, err := c.ExecuteBuilder().
+		PatchRequest(endpointURL).
+		Body(payload).
+		Status(http.StatusOK).
+		Decode(&response).
+		Execute()
 	if err != nil {
 		return nil, err
-	}
-
-	if httpResponse.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: expected 200, got %d", httpResponse.StatusCode)
 	}
 
 	return &response, nil
@@ -1799,13 +1801,13 @@ func (c *Client) ListCredentialPools(workspaceID string) (*ListCredentialPoolsRe
 	var response ListCredentialPoolsResponse
 
 	endpointURL := fmt.Sprintf("/api/v1/credentials/?workspace_id=%s", workspaceID)
-	httpResponse, err := c.Execute(http.MethodGet, endpointURL, nil, &response)
+	_, err := c.ExecuteBuilder().
+		GetRequest(endpointURL).
+		Status(http.StatusOK).
+		Decode(&response).
+		Execute()
 	if err != nil {
 		return nil, err
-	}
-
-	if httpResponse.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: expected 200, got %d", httpResponse.StatusCode)
 	}
 
 	return &response, nil
