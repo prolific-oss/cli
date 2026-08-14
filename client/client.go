@@ -276,14 +276,14 @@ func (c *Client) CreateStudy(study model.CreateStudy) (*model.Study, error) {
 	var response model.Study
 
 	url := "/api/v1/studies/"
-	httpResponse, err := c.Execute(http.MethodPost, url, study, &response)
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(study).
+		Status(http.StatusCreated).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusCreated {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unable to create study: %v", string(body))
+		return nil, err
 	}
 
 	return &response, nil
@@ -306,14 +306,13 @@ func (c *Client) DuplicateStudy(ID string) (*model.Study, error) {
 	var response model.Study
 
 	url := fmt.Sprintf("/api/v1/studies/%s/clone/", ID)
-	httpResponse, err := c.Execute(http.MethodPost, url, nil, &response)
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Status(http.StatusOK).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unable to duplicate study: %v", string(body))
+		return nil, err
 	}
 
 	return &response, nil
@@ -356,9 +355,9 @@ func (c *Client) GetStudies(status, projectID string) (*ListStudiesResponse, err
 		}
 	}
 
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetRequest(url).Decode(&response).Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	return &response, nil
@@ -369,14 +368,13 @@ func (c *Client) GetStudy(ID string) (*model.Study, error) {
 	var response model.Study
 
 	url := fmt.Sprintf("/api/v1/studies/%s", ID)
-	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().
+		GetRequest(url).
+		Status(http.StatusOK).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unable to get study: %v", string(body))
+		return nil, err
 	}
 
 	return &response, nil
@@ -387,14 +385,13 @@ func (c *Client) GetStudySubmissionCounts(ID string) (*model.SubmissionCounts, e
 	var response model.SubmissionCounts
 
 	url := fmt.Sprintf("/api/v1/studies/%s/submissions/counts/", ID)
-	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().
+		GetRequest(url).
+		Status(http.StatusOK).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unable to get submission counts: %v", string(body))
+		return nil, err
 	}
 
 	return &response, nil
@@ -405,9 +402,9 @@ func (c *Client) GetSubmissions(ID string, limit, offset int) (*ListSubmissionsR
 	var response ListSubmissionsResponse
 
 	url := fmt.Sprintf("/api/v1/studies/%s/submissions/?limit=%v&offset=%v", ID, limit, offset)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetRequest(url).Decode(&response).Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	return &response, nil
@@ -422,9 +419,13 @@ func (c *Client) RequestSubmissionReturn(ID string, reasons []string) (*RequestS
 	}
 
 	url := fmt.Sprintf("/api/v1/submissions/%s/request-return/", ID)
-	_, err := c.Execute(http.MethodPost, url, payload, &response)
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(payload).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to request submission return: %s", err)
+		return nil, err
 	}
 
 	return &response, nil
@@ -435,9 +436,13 @@ func (c *Client) TransitionSubmission(ID string, payload TransitionSubmissionPay
 	var response TransitionSubmissionResponse
 
 	url := fmt.Sprintf("/api/v1/submissions/%s/transition/", ID)
-	_, err := c.Execute(http.MethodPost, url, payload, &response)
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(payload).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to transition submission: %s", err)
+		return nil, err
 	}
 
 	return &response, nil
@@ -446,9 +451,9 @@ func (c *Client) TransitionSubmission(ID string, payload TransitionSubmissionPay
 // BulkApproveSubmissions will bulk approve multiple submissions.
 func (c *Client) BulkApproveSubmissions(payload BulkApproveSubmissionsPayload) error {
 	url := "/api/v1/submissions/bulk-approve/"
-	_, err := c.Execute(http.MethodPost, url, payload, nil)
+	_, err := c.ExecuteBuilder().PostRequest(url).Body(payload).Execute()
 	if err != nil {
-		return fmt.Errorf("unable to bulk approve submissions: %s", err)
+		return err
 	}
 
 	return nil
@@ -465,9 +470,13 @@ func (c *Client) TransitionStudy(ID, action string) (*TransitionStudyResponse, e
 	}
 
 	url := fmt.Sprintf("/api/v1/studies/%s/transition/", ID)
-	_, err := c.Execute(http.MethodPost, url, transition, &response)
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(transition).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to transition study to %s: %v", action, err)
+		return nil, err
 	}
 
 	return &response, nil
@@ -478,9 +487,9 @@ func (c *Client) GetCampaigns(workspaceID string, limit, offset int) (*ListCampa
 	var response ListCampaignsResponse
 
 	url := fmt.Sprintf("/api/v1/campaigns/?workspace_id=%s&limit=%v&offset=%v", workspaceID, limit, offset)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetRequest(url).Decode(&response).Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	return &response, nil
@@ -491,9 +500,9 @@ func (c *Client) GetCollections(workspaceID string, limit, offset int) (*ListCol
 	var response ListCollectionsResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/collections?workspace_id=%s&limit=%v&offset=%v", workspaceID, limit, offset)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetRequest(url).Decode(&response).Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	return &response, nil
@@ -504,14 +513,13 @@ func (c *Client) GetCollection(ID string) (*model.Collection, error) {
 	var response model.Collection
 
 	url := fmt.Sprintf("/api/v1/data-collection/collections/%s", ID)
-	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().
+		GetRequest(url).
+		Status(http.StatusOK).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unable to get collection: %v", string(body))
+		return nil, err
 	}
 
 	return &response, nil
@@ -524,9 +532,9 @@ func (c *Client) InitiateCollectionExport(collectionID string) (*CollectionExpor
 	var response CollectionExportResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/collections/%s/export", collectionID)
-	_, err := c.Execute(http.MethodPost, url, nil, &response)
+	_, err := c.ExecuteBuilder().PostRequest(url).Decode(&response).Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	return &response, nil
@@ -538,9 +546,9 @@ func (c *Client) GetCollectionExportStatus(collectionID, exportID string) (*Coll
 	var response CollectionExportResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/collections/%s/export/%s", collectionID, exportID)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetRequest(url).Decode(&response).Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	return &response, nil
@@ -551,13 +559,14 @@ func (c *Client) UpdateStudy(ID string, study any) (*model.Study, error) {
 	var response model.Study
 
 	url := fmt.Sprintf("/api/v1/studies/%s/", ID)
-	httpResponse, err := c.Execute(http.MethodPatch, url, study, &response)
+	_, err := c.ExecuteBuilder().
+		PatchRequest(url).
+		Body(study).
+		Status(http.StatusOK).
+		Decode(&response).
+		Execute()
 	if err != nil {
 		return nil, fmt.Errorf("unable to update study: %v", err)
-	}
-
-	if httpResponse.StatusCode != http.StatusOK {
-		return nil, errors.New(`unable to update study`)
 	}
 
 	return &response, nil
@@ -566,7 +575,7 @@ func (c *Client) UpdateStudy(ID string, study any) (*model.Study, error) {
 // GetStudyCredentialsUsageReportCSV will return the credentials usage report for a study as CSV.
 func (c *Client) GetStudyCredentialsUsageReportCSV(ID string) (string, error) {
 	endpointURL := fmt.Sprintf("/api/v1/studies/%s/credentials/report/", ID)
-	httpResponse, err := c.Execute(http.MethodGet, endpointURL, nil, nil)
+	httpResponse, err := c.ExecuteBuilder().GetRequest(endpointURL).Execute()
 	if err != nil {
 		return "", err
 	}
@@ -582,9 +591,9 @@ func (c *Client) GetStudyCredentialsUsageReportCSV(ID string) (string, error) {
 // ExportDemographics triggers a demographic data export for all submissions in a study.
 func (c *Client) ExportDemographics(ID string) (string, error) {
 	url := fmt.Sprintf("/api/v1/studies/%s/demographic-export/", ID)
-	httpResponse, err := c.Execute(http.MethodPost, url, nil, nil)
+	httpResponse, err := c.ExecuteBuilder().PostRequest(url).Execute()
 	if err != nil {
-		return "", fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return "", err
 	}
 
 	responseBody, err := io.ReadAll(httpResponse.Body)
@@ -600,13 +609,13 @@ func (c *Client) TestStudy(ID string) (*TestStudyResponse, error) {
 	var response TestStudyResponse
 
 	url := fmt.Sprintf("/api/v1/studies/%s/test-study/", ID)
-	httpResponse, err := c.Execute(http.MethodPost, url, nil, &response)
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Status(http.StatusOK).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: expected 200, got %d", httpResponse.StatusCode)
+		return nil, err
 	}
 
 	return &response, nil

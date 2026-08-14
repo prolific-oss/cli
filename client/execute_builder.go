@@ -27,6 +27,18 @@ func (b *ExecuteBuilder) GetRequest(url string) *ExecuteBuilder {
 	return b.newRequest(http.MethodGet, url)
 }
 
+func (b *ExecuteBuilder) PostRequest(url string) *ExecuteBuilder {
+	return b.newRequest(http.MethodPost, url)
+}
+
+func (b *ExecuteBuilder) PatchRequest(url string) *ExecuteBuilder {
+	return b.newRequest(http.MethodPatch, url)
+}
+
+func (b *ExecuteBuilder) DeleteRequest(url string) *ExecuteBuilder {
+	return b.newRequest(http.MethodDelete, url)
+}
+
 // newRequest clears any state carried over from a previous request, so a
 // builder that is held and reused cannot send an earlier request's body or
 // accept an earlier request's statuses.
@@ -59,6 +71,12 @@ func (b *ExecuteBuilder) Execute() (*http.Response, error) {
 
 	if err != nil {
 		return nil, fmt.Errorf("unable to fulfil request %s: %s", b.url, err)
+	}
+
+	// Status was never called: Client.Execute already treated anything below
+	// 400 as a success, so there's nothing further to assert here.
+	if len(b.expectedStatuses) == 0 {
+		return httpResponse, nil
 	}
 
 	// Check if the status code is one of the accepted ones
