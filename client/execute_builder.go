@@ -43,6 +43,10 @@ func (b *ExecuteBuilder) PatchRequest(url string) *ExecuteBuilder {
 	return b.newRequest(http.MethodPatch, url)
 }
 
+func (b *ExecuteBuilder) PutRequest(url string) *ExecuteBuilder {
+	return b.newRequest(http.MethodPut, url)
+}
+
 func (b *ExecuteBuilder) DeleteRequest(url string) *ExecuteBuilder {
 	return b.newRequest(http.MethodDelete, url)
 }
