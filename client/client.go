@@ -368,11 +368,7 @@ func (c *Client) GetStudy(ID string) (*model.Study, error) {
 	var response model.Study
 
 	url := fmt.Sprintf("/api/v1/studies/%s", ID)
-	_, err := c.ExecuteBuilder().
-		GetRequest(url).
-		Status(http.StatusOK).
-		Decode(&response).
-		Execute()
+	_, err := c.ExecuteBuilder().Get(url, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -385,11 +381,7 @@ func (c *Client) GetStudySubmissionCounts(ID string) (*model.SubmissionCounts, e
 	var response model.SubmissionCounts
 
 	url := fmt.Sprintf("/api/v1/studies/%s/submissions/counts/", ID)
-	_, err := c.ExecuteBuilder().
-		GetRequest(url).
-		Status(http.StatusOK).
-		Decode(&response).
-		Execute()
+	_, err := c.ExecuteBuilder().Get(url, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -513,11 +505,7 @@ func (c *Client) GetCollection(ID string) (*model.Collection, error) {
 	var response model.Collection
 
 	url := fmt.Sprintf("/api/v1/data-collection/collections/%s", ID)
-	_, err := c.ExecuteBuilder().
-		GetRequest(url).
-		Status(http.StatusOK).
-		Decode(&response).
-		Execute()
+	_, err := c.ExecuteBuilder().Get(url, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -778,11 +766,7 @@ func (c *Client) GetWorkspaces(limit, offset int) (*ListWorkspacesResponse, erro
 	var response ListWorkspacesResponse
 
 	url := fmt.Sprintf("/api/v1/workspaces/?limit=%v&offset=%v", limit, offset)
-	_, err := c.ExecuteBuilder().
-		GetRequest(url).
-		Status(http.StatusOK).
-		Decode(&response).
-		Execute()
+	_, err := c.ExecuteBuilder().Get(url, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -857,11 +841,7 @@ func (c *Client) GetProject(ID string) (*model.Project, error) {
 	var response model.Project
 
 	url := fmt.Sprintf("/api/v1/projects/%s/", ID)
-	_, err := c.ExecuteBuilder().
-		GetRequest(url).
-		Status(http.StatusOK).
-		Decode(&response).
-		Execute()
+	_, err := c.ExecuteBuilder().Get(url, &response)
 	if err != nil {
 		return nil, err
 	}
