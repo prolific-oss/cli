@@ -632,9 +632,9 @@ func (c *Client) GetHooks(workspaceID string, enabled bool, limit, offset int) (
 		limit,
 		offset,
 	)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	return &response, nil
@@ -658,9 +658,9 @@ func (c *Client) GetHookSecrets(workspaceID string) (*ListSecretsResponse, error
 	var response ListSecretsResponse
 
 	url := fmt.Sprintf("/api/v1/hooks/secrets/?workspace_id=%s", workspaceID)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	return &response, nil
@@ -671,13 +671,14 @@ func (c *Client) CreateHookSecret(payload CreateSecretPayload) (*model.Secret, e
 	var response model.Secret
 
 	const url = "/api/v1/hooks/secrets/"
-	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(payload).
+		Status(http.StatusCreated).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusCreated {
-		return nil, fmt.Errorf("unable to create hook secret: %v", httpResponse.StatusCode)
+		return nil, err
 	}
 
 	return &response, nil
@@ -688,9 +689,9 @@ func (c *Client) GetEvents(subscriptionID string, limit, offset int) (*ListHookE
 	var response ListHookEventsResponse
 
 	url := fmt.Sprintf("/api/v1/hooks/subscriptions/%s/events/?limit=%v&offset=%v", subscriptionID, limit, offset)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	return &response, nil
@@ -702,13 +703,14 @@ func (c *Client) CreateHookSubscription(payload CreateHookPayload) (*model.Hook,
 	var response model.Hook
 
 	url := "/api/v1/hooks/subscriptions/"
-	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
+	httpResponse, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(payload).
+		Status(http.StatusCreated).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, "", fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusCreated {
-		return nil, "", fmt.Errorf("unable to create hook subscription, status code: %v", httpResponse.StatusCode)
+		return nil, "", err
 	}
 
 	secret := httpResponse.Header.Get("X-Hook-Secret")
@@ -727,13 +729,14 @@ func (c *Client) ConfirmHookSubscription(subscriptionID, secret string) (*model.
 	}
 
 	url := fmt.Sprintf("/api/v1/hooks/subscriptions/%s/", subscriptionID)
-	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(payload).
+		Status(http.StatusOK).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to confirm webhook subscription %s: %s", subscriptionID, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unable to confirm webhook subscription %s, status code: %v", subscriptionID, httpResponse.StatusCode)
+		return nil, err
 	}
 
 	return &response, nil
@@ -744,13 +747,14 @@ func (c *Client) UpdateHookSubscription(subscriptionID string, payload UpdateHoo
 	var response model.Hook
 
 	url := fmt.Sprintf("/api/v1/hooks/subscriptions/%s/", subscriptionID)
-	httpResponse, err := c.Execute(http.MethodPatch, url, payload, &response)
+	_, err := c.ExecuteBuilder().
+		PatchRequest(url).
+		Body(payload).
+		Status(http.StatusOK).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to update hook subscription %s: %s", subscriptionID, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unable to update hook subscription %s, status code: %v", subscriptionID, httpResponse.StatusCode)
+		return nil, err
 	}
 
 	return &response, nil
@@ -759,13 +763,12 @@ func (c *Client) UpdateHookSubscription(subscriptionID string, payload UpdateHoo
 // DeleteHookSubscription deletes a hook subscription by ID.
 func (c *Client) DeleteHookSubscription(subscriptionID string) error {
 	url := fmt.Sprintf("/api/v1/hooks/subscriptions/%s/", subscriptionID)
-	httpResponse, err := c.Execute(http.MethodDelete, url, nil, nil)
+	_, err := c.ExecuteBuilder().
+		DeleteRequest(url).
+		Status(http.StatusNoContent).
+		Execute()
 	if err != nil {
-		return fmt.Errorf("unable to delete hook subscription %s: %s", subscriptionID, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("unable to delete hook subscription %s, status code: %v", subscriptionID, httpResponse.StatusCode)
+		return err
 	}
 
 	return nil
@@ -775,13 +778,13 @@ func (c *Client) GetWorkspaces(limit, offset int) (*ListWorkspacesResponse, erro
 	var response ListWorkspacesResponse
 
 	url := fmt.Sprintf("/api/v1/workspaces/?limit=%v&offset=%v", limit, offset)
-	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().
+		GetRequest(url).
+		Status(http.StatusOK).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("status code was %v, so therefore unable to get workspaces", httpResponse.StatusCode)
+		return nil, err
 	}
 
 	return &response, nil
@@ -792,9 +795,9 @@ func (c *Client) GetWorkspaceBalance(workspaceID string) (*WorkspaceBalanceRespo
 	var response WorkspaceBalanceResponse
 
 	url := fmt.Sprintf("/api/v1/workspaces/%s/balance/", workspaceID)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	return &response, nil
@@ -805,14 +808,14 @@ func (c *Client) CreateWorkspace(workspace model.Workspace) (*CreateWorkspacesRe
 	var response CreateWorkspacesResponse
 
 	url := "/api/v1/workspaces/"
-	httpResponse, err := c.Execute(http.MethodPost, url, workspace, &response)
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(workspace).
+		Status(http.StatusCreated).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusCreated {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unable to create workspace: %v", string(body))
+		return nil, err
 	}
 
 	return &response, nil
@@ -823,14 +826,14 @@ func (c *Client) CreateInvitation(invitation model.CreateInvitation) (*CreateInv
 	var response CreateInvitationResponse
 
 	url := "/api/v1/invitations/"
-	httpResponse, err := c.Execute(http.MethodPost, url, invitation, &response)
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(invitation).
+		Status(http.StatusCreated).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusCreated {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unable to create invitation: %v", string(body))
+		return nil, err
 	}
 
 	return &response, nil
@@ -841,9 +844,9 @@ func (c *Client) GetProjects(workspaceID string, limit, offset int) (*ListProjec
 	var response ListProjectsResponse
 
 	url := fmt.Sprintf("/api/v1/workspaces/%s/projects/?limit=%v&offset=%v", workspaceID, limit, offset)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	return &response, nil
@@ -854,13 +857,13 @@ func (c *Client) GetProject(ID string) (*model.Project, error) {
 	var response model.Project
 
 	url := fmt.Sprintf("/api/v1/projects/%s/", ID)
-	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().
+		GetRequest(url).
+		Status(http.StatusOK).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("status code was %v, so therefore unable to get project: %v", httpResponse.StatusCode, ID)
+		return nil, err
 	}
 
 	return &response, nil
@@ -871,9 +874,13 @@ func (c *Client) CreateProject(workspaceID string, project model.Project) (*Crea
 	var response CreateProjectResponse
 
 	url := fmt.Sprintf("/api/v1/workspaces/%s/projects/", workspaceID)
-	_, err := c.Execute(http.MethodPost, url, project, &response)
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(project).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	return &response, nil
@@ -884,9 +891,9 @@ func (c *Client) GetParticipantGroups(workspaceID string, limit, offset int) (*L
 	var response ListParticipantGroupsResponse
 
 	url := fmt.Sprintf("/api/v1/participant-groups/?workspace_id=%s&limit=%v&offset=%v", workspaceID, limit, offset)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	return &response, nil
@@ -897,9 +904,9 @@ func (c *Client) GetParticipantGroup(groupID string) (*ViewParticipantGroupRespo
 	var response ViewParticipantGroupResponse
 
 	url := fmt.Sprintf("/api/v1/participant-groups/%s/participants/", groupID)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	return &response, nil
@@ -910,9 +917,13 @@ func (c *Client) CreateParticipantGroup(group model.CreateParticipantGroup) (*Cr
 	var response CreateParticipantGroupResponse
 
 	url := "/api/v1/participant-groups/"
-	_, err := c.Execute(http.MethodPost, url, group, &response)
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(group).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	return &response, nil
@@ -925,12 +936,14 @@ func (c *Client) RemoveParticipantGroupMembers(groupID string, participantIDs []
 	var response ViewParticipantGroupResponse
 
 	url := fmt.Sprintf("/api/v1/participant-groups/%s/participants/", groupID)
-	httpResponse, err := c.Execute(http.MethodDelete, url, payload, &response)
+	_, err := c.ExecuteBuilder().
+		DeleteRequest(url).
+		Body(payload).
+		Status(http.StatusOK).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to remove participants from group %s: %s", groupID, err)
-	}
-	if httpResponse.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unable to remove participants from group %s, status code: %v", groupID, httpResponse.StatusCode)
+		return nil, err
 	}
 
 	return &response, nil
@@ -943,12 +956,14 @@ func (c *Client) AddParticipantGroupMembers(groupID string, participantIDs []str
 	var response ViewParticipantGroupResponse
 
 	url := fmt.Sprintf("/api/v1/participant-groups/%s/participants/", groupID)
-	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(payload).
+		Status(http.StatusOK).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to add participants to group %s: %s", groupID, err)
-	}
-	if httpResponse.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unable to add participants to group %s, status code: %v", groupID, httpResponse.StatusCode)
+		return nil, err
 	}
 
 	return &response, nil
@@ -963,14 +978,14 @@ func (c *Client) CreateTestParticipant(email string) (*CreateTestParticipantResp
 	}{Email: email}
 
 	url := "/api/v1/researchers/participants/"
-	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(payload).
+		Status(http.StatusCreated).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusCreated {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unable to create test participant (status %d): %s", httpResponse.StatusCode, string(body))
+		return nil, err
 	}
 
 	return &response, nil
@@ -1001,9 +1016,9 @@ func (c *Client) GetRewardRecommendations(workspaceID, currency string, screener
 	}
 
 	requestURL := "/api/v1/reward-recommendations/?" + query.Encode()
-	_, err := c.Execute(http.MethodGet, requestURL, nil, &response)
+	_, err := c.ExecuteBuilder().GetInto(requestURL, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", requestURL, err)
+		return nil, err
 	}
 
 	return &response, nil
