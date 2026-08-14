@@ -23,6 +23,14 @@ func (b *ExecuteBuilder) Get(url string, response any) (*http.Response, error) {
 	return b.GetRequest(url).Status(http.StatusOK).Decode(response).Execute()
 }
 
+// GetInto sends a GET request and decodes the response, accepting any status
+// Client.Execute already treated as a success (see Execute) rather than
+// asserting a specific one — for endpoints where the caller never checked
+// the status code beyond that.
+func (b *ExecuteBuilder) GetInto(url string, response any) (*http.Response, error) {
+	return b.GetRequest(url).Decode(response).Execute()
+}
+
 func (b *ExecuteBuilder) GetRequest(url string) *ExecuteBuilder {
 	return b.newRequest(http.MethodGet, url)
 }

@@ -38,6 +38,33 @@ func TestExecuteBuilderGet(t *testing.T) {
 	require.Equal(t, "test", resp.Name)
 }
 
+// GetInto accepts any status Client.Execute already treated as a success,
+// unlike Get which asserts 200 — this covers callers that never checked the
+// status code beyond that.
+func TestExecuteBuilderGetIntoAcceptsAnySuccessStatus(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusAccepted)
+		if err := json.NewEncoder(w).Encode(testResponse{ID: "123", Name: "test"}); err != nil {
+			t.Logf("failed to encode response: %v", err)
+		}
+	}))
+	defer srv.Close()
+
+	c := Client{
+		Client:  http.DefaultClient,
+		BaseURL: srv.URL,
+		Token:   "fake-token",
+	}
+
+	var resp testResponse
+	httpResponse, err := c.ExecuteBuilder().GetInto("/some-path", &resp)
+
+	require.NoError(t, err)
+	require.Equal(t, http.StatusAccepted, httpResponse.StatusCode)
+	require.Equal(t, "123", resp.ID)
+}
+
 func TestExecuteBuilderGetReturnsErrorOnHTTPFailure(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)

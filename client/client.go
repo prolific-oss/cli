@@ -355,7 +355,7 @@ func (c *Client) GetStudies(status, projectID string) (*ListStudiesResponse, err
 		}
 	}
 
-	_, err := c.ExecuteBuilder().GetRequest(url).Decode(&response).Execute()
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -402,7 +402,7 @@ func (c *Client) GetSubmissions(ID string, limit, offset int) (*ListSubmissionsR
 	var response ListSubmissionsResponse
 
 	url := fmt.Sprintf("/api/v1/studies/%s/submissions/?limit=%v&offset=%v", ID, limit, offset)
-	_, err := c.ExecuteBuilder().GetRequest(url).Decode(&response).Execute()
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -487,7 +487,7 @@ func (c *Client) GetCampaigns(workspaceID string, limit, offset int) (*ListCampa
 	var response ListCampaignsResponse
 
 	url := fmt.Sprintf("/api/v1/campaigns/?workspace_id=%s&limit=%v&offset=%v", workspaceID, limit, offset)
-	_, err := c.ExecuteBuilder().GetRequest(url).Decode(&response).Execute()
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -500,7 +500,7 @@ func (c *Client) GetCollections(workspaceID string, limit, offset int) (*ListCol
 	var response ListCollectionsResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/collections?workspace_id=%s&limit=%v&offset=%v", workspaceID, limit, offset)
-	_, err := c.ExecuteBuilder().GetRequest(url).Decode(&response).Execute()
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -546,7 +546,7 @@ func (c *Client) GetCollectionExportStatus(collectionID, exportID string) (*Coll
 	var response CollectionExportResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/collections/%s/export/%s", collectionID, exportID)
-	_, err := c.ExecuteBuilder().GetRequest(url).Decode(&response).Execute()
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
 		return nil, err
 	}
