@@ -299,8 +299,6 @@ var operations = []operation{
 	{operationID: "export-demographic-data", skip: "SPECMISMATCH: spec requires a request body, client sends none"},
 	{operationID: "get-demographic-export-history", skip: "OUTOFSCOPE: no CLI command for demographic export history"},
 	{operationID: "duplicate-study", skip: "SPECMISMATCH: spec requires a request body, client sends none"},
-	{operationID: "get-study-predicted-recruitment-time", skip: "OUTOFSCOPE: no CLI command for predicted recruitment time"},
-	{operationID: "post-study-predicted-recruitment-time", skip: "OUTOFSCOPE: no CLI command for posting predicted recruitment time"},
 	{operationID: "calculate-study-cost", skip: "OUTOFSCOPE: no CLI command for calculating study cost"},
 
 	// Credentials
