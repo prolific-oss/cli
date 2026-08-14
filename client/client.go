@@ -566,7 +566,7 @@ func (c *Client) UpdateStudy(ID string, study any) (*model.Study, error) {
 		Decode(&response).
 		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to update study: %v", err)
+		return nil, err
 	}
 
 	return &response, nil
