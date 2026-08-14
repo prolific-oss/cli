@@ -1363,13 +1363,17 @@ func (c *Client) UpdateAITaskBuilderBatch(params UpdateBatchParams) (*UpdateAITa
 	}
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s", params.BatchID)
-	httpResponse, err := c.Execute(http.MethodPatch, url, payload, &response)
+	httpResponse, err := c.ExecuteBuilder().
+		PatchRequest(url).
+		Body(payload).
+		Decode(&response).
+		Execute()
 	if err != nil {
 		var apiErr *UnrecognizedAPIError
 		if errors.As(err, &apiErr) {
 			return nil, fmt.Errorf("unable to update batch: %s", formatBatchErrorBody(apiErr.Body))
 		}
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	if httpResponse.StatusCode != http.StatusOK {
@@ -1416,9 +1420,9 @@ func (c *Client) GetAITaskBuilderBatch(batchID string) (*GetAITaskBuilderBatchRe
 	var response GetAITaskBuilderBatchResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s", batchID)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	return &response, nil
@@ -1429,9 +1433,9 @@ func (c *Client) GetAITaskBuilderBatchStatus(batchID string) (*GetAITaskBuilderB
 	var response GetAITaskBuilderBatchStatusResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/status", batchID)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 	return &response, nil
 }
@@ -1441,9 +1445,9 @@ func (c *Client) GetAITaskBuilderBatches(workspaceID string) (*GetAITaskBuilderB
 	var response GetAITaskBuilderBatchesResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/?workspace_id=%s", workspaceID)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 	return &response, nil
 }
@@ -1453,9 +1457,9 @@ func (c *Client) GetAITaskBuilderResponses(batchID string) (*GetAITaskBuilderRes
 	var response GetAITaskBuilderResponsesResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/responses", batchID)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 	return &response, nil
 }
@@ -1465,9 +1469,9 @@ func (c *Client) GetAITaskBuilderTasks(batchID string) (*GetAITaskBuilderTasksRe
 	var response GetAITaskBuilderTasksResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/tasks", batchID)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 	return &response, nil
 }
@@ -1477,9 +1481,9 @@ func (c *Client) GetAITaskBuilderTaskGroups(batchID string) (*GetAITaskBuilderTa
 	var response GetAITaskBuilderTaskGroupsResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/task-groups", batchID)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 	return &response, nil
 }
@@ -1491,14 +1495,13 @@ func (c *Client) InitiateBatchExport(batchID string) (*BatchExportResponse, erro
 	var response BatchExportResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/export", batchID)
-	httpResponse, err := c.Execute(http.MethodPost, url, nil, &response)
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Status(http.StatusOK, http.StatusAccepted).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusOK && httpResponse.StatusCode != http.StatusAccepted {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+		return nil, err
 	}
 
 	return &response, nil
@@ -1510,14 +1513,13 @@ func (c *Client) GetBatchExportStatus(batchID, exportID string) (*BatchExportRes
 	var response BatchExportResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/export/%s", batchID, exportID)
-	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().
+		GetRequest(url).
+		Status(http.StatusOK).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+		return nil, err
 	}
 
 	return &response, nil
@@ -1530,14 +1532,13 @@ func (c *Client) SyncAITaskBuilderBatch(batchID string) (*AITaskBuilderBatchSync
 	var response AITaskBuilderBatchSyncResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/sync", batchID)
-	httpResponse, err := c.Execute(http.MethodPost, url, nil, &response)
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Status(http.StatusOK, http.StatusAccepted).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusOK && httpResponse.StatusCode != http.StatusAccepted {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+		return nil, err
 	}
 
 	return &response, nil

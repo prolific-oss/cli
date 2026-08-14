@@ -82,7 +82,7 @@ func (b *ExecuteBuilder) Execute() (*http.Response, error) {
 	httpResponse, err := b.client.Execute(b.method, b.url, b.body, b.response)
 
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", b.url, err)
+		return nil, fmt.Errorf("unable to fulfil request %s: %w", b.url, err)
 	}
 
 	// Status was never called: Client.Execute already treated anything below
