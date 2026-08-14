@@ -1022,11 +1022,7 @@ func (c *Client) GetFilterSet(ID string) (*model.FilterSet, error) {
 	var response model.FilterSet
 
 	url := fmt.Sprintf("/api/v1/filter-sets/%s/", ID)
-	_, err := c.ExecuteBuilder().
-		GetRequest(url).
-		Status(http.StatusOK).
-		Decode(&response).
-		Execute()
+	_, err := c.ExecuteBuilder().Get(url, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -1069,11 +1065,7 @@ func (c *Client) GetSurvey(ID string) (*model.Survey, error) {
 	var response model.Survey
 
 	url := fmt.Sprintf("/api/v1/surveys/%s/", ID)
-	_, err := c.ExecuteBuilder().
-		GetRequest(url).
-		Status(http.StatusOK).
-		Decode(&response).
-		Execute()
+	_, err := c.ExecuteBuilder().Get(url, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -1130,11 +1122,7 @@ func (c *Client) GetSurveyResponse(surveyID, responseID string) (*model.SurveyRe
 	var response model.SurveyResponse
 
 	url := fmt.Sprintf("/api/v1/surveys/%s/responses/%s", surveyID, responseID)
-	_, err := c.ExecuteBuilder().
-		GetRequest(url).
-		Status(http.StatusOK).
-		Decode(&response).
-		Execute()
+	_, err := c.ExecuteBuilder().Get(url, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -1192,11 +1180,7 @@ func (c *Client) GetSurveyResponseSummary(surveyID string) (*model.SurveySummary
 	var response model.SurveySummary
 
 	url := fmt.Sprintf("/api/v1/surveys/%s/responses/summary/", surveyID)
-	_, err := c.ExecuteBuilder().
-		GetRequest(url).
-		Status(http.StatusOK).
-		Decode(&response).
-		Execute()
+	_, err := c.ExecuteBuilder().Get(url, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -1513,11 +1497,7 @@ func (c *Client) GetBatchExportStatus(batchID, exportID string) (*BatchExportRes
 	var response BatchExportResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/export/%s", batchID, exportID)
-	_, err := c.ExecuteBuilder().
-		GetRequest(url).
-		Status(http.StatusOK).
-		Decode(&response).
-		Execute()
+	_, err := c.ExecuteBuilder().Get(url, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -1551,11 +1531,7 @@ func (c *Client) GetAITaskBuilderBatchSyncStatus(batchID, syncID string) (*AITas
 	var response AITaskBuilderBatchSyncResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/syncs/%s", batchID, syncID)
-	_, err := c.ExecuteBuilder().
-		GetRequest(url).
-		Status(http.StatusOK).
-		Decode(&response).
-		Execute()
+	_, err := c.ExecuteBuilder().Get(url, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -1609,11 +1585,7 @@ func (c *Client) GetAITaskBuilderDatasetImportStatus(datasetID, importID string)
 	var response GetAITaskBuilderDatasetImportStatusResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/datasets/%s/imports/%s", datasetID, importID)
-	_, err := c.ExecuteBuilder().
-		GetRequest(url).
-		Status(http.StatusOK).
-		Decode(&response).
-		Execute()
+	_, err := c.ExecuteBuilder().Get(url, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -1801,11 +1773,7 @@ func (c *Client) ListCredentialPools(workspaceID string) (*ListCredentialPoolsRe
 	var response ListCredentialPoolsResponse
 
 	endpointURL := fmt.Sprintf("/api/v1/credentials/?workspace_id=%s", workspaceID)
-	_, err := c.ExecuteBuilder().
-		GetRequest(endpointURL).
-		Status(http.StatusOK).
-		Decode(&response).
-		Execute()
+	_, err := c.ExecuteBuilder().Get(endpointURL, &response)
 	if err != nil {
 		return nil, err
 	}
