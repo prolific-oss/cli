@@ -4,6 +4,10 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+### Core
+
+- Tighten contract testing against the Prolific API spec
+
 ## 1.2.1
 
 ### Core
