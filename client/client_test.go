@@ -1,8 +1,10 @@
 package client
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 
@@ -215,6 +217,55 @@ func TestCreateAITaskBuilderBatch(t *testing.T) {
 				t.Fatalf("expected error to contain %q, got %q", tt.wantErr, err.Error())
 			}
 		})
+	}
+}
+
+// TestGetParticipantGroupsSendsWorkspaceIDQueryParam guards the request shape
+// directly, since contract_test skips this operation (HARNESSGAP: kin-openapi
+// can't decode its oneOf-of-objects query param).
+func TestGetParticipantGroupsSendsWorkspaceIDQueryParam(t *testing.T) {
+	var gotMethod, gotPath string
+	var gotQuery url.Values
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotMethod = r.Method
+		gotPath = r.URL.Path
+		gotQuery = r.URL.Query()
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(ListParticipantGroupsResponse{}); err != nil {
+			t.Logf("failed to encode response: %v", err)
+		}
+	}))
+	defer server.Close()
+
+	c := Client{
+		Client:  server.Client(),
+		BaseURL: server.URL,
+		Token:   "test-token",
+	}
+
+	_, err := c.GetParticipantGroups("ws-id", 10, 0)
+	if err != nil {
+		t.Fatalf("GetParticipantGroups returned error: %v", err)
+	}
+
+	if gotMethod != http.MethodGet {
+		t.Errorf("method = %q, want %q", gotMethod, http.MethodGet)
+	}
+	if want := "/api/v1/participant-groups/"; gotPath != want {
+		t.Errorf("path = %q, want %q", gotPath, want)
+	}
+	if got := gotQuery.Get("workspace_id"); got != "ws-id" {
+		t.Errorf("workspace_id = %q, want %q", got, "ws-id")
+	}
+	if got := gotQuery.Get("limit"); got != "10" {
+		t.Errorf("limit = %q, want %q", got, "10")
+	}
+	if got := gotQuery.Get("offset"); got != "0" {
+		t.Errorf("offset = %q, want %q", got, "0")
+	}
+	if gotQuery.Has("project_id") {
+		t.Errorf("project_id should not be sent, got %q", gotQuery.Get("project_id"))
 	}
 }
 

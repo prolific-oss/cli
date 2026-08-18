@@ -9,6 +9,7 @@
 // Skip tags used in the operations table:
 //   - OUTOFSCOPE   — no CLI command exists or is planned for this endpoint
 //   - SPECMISMATCH — client request diverges from the spec; needs a fix
+//   - HARNESSGAP   — client behaviour is correct; kin-openapi can't validate this shape
 
 package contracttest
 
@@ -296,9 +297,9 @@ var operations = []operation{
 		c.GetStudyCredentialsUsageReportCSV("study-id")
 	}},
 	{operationID: "export-study", skip: "OUTOFSCOPE: no CLI command for exporting a study as a whole"},
-	{operationID: "export-demographic-data", skip: "SPECMISMATCH: spec requires a request body, client sends none"},
+	{operationID: "export-demographic-data", call: func(c *client.Client) { c.ExportDemographics("study-id") }},
 	{operationID: "get-demographic-export-history", skip: "OUTOFSCOPE: no CLI command for demographic export history"},
-	{operationID: "duplicate-study", skip: "SPECMISMATCH: spec requires a request body, client sends none"},
+	{operationID: "duplicate-study", call: func(c *client.Client) { c.DuplicateStudy("study-id") }},
 	{operationID: "calculate-study-cost", skip: "OUTOFSCOPE: no CLI command for calculating study cost"},
 
 	// Credentials
@@ -350,7 +351,7 @@ var operations = []operation{
 	}},
 
 	// Participant Groups
-	{operationID: "get-participant-groups", skip: "SPECMISMATCH: spec uses a filter deepObject query param, client sends it flat"},
+	{operationID: "get-participant-groups", skip: "HARNESSGAP: kin-openapi v0.146.0 mis-decodes a top-level oneOf-of-objects query param under the default form/explode=true style — it always resolves to the last oneOf branch (project_id), discarding an earlier correct match (workspace_id), so oneOf validation fails regardless of how the client sends it. Client's flat workspace_id=X is correct per spec defaults and per the real API (see commit 8c7aae6 / DCP-2272)."},
 	{operationID: "create-participant-group", call: func(c *client.Client) {
 		c.CreateParticipantGroup(model.CreateParticipantGroup{Name: "t", WorkspaceID: "ws-id"})
 	}},
