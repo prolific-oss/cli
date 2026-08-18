@@ -1009,9 +1009,9 @@ func (c *Client) GetFilterSets(workspaceID string, limit, offset int) (*ListFilt
 	var response ListFilterSetsResponse
 
 	url := fmt.Sprintf("/api/v1/filter-sets/?workspace_id=%s&limit=%v&offset=%v", workspaceID, limit, offset)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	return &response, nil
@@ -1022,13 +1022,9 @@ func (c *Client) GetFilterSet(ID string) (*model.FilterSet, error) {
 	var response model.FilterSet
 
 	url := fmt.Sprintf("/api/v1/filter-sets/%s/", ID)
-	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().Get(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("status code was %v, so therefore unable to get filter set: %v", httpResponse.StatusCode, ID)
+		return nil, err
 	}
 
 	return &response, nil
@@ -1039,9 +1035,13 @@ func (c *Client) CreateFilterSet(filterSet model.CreateFilterSet) (*CreateFilter
 	var response CreateFilterSetResponse
 
 	url := "/api/v1/filter-sets/"
-	_, err := c.Execute(http.MethodPost, url, filterSet, &response)
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(filterSet).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	return &response, nil
@@ -1052,9 +1052,9 @@ func (c *Client) GetSurveys(researcherID string, limit, offset int) (*ListSurvey
 	var response ListSurveysResponse
 
 	url := fmt.Sprintf("/api/v1/surveys/?researcher_id=%s&limit=%v&offset=%v", researcherID, limit, offset)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	return &response, nil
@@ -1065,13 +1065,9 @@ func (c *Client) GetSurvey(ID string) (*model.Survey, error) {
 	var response model.Survey
 
 	url := fmt.Sprintf("/api/v1/surveys/%s/", ID)
-	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().Get(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("status code was %v, so therefore unable to get survey: %v", httpResponse.StatusCode, ID)
+		return nil, err
 	}
 
 	return &response, nil
@@ -1082,9 +1078,13 @@ func (c *Client) CreateSurvey(survey model.CreateSurvey) (*CreateSurveyResponse,
 	var response CreateSurveyResponse
 
 	url := "/api/v1/surveys/"
-	_, err := c.Execute(http.MethodPost, url, survey, &response)
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(survey).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	return &response, nil
@@ -1093,13 +1093,12 @@ func (c *Client) CreateSurvey(survey model.CreateSurvey) (*CreateSurveyResponse,
 // DeleteSurvey will delete the survey with the given ID
 func (c *Client) DeleteSurvey(ID string) error {
 	url := fmt.Sprintf("/api/v1/surveys/%s/", ID)
-	httpResponse, err := c.Execute(http.MethodDelete, url, nil, nil)
+	_, err := c.ExecuteBuilder().
+		DeleteRequest(url).
+		Status(http.StatusNoContent).
+		Execute()
 	if err != nil {
-		return fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("status code was %v, so therefore unable to delete survey: %v", httpResponse.StatusCode, ID)
+		return err
 	}
 
 	return nil
@@ -1110,9 +1109,9 @@ func (c *Client) GetSurveyResponses(surveyID string, limit, offset int) (*ListSu
 	var response ListSurveyResponsesResponse
 
 	url := fmt.Sprintf("/api/v1/surveys/%s/responses/?limit=%v&offset=%v", surveyID, limit, offset)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	return &response, nil
@@ -1123,13 +1122,9 @@ func (c *Client) GetSurveyResponse(surveyID, responseID string) (*model.SurveyRe
 	var response model.SurveyResponse
 
 	url := fmt.Sprintf("/api/v1/surveys/%s/responses/%s", surveyID, responseID)
-	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().Get(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("status code was %v, so therefore unable to get survey response: %v", httpResponse.StatusCode, responseID)
+		return nil, err
 	}
 
 	return &response, nil
@@ -1140,9 +1135,13 @@ func (c *Client) CreateSurveyResponse(surveyID string, surveyResponse model.Crea
 	var response CreateSurveyResponseResponse
 
 	url := fmt.Sprintf("/api/v1/surveys/%s/responses/", surveyID)
-	_, err := c.Execute(http.MethodPost, url, surveyResponse, &response)
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(surveyResponse).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	return &response, nil
@@ -1151,13 +1150,12 @@ func (c *Client) CreateSurveyResponse(surveyID string, surveyResponse model.Crea
 // DeleteSurveyResponse will delete a single survey response
 func (c *Client) DeleteSurveyResponse(surveyID, responseID string) error {
 	url := fmt.Sprintf("/api/v1/surveys/%s/responses/%s", surveyID, responseID)
-	httpResponse, err := c.Execute(http.MethodDelete, url, nil, nil)
+	_, err := c.ExecuteBuilder().
+		DeleteRequest(url).
+		Status(http.StatusNoContent).
+		Execute()
 	if err != nil {
-		return fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("status code was %v, so therefore unable to delete survey response: %v", httpResponse.StatusCode, responseID)
+		return err
 	}
 
 	return nil
@@ -1166,13 +1164,12 @@ func (c *Client) DeleteSurveyResponse(surveyID, responseID string) error {
 // DeleteAllSurveyResponses will delete all responses for a survey
 func (c *Client) DeleteAllSurveyResponses(surveyID string) error {
 	url := fmt.Sprintf("/api/v1/surveys/%s/responses/", surveyID)
-	httpResponse, err := c.Execute(http.MethodDelete, url, nil, nil)
+	_, err := c.ExecuteBuilder().
+		DeleteRequest(url).
+		Status(http.StatusNoContent).
+		Execute()
 	if err != nil {
-		return fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("status code was %v, so therefore unable to delete all survey responses for survey: %v", httpResponse.StatusCode, surveyID)
+		return err
 	}
 
 	return nil
@@ -1183,13 +1180,9 @@ func (c *Client) GetSurveyResponseSummary(surveyID string) (*model.SurveySummary
 	var response model.SurveySummary
 
 	url := fmt.Sprintf("/api/v1/surveys/%s/responses/summary/", surveyID)
-	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().Get(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("status code was %v, so therefore unable to get survey response summary for survey: %v", httpResponse.StatusCode, surveyID)
+		return nil, err
 	}
 
 	return &response, nil
@@ -1200,9 +1193,13 @@ func (c *Client) UpdateCollection(ID string, collection model.UpdateCollection) 
 	var response model.Collection
 
 	url := fmt.Sprintf("/api/v1/data-collection/collections/%s/", ID)
-	_, err := c.Execute(http.MethodPut, url, collection, &response)
+	_, err := c.ExecuteBuilder().
+		PutRequest(url).
+		Body(collection).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	return &response, nil
@@ -1229,9 +1226,9 @@ func (c *Client) GetMessages(userID *string, createdAfter *string) (*ListMessage
 
 	url := baseURL + "?" + params.Encode()
 
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	return &response, nil
@@ -1246,9 +1243,9 @@ func (c *Client) SendMessage(body string, recipientID string, studyID string) er
 	}
 
 	url := "/api/v1/messages/"
-	_, err := c.Execute(http.MethodPost, url, payload, nil)
+	_, err := c.ExecuteBuilder().PostRequest(url).Body(payload).Execute()
 	if err != nil {
-		return fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return err
 	}
 
 	return nil
@@ -1260,9 +1257,9 @@ func (c *Client) GetUnreadMessages() (*ListUnreadMessagesResponse, error) {
 
 	url := "/api/v1/messages/unread/"
 
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	return &response, nil
@@ -1277,9 +1274,9 @@ func (c *Client) BulkSendMessage(ids []string, body, studyID string) error {
 	}
 
 	url := "/api/v1/messages/bulk/"
-	_, err := c.Execute(http.MethodPost, url, payload, nil)
+	_, err := c.ExecuteBuilder().PostRequest(url).Body(payload).Execute()
 	if err != nil {
-		return fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return err
 	}
 
 	return nil
@@ -1297,9 +1294,9 @@ func (c *Client) SendGroupMessage(participantGroupID, body string, studyID *stri
 	}
 
 	url := "/api/v1/messages/participant-group/"
-	_, err := c.Execute(http.MethodPost, url, payload, nil)
+	_, err := c.ExecuteBuilder().PostRequest(url).Body(payload).Execute()
 	if err != nil {
-		return fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return err
 	}
 
 	return nil
@@ -1310,14 +1307,14 @@ func (c *Client) CreateBonusPayments(payload CreateBonusPaymentsPayload) (*Creat
 	var response CreateBonusPaymentsResponse
 
 	url := "/api/v1/submissions/bonus-payments/"
-	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(payload).
+		Status(http.StatusCreated).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusCreated {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unable to create bonus payments: %v", string(body))
+		return nil, err
 	}
 
 	return &response, nil
@@ -1326,14 +1323,12 @@ func (c *Client) CreateBonusPayments(payload CreateBonusPaymentsPayload) (*Creat
 // PayBonusPayments triggers asynchronous payment of previously created bonus records.
 func (c *Client) PayBonusPayments(id string) error {
 	url := fmt.Sprintf("/api/v1/bulk-bonus-payments/%s/pay/", id)
-	httpResponse, err := c.Execute(http.MethodPost, url, nil, nil)
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Status(http.StatusAccepted).
+		Execute()
 	if err != nil {
-		return fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusAccepted {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return fmt.Errorf("unable to pay bonus payments: %v", string(body))
+		return err
 	}
 
 	return nil
@@ -1352,13 +1347,17 @@ func (c *Client) UpdateAITaskBuilderBatch(params UpdateBatchParams) (*UpdateAITa
 	}
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s", params.BatchID)
-	httpResponse, err := c.Execute(http.MethodPatch, url, payload, &response)
+	httpResponse, err := c.ExecuteBuilder().
+		PatchRequest(url).
+		Body(payload).
+		Decode(&response).
+		Execute()
 	if err != nil {
 		var apiErr *UnrecognizedAPIError
 		if errors.As(err, &apiErr) {
 			return nil, fmt.Errorf("unable to update batch: %s", formatBatchErrorBody(apiErr.Body))
 		}
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	if httpResponse.StatusCode != http.StatusOK {
@@ -1405,9 +1404,9 @@ func (c *Client) GetAITaskBuilderBatch(batchID string) (*GetAITaskBuilderBatchRe
 	var response GetAITaskBuilderBatchResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s", batchID)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	return &response, nil
@@ -1418,9 +1417,9 @@ func (c *Client) GetAITaskBuilderBatchStatus(batchID string) (*GetAITaskBuilderB
 	var response GetAITaskBuilderBatchStatusResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/status", batchID)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 	return &response, nil
 }
@@ -1430,9 +1429,9 @@ func (c *Client) GetAITaskBuilderBatches(workspaceID string) (*GetAITaskBuilderB
 	var response GetAITaskBuilderBatchesResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/?workspace_id=%s", workspaceID)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 	return &response, nil
 }
@@ -1442,9 +1441,9 @@ func (c *Client) GetAITaskBuilderResponses(batchID string) (*GetAITaskBuilderRes
 	var response GetAITaskBuilderResponsesResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/responses", batchID)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 	return &response, nil
 }
@@ -1454,9 +1453,9 @@ func (c *Client) GetAITaskBuilderTasks(batchID string) (*GetAITaskBuilderTasksRe
 	var response GetAITaskBuilderTasksResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/tasks", batchID)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 	return &response, nil
 }
@@ -1466,9 +1465,9 @@ func (c *Client) GetAITaskBuilderTaskGroups(batchID string) (*GetAITaskBuilderTa
 	var response GetAITaskBuilderTaskGroupsResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/task-groups", batchID)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 	return &response, nil
 }
@@ -1480,14 +1479,13 @@ func (c *Client) InitiateBatchExport(batchID string) (*BatchExportResponse, erro
 	var response BatchExportResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/export", batchID)
-	httpResponse, err := c.Execute(http.MethodPost, url, nil, &response)
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Status(http.StatusOK, http.StatusAccepted).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusOK && httpResponse.StatusCode != http.StatusAccepted {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+		return nil, err
 	}
 
 	return &response, nil
@@ -1499,14 +1497,9 @@ func (c *Client) GetBatchExportStatus(batchID, exportID string) (*BatchExportRes
 	var response BatchExportResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/export/%s", batchID, exportID)
-	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().Get(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+		return nil, err
 	}
 
 	return &response, nil
@@ -1519,14 +1512,13 @@ func (c *Client) SyncAITaskBuilderBatch(batchID string) (*AITaskBuilderBatchSync
 	var response AITaskBuilderBatchSyncResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/sync", batchID)
-	httpResponse, err := c.Execute(http.MethodPost, url, nil, &response)
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Status(http.StatusOK, http.StatusAccepted).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusOK && httpResponse.StatusCode != http.StatusAccepted {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+		return nil, err
 	}
 
 	return &response, nil
@@ -1539,14 +1531,9 @@ func (c *Client) GetAITaskBuilderBatchSyncStatus(batchID, syncID string) (*AITas
 	var response AITaskBuilderBatchSyncResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/syncs/%s", batchID, syncID)
-	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().Get(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+		return nil, err
 	}
 
 	return &response, nil
@@ -1557,9 +1544,9 @@ func (c *Client) GetAITaskBuilderDataset(datasetID string) (*GetAITaskBuilderDat
 	var response GetAITaskBuilderDatasetResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/datasets/%s", datasetID)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 	return &response, nil
 }
@@ -1569,9 +1556,9 @@ func (c *Client) GetAITaskBuilderDatasetStatus(datasetID string) (*GetAITaskBuil
 	var response GetAITaskBuilderDatasetStatusResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/datasets/%s/status", datasetID)
-	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().GetInto(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 	return &response, nil
 }
@@ -1581,14 +1568,13 @@ func (c *Client) GetAITaskBuilderDatasetUploadURL(datasetID, fileName string) (*
 	var response GetAITaskBuilderDatasetUploadURLResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/datasets/%s/upload-url/%s", datasetID, fileName)
-	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().
+		GetRequest(url).
+		Status(http.StatusCreated).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusCreated {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+		return nil, err
 	}
 
 	return &response, nil
@@ -1599,14 +1585,9 @@ func (c *Client) GetAITaskBuilderDatasetImportStatus(datasetID, importID string)
 	var response GetAITaskBuilderDatasetImportStatusResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/datasets/%s/imports/%s", datasetID, importID)
-	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	_, err := c.ExecuteBuilder().Get(url, &response)
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+		return nil, err
 	}
 
 	return &response, nil
@@ -1630,13 +1611,17 @@ func (c *Client) CreateAITaskBuilderBatch(params CreateBatchParams) (*CreateAITa
 	}
 
 	url := "/api/v1/data-collection/batches"
-	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
+	httpResponse, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(payload).
+		Decode(&response).
+		Execute()
 	if err != nil {
 		var apiErr *UnrecognizedAPIError
 		if errors.As(err, &apiErr) {
 			return nil, fmt.Errorf("unable to create batch: %s", formatBatchErrorBody(apiErr.Body))
 		}
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+		return nil, err
 	}
 
 	if httpResponse.StatusCode != http.StatusCreated {
@@ -1652,14 +1637,14 @@ func (c *Client) CreateAITaskBuilderInstructions(batchID string, instructions Cr
 	var response CreateAITaskBuilderInstructionsResponse
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/instructions", batchID)
-	httpResponse, err := c.Execute(http.MethodPost, url, instructions, &response)
+	httpResponse, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(instructions).
+		Status(http.StatusCreated).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusCreated {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unable to create instructions: %v", string(body))
+		return nil, err
 	}
 
 	if httpResponse.Header.Get("Deprecation") != "" {
@@ -1684,14 +1669,13 @@ func (c *Client) SetupAITaskBuilderBatch(batchID, datasetID string, tasksPerGrou
 	}
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/setup", batchID)
-	httpResponse, err := c.Execute(http.MethodPost, url, payload, nil)
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(payload).
+		Status(http.StatusAccepted).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	// Check for 202 Accepted status
-	if httpResponse.StatusCode != http.StatusAccepted {
-		return nil, fmt.Errorf("unexpected status code: %d", httpResponse.StatusCode)
+		return nil, err
 	}
 
 	return &response, nil
@@ -1706,14 +1690,14 @@ func (c *Client) CreateAITaskBuilderDataset(workspaceID string, payload CreateAI
 	payload.WorkspaceID = workspaceID
 
 	url := "/api/v1/data-collection/datasets"
-	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(payload).
+		Status(http.StatusCreated).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusCreated {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unable to create dataset: %v", string(body))
+		return nil, err
 	}
 
 	return &response, nil
@@ -1724,14 +1708,14 @@ func (c *Client) CreateAITaskBuilderCollection(payload model.CreateAITaskBuilder
 	var response CreateAITaskBuilderCollectionResponse
 
 	url := "/api/v1/data-collection/collections"
-	httpResponse, err := c.Execute(http.MethodPost, url, payload, &response)
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(payload).
+		Status(http.StatusCreated).
+		Decode(&response).
+		Execute()
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
-	}
-
-	if httpResponse.StatusCode != http.StatusCreated {
-		body, _ := io.ReadAll(httpResponse.Body)
-		return nil, fmt.Errorf("unable to create collection: %v", string(body))
+		return nil, err
 	}
 
 	return &response, nil
@@ -1748,13 +1732,14 @@ func (c *Client) CreateCredentialPool(credentials string, workspaceID string) (*
 	}
 
 	endpointURL := "/api/v1/credentials/"
-	httpResponse, err := c.Execute(http.MethodPost, endpointURL, payload, &response)
+	_, err := c.ExecuteBuilder().
+		PostRequest(endpointURL).
+		Body(payload).
+		Status(http.StatusCreated).
+		Decode(&response).
+		Execute()
 	if err != nil {
 		return nil, err
-	}
-
-	if httpResponse.StatusCode != http.StatusCreated {
-		return nil, fmt.Errorf("unexpected status code: expected 201, got %d", httpResponse.StatusCode)
 	}
 
 	return &response, nil
@@ -1770,13 +1755,14 @@ func (c *Client) UpdateCredentialPool(credentialPoolID string, credentials strin
 	}
 
 	endpointURL := fmt.Sprintf("/api/v1/credentials/%s/", credentialPoolID)
-	httpResponse, err := c.Execute(http.MethodPatch, endpointURL, payload, &response)
+	_, err := c.ExecuteBuilder().
+		PatchRequest(endpointURL).
+		Body(payload).
+		Status(http.StatusOK).
+		Decode(&response).
+		Execute()
 	if err != nil {
 		return nil, err
-	}
-
-	if httpResponse.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: expected 200, got %d", httpResponse.StatusCode)
 	}
 
 	return &response, nil
@@ -1787,13 +1773,9 @@ func (c *Client) ListCredentialPools(workspaceID string) (*ListCredentialPoolsRe
 	var response ListCredentialPoolsResponse
 
 	endpointURL := fmt.Sprintf("/api/v1/credentials/?workspace_id=%s", workspaceID)
-	httpResponse, err := c.Execute(http.MethodGet, endpointURL, nil, &response)
+	_, err := c.ExecuteBuilder().Get(endpointURL, &response)
 	if err != nil {
 		return nil, err
-	}
-
-	if httpResponse.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: expected 200, got %d", httpResponse.StatusCode)
 	}
 
 	return &response, nil
