@@ -40,48 +40,37 @@ jobs:
         with:
           go-version: 1.26.5
 
-      - name: Install git-cliff
-        run: |
-          set -euo pipefail
-          ASSET="git-cliff-2.13.1-x86_64-unknown-linux-gnu.tar.gz"
-          BASE_URL="https://github.com/orhun/git-cliff/releases/download/v2.13.1"
+      - name: Get latest tag
+        id: tag
+        run: echo "latest_tag=$(git describe --tags --abbrev=0)" >> "$GITHUB_OUTPUT"
 
-          curl -sSL -o "$ASSET" "${BASE_URL}/${ASSET}"
-          curl -sSL -o "${ASSET}.sha512" "${BASE_URL}/${ASSET}.sha512"
-          sha512sum -c "${ASSET}.sha512"
+      # Installs git-cliff and fails the job if it errors (exit code is
+      # propagated by the action itself). Using the action instead of a
+      # hand-rolled curl install also means Dependabot's already-configured
+      # github-actions ecosystem tracks git-cliff's pinned version here —
+      # a plain version string in a shell script, as this used to be, is
+      # invisible to it.
+      - name: Generate unreleased changelog notes
+        id: cliff
+        uses: orhun/git-cliff-action@v4.8.0
+        with:
+          config: cliff.toml
+          args: --unreleased --strip header ${{ steps.tag.outputs.latest_tag }}..HEAD
 
-          tar -xzf "$ASSET"
-          sudo mv git-cliff-2.13.1/git-cliff /usr/local/bin/git-cliff
-          git-cliff --version
+      - name: Make git-cliff available on PATH for later steps
+        run: echo "$RUNNER_TEMP/git-cliff/bin" >> "$GITHUB_PATH"
 
       - name: Check for unreleased user-facing commits
         id: detect
-        run: |
-          set -euo pipefail
-          LATEST_TAG=$(git describe --tags --abbrev=0)
-          echo "latest_tag=${LATEST_TAG}" >> "$GITHUB_OUTPUT"
-
+        env:
           # Reuses cliff.toml's own commit-type filtering (the same rules
-          # `make changelog` uses) rather than re-deriving the feat/fix/docs/
-          # perf/refactor/revert/test inclusion list a second time here.
-          # Exit code is checked explicitly (rather than swallowing stderr
-          # and guessing from stdout content) so a git-cliff failure fails
-          # the job loudly instead of being silently misread as "nothing to
-          # release" or a false-positive "something to release". stdout and
-          # stderr are kept separate: git-cliff's INFO/WARN diagnostics go
-          # to stderr on every run (even successful ones), so merging them
-          # into the content check would make it permanently non-empty.
-          set +e
-          RAW=$(git-cliff "${LATEST_TAG}"..HEAD --unreleased --strip header --config cliff.toml 2>git-cliff-stderr.log)
-          STATUS=$?
-          set -e
-          if [ "$STATUS" -ne 0 ]; then
-            echo "::error::git-cliff failed with exit code ${STATUS}:"
-            cat git-cliff-stderr.log
-            exit 1
-          fi
-
-          NOTES=$(echo "$RAW" | tr -d '[:space:]')
+          # `make changelog` uses) instead of re-deriving the inclusion
+          # list here. Read from the action's `content` output, which is
+          # sourced from git-cliff's output file rather than stdout, so
+          # there's no diagnostic-log noise to filter out.
+          CONTENT: ${{ steps.cliff.outputs.content }}
+        run: |
+          NOTES=$(echo "$CONTENT" | tr -d '[:space:]')
           if [ -z "$NOTES" ]; then
             echo "has_unreleased=false" >> "$GITHUB_OUTPUT"
           else
@@ -101,7 +90,7 @@ jobs:
         if: steps.detect.outputs.has_unreleased == 'true' && steps.existing.outputs.count == '0'
         id: version
         env:
-          LATEST_TAG: ${{ steps.detect.outputs.latest_tag }}
+          LATEST_TAG: ${{ steps.tag.outputs.latest_tag }}
         run: |
           CURRENT="${LATEST_TAG#v}"
           NEXT=$(go run ./scripts/changelog next-version --bump patch "$CURRENT")
@@ -112,7 +101,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.REPO_CONTENTS_WRITE }}
           VERSION: ${{ steps.version.outputs.next }}
-          LATEST_TAG: ${{ steps.detect.outputs.latest_tag }}
+          LATEST_TAG: ${{ steps.tag.outputs.latest_tag }}
         run: |
           set -euo pipefail
           BRANCH="release/v${VERSION}"
