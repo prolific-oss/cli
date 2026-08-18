@@ -6,6 +6,7 @@
 //	go run ./scripts/changelog extract --section next --strip-comments
 //	go run ./scripts/changelog extract-version
 //	go run ./scripts/changelog validate-version 0.1.0
+//	go run ./scripts/changelog next-version --bump patch 0.1.0
 //	go run ./scripts/changelog merge --manual MANUAL.md --generated CLIFF.md --output MERGED.md
 //	go run ./scripts/changelog update --version 0.1.0 --notes NOTES.md
 package main
@@ -19,6 +20,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -32,7 +34,7 @@ var (
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stderr, "usage: changelog <extract|extract-version|validate-version|merge|update|transform> [flags]")
+		fmt.Fprintln(os.Stderr, "usage: changelog <extract|extract-version|validate-version|next-version|merge|update|transform> [flags]")
 		os.Exit(1)
 	}
 
@@ -46,6 +48,8 @@ func main() {
 		runExtractVersion()
 	case "validate-version":
 		runValidateVersion()
+	case "next-version":
+		runNextVersion()
 	case "merge":
 		runMerge()
 	case "update":
@@ -120,6 +124,55 @@ func runValidateVersion() {
 		fmt.Fprintf(os.Stderr, "validate-version: %q is invalid — use strict semver x.y.z with digits only (e.g. 0.0.61, not v0.0.61)\n", v)
 		os.Exit(1)
 	}
+}
+
+// NextVersion computes the version after current for the given bump type
+// ("patch" or "minor"). current must be strict x.y.z (no v prefix); bumping
+// minor resets patch to 0.
+func NextVersion(current, bump string) (string, error) {
+	if !StrictSemver(current) {
+		return "", fmt.Errorf("%q is invalid — use strict semver x.y.z with digits only (e.g. 0.0.61, not v0.0.61)", current)
+	}
+
+	parts := strings.Split(current, ".")
+	major, err1 := strconv.Atoi(parts[0])
+	minor, err2 := strconv.Atoi(parts[1])
+	patch, err3 := strconv.Atoi(parts[2])
+	if err1 != nil || err2 != nil || err3 != nil {
+		return "", fmt.Errorf("%q could not be parsed as major.minor.patch", current)
+	}
+
+	switch bump {
+	case "patch":
+		patch++
+	case "minor":
+		minor++
+		patch = 0
+	default:
+		return "", fmt.Errorf("unknown bump type %q — use patch or minor", bump)
+	}
+
+	return fmt.Sprintf("%d.%d.%d", major, minor, patch), nil
+}
+
+func runNextVersion() {
+	fs := flag.NewFlagSet("next-version", flag.ContinueOnError)
+	bump := fs.String("bump", "patch", "version segment to bump: patch or minor")
+	if err := fs.Parse(os.Args[1:]); err != nil {
+		fmt.Fprintf(os.Stderr, "next-version: %v\n", err)
+		os.Exit(1)
+	}
+	if fs.NArg() < 1 {
+		fmt.Fprintln(os.Stderr, "next-version: current version argument required (strict x.y.z, no v prefix)")
+		os.Exit(1)
+	}
+
+	next, err := NextVersion(strings.TrimSpace(fs.Arg(0)), *bump)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "next-version: %v\n", err)
+		os.Exit(1)
+	}
+	fmt.Print(next)
 }
 
 func runExtractVersion() {

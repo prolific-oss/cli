@@ -1,0 +1,115 @@
+name: Release Cadence Check
+
+# Detects unreleased user-facing commits on main and opens a release PR
+# automatically — it never merges, tags, or releases anything itself.
+# Actual release creation still only happens via create-release.yml, which
+# only fires from a human-approved merge of a PR carrying the `release`
+# label (branch protection: 1 approval + passing Build required). This is a
+# convenience for step 1-2 of the "Release Process" in README.md, not a
+# bypass of step 3.
+#
+# Runs on schedule/workflow_dispatch only (never pull_request/
+# pull_request_target) — this repo is public, and those triggers can run in
+# fork-PR context with secrets exposed; schedule/workflow_dispatch always
+# run against the base repo with its own permissions.
+on:
+  schedule:
+    - cron: "9 8 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  check-release-cadence:
+    runs-on: ubuntu-latest
+    environment: main
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v7.0.0
+        with:
+          go-version: 1.26.5
+
+      - name: Install git-cliff
+        run: |
+          curl -sSL -o git-cliff.tar.gz \
+            https://github.com/orhun/git-cliff/releases/download/v2.13.1/git-cliff-2.13.1-x86_64-unknown-linux-gnu.tar.gz
+          tar -xzf git-cliff.tar.gz
+          sudo mv git-cliff-2.13.1/git-cliff /usr/local/bin/git-cliff
+          git-cliff --version
+
+      - name: Check for unreleased user-facing commits
+        id: detect
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0)
+          echo "latest_tag=${LATEST_TAG}" >> "$GITHUB_OUTPUT"
+
+          # Reuses cliff.toml's own commit-type filtering (the same rules
+          # `make changelog` uses) rather than re-deriving the feat/fix/docs/
+          # perf/refactor/revert/test inclusion list a second time here.
+          NOTES=$(git-cliff "${LATEST_TAG}"..HEAD --unreleased --strip header --config cliff.toml 2>/dev/null | tr -d '[:space:]')
+          if [ -z "$NOTES" ]; then
+            echo "has_unreleased=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_unreleased=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check for an already-open release PR
+        if: steps.detect.outputs.has_unreleased == 'true'
+        id: existing
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          count=$(gh pr list --repo "${{ github.repository }}" --label release --state open --json number --jq 'length')
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+
+      - name: Compute next version
+        if: steps.detect.outputs.has_unreleased == 'true' && steps.existing.outputs.count == '0'
+        id: version
+        env:
+          LATEST_TAG: ${{ steps.detect.outputs.latest_tag }}
+        run: |
+          CURRENT="${LATEST_TAG#v}"
+          NEXT=$(go run ./scripts/changelog next-version --bump patch "$CURRENT")
+          echo "next=${NEXT}" >> "$GITHUB_OUTPUT"
+
+      - name: Open a release PR
+        if: steps.detect.outputs.has_unreleased == 'true' && steps.existing.outputs.count == '0'
+        env:
+          GH_TOKEN: ${{ secrets.REPO_CONTENTS_WRITE }}
+          VERSION: ${{ steps.version.outputs.next }}
+          LATEST_TAG: ${{ steps.detect.outputs.latest_tag }}
+        run: |
+          set -euo pipefail
+          BRANCH="release/v${VERSION}"
+
+          make changelog VERSION="${VERSION}"
+
+          git config user.name "Prolific Automation"
+          git config user.email "prolific-automation@prolific.com"
+          git checkout -b "$BRANCH"
+          git add CHANGELOG.md
+          git commit -m "chore(release): update CHANGELOG.md for v${VERSION}"
+          git push --force-with-lease origin "$BRANCH"
+
+          {
+            echo "Automated release PR — detected unreleased user-facing commits since \`${LATEST_TAG}\`."
+            echo ""
+            echo "Version was auto-computed as a **PATCH** bump (\`${LATEST_TAG}\` -> \`v${VERSION}\`). If this batch of changes includes a breaking change (a removed flag, a changed output format — see the version-bump table in DEVELOPMENT.md), edit the \`## ${VERSION}\` heading in \`CHANGELOG.md\` to the next **MINOR** version before merging."
+            echo ""
+            echo "Merging this PR (with the \`release\` label, already applied) will trigger \`create-release.yml\` as usual — nothing is released until then."
+          } > pr-body.md
+
+          gh pr create \
+            --repo "${{ github.repository }}" \
+            --title "chore(release): v${VERSION}" \
+            --label release \
+            --body-file pr-body.md \
+            --head "$BRANCH" \
+            --base main

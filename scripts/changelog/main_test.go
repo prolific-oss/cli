@@ -138,6 +138,41 @@ func TestStrictSemver(t *testing.T) {
 	}
 }
 
+func TestNextVersion(t *testing.T) {
+	tests := []struct {
+		name    string
+		current string
+		bump    string
+		want    string
+		wantErr bool
+	}{
+		{"patch bump", "1.2.1", "patch", "1.2.2", false},
+		{"minor bump resets patch", "1.2.1", "minor", "1.3.0", false},
+		{"patch bump at zero", "0.0.0", "patch", "0.0.1", false},
+		{"multi digit segments", "10.20.30", "patch", "10.20.31", false},
+		{"v prefix rejected", "v1.2.1", "patch", "", true},
+		{"empty rejected", "", "patch", "", true},
+		{"unknown bump type rejected", "1.2.1", "major", "", true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := NextVersion(tt.current, tt.bump)
+			if tt.wantErr {
+				if err == nil {
+					t.Fatalf("NextVersion(%q, %q) expected error, got %q", tt.current, tt.bump, got)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("NextVersion(%q, %q) unexpected error: %v", tt.current, tt.bump, err)
+			}
+			if got != tt.want {
+				t.Errorf("NextVersion(%q, %q) = %q, want %q", tt.current, tt.bump, got, tt.want)
+			}
+		})
+	}
+}
+
 func TestExtractSection(t *testing.T) {
 	changelog := `# CHANGELOG
 
