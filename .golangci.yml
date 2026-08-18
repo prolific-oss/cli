@@ -53,6 +53,12 @@ linters:
       - linters: [gosec]
         text: "G70[35]"
         path: 'scripts/changelog/'
+      # scripts/readme-coverage/ is an internal doc-generation tool with
+      # hardcoded constant file paths (no flags, no user input) — G703 path
+      # traversal is a false positive.
+      - linters: [gosec]
+        text: "G703"
+        path: 'scripts/readme-coverage/'
       # QF1012 Use fmt.Fprintf(...) clashes with go fix patterns
       - linters: [staticcheck]
         text: "QF1012"

@@ -225,6 +225,7 @@ The pre-commit hook (installed by `make install`) runs `make lint` and `make tes
    - Implement on the `Client` struct
    - Add request/response structs to `payloads.go`/`responses.go`
    - Run `make test-gen-mock`
+   - Add an entry (or update an existing `skip`) for the operation in `contract_test/contract_test.go`'s `operations` table, then run `make readme-coverage` to regenerate the API coverage table in `README.md`
 
 Reference `cmd/study/` or `cmd/workspace/` for complete examples.
 
