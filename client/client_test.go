@@ -224,8 +224,11 @@ func TestCreateAITaskBuilderBatch(t *testing.T) {
 // directly, since contract_test skips this operation (HARNESSGAP: kin-openapi
 // can't decode its oneOf-of-objects query param).
 func TestGetParticipantGroupsSendsWorkspaceIDQueryParam(t *testing.T) {
+	var gotMethod, gotPath string
 	var gotQuery url.Values
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotMethod = r.Method
+		gotPath = r.URL.Path
 		gotQuery = r.URL.Query()
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -246,6 +249,12 @@ func TestGetParticipantGroupsSendsWorkspaceIDQueryParam(t *testing.T) {
 		t.Fatalf("GetParticipantGroups returned error: %v", err)
 	}
 
+	if gotMethod != http.MethodGet {
+		t.Errorf("method = %q, want %q", gotMethod, http.MethodGet)
+	}
+	if want := "/api/v1/participant-groups/"; gotPath != want {
+		t.Errorf("path = %q, want %q", gotPath, want)
+	}
 	if got := gotQuery.Get("workspace_id"); got != "ws-id" {
 		t.Errorf("workspace_id = %q, want %q", got, "ws-id")
 	}
