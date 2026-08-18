@@ -245,6 +245,16 @@ This uses `git-cliff` (must be installed separately: `brew install git-cliff`) p
 
 To include hand-written notes in the next release, add them under `## next` in `CHANGELOG.md` before running `make changelog` — they will be merged in automatically.
 
+## Schema Drift Detection
+
+`.github/workflows/schema-drift-check.yml` runs `contract_test` (see `contract_test/contract_test.go`) daily on a schedule, independent of any push/PR activity, so drift is caught even when nothing else in the repo changes. `contract_test` already downloads the *live* Prolific OpenAPI spec on every run — this workflow just gives it a reason to run on its own.
+
+On failure, it files a GitHub issue labeled `schema-drift` with the exact failing test output and a checklist mirroring "Adding a New API Method" above. It skips filing if an open `schema-drift` issue already exists, so a persistent unresolved drift doesn't spam a new issue every day.
+
+Trigger it manually to test: `gh workflow run schema-drift-check.yml`.
+
+**Known gap:** the filed issue isn't currently auto-assigned to anyone (including GitHub Copilot coding agent) — as of this writing, Copilot coding agent has no access to this repo (`"Bot does not have access to the repository"` when tested via the GraphQL `replaceActorsForAssignable` mutation), which would need an org admin to re-enable before that part of DCT-262's original automation goal can be completed. Until then, filed issues need a human to notice and either fix directly or manually assign.
+
 ## Boundaries
 
 **Always do:**
