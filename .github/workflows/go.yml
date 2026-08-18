@@ -45,3 +45,8 @@ jobs:
       - name: Test
         run: |
           make test
+
+      - name: Verify API coverage table is up to date
+        run: |
+          make readme-coverage
+          git diff --exit-code README.md || (echo "::error::README.md API coverage table is out of date — run 'make readme-coverage' and commit the changes" && exit 1)
