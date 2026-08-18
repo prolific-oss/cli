@@ -17,6 +17,10 @@ on:
     - cron: "9 8 * * 1"
   workflow_dispatch:
 
+concurrency:
+  group: release-cadence-check-${{ github.repository }}
+  cancel-in-progress: false
+
 permissions:
   contents: read
   pull-requests: read
@@ -38,22 +42,46 @@ jobs:
 
       - name: Install git-cliff
         run: |
-          curl -sSL -o git-cliff.tar.gz \
-            https://github.com/orhun/git-cliff/releases/download/v2.13.1/git-cliff-2.13.1-x86_64-unknown-linux-gnu.tar.gz
-          tar -xzf git-cliff.tar.gz
+          set -euo pipefail
+          ASSET="git-cliff-2.13.1-x86_64-unknown-linux-gnu.tar.gz"
+          BASE_URL="https://github.com/orhun/git-cliff/releases/download/v2.13.1"
+
+          curl -sSL -o "$ASSET" "${BASE_URL}/${ASSET}"
+          curl -sSL -o "${ASSET}.sha512" "${BASE_URL}/${ASSET}.sha512"
+          sha512sum -c "${ASSET}.sha512"
+
+          tar -xzf "$ASSET"
           sudo mv git-cliff-2.13.1/git-cliff /usr/local/bin/git-cliff
           git-cliff --version
 
       - name: Check for unreleased user-facing commits
         id: detect
         run: |
+          set -euo pipefail
           LATEST_TAG=$(git describe --tags --abbrev=0)
           echo "latest_tag=${LATEST_TAG}" >> "$GITHUB_OUTPUT"
 
           # Reuses cliff.toml's own commit-type filtering (the same rules
           # `make changelog` uses) rather than re-deriving the feat/fix/docs/
           # perf/refactor/revert/test inclusion list a second time here.
-          NOTES=$(git-cliff "${LATEST_TAG}"..HEAD --unreleased --strip header --config cliff.toml 2>/dev/null | tr -d '[:space:]')
+          # Exit code is checked explicitly (rather than swallowing stderr
+          # and guessing from stdout content) so a git-cliff failure fails
+          # the job loudly instead of being silently misread as "nothing to
+          # release" or a false-positive "something to release". stdout and
+          # stderr are kept separate: git-cliff's INFO/WARN diagnostics go
+          # to stderr on every run (even successful ones), so merging them
+          # into the content check would make it permanently non-empty.
+          set +e
+          RAW=$(git-cliff "${LATEST_TAG}"..HEAD --unreleased --strip header --config cliff.toml 2>git-cliff-stderr.log)
+          STATUS=$?
+          set -e
+          if [ "$STATUS" -ne 0 ]; then
+            echo "::error::git-cliff failed with exit code ${STATUS}:"
+            cat git-cliff-stderr.log
+            exit 1
+          fi
+
+          NOTES=$(echo "$RAW" | tr -d '[:space:]')
           if [ -z "$NOTES" ]; then
             echo "has_unreleased=false" >> "$GITHUB_OUTPUT"
           else
@@ -97,6 +125,15 @@ jobs:
           git add CHANGELOG.md
           git commit -m "chore(release): update CHANGELOG.md for v${VERSION}"
           git push --force-with-lease origin "$BRANCH"
+
+          # A prior run may have pushed this branch and opened a PR that was
+          # later closed without merging (e.g. rejected content) without the
+          # branch being deleted — matches create-release.yml's
+          # update-homebrew-tap job, which guards the same way.
+          if gh pr view --repo "${{ github.repository }}" "$BRANCH" >/dev/null 2>&1; then
+            echo "PR for \`$BRANCH\` already exists, skipping creation."
+            exit 0
+          fi
 
           {
             echo "Automated release PR — detected unreleased user-facing commits since \`${LATEST_TAG}\`."
