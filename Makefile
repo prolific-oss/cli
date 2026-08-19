@@ -128,6 +128,10 @@ changelog: ## Generate grouped changelog for a release (Usage: make changelog VE
 	@rm -f CLIFF_NOTES.md MANUAL_NOTES.md RELEASE_NOTES.md
 	@echo "CHANGELOG.md updated for v$(VERSION)"
 
+.PHONY: readme-coverage
+readme-coverage: ## Regenerate the API coverage table in README.md from contract_test's operations table
+	go run ./scripts/readme-coverage
+
 .PHONY: docker-build
 docker-build: ## Build the docker image
 	docker build -t $(DOCKER_PREFIX)/$(NAME):$(DOCKER_RELEASE) .

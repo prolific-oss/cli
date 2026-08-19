@@ -1,8 +1,11 @@
 package client
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"strings"
 	"testing"
 
 	"github.com/prolific-oss/cli/version"
@@ -63,6 +66,209 @@ func TestFormatBatchErrorBody(t *testing.T) {
 		})
 	}
 }
+
+// TestUpdateAITaskBuilderBatch characterizes the current error-branching behaviour
+// before any ExecuteBuilder migration: it does typed error inspection
+// (errors.As for *UnrecognizedAPIError) directly on the raw error from
+// Client.Execute, which only works because that error isn't wrapped before
+// the check. Any migration must preserve this or the INVALID_BATCH_ITEMS
+// formatting silently stops firing.
+func TestUpdateAITaskBuilderBatch(t *testing.T) {
+	tests := []struct {
+		name       string
+		statusCode int
+		body       string
+		wantErr    string
+		wantOK     bool
+	}{
+		{
+			name:       "success",
+			statusCode: http.StatusOK,
+			body:       `{"batch_id":"batch-1"}`,
+			wantOK:     true,
+		},
+		{
+			name:       "INVALID_BATCH_ITEMS on a 4xx response is formatted via errors.As(*UnrecognizedAPIError)",
+			statusCode: http.StatusBadRequest,
+			body:       `{"type":"INVALID_BATCH_ITEMS","issues":[{"page":0,"row":0,"column":0,"item":0,"type":"free_text","message":"description is required"}]}`,
+			wantErr:    "unable to update batch: batch_items validation failed:\n  Page 1, Row 1, Column 1, Item 1 (free_text): description is required",
+		},
+		{
+			name:       "INVALID_BATCH_ITEMS on a non-error success status is formatted via the StatusCode check",
+			statusCode: http.StatusAccepted,
+			body:       `{"type":"INVALID_BATCH_ITEMS","issues":[{"page":0,"row":0,"column":0,"item":0,"type":"free_text","message":"description is required"}]}`,
+			wantErr:    "unable to update batch: batch_items validation failed:\n  Page 1, Row 1, Column 1, Item 1 (free_text): description is required",
+		},
+		{
+			name:       "a recognized error shape on a 4xx response takes the generic error path, not formatBatchErrorBody",
+			statusCode: http.StatusBadRequest,
+			body:       `{"detail":"batch not found"}`,
+			wantErr:    "unable to fulfil request",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(tt.statusCode)
+				_, _ = w.Write([]byte(tt.body))
+			}))
+			defer server.Close()
+
+			c := Client{
+				Client:  server.Client(),
+				BaseURL: server.URL,
+				Token:   "test-token",
+			}
+
+			resp, err := c.UpdateAITaskBuilderBatch(UpdateBatchParams{BatchID: "batch-1", Name: "updated"})
+
+			if tt.wantOK {
+				if err != nil {
+					t.Fatalf("expected no error, got: %v", err)
+				}
+				if resp == nil {
+					t.Fatalf("expected a response, got nil")
+				}
+				return
+			}
+
+			if err == nil {
+				t.Fatalf("expected an error, got nil")
+			}
+			if !strings.Contains(err.Error(), tt.wantErr) {
+				t.Fatalf("expected error to contain %q, got %q", tt.wantErr, err.Error())
+			}
+		})
+	}
+}
+
+// TestCreateAITaskBuilderBatch characterizes the same errors.As(*UnrecognizedAPIError)
+// pattern as TestUpdateAITaskBuilderBatch above.
+func TestCreateAITaskBuilderBatch(t *testing.T) {
+	tests := []struct {
+		name       string
+		statusCode int
+		body       string
+		wantErr    string
+		wantOK     bool
+	}{
+		{
+			name:       "success",
+			statusCode: http.StatusCreated,
+			body:       `{"batch_id":"batch-1"}`,
+			wantOK:     true,
+		},
+		{
+			name:       "INVALID_BATCH_ITEMS on a 4xx response is formatted via errors.As(*UnrecognizedAPIError)",
+			statusCode: http.StatusBadRequest,
+			body:       `{"type":"INVALID_BATCH_ITEMS","issues":[{"page":0,"row":0,"column":0,"item":0,"type":"free_text","message":"description is required"}]}`,
+			wantErr:    "unable to create batch: batch_items validation failed:\n  Page 1, Row 1, Column 1, Item 1 (free_text): description is required",
+		},
+		{
+			name:       "INVALID_BATCH_ITEMS on a non-error success status is formatted via the StatusCode check",
+			statusCode: http.StatusOK,
+			body:       `{"type":"INVALID_BATCH_ITEMS","issues":[{"page":0,"row":0,"column":0,"item":0,"type":"free_text","message":"description is required"}]}`,
+			wantErr:    "unable to create batch: batch_items validation failed:\n  Page 1, Row 1, Column 1, Item 1 (free_text): description is required",
+		},
+		{
+			name:       "a recognized error shape on a 4xx response takes the generic error path, not formatBatchErrorBody",
+			statusCode: http.StatusBadRequest,
+			body:       `{"detail":"workspace not found"}`,
+			wantErr:    "unable to fulfil request",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(tt.statusCode)
+				_, _ = w.Write([]byte(tt.body))
+			}))
+			defer server.Close()
+
+			c := Client{
+				Client:  server.Client(),
+				BaseURL: server.URL,
+				Token:   "test-token",
+			}
+
+			resp, err := c.CreateAITaskBuilderBatch(CreateBatchParams{
+				Name: "batch", WorkspaceID: "ws-1", DatasetID: "ds-1",
+				TaskName: "task", TaskIntroduction: "intro", TaskSteps: "steps",
+			})
+
+			if tt.wantOK {
+				if err != nil {
+					t.Fatalf("expected no error, got: %v", err)
+				}
+				if resp == nil {
+					t.Fatalf("expected a response, got nil")
+				}
+				return
+			}
+
+			if err == nil {
+				t.Fatalf("expected an error, got nil")
+			}
+			if !strings.Contains(err.Error(), tt.wantErr) {
+				t.Fatalf("expected error to contain %q, got %q", tt.wantErr, err.Error())
+			}
+		})
+	}
+}
+
+// TestGetParticipantGroupsSendsWorkspaceIDQueryParam guards the request shape
+// directly, since contract_test skips this operation (HARNESSGAP: kin-openapi
+// can't decode its oneOf-of-objects query param).
+func TestGetParticipantGroupsSendsWorkspaceIDQueryParam(t *testing.T) {
+	var gotMethod, gotPath string
+	var gotQuery url.Values
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotMethod = r.Method
+		gotPath = r.URL.Path
+		gotQuery = r.URL.Query()
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(ListParticipantGroupsResponse{}); err != nil {
+			t.Logf("failed to encode response: %v", err)
+		}
+	}))
+	defer server.Close()
+
+	c := Client{
+		Client:  server.Client(),
+		BaseURL: server.URL,
+		Token:   "test-token",
+	}
+
+	_, err := c.GetParticipantGroups("ws-id", 10, 0)
+	if err != nil {
+		t.Fatalf("GetParticipantGroups returned error: %v", err)
+	}
+
+	if gotMethod != http.MethodGet {
+		t.Errorf("method = %q, want %q", gotMethod, http.MethodGet)
+	}
+	if want := "/api/v1/participant-groups/"; gotPath != want {
+		t.Errorf("path = %q, want %q", gotPath, want)
+	}
+	if got := gotQuery.Get("workspace_id"); got != "ws-id" {
+		t.Errorf("workspace_id = %q, want %q", got, "ws-id")
+	}
+	if got := gotQuery.Get("limit"); got != "10" {
+		t.Errorf("limit = %q, want %q", got, "10")
+	}
+	if got := gotQuery.Get("offset"); got != "0" {
+		t.Errorf("offset = %q, want %q", got, "0")
+	}
+	if gotQuery.Has("project_id") {
+		t.Errorf("project_id should not be sent, got %q", gotQuery.Get("project_id"))
+	}
+}
+
 func TestComposeUserAgent(t *testing.T) {
 	knownVars := []string{"CLAUDECODE", "ANTIGRAVITY_AGENT", "AI_AGENT", "LLM_AGENT"}
 

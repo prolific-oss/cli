@@ -43,6 +43,10 @@ func (b *ExecuteBuilder) PatchRequest(url string) *ExecuteBuilder {
 	return b.newRequest(http.MethodPatch, url)
 }
 
+func (b *ExecuteBuilder) PutRequest(url string) *ExecuteBuilder {
+	return b.newRequest(http.MethodPut, url)
+}
+
 func (b *ExecuteBuilder) DeleteRequest(url string) *ExecuteBuilder {
 	return b.newRequest(http.MethodDelete, url)
 }
@@ -78,7 +82,7 @@ func (b *ExecuteBuilder) Execute() (*http.Response, error) {
 	httpResponse, err := b.client.Execute(b.method, b.url, b.body, b.response)
 
 	if err != nil {
-		return nil, fmt.Errorf("unable to fulfil request %s: %s", b.url, err)
+		return nil, fmt.Errorf("unable to fulfil request %s: %w", b.url, err)
 	}
 
 	// Status was never called: Client.Execute already treated anything below
