@@ -1,7 +1,10 @@
 package client
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -64,6 +67,151 @@ func TestFormatBatchErrorBody(t *testing.T) {
 				t.Fatalf("expected:\n%q\ngot:\n%q", tt.expected, got)
 			}
 		})
+	}
+}
+
+func TestExecuteTruncatesOversizedErrorDetail(t *testing.T) {
+	oversizedDetail := strings.Repeat("x", maxErrorDetailLen*3)
+
+	tests := []struct {
+		name          string
+		statusCode    int
+		body          string
+		wantTruncated bool
+	}{
+		{
+			name:          "JSONAPIError with oversized detail is truncated and hints at debug mode",
+			statusCode:    http.StatusBadRequest,
+			body:          fmt.Sprintf(`{"error":{"status":400,"title":"Bad Request","detail":%q}}`, oversizedDetail),
+			wantTruncated: true,
+		},
+		{
+			name:          "JSONAPIError with small detail is unchanged",
+			statusCode:    http.StatusBadRequest,
+			body:          `{"error":{"status":400,"title":"Bad Request","detail":"study ID is invalid"}}`,
+			wantTruncated: false,
+		},
+		{
+			name:          "SimpleAPIError with oversized detail is truncated and hints at debug mode",
+			statusCode:    http.StatusBadRequest,
+			body:          fmt.Sprintf(`{"message":"Bad Request","detail":%q}`, oversizedDetail),
+			wantTruncated: true,
+		},
+		{
+			name:          "SimpleAPIError with small detail is unchanged",
+			statusCode:    http.StatusBadRequest,
+			body:          `{"message":"Bad Request","detail":"study not found"}`,
+			wantTruncated: false,
+		},
+		{
+			name:          "unrecognized error body is truncated and hints at debug mode",
+			statusCode:    http.StatusInternalServerError,
+			body:          strings.Repeat("y", maxErrorDetailLen*3),
+			wantTruncated: true,
+		},
+		{
+			name:          "small unrecognized error body is unchanged",
+			statusCode:    http.StatusInternalServerError,
+			body:          "internal server error",
+			wantTruncated: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(tt.statusCode)
+				_, _ = w.Write([]byte(tt.body))
+			}))
+			defer server.Close()
+
+			c := Client{Client: server.Client(), BaseURL: server.URL, Token: "test-token"}
+
+			_, err := c.Execute(http.MethodGet, "/", nil, nil)
+			if err == nil {
+				t.Fatalf("expected an error, got nil")
+			}
+
+			if tt.wantTruncated {
+				if !strings.Contains(err.Error(), "PROLIFIC_DEBUG=1") {
+					t.Fatalf("expected truncated error to mention PROLIFIC_DEBUG=1, got: %q", err.Error())
+				}
+				if len(err.Error()) >= len(tt.body) {
+					t.Fatalf("expected error message to be shorter than the oversized body (%d bytes), got %d bytes", len(tt.body), len(err.Error()))
+				}
+			} else {
+				if strings.Contains(err.Error(), "PROLIFIC_DEBUG=1") {
+					t.Fatalf("expected small error not to be truncated, got: %q", err.Error())
+				}
+			}
+		})
+	}
+}
+
+// TestTruncateErrorDetailMultiByteRuneCount guards against comparing byte length to a rune-based cap.
+func TestTruncateErrorDetailMultiByteRuneCount(t *testing.T) {
+	// 300 runes of a 3-byte CJK character: 900 bytes, but only 300 runes.
+	s := strings.Repeat("世", 300)
+
+	got := truncateErrorDetail(s)
+
+	if got != s {
+		t.Fatalf("expected a string under the rune cap to be returned unchanged, got: %q", got)
+	}
+}
+
+// TestUnrecognizedAPIErrorBodyRemainsIntactAfterTruncation guards the INVALID_BATCH_ITEMS path's json.Unmarshal of Body.
+func TestUnrecognizedAPIErrorBodyRemainsIntactAfterTruncation(t *testing.T) {
+	issue := struct {
+		Page    int    `json:"page"`
+		Row     int    `json:"row"`
+		Column  int    `json:"column"`
+		Item    int    `json:"item"`
+		Type    string `json:"type"`
+		Message string `json:"message"`
+	}{Message: strings.Repeat("z", maxErrorDetailLen*3)}
+
+	payload := struct {
+		Type   string        `json:"type"`
+		Issues []interface{} `json:"issues"`
+	}{Type: "INVALID_BATCH_ITEMS", Issues: []interface{}{issue}}
+
+	body, err := json.Marshal(payload)
+	if err != nil {
+		t.Fatalf("failed to marshal fixture: %v", err)
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write(body)
+	}))
+	defer server.Close()
+
+	c := Client{Client: server.Client(), BaseURL: server.URL, Token: "test-token"}
+
+	_, execErr := c.Execute(http.MethodGet, "/", nil, nil)
+	if execErr == nil {
+		t.Fatalf("expected an error, got nil")
+	}
+
+	var apiErr *UnrecognizedAPIError
+	if !errors.As(execErr, &apiErr) {
+		t.Fatalf("expected *UnrecognizedAPIError, got %T: %v", execErr, execErr)
+	}
+
+	if !bytes.Equal(apiErr.Body, body) {
+		t.Fatalf("UnrecognizedAPIError.Body was mutated/truncated: got %d bytes, want %d bytes", len(apiErr.Body), len(body))
+	}
+
+	got := formatBatchErrorBody(apiErr.Body)
+	if !strings.Contains(got, issue.Message) {
+		t.Fatalf("formatBatchErrorBody lost the full untruncated message; got %d chars, want to contain %d-char message", len(got), len(issue.Message))
+	}
+
+	if !strings.Contains(apiErr.Error(), "PROLIFIC_DEBUG=1") {
+		t.Fatalf("expected Error() to be truncated with a debug hint, got: %q", apiErr.Error())
 	}
 }
 
