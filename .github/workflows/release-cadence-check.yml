@@ -153,10 +153,14 @@ jobs:
             echo "Not the right time (other work still landing, want to batch more in)? Just close this without merging — it won't reopen itself, but if unreleased commits still remain, the next scheduled run will propose a fresh PR."
           } > pr-body.md
 
+          # dct-ready-for-review triggers a Slack notification so DCT (who
+          # own CLI releases for now) gets nudged. Swap or remove once
+          # release ownership moves to an OSS maintainer group.
           gh pr create \
             --repo "${{ github.repository }}" \
             --title "chore(release): v${VERSION}" \
             --label release \
+            --label dct-ready-for-review \
             --body-file pr-body.md \
             --head "$BRANCH" \
             --base main
