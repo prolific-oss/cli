@@ -1,0 +1,81 @@
+name: Schema Drift Check
+
+# Runs contract_test against the LIVE Prolific API spec on a schedule and files an issue on failure — see AGENTS.md's Schema Drift Detection section.
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: schema-drift-check-${{ github.repository }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v7.0.0
+        with:
+          go-version: 1.26.5
+
+      - name: Check out code
+        uses: actions/checkout@v7
+
+      - name: Get dependencies
+        run: make install
+
+      - name: Run contract tests against the live API spec
+        id: contract_test
+        run: |
+          # No -v: it buries the failure signal under passing-subtest noise (verified: 11.5KB vs 355 bytes for the same failure).
+          go test ./contract_test/... > contract-test-output.txt 2>&1 || true
+          if grep -q "^FAIL" contract-test-output.txt; then
+            echo "drift=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "drift=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check for an already-open schema-drift issue
+        if: steps.contract_test.outputs.drift == 'true'
+        id: existing
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          count=$(gh issue list --repo "${{ github.repository }}" --label schema-drift --state open --json number --jq 'length')
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+
+      - name: File a schema-drift issue
+        if: steps.contract_test.outputs.drift == 'true' && steps.existing.outputs.count == '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          {
+            echo "Contract tests (\`go test ./contract_test/...\`) failed against the live Prolific OpenAPI spec — this usually means the API has changed in a way the CLI doesn't yet handle."
+            echo ""
+            echo "## Failing test output"
+            echo ""
+            echo '```'
+            cat contract-test-output.txt
+            echo '```'
+            echo ""
+            echo "## What likely needs to change"
+            echo ""
+            echo "Follow AGENTS.md's \"Adding a New API Method\" checklist:"
+            echo ""
+            echo "- [ ] Update the \`API\` interface in \`client/client.go\` and implement on the \`Client\` struct"
+            echo "- [ ] Add/update request/response structs in \`client/payloads.go\`/\`client/responses.go\`"
+            echo "- [ ] Run \`make test-gen-mock\` to regenerate \`mock_client/mock_client.go\`"
+            echo "- [ ] Update the relevant entry (or entries) in \`contract_test/contract_test.go\`'s \`operations\` table"
+            echo "- [ ] Run \`make readme-coverage\` to refresh the API coverage table in \`README.md\`"
+            echo "- [ ] \`make test\` and \`make lint\` pass"
+          } > issue-body.md
+
+          gh issue create --repo "${{ github.repository }}" \
+            --title "API schema drift detected ($(date -u +%Y-%m-%d))" \
+            --label schema-drift \
+            --body-file issue-body.md
