@@ -16,6 +16,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"unicode/utf8"
 
 	"github.com/prolific-oss/cli/agentenv"
 	"github.com/prolific-oss/cli/config"
@@ -148,7 +149,29 @@ type UnrecognizedAPIError struct {
 }
 
 func (e *UnrecognizedAPIError) Error() string {
-	return fmt.Sprintf("request failed with status %d: %s", e.StatusCode, string(e.Body))
+	return fmt.Sprintf("request failed with status %d: %s", e.StatusCode, truncateErrorDetail(string(e.Body)))
+}
+
+// maxErrorDetailLen caps upstream API error text shown to the user; the full response is available via PROLIFIC_DEBUG=1.
+const maxErrorDetailLen = 500
+
+// truncateErrorDetail returns a copy; it never mutates the caller's data (e.g. UnrecognizedAPIError.Body).
+func truncateErrorDetail(s string) string {
+	if utf8.RuneCountInString(s) <= maxErrorDetailLen {
+		return s
+	}
+
+	cut := len(s)
+	runeCount := 0
+	for i := range s {
+		if runeCount == maxErrorDetailLen {
+			cut = i
+			break
+		}
+		runeCount++
+	}
+
+	return fmt.Sprintf("%s... [truncated, %d of %d bytes shown; re-run with PROLIFIC_DEBUG=1 for the full response]", s[:cut], cut, len(s))
 }
 
 // Client is responsible for interacting with the Prolific API.
@@ -249,13 +272,13 @@ func (c *Client) Execute(method, url string, body any, response any) (*http.Resp
 		// Try the nested error format first
 		var apiError JSONAPIError
 		if err := json.NewDecoder(io.NopCloser(bytes.NewBuffer(responseBody))).Decode(&apiError); err == nil && apiError.Error.Detail != nil {
-			return nil, fmt.Errorf("request failed: %v", apiError.Error.Detail)
+			return nil, fmt.Errorf("request failed: %s", truncateErrorDetail(fmt.Sprintf("%v", apiError.Error.Detail)))
 		}
 
 		// Try the simple error format
 		var simpleError SimpleAPIError
 		if err := json.NewDecoder(io.NopCloser(bytes.NewBuffer(responseBody))).Decode(&simpleError); err == nil && simpleError.Detail != "" {
-			return nil, fmt.Errorf("request failed: %s - %s", simpleError.Message, simpleError.Detail)
+			return nil, fmt.Errorf("request failed: %s - %s", simpleError.Message, truncateErrorDetail(simpleError.Detail))
 		}
 
 		// If both fail, return a typed error so callers can inspect the raw body
