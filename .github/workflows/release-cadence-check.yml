@@ -131,12 +131,15 @@ jobs:
           git commit -m "chore(release): update CHANGELOG.md for v${VERSION}"
           git push --force-with-lease origin "$BRANCH"
 
-          # A prior run may have pushed this branch and opened a PR that was
-          # later closed without merging (e.g. rejected content) without the
-          # branch being deleted — matches create-release.yml's
-          # update-homebrew-tap job, which guards the same way.
-          if gh pr view --repo "${{ github.repository }}" "$BRANCH" >/dev/null 2>&1; then
-            echo "PR for \`$BRANCH\` already exists, skipping creation."
+          # Only skip if a PR for this branch is still OPEN. A closed
+          # (unmerged) PR means a reviewer deferred the release — not that
+          # it's rejected forever — so a new PR should be re-proposed next
+          # run as long as unreleased work remains. Checking state, not just
+          # existence, is what makes closing a PR a snooze rather than a
+          # permanent mute.
+          STATE=$(gh pr view --repo "${{ github.repository }}" "$BRANCH" --json state --jq .state 2>/dev/null || echo "NONE")
+          if [ "$STATE" = "OPEN" ]; then
+            echo "PR for \`$BRANCH\` is already open, skipping creation."
             exit 0
           fi
 
@@ -146,6 +149,8 @@ jobs:
             echo "Version was auto-computed as a **PATCH** bump (\`${LATEST_TAG}\` -> \`v${VERSION}\`). If this batch of changes includes a breaking change (a removed flag, a changed output format — see the version-bump table in DEVELOPMENT.md), edit the \`## ${VERSION}\` heading in \`CHANGELOG.md\` to the next **MINOR** version before merging."
             echo ""
             echo "Merging this PR (with the \`release\` label, already applied) will trigger \`create-release.yml\` as usual — nothing is released until then."
+            echo ""
+            echo "Not the right time (other work still landing, want to batch more in)? Just close this without merging — it won't reopen itself, but if unreleased commits still remain, the next scheduled run will propose a fresh PR."
           } > pr-body.md
 
           gh pr create \
