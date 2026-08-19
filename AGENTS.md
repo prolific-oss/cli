@@ -253,7 +253,7 @@ On failure, it files a GitHub issue labeled `schema-drift` with the exact failin
 
 Trigger it manually to test: `gh workflow run schema-drift-check.yml`.
 
-**Known gap:** the filed issue isn't currently auto-assigned to anyone (including GitHub Copilot coding agent) — as of this writing, Copilot coding agent has no access to this repo (`"Bot does not have access to the repository"` when tested via the GraphQL `replaceActorsForAssignable` mutation), which would need an org admin to re-enable before that part of DCT-262's original automation goal can be completed. Until then, filed issues need a human to notice and either fix directly or manually assign.
+**No auto-assignment:** filed issues aren't auto-assigned to anyone. Auto-assigning to GitHub Copilot coding agent was investigated but requires org-level access this repo doesn't currently have (`"Bot does not have access to the repository"`, confirmed via the GraphQL `replaceActorsForAssignable` mutation) — and separately, running any unattended AI agent against a public repo's issues/PRs raises its own governance questions (prompt-injection surface from public issue content, unattended write access) that are unresolved regardless of which agent. Until that's settled, a human picks up filed issues; a `schema-drift-fix` skill for speeding that up (human-run, not unattended) is planned (DCT-262).
 
 ## Boundaries
 
