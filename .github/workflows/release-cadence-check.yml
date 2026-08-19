@@ -42,17 +42,33 @@ jobs:
 
       - name: Get latest tag
         id: tag
-        run: echo "latest_tag=$(git describe --tags --abbrev=0)" >> "$GITHUB_OUTPUT"
+        run: |
+          set -euo pipefail
+          LATEST_TAG=$(git describe --tags --abbrev=0)
+          # Validated strictly before use anywhere else, including as a
+          # templated expression interpolated into a third-party action's
+          # `with:` input below (which that action then splices into its
+          # own internal shell command) — the standard GH Actions script-
+          # injection pattern. Creating a tag needs write access already,
+          # so this is a defense-in-depth boundary against a compromised or
+          # malicious trusted account, not a fix for an open/anyone-can-hit
+          # vulnerability.
+          if ! [[ "$LATEST_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::latest tag '${LATEST_TAG}' doesn't match the expected vX.Y.Z format"
+            exit 1
+          fi
+          echo "latest_tag=${LATEST_TAG}" >> "$GITHUB_OUTPUT"
 
       # Installs git-cliff and fails the job if it errors (exit code is
       # propagated by the action itself). Using the action instead of a
       # hand-rolled curl install also means Dependabot's already-configured
       # github-actions ecosystem tracks git-cliff's pinned version here —
       # a plain version string in a shell script, as this used to be, is
-      # invisible to it.
+      # invisible to it. SHA-pinned (Dependabot still tracks and bumps this,
+      # updating both the SHA and the version comment).
       - name: Generate unreleased changelog notes
         id: cliff
-        uses: orhun/git-cliff-action@v4.8.0
+        uses: orhun/git-cliff-action@f50e11560dce63f7c33227798f90b924471a88b5 # v4.8.0
         with:
           config: cliff.toml
           args: --unreleased --strip header ${{ steps.tag.outputs.latest_tag }}..HEAD
