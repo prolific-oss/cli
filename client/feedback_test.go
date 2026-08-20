@@ -1,6 +1,7 @@
 package client_test
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -82,5 +83,27 @@ func TestFeedbackEndpointsDoNotWriteDebugLogs(t *testing.T) {
 
 	if output != "" {
 		t.Fatalf("expected no debug output for feedback endpoints, got %q", output)
+	}
+}
+
+func TestFeedbackEndpointsDoNotDoubleWrapRequestErrors(t *testing.T) {
+	httpClient := &http.Client{
+		Transport: roundTripFunc(func(_ *http.Request) (*http.Response, error) {
+			return nil, errors.New("request failed")
+		}),
+	}
+
+	c := client.Client{
+		Client:  httpClient,
+		BaseURL: "https://example.test",
+		Token:   "token",
+	}
+
+	_, err := c.GetStudyRatings("63c123af913a974f87e8e7fc")
+	if err == nil {
+		t.Fatal("expected request error")
+	}
+	if count := strings.Count(err.Error(), "unable to fulfil request"); count != 1 {
+		t.Fatalf("expected request error to be wrapped once, got %q", err)
 	}
 }
