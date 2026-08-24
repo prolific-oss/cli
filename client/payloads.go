@@ -1,6 +1,17 @@
 package client
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"github.com/prolific-oss/cli/model"
+)
+
+// EligibilityCountPayload represents the JSON payload for counting how many
+// participants match a set of filters, without creating a study.
+type EligibilityCountPayload struct {
+	Filters     []model.Filter `json:"filters"`
+	WorkspaceID string         `json:"workspace_id,omitempty"`
+}
 
 // SendMessagePayload represents the JSON payload for sending a message.
 type SendMessagePayload struct {

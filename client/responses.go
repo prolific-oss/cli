@@ -83,6 +83,14 @@ type ListFiltersResponse struct {
 	*JSONAPIMeta
 }
 
+// EligibilityCountResponse is the response for the eligibility count
+// endpoint. Counts below 25 are floored to 0 by the API to protect
+// participant privacy, so a Count of 0 does not necessarily mean zero
+// eligible participants.
+type EligibilityCountResponse struct {
+	Count int `json:"count"`
+}
+
 // RewardRecommendationsResponse is the response for the reward
 // recommendations endpoint. The API guarantees the first item is the most
 // recent set of rates.

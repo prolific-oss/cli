@@ -117,7 +117,9 @@ var operations = []operation{
 	// Filters
 	{operationID: "get-filters", call: func(c *client.Client) { c.GetFilters() }},
 	{operationID: "get-filter-distribution", skip: "OUTOFSCOPE: filter distribution not needed in CLI"},
-	{operationID: "get-eligible-count", skip: "OUTOFSCOPE: eligibility count not needed in CLI"},
+	{operationID: "get-eligible-count", call: func(c *client.Client) {
+		c.GetEligibilityCount(client.EligibilityCountPayload{Filters: []model.Filter{}, WorkspaceID: "ws-id"})
+	}},
 
 	// Filter Sets
 	{operationID: "get-filter-sets", call: func(c *client.Client) { c.GetFilterSets("ws-id", 10, 0) }},
