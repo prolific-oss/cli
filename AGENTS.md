@@ -245,6 +245,16 @@ This uses `git-cliff` (must be installed separately: `brew install git-cliff`) p
 
 To include hand-written notes in the next release, add them under `## next` in `CHANGELOG.md` before running `make changelog` — they will be merged in automatically.
 
+## Schema Drift Detection
+
+`.github/workflows/schema-drift-check.yml` runs `contract_test` (see `contract_test/contract_test.go`) daily on a schedule, independent of any push/PR activity, so drift is caught even when nothing else in the repo changes. `contract_test` already downloads the *live* Prolific OpenAPI spec on every run — this workflow just gives it a reason to run on its own.
+
+On failure, it files a GitHub issue labeled `schema-drift` with the exact failing test output and a checklist mirroring "Adding a New API Method" above. It skips filing if an open `schema-drift` issue already exists, so a persistent unresolved drift doesn't spam a new issue every day.
+
+Trigger it manually to test: `gh workflow run schema-drift-check.yml`.
+
+**No auto-assignment:** filed issues aren't auto-assigned to anyone. Auto-assigning to GitHub Copilot coding agent was investigated but requires org-level access this repo doesn't currently have (`"Bot does not have access to the repository"`, confirmed via the GraphQL `replaceActorsForAssignable` mutation) — and separately, running any unattended AI agent against a public repo's issues/PRs raises its own governance questions (prompt-injection surface from public issue content, unattended write access) that are unresolved regardless of which agent. Until that's settled, a human picks up filed issues — the `/schema-drift-fix` skill (`.claude/skills/schema-drift-fix/`) speeds that up by investigating and drafting the fix; it never commits, pushes, or opens a PR itself.
+
 ## Boundaries
 
 **Always do:**

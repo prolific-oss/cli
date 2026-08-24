@@ -531,6 +531,10 @@ One CI gate will validate the PR:
 
 - **Changelog gate** — confirms `CHANGELOG.md` is modified when the `release` label is present.
 
+**Steps 1–2 can also happen automatically.** `.github/workflows/release-cadence-check.yml` runs weekly (and on manual `workflow_dispatch`) checking for unreleased user-facing commits on `main`; if it finds any, it runs `make changelog` and opens a release PR itself, defaulting to a PATCH version bump. It never merges, tags, or releases anything — step 3 below still requires a human to review and merge, exactly as if the PR had been opened by hand. If the auto-computed PATCH bump is wrong for a given batch of changes (i.e. it includes a breaking change), edit the version heading in the PR's `CHANGELOG.md` diff to the next MINOR version before merging.
+
+Not the right time to release (e.g. other work is still landing and you'd rather batch it in)? Closing an auto-opened PR without merging is a normal way to defer — it isn't permanent, and the next scheduled run will propose a fresh PR if unreleased commits still remain.
+
 ### 3. Merge to trigger the release
 
 Merging the PR to `main` triggers `.github/workflows/create-release.yml` on that push. The workflow only performs a release when the **merged PR has the `release` label** (it checks linked PRs for that label); other pushes to `main` do not create tags or releases.
