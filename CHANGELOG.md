@@ -4,9 +4,15 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+## 1.2.2
+
 ### Core
 
 - Tighten contract testing against the Prolific API spec
+- Add eligibility-count command
+- Truncate oversized API error details in CLI output
+- Migrate all client methods to the ExecuteBuilder fluent interface
+- Guard GetParticipantGroups request shape directly
 
 ## 1.2.1
 
