@@ -363,24 +363,102 @@ func ExtractSection(changelog, section string, stripComments bool) string {
 	return result
 }
 
-// MergeNotes combines manual and generated notes with a blank line separator.
-// If both are empty, the fallback text is returned.
+// changelogSection is a single "### Heading" block and its body lines, up to
+// (but not including) the next "### " heading. A section with an empty
+// heading holds content that appears before any heading.
+type changelogSection struct {
+	heading string
+	body    []string
+}
+
+// splitSections parses markdown into an ordered list of sections, splitting
+// on "### " headings.
+func splitSections(text string) []changelogSection {
+	var sections []changelogSection
+	var current *changelogSection
+
+	for _, line := range strings.Split(text, "\n") {
+		if strings.HasPrefix(line, "### ") {
+			sections = append(sections, changelogSection{heading: strings.TrimSpace(strings.TrimPrefix(line, "### "))})
+			current = &sections[len(sections)-1]
+			continue
+		}
+		if current == nil {
+			sections = append(sections, changelogSection{})
+			current = &sections[len(sections)-1]
+		}
+		current.body = append(current.body, line)
+	}
+
+	return sections
+}
+
+// render returns the section as markdown, or "" if it has no heading and no
+// non-blank body content.
+func (s changelogSection) render() string {
+	body := strings.TrimSpace(strings.Join(s.body, "\n"))
+	switch {
+	case s.heading == "":
+		return body
+	case body == "":
+		return "### " + s.heading
+	default:
+		return "### " + s.heading + "\n\n" + body
+	}
+}
+
+// MergeNotes combines manual and generated notes. Sections that share the
+// same "### Heading" in both inputs are merged into one occurrence of that
+// heading (manual bullets first, then generated), instead of appearing as
+// two separate same-named sections. If both are empty, the fallback text is
+// returned.
 func MergeNotes(manual, generated, fallback string) string {
 	manual = strings.TrimSpace(manual)
 	generated = strings.TrimSpace(generated)
 
-	var parts []string
-	if manual != "" {
-		parts = append(parts, manual)
-	}
-	if generated != "" {
-		parts = append(parts, generated)
-	}
-
-	if len(parts) == 0 {
+	if manual == "" && generated == "" {
 		return fallback + "\n"
 	}
-	return strings.Join(parts, "\n\n") + "\n"
+
+	generatedSections := splitSections(generated)
+	generatedIndexByHeading := make(map[string]int, len(generatedSections))
+	for i, s := range generatedSections {
+		if s.heading != "" {
+			generatedIndexByHeading[s.heading] = i
+		}
+	}
+	consumed := make([]bool, len(generatedSections))
+
+	var blocks []string
+	for _, s := range splitSections(manual) {
+		block := s.render()
+		if s.heading != "" {
+			if gi, ok := generatedIndexByHeading[s.heading]; ok && !consumed[gi] {
+				consumed[gi] = true
+				genBullets := strings.TrimSpace(strings.Join(generatedSections[gi].body, "\n"))
+				if genBullets != "" {
+					block = strings.TrimRight(block, "\n") + "\n" + genBullets
+				}
+			}
+		}
+		if block != "" {
+			blocks = append(blocks, block)
+		}
+	}
+
+	for i, s := range generatedSections {
+		if consumed[i] {
+			continue
+		}
+		if block := s.render(); block != "" {
+			blocks = append(blocks, block)
+		}
+	}
+
+	if len(blocks) == 0 {
+		return fallback + "\n"
+	}
+	return strings.Join(blocks, "\n\n") + "\n"
 }
 
 // reMarker matches the [hash:...][type:...] prefix emitted by cliff.toml.
