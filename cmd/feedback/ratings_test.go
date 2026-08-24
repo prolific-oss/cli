@@ -122,7 +122,10 @@ func TestNewRatingsCommandReturnsLimitedAccessMessageForForbiddenResponse(t *tes
 
 	c.EXPECT().
 		GetStudyRatings(gomock.Eq(feedbackTestStudyID)).
-		Return(nil, &client.UnrecognizedAPIError{StatusCode: http.StatusForbidden})
+		Return(nil, &client.UnrecognizedAPIError{
+			StatusCode: http.StatusForbidden,
+			Body:       []byte("You do not currently have permission to access this feature"),
+		})
 
 	cmd := feedback.NewRatingsCommand(c, &bytes.Buffer{})
 	_ = cmd.Flags().Set("study", feedbackTestStudyID)

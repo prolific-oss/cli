@@ -5,15 +5,15 @@ import (
 	"testing"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/cmd/feedback"
 	"github.com/prolific-oss/cli/model"
-	"github.com/prolific-oss/cli/ui/feedback"
 )
 
 func sampleFeedbackResponse() client.ListStudyFeedbackResponse {
 	clarity := 4.0
 	difficulty := 3.0
 	fairness := 5.0
-	category := "study-not-as-described"
+	category := feedbackTestCategory
 	text := "Instructions, were confusing."
 	participantID := "919"
 
@@ -43,7 +43,7 @@ func TestNewListItems(t *testing.T) {
 
 	first := items[0]
 	if first.ParticipantID != "919" ||
-		first.Category != "study-not-as-described" ||
+		first.Category != feedbackTestCategory ||
 		first.Clarity != "4" ||
 		first.Difficulty != "3" ||
 		first.Fairness != "5" ||

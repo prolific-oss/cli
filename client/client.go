@@ -155,6 +155,8 @@ func (e *UnrecognizedAPIError) Error() string {
 	return fmt.Sprintf("request failed with status %d: %s", e.StatusCode, truncateErrorDetail(string(e.Body)))
 }
 
+func (e *UnrecognizedAPIError) httpStatusCode() int { return e.StatusCode }
+
 type httpStatusError struct {
 	statusCode int
 	err        error
@@ -164,15 +166,16 @@ func (e *httpStatusError) Error() string { return e.err.Error() }
 
 func (e *httpStatusError) Unwrap() error { return e.err }
 
+func (e *httpStatusError) httpStatusCode() int { return e.statusCode }
+
+type httpStatusCoder interface {
+	httpStatusCode() int
+}
+
 // IsHTTPStatusError reports whether err was returned for the given HTTP status.
 func IsHTTPStatusError(err error, statusCode int) bool {
-	var statusErr *httpStatusError
-	if errors.As(err, &statusErr) {
-		return statusErr.statusCode == statusCode
-	}
-
-	var unrecognizedErr *UnrecognizedAPIError
-	return errors.As(err, &unrecognizedErr) && unrecognizedErr.StatusCode == statusCode
+	var statusErr httpStatusCoder
+	return errors.As(err, &statusErr) && statusErr.httpStatusCode() == statusCode
 }
 
 // maxErrorDetailLen caps upstream API error text shown to the user; the full response is available via PROLIFIC_DEBUG=1.

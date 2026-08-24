@@ -4,12 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net/http"
 
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/ui"
-	feedbackui "github.com/prolific-oss/cli/ui/feedback"
 	"github.com/spf13/cobra"
 )
 
@@ -46,26 +44,23 @@ $ prolific feedback ratings -s 63c123af913a974f87e8e7fc --csv`,
 
 			ratings, err := c.GetStudyRatings(opts.Study)
 			if err != nil {
-				if client.IsHTTPStatusError(err, http.StatusForbidden) {
-					return errLimitedAccess
-				}
-				return fmt.Errorf("error: %s", err)
+				return handleAPIError(err)
 			}
 
 			switch shared.ResolveFormat(opts.Output) {
 			case "json":
-				renderer := ui.JSONRenderer[feedbackui.RatingRow]{}
-				if err := renderer.Render(feedbackui.NewRatingRows(*ratings), w); err != nil {
+				renderer := ui.JSONRenderer[RatingRow]{}
+				if err := renderer.Render(NewRatingRows(*ratings), w); err != nil {
 					return fmt.Errorf("error: %s", err)
 				}
 			case "csv":
-				renderer := ui.CsvRenderer[feedbackui.RatingItem]{}
-				if err := renderer.Render(feedbackui.NewRatingItems(*ratings), feedbackui.RatingFields, w); err != nil {
+				renderer := ui.CsvRenderer[RatingItem]{}
+				if err := renderer.Render(NewRatingItems(*ratings), RatingFields, w); err != nil {
 					return fmt.Errorf("error: %s", err)
 				}
 			default:
-				renderer := ui.TableRenderer[feedbackui.RatingItem]{}
-				if err := renderer.Render(feedbackui.NewRatingItems(*ratings), feedbackui.RatingFields, w); err != nil {
+				renderer := ui.TableRenderer[RatingItem]{}
+				if err := renderer.Render(NewRatingItems(*ratings), RatingFields, w); err != nil {
 					return fmt.Errorf("error: %s", err)
 				}
 			}

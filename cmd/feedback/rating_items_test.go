@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/cmd/feedback"
 	"github.com/prolific-oss/cli/model"
-	"github.com/prolific-oss/cli/ui/feedback"
 )
 
 func TestNewRatingItems(t *testing.T) {

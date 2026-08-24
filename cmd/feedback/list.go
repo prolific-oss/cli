@@ -4,13 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"net/http"
 
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/model"
 	"github.com/prolific-oss/cli/ui"
-	feedbackui "github.com/prolific-oss/cli/ui/feedback"
 	"github.com/spf13/cobra"
 )
 
@@ -50,6 +48,9 @@ $ prolific feedback list -s 63c123af913a974f87e8e7fc --has-written-feedback
 You can page through results instead, for example 10 at a time
 $ prolific feedback list -s 63c123af913a974f87e8e7fc -l 10 -o 10
 
+You can render the results as a non-interactive table
+$ prolific feedback list -s 63c123af913a974f87e8e7fc --table
+
 You can render the results as JSON for machine-readable output
 $ prolific feedback list -s 63c123af913a974f87e8e7fc --json
 
@@ -73,10 +74,7 @@ $ prolific feedback list -s 63c123af913a974f87e8e7fc -c`,
 				opts.Offset,
 			)
 			if err != nil {
-				if client.IsHTTPStatusError(err, http.StatusForbidden) {
-					return errLimitedAccess
-				}
-				return fmt.Errorf("error: %s", err)
+				return handleAPIError(err)
 			}
 
 			records := response.Results
@@ -95,18 +93,18 @@ $ prolific feedback list -s 63c123af913a974f87e8e7fc -c`,
 					return fmt.Errorf("error: %s", err)
 				}
 			case "csv":
-				renderer := ui.CsvRenderer[feedbackui.ListItem]{}
-				if err := renderer.Render(feedbackui.NewListItems(records), feedbackui.ListFields, w); err != nil {
+				renderer := ui.CsvRenderer[ListItem]{}
+				if err := renderer.Render(NewListItems(records), ListFields, w); err != nil {
 					return fmt.Errorf("error: %s", err)
 				}
 			case "table":
-				renderer := ui.TableRenderer[feedbackui.ListItem]{}
-				if err := renderer.Render(feedbackui.NewListItems(records), feedbackui.ListFields, w); err != nil {
+				renderer := ui.TableRenderer[ListItem]{}
+				if err := renderer.Render(NewListItems(records), ListFields, w); err != nil {
 					return fmt.Errorf("error: %s", err)
 				}
 				fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(records), total))
 			default:
-				renderer := feedbackui.InteractiveRenderer{}
+				renderer := InteractiveRenderer{}
 				if err := renderer.Render(records, w); err != nil {
 					return fmt.Errorf("error: %s", err)
 				}

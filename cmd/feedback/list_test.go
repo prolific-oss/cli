@@ -17,6 +17,7 @@ import (
 )
 
 const feedbackTestStudyID = "study-id"
+const feedbackTestCategory = "study-not-as-described"
 
 func TestNewListCommandRequiresStudyID(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -85,7 +86,7 @@ func TestNewListCommandCallsAPI(t *testing.T) {
 	clarity := 4.5
 	difficulty := 3.0
 	fairness := 5.0
-	category := "study-not-as-described"
+	category := feedbackTestCategory
 	text := "The task was confusing."
 	participantID := "919"
 
@@ -306,7 +307,10 @@ func TestNewListCommandReturnsLimitedAccessMessageForForbiddenResponse(t *testin
 			gomock.Eq(client.DefaultRecordLimit),
 			gomock.Eq(client.DefaultRecordOffset),
 		).
-		Return(nil, &client.UnrecognizedAPIError{StatusCode: http.StatusForbidden})
+		Return(nil, &client.UnrecognizedAPIError{
+			StatusCode: http.StatusForbidden,
+			Body:       []byte("You do not currently have permission to access this feature"),
+		})
 
 	cmd := feedback.NewListCommand(c, &bytes.Buffer{})
 	_ = cmd.Flags().Set("study", feedbackTestStudyID)
@@ -315,5 +319,31 @@ func TestNewListCommandReturnsLimitedAccessMessageForForbiddenResponse(t *testin
 	expected := "We’re currently testing participant feedback with a limited number of researchers. It’ll be available more widely soon."
 	if err == nil || err.Error() != expected {
 		t.Fatalf("expected limited access message %q, got %v", expected, err)
+	}
+}
+
+func TestNewListCommandPreservesOtherForbiddenErrors(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	c.EXPECT().
+		GetStudyFeedback(
+			gomock.Eq(feedbackTestStudyID),
+			gomock.Eq(false),
+			gomock.Eq(client.DefaultRecordLimit),
+			gomock.Eq(client.DefaultRecordOffset),
+		).
+		Return(nil, &client.UnrecognizedAPIError{
+			StatusCode: http.StatusForbidden,
+			Body:       []byte("You do not have access to this study"),
+		})
+
+	cmd := feedback.NewListCommand(c, &bytes.Buffer{})
+	_ = cmd.Flags().Set("study", feedbackTestStudyID)
+
+	err := cmd.RunE(cmd, nil)
+	if err == nil || !strings.Contains(err.Error(), "You do not have access to this study") {
+		t.Fatalf("expected original forbidden error, got %v", err)
 	}
 }

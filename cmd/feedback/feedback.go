@@ -2,15 +2,25 @@ package feedback
 
 import (
 	"errors"
+	"fmt"
 	"io"
+	"net/http"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/spf13/cobra"
 )
 
 const limitedAccessMessage = "We’re currently testing participant feedback with a limited number of researchers. It’ll be available more widely soon."
 
 var errLimitedAccess = errors.New(limitedAccessMessage) //nolint:staticcheck
+
+func handleAPIError(err error) error {
+	if client.IsHTTPStatusError(err, http.StatusForbidden) && shared.IsFeatureNotEnabledError(err) {
+		return errLimitedAccess
+	}
+	return fmt.Errorf("error: %s", err)
+}
 
 // NewFeedbackCommand creates a new `feedback` command
 func NewFeedbackCommand(client client.API, w io.Writer) *cobra.Command {

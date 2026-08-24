@@ -89,6 +89,65 @@ func TestFeedbackEndpointsDoNotWriteDebugLogs(t *testing.T) {
 	}
 }
 
+func TestGetStudyFeedbackRequest(t *testing.T) {
+	const studyID = "63c123af913a974f87e8e7fc"
+
+	tests := []struct {
+		name               string
+		hasWrittenFeedback bool
+		limit              int
+		offset             int
+		query              string
+	}{
+		{
+			name:               "includes filters and pagination",
+			hasWrittenFeedback: true,
+			limit:              25,
+			offset:             10,
+			query:              "has_written_feedback=true&limit=25&offset=10",
+		},
+		{
+			name:  "omits zero pagination values",
+			query: "has_written_feedback=false",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			httpClient := &http.Client{
+				Transport: roundTripFunc(func(request *http.Request) (*http.Response, error) {
+					if request.Method != http.MethodGet {
+						t.Errorf("expected GET request, got %s", request.Method)
+					}
+					expectedPath := "/api/v1/studies/" + studyID + "/feedback/responses/"
+					if request.URL.Path != expectedPath {
+						t.Errorf("expected path %q, got %q", expectedPath, request.URL.Path)
+					}
+					if request.URL.RawQuery != tt.query {
+						t.Errorf("expected query %q, got %q", tt.query, request.URL.RawQuery)
+					}
+
+					return &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       io.NopCloser(strings.NewReader(`{"results":[]}`)),
+						Header:     make(http.Header),
+					}, nil
+				}),
+			}
+
+			c := client.Client{
+				Client:  httpClient,
+				BaseURL: "https://example.test",
+				Token:   "token",
+			}
+
+			if _, err := c.GetStudyFeedback(studyID, tt.hasWrittenFeedback, tt.limit, tt.offset); err != nil {
+				t.Fatalf("get study feedback: %v", err)
+			}
+		})
+	}
+}
+
 func TestFeedbackEndpointsDoNotDoubleWrapRequestErrors(t *testing.T) {
 	httpClient := &http.Client{
 		Transport: roundTripFunc(func(_ *http.Request) (*http.Response, error) {
