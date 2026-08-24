@@ -325,6 +325,27 @@ func TestMergeNotes(t *testing.T) {
 			fallback:  "fallback text",
 			want:      "fallback text\n",
 		},
+		{
+			name:      "manual and generated sharing a heading merge into one section",
+			manual:    "### Core\n\n- Tighten contract testing against the Prolific API spec",
+			generated: "### Core\n\n- Add eligibility-count command\n- Truncate oversized API error details in CLI output",
+			fallback:  "fallback",
+			want:      "### Core\n\n- Tighten contract testing against the Prolific API spec\n- Add eligibility-count command\n- Truncate oversized API error details in CLI output\n",
+		},
+		{
+			name:      "manual heading with no generated counterpart is kept separate",
+			manual:    "### Docs\n\n- Document homebrew installation",
+			generated: "### Core\n\n- Add eligibility-count command",
+			fallback:  "fallback",
+			want:      "### Docs\n\n- Document homebrew installation\n\n### Core\n\n- Add eligibility-count command\n",
+		},
+		{
+			name:      "generated headings with no manual counterpart pass through unchanged",
+			manual:    "",
+			generated: "### Core\n\n- Add eligibility-count command\n\n### Study\n\n- Some study change",
+			fallback:  "fallback",
+			want:      "### Core\n\n- Add eligibility-count command\n\n### Study\n\n- Some study change\n",
+		},
 	}
 
 	for _, tt := range tests {

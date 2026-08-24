@@ -258,7 +258,7 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 |---|---|---|---|
 | `get-filters` | GET | `/api/v1/filters/` | ✅ `GetFilters` |
 | `get-filter-distribution` | GET | `/api/v1/filters/{id}/distribution/` | ➖ Not exposed in the CLI |
-| `get-eligible-count` | POST | `/api/v1/eligibility-count/` | ➖ Not exposed in the CLI |
+| `get-eligible-count` | POST | `/api/v1/eligibility-count/` | ✅ `GetEligibilityCount` |
 
 </details>
 
