@@ -4,9 +4,27 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+## 1.2.2
+
 ### Core
 
 - Tighten contract testing against the Prolific API spec
+
+### Core
+
+- Add eligibility-count command
+- Stop double-wrapping the UpdateStudy error
+- Truncate oversized API error details in CLI output
+- Extend ExecuteBuilder and migrate study/collection methods
+- Extract GetInto to dedupe the no-status GET chain
+- Migrate hook/workspace/project/participant-group methods
+- Use the Get convenience instead of the manual chain
+- Migrate filter-set/survey/collection/message/bonus methods
+- Migrate AI Task Builder batch methods to ExecuteBuilder
+- Migrate remaining AI Task Builder and credential pool methods
+- Use the Get convenience instead of the manual chain
+- Guard GetParticipantGroups request shape directly
+- Assert method and path in GetParticipantGroups test
 
 ## 1.2.1
 
