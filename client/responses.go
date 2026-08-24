@@ -434,7 +434,7 @@ type ListStudyFeedbackResponse struct {
 }
 
 // StudyRatingsResponse is the response for the study feedback ratings API,
-// keyed by rating id (e.g. clarity, difficulty, fairness).
+// keyed by rating id (e.g. clarity_rating, difficulty_rating, fairness_rating).
 type StudyRatingsResponse map[string]model.StudyRating
 
 // CollectionExportResponse is the response for the collection export endpoints.
