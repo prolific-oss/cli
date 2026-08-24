@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"net/http"
 	"strings"
 	"testing"
 
@@ -86,11 +87,12 @@ func TestNewListCommandCallsAPI(t *testing.T) {
 	fairness := 5.0
 	category := "study-not-as-described"
 	text := "The task was confusing."
+	participantID := "919"
 
 	feedbackResponse := client.ListStudyFeedbackResponse{
 		Results: []model.StudyFeedback{
 			{
-				ParticipantID: "919",
+				ParticipantID: &participantID,
 				Category:      &category,
 				Text:          &text,
 				Ratings: model.StudyFeedbackRatings{
@@ -188,10 +190,11 @@ func TestNewListCommandMachineReadableOutput(t *testing.T) {
 			flag: "json",
 			response: func() client.ListStudyFeedbackResponse {
 				clarity := 4.5
+				participantID := "919"
 				return client.ListStudyFeedbackResponse{
 					Results: []model.StudyFeedback{
 						{
-							ParticipantID: "919",
+							ParticipantID: &participantID,
 							Ratings: model.StudyFeedbackRatings{
 								Clarity: &clarity,
 							},
@@ -206,10 +209,11 @@ func TestNewListCommandMachineReadableOutput(t *testing.T) {
 			flag: "csv",
 			response: func() client.ListStudyFeedbackResponse {
 				clarity := 4.5
+				participantID := "919"
 				return client.ListStudyFeedbackResponse{
 					Results: []model.StudyFeedback{
 						{
-							ParticipantID: "919",
+							ParticipantID: &participantID,
 							Ratings: model.StudyFeedbackRatings{
 								Clarity: &clarity,
 							},
@@ -287,5 +291,29 @@ func TestNewListCommandReturnsAPIError(t *testing.T) {
 	err := cmd.RunE(cmd, nil)
 	if err == nil || err.Error() != "error: API error" {
 		t.Fatalf("expected API error, got %v", err)
+	}
+}
+
+func TestNewListCommandReturnsLimitedAccessMessageForForbiddenResponse(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	c.EXPECT().
+		GetStudyFeedback(
+			gomock.Eq(feedbackTestStudyID),
+			gomock.Eq(false),
+			gomock.Eq(client.DefaultRecordLimit),
+			gomock.Eq(client.DefaultRecordOffset),
+		).
+		Return(nil, &client.UnrecognizedAPIError{StatusCode: http.StatusForbidden})
+
+	cmd := feedback.NewListCommand(c, &bytes.Buffer{})
+	_ = cmd.Flags().Set("study", feedbackTestStudyID)
+
+	err := cmd.RunE(cmd, nil)
+	expected := "We’re currently testing participant feedback with a limited number of researchers. It’ll be available more widely soon."
+	if err == nil || err.Error() != expected {
+		t.Fatalf("expected limited access message %q, got %v", expected, err)
 	}
 }

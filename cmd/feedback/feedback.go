@@ -1,11 +1,16 @@
 package feedback
 
 import (
+	"errors"
 	"io"
 
 	"github.com/prolific-oss/cli/client"
 	"github.com/spf13/cobra"
 )
+
+const limitedAccessMessage = "We’re currently testing participant feedback with a limited number of researchers. It’ll be available more widely soon."
+
+var errLimitedAccess = errors.New(limitedAccessMessage) //nolint:staticcheck
 
 // NewFeedbackCommand creates a new `feedback` command
 func NewFeedbackCommand(client client.API, w io.Writer) *cobra.Command {

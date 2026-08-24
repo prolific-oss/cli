@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/shared"
@@ -45,6 +46,9 @@ $ prolific feedback ratings -s 63c123af913a974f87e8e7fc --csv`,
 
 			ratings, err := c.GetStudyRatings(opts.Study)
 			if err != nil {
+				if client.IsHTTPStatusError(err, http.StatusForbidden) {
+					return errLimitedAccess
+				}
 				return fmt.Errorf("error: %s", err)
 			}
 

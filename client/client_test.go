@@ -149,6 +149,46 @@ func TestExecuteTruncatesOversizedErrorDetail(t *testing.T) {
 	}
 }
 
+func TestExecutePreservesHTTPStatusOnAPIErrors(t *testing.T) {
+	tests := []struct {
+		name string
+		body string
+	}{
+		{
+			name: "nested API error",
+			body: `{"error":{"status":403,"title":"Forbidden","detail":"feature unavailable"}}`,
+		},
+		{
+			name: "simple API error",
+			body: `{"message":"Forbidden","detail":"feature unavailable"}`,
+		},
+		{
+			name: "unrecognized API error",
+			body: "forbidden",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+				w.WriteHeader(http.StatusForbidden)
+				_, _ = w.Write([]byte(tt.body))
+			}))
+			defer server.Close()
+
+			c := Client{Client: server.Client(), BaseURL: server.URL, Token: "test-token"}
+			_, err := c.Execute(http.MethodGet, "/", nil, nil)
+
+			if !IsHTTPStatusError(err, http.StatusForbidden) {
+				t.Fatalf("expected error to retain status 403, got %T: %v", err, err)
+			}
+			if IsHTTPStatusError(err, http.StatusNotFound) {
+				t.Fatalf("did not expect error to match status 404: %v", err)
+			}
+		})
+	}
+}
+
 // TestTruncateErrorDetailMultiByteRuneCount guards against comparing byte length to a rune-based cap.
 func TestTruncateErrorDetailMultiByteRuneCount(t *testing.T) {
 	// 300 runes of a 3-byte CJK character: 900 bytes, but only 300 runes.

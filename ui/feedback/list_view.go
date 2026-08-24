@@ -18,14 +18,14 @@ type feedbackListItem struct {
 
 func (i feedbackListItem) FilterValue() string {
 	return strings.Join([]string{
-		i.feedback.ParticipantID,
+		formatOptionalString(i.feedback.ParticipantID),
 		formatOptionalString(i.feedback.Category),
 		formatOptionalString(i.feedback.Text),
 	}, " ")
 }
 
 func (i feedbackListItem) Title() string {
-	return i.feedback.ParticipantID
+	return formatOptionalString(i.feedback.ParticipantID)
 }
 
 func (i feedbackListItem) Description() string {
@@ -106,7 +106,7 @@ func (lv ListView) View() string {
 
 	var content strings.Builder
 	content.WriteString(fmt.Sprintln(ui.RenderHeading("Participant feedback")))
-	content.WriteString(fmt.Sprintf("Participant: %s\n", lv.Feedback.ParticipantID))
+	content.WriteString(fmt.Sprintf("Participant: %s\n", formatOptionalString(lv.Feedback.ParticipantID)))
 	content.WriteString(fmt.Sprintf("Category:    %s\n", formatOptionalString(lv.Feedback.Category)))
 	content.WriteString(fmt.Sprintf("Clarity:     %s\n", formatRating(lv.Feedback.Ratings.Clarity)))
 	content.WriteString(fmt.Sprintf("Difficulty:  %s\n", formatRating(lv.Feedback.Ratings.Difficulty)))

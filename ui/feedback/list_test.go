@@ -15,11 +15,12 @@ func sampleFeedbackResponse() client.ListStudyFeedbackResponse {
 	fairness := 5.0
 	category := "study-not-as-described"
 	text := "Instructions, were confusing."
+	participantID := "919"
 
 	return client.ListStudyFeedbackResponse{
 		Results: []model.StudyFeedback{
 			{
-				ParticipantID: "919",
+				ParticipantID: &participantID,
 				Category:      &category,
 				Text:          &text,
 				Ratings: model.StudyFeedbackRatings{
@@ -28,9 +29,7 @@ func sampleFeedbackResponse() client.ListStudyFeedbackResponse {
 					Fairness:   &fairness,
 				},
 			},
-			{
-				ParticipantID: "920",
-			},
+			{},
 		},
 	}
 }
@@ -53,12 +52,23 @@ func TestNewListItems(t *testing.T) {
 	}
 
 	second := items[1]
-	if second.Category != "-" ||
+	if second.ParticipantID != "-" ||
+		second.Category != "-" ||
 		second.Clarity != "-" ||
 		second.Difficulty != "-" ||
 		second.Fairness != "-" ||
 		second.Text != "-" {
 		t.Fatalf("expected missing values to render as dashes, got %#v", second)
+	}
+}
+
+func TestListViewRendersMissingParticipantID(t *testing.T) {
+	record := sampleFeedbackResponse().Results[1]
+
+	view := feedback.ListView{Feedback: &record}
+
+	if actual := view.View(); !strings.Contains(actual, "Participant: -") {
+		t.Fatalf("expected missing participant ID to render as a dash, got: %s", actual)
 	}
 }
 

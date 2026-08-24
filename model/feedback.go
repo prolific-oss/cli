@@ -10,7 +10,7 @@ type StudyFeedbackRatings struct {
 
 // StudyFeedback represents a single participant's feedback record for a study.
 type StudyFeedback struct {
-	ParticipantID string               `json:"participant_id"`
+	ParticipantID *string              `json:"participant_id"`
 	Category      *string              `json:"category"`
 	Text          *string              `json:"text"`
 	Ratings       StudyFeedbackRatings `json:"ratings"`

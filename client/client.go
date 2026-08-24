@@ -154,6 +154,26 @@ func (e *UnrecognizedAPIError) Error() string {
 	return fmt.Sprintf("request failed with status %d: %s", e.StatusCode, truncateErrorDetail(string(e.Body)))
 }
 
+type httpStatusError struct {
+	statusCode int
+	err        error
+}
+
+func (e *httpStatusError) Error() string { return e.err.Error() }
+
+func (e *httpStatusError) Unwrap() error { return e.err }
+
+// IsHTTPStatusError reports whether err was returned for the given HTTP status.
+func IsHTTPStatusError(err error, statusCode int) bool {
+	var statusErr *httpStatusError
+	if errors.As(err, &statusErr) {
+		return statusErr.statusCode == statusCode
+	}
+
+	var unrecognizedErr *UnrecognizedAPIError
+	return errors.As(err, &unrecognizedErr) && unrecognizedErr.StatusCode == statusCode
+}
+
 // maxErrorDetailLen caps upstream API error text shown to the user; the full response is available via PROLIFIC_DEBUG=1.
 const maxErrorDetailLen = 500
 
@@ -274,13 +294,19 @@ func (c *Client) Execute(method, url string, body any, response any) (*http.Resp
 		// Try the nested error format first
 		var apiError JSONAPIError
 		if err := json.NewDecoder(io.NopCloser(bytes.NewBuffer(responseBody))).Decode(&apiError); err == nil && apiError.Error.Detail != nil {
-			return nil, fmt.Errorf("request failed: %s", truncateErrorDetail(fmt.Sprintf("%v", apiError.Error.Detail)))
+			return nil, &httpStatusError{
+				statusCode: httpResponse.StatusCode,
+				err:        fmt.Errorf("request failed: %s", truncateErrorDetail(fmt.Sprintf("%v", apiError.Error.Detail))),
+			}
 		}
 
 		// Try the simple error format
 		var simpleError SimpleAPIError
 		if err := json.NewDecoder(io.NopCloser(bytes.NewBuffer(responseBody))).Decode(&simpleError); err == nil && simpleError.Detail != "" {
-			return nil, fmt.Errorf("request failed: %s - %s", simpleError.Message, truncateErrorDetail(simpleError.Detail))
+			return nil, &httpStatusError{
+				statusCode: httpResponse.StatusCode,
+				err:        fmt.Errorf("request failed: %s - %s", simpleError.Message, truncateErrorDetail(simpleError.Detail)),
+			}
 		}
 
 		// If both fail, return a typed error so callers can inspect the raw body

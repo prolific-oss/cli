@@ -25,7 +25,7 @@ func NewListItems(records []model.StudyFeedback) []ListItem {
 	items := make([]ListItem, 0, len(records))
 	for _, record := range records {
 		items = append(items, ListItem{
-			ParticipantID: record.ParticipantID,
+			ParticipantID: formatOptionalString(record.ParticipantID),
 			Category:      formatOptionalString(record.Category),
 			Clarity:       formatRating(record.Ratings.Clarity),
 			Difficulty:    formatRating(record.Ratings.Difficulty),

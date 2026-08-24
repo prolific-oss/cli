@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"net/http"
 	"strings"
 	"testing"
 
@@ -111,6 +112,25 @@ func TestNewRatingsCommandReturnsAPIError(t *testing.T) {
 	err := cmd.RunE(cmd, nil)
 	if err == nil || err.Error() != "error: API error" {
 		t.Fatalf("expected API error, got %v", err)
+	}
+}
+
+func TestNewRatingsCommandReturnsLimitedAccessMessageForForbiddenResponse(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	c.EXPECT().
+		GetStudyRatings(gomock.Eq(feedbackTestStudyID)).
+		Return(nil, &client.UnrecognizedAPIError{StatusCode: http.StatusForbidden})
+
+	cmd := feedback.NewRatingsCommand(c, &bytes.Buffer{})
+	_ = cmd.Flags().Set("study", feedbackTestStudyID)
+
+	err := cmd.RunE(cmd, nil)
+	expected := "We’re currently testing participant feedback with a limited number of researchers. It’ll be available more widely soon."
+	if err == nil || err.Error() != expected {
+		t.Fatalf("expected limited access message %q, got %v", expected, err)
 	}
 }
 
