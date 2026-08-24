@@ -15,6 +15,7 @@ import (
 	"github.com/prolific-oss/cli/cmd/campaign"
 	"github.com/prolific-oss/cli/cmd/collection"
 	"github.com/prolific-oss/cli/cmd/credentials"
+	"github.com/prolific-oss/cli/cmd/eligibilitycount"
 	"github.com/prolific-oss/cli/cmd/filters"
 	"github.com/prolific-oss/cli/cmd/filtersets"
 	"github.com/prolific-oss/cli/cmd/hook"
@@ -80,6 +81,7 @@ func NewRootCommand() *cobra.Command {
 		campaign.NewListCommand("campaign", &client, w),
 		collection.NewCollectionCommand(&client, w),
 		credentials.NewCredentialsCommand(&client, w),
+		eligibilitycount.NewCountCommand(&client, w),
 		filters.NewListCommand(&client, w),
 		filtersets.NewFilterSetCommand(&client, w),
 		hook.NewHookCommand(&client, w),

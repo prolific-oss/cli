@@ -90,6 +90,7 @@ type API interface {
 	CreateTestParticipant(email string) (*CreateTestParticipantResponse, error)
 
 	GetFilters() (*ListFiltersResponse, error)
+	GetEligibilityCount(payload EligibilityCountPayload) (*EligibilityCountResponse, error)
 
 	GetRewardRecommendations(workspaceID, currency string, screenerIDs []string) (*RewardRecommendationsResponse, error)
 
@@ -999,6 +1000,25 @@ func (c *Client) GetFilters() (*ListFiltersResponse, error) {
 
 	url := "/api/v1/filters/"
 	if _, err := c.ExecuteBuilder().Get(url, &response); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// GetEligibilityCount returns the number of participants matching a set of
+// filters, without creating a study.
+func (c *Client) GetEligibilityCount(payload EligibilityCountPayload) (*EligibilityCountResponse, error) {
+	var response EligibilityCountResponse
+
+	const url = "/api/v1/eligibility-count/"
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(payload).
+		Status(http.StatusOK).
+		Decode(&response).
+		Execute()
+	if err != nil {
 		return nil, err
 	}
 
