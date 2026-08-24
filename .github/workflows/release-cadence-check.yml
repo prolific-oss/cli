@@ -34,6 +34,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          token: ${{ secrets.REPO_CONTENTS_WRITE }}
 
       - name: Set up Go
         uses: actions/setup-go@v7.0.0
