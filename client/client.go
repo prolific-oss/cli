@@ -41,6 +41,8 @@ type API interface {
 	GetStudies(status, projectID string) (*ListStudiesResponse, error)
 	GetStudy(ID string) (*model.Study, error)
 	GetSubmissions(ID string, limit, offset int) (*ListSubmissionsResponse, error)
+	GetStudyFeedback(studyID string, hasWrittenFeedback bool, limit, offset int) (*ListStudyFeedbackResponse, error)
+	GetStudyRatings(studyID string) (*StudyRatingsResponse, error)
 	RequestSubmissionReturn(ID string, reasons []string) (*RequestSubmissionReturnResponse, error)
 	TransitionSubmission(ID string, payload TransitionSubmissionPayload) (*TransitionSubmissionResponse, error)
 	BulkApproveSubmissions(payload BulkApproveSubmissionsPayload) error
@@ -151,6 +153,29 @@ type UnrecognizedAPIError struct {
 
 func (e *UnrecognizedAPIError) Error() string {
 	return fmt.Sprintf("request failed with status %d: %s", e.StatusCode, truncateErrorDetail(string(e.Body)))
+}
+
+func (e *UnrecognizedAPIError) httpStatusCode() int { return e.StatusCode }
+
+type httpStatusError struct {
+	statusCode int
+	err        error
+}
+
+func (e *httpStatusError) Error() string { return e.err.Error() }
+
+func (e *httpStatusError) Unwrap() error { return e.err }
+
+func (e *httpStatusError) httpStatusCode() int { return e.statusCode }
+
+type httpStatusCoder interface {
+	httpStatusCode() int
+}
+
+// IsHTTPStatusError reports whether err was returned for the given HTTP status.
+func IsHTTPStatusError(err error, statusCode int) bool {
+	var statusErr httpStatusCoder
+	return errors.As(err, &statusErr) && statusErr.httpStatusCode() == statusCode
 }
 
 // maxErrorDetailLen caps upstream API error text shown to the user; the full response is available via PROLIFIC_DEBUG=1.
@@ -273,13 +298,19 @@ func (c *Client) Execute(method, url string, body any, response any) (*http.Resp
 		// Try the nested error format first
 		var apiError JSONAPIError
 		if err := json.NewDecoder(io.NopCloser(bytes.NewBuffer(responseBody))).Decode(&apiError); err == nil && apiError.Error.Detail != nil {
-			return nil, fmt.Errorf("request failed: %s", truncateErrorDetail(fmt.Sprintf("%v", apiError.Error.Detail)))
+			return nil, &httpStatusError{
+				statusCode: httpResponse.StatusCode,
+				err:        fmt.Errorf("request failed: %s", truncateErrorDetail(fmt.Sprintf("%v", apiError.Error.Detail))),
+			}
 		}
 
 		// Try the simple error format
 		var simpleError SimpleAPIError
 		if err := json.NewDecoder(io.NopCloser(bytes.NewBuffer(responseBody))).Decode(&simpleError); err == nil && simpleError.Detail != "" {
-			return nil, fmt.Errorf("request failed: %s - %s", simpleError.Message, truncateErrorDetail(simpleError.Detail))
+			return nil, &httpStatusError{
+				statusCode: httpResponse.StatusCode,
+				err:        fmt.Errorf("request failed: %s - %s", simpleError.Message, truncateErrorDetail(simpleError.Detail)),
+			}
 		}
 
 		// If both fail, return a typed error so callers can inspect the raw body

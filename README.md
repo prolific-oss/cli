@@ -28,6 +28,7 @@ Available Commands:
   collection    Manage and view your collections
   completion    Generate the autocompletion script for the specified shell
   credentials   Manage credential pools
+  feedback      View participant feedback for your studies
   filter-sets   Manage and view your filter sets
   filters       List all filters available for your study
   help          Help about any command
@@ -71,8 +72,9 @@ Main features include:
 - Ability to get your user account details.
 - Ability to list your hook subscriptions.
 - Ability to send and retrieve messages.
-- Ability to list and view your filter sets
-- Ability to list and view your participant groups
+- Ability to list and view your filter sets.
+- Ability to list and view your participant groups.
+- Ability to retrieve participant feedback and aggregate study ratings.
 
 Checkout the [wiki](https://github.com/prolific-oss/cli/wiki) for more tips and tricks.
 
