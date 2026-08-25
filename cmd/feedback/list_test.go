@@ -40,6 +40,66 @@ func TestNewListCommandRequiresStudyID(t *testing.T) {
 	}
 }
 
+func TestNewListCommandValidatesPagination(t *testing.T) {
+	tests := []struct {
+		name          string
+		limit         string
+		offset        string
+		expectedError string
+	}{
+		{
+			name:          "rejects negative limit",
+			limit:         "-1",
+			expectedError: "limit must be greater than or equal to 0",
+		},
+		{
+			name:          "rejects negative offset",
+			limit:         "1",
+			offset:        "-1",
+			expectedError: "offset must be greater than or equal to 0",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			c := mock_client.NewMockAPI(ctrl)
+
+			cmd := feedback.NewListCommand(c, &bytes.Buffer{})
+			_ = cmd.Flags().Set("study", feedbackTestStudyID)
+			_ = cmd.Flags().Set("limit", tt.limit)
+			if tt.offset != "" {
+				_ = cmd.Flags().Set("offset", tt.offset)
+			}
+
+			err := cmd.RunE(cmd, nil)
+			if err == nil || err.Error() != tt.expectedError {
+				t.Fatalf("expected error %q, got %v", tt.expectedError, err)
+			}
+		})
+	}
+}
+
+func TestNewListCommandSupportsUnboundedLimit(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	c.EXPECT().
+		GetStudyFeedback(feedbackTestStudyID, false, 0, client.DefaultRecordOffset).
+		Return(&client.ListStudyFeedbackResponse{}, nil)
+
+	cmd := feedback.NewListCommand(c, &bytes.Buffer{})
+	_ = cmd.Flags().Set("study", feedbackTestStudyID)
+	_ = cmd.Flags().Set("limit", "0")
+	_ = cmd.Flags().Set("json", "true")
+
+	if err := cmd.RunE(cmd, nil); err != nil {
+		t.Fatalf("expected limit 0 to fetch every record, got %v", err)
+	}
+}
+
 func TestNewListCommandPassesStudyIDToAPI(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -86,7 +146,6 @@ func TestNewListCommandCallsAPI(t *testing.T) {
 	clarity := 4.5
 	difficulty := 3.0
 	fairness := 5.0
-	category := feedbackTestCategory
 	text := "The task was confusing."
 	participantID := "919"
 
@@ -94,7 +153,7 @@ func TestNewListCommandCallsAPI(t *testing.T) {
 		Results: []model.StudyFeedback{
 			{
 				ParticipantID: &participantID,
-				Category:      &category,
+				Category:      []string{feedbackTestCategory},
 				Text:          &text,
 				Ratings: model.StudyFeedbackRatings{
 					Clarity:    &clarity,
@@ -196,6 +255,7 @@ func TestNewListCommandMachineReadableOutput(t *testing.T) {
 					Results: []model.StudyFeedback{
 						{
 							ParticipantID: &participantID,
+							Category:      []string{"technical-issue", "other"},
 							Ratings: model.StudyFeedbackRatings{
 								Clarity: &clarity,
 							},
@@ -203,7 +263,7 @@ func TestNewListCommandMachineReadableOutput(t *testing.T) {
 					},
 				}
 			}(),
-			expected: []string{`"participant_id": "919"`, `"ratings": {`, `"clarity_rating": 4.5`},
+			expected: []string{`"participant_id": "919"`, `"category": [`, `"technical-issue"`, `"other"`, `"ratings": {`, `"clarity_rating": 4.5`},
 		},
 		{
 			name: "CSV uses flat presentation rows",
@@ -215,6 +275,7 @@ func TestNewListCommandMachineReadableOutput(t *testing.T) {
 					Results: []model.StudyFeedback{
 						{
 							ParticipantID: &participantID,
+							Category:      []string{"technical-issue", "other"},
 							Ratings: model.StudyFeedbackRatings{
 								Clarity: &clarity,
 							},
@@ -224,7 +285,7 @@ func TestNewListCommandMachineReadableOutput(t *testing.T) {
 			}(),
 			expected: []string{
 				"ParticipantID,Category,Clarity,Difficulty,Fairness,Text",
-				"919,-,4.5,-,-,-",
+				`919,"technical-issue, other",4.5,-,-,-`,
 			},
 		},
 		{

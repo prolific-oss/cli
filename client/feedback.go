@@ -13,19 +13,16 @@ func (c *Client) sensitiveExecuteBuilder() *ExecuteBuilder {
 	return sensitiveClient.ExecuteBuilder()
 }
 
-// GetStudyFeedback returns participant feedback responses for a study. A
-// limit or offset of 0 is omitted so the API returns every record.
+// GetStudyFeedback returns participant feedback responses for a study. Limit
+// and offset are always sent because the API treats an omitted limit as its
+// default page size and an explicit limit of 0 as an unbounded request.
 func (c *Client) GetStudyFeedback(studyID string, hasWrittenFeedback bool, limit, offset int) (*ListStudyFeedbackResponse, error) {
 	var response ListStudyFeedbackResponse
 
 	params := url.Values{}
 	params.Set("has_written_feedback", fmt.Sprintf("%v", hasWrittenFeedback))
-	if limit > 0 {
-		params.Set("limit", fmt.Sprintf("%v", limit))
-	}
-	if offset > 0 {
-		params.Set("offset", fmt.Sprintf("%v", offset))
-	}
+	params.Set("limit", fmt.Sprintf("%v", limit))
+	params.Set("offset", fmt.Sprintf("%v", offset))
 
 	requestURL := fmt.Sprintf("/api/v1/studies/%s/feedback/responses/?%s", studyID, params.Encode())
 	if _, err := c.sensitiveExecuteBuilder().GetInto(requestURL, &response); err != nil {

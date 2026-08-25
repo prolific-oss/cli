@@ -56,7 +56,7 @@ func TestFeedbackEndpointsDoNotWriteDebugLogs(t *testing.T) {
 			return &http.Response{
 				StatusCode: http.StatusOK,
 				Body: io.NopCloser(strings.NewReader(fmt.Sprintf(
-					`{"results":[{"participant_id":null,"category":"other","text":%q,"ratings":{"clarity_rating":4,"difficulty_rating":4,"fairness_rating":4}}],"meta":{"count":1}}`,
+					`{"results":[{"participant_id":null,"category":["technical-issue","other"],"text":%q,"ratings":{"clarity_rating":4,"difficulty_rating":4,"fairness_rating":4}}],"meta":{"count":1}}`,
 					feedbackText,
 				))),
 				Header: make(http.Header),
@@ -81,6 +81,9 @@ func TestFeedbackEndpointsDoNotWriteDebugLogs(t *testing.T) {
 		}
 		if response.Results[0].ParticipantID != nil {
 			t.Fatalf("expected optional participant ID to decode as nil")
+		}
+		if categories := response.Results[0].Category; len(categories) != 2 || categories[0] != "technical-issue" || categories[1] != "other" {
+			t.Fatalf("expected feedback categories to decode, got %v", categories)
 		}
 	})
 
@@ -107,8 +110,8 @@ func TestGetStudyFeedbackRequest(t *testing.T) {
 			query:              "has_written_feedback=true&limit=25&offset=10",
 		},
 		{
-			name:  "omits zero pagination values",
-			query: "has_written_feedback=false",
+			name:  "includes zero pagination values",
+			query: "has_written_feedback=false&limit=0&offset=0",
 		},
 	}
 
