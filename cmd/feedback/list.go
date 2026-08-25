@@ -66,6 +66,9 @@ $ prolific feedback list -s 63c123af913a974f87e8e7fc -c`,
 			if opts.Limit < 0 {
 				return errors.New("limit must be greater than or equal to 0")
 			}
+			if opts.Offset < 0 {
+				return errors.New("offset must be greater than or equal to 0")
+			}
 
 			response, err := c.GetStudyFeedback(
 				opts.Study,

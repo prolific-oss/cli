@@ -2,6 +2,7 @@ package feedback
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/prolific-oss/cli/model"
 )
@@ -26,7 +27,7 @@ func NewListItems(records []model.StudyFeedback) []ListItem {
 	for _, record := range records {
 		items = append(items, ListItem{
 			ParticipantID: formatOptionalString(record.ParticipantID),
-			Category:      formatOptionalString(record.Category),
+			Category:      formatCategories(record.Category),
 			Clarity:       formatRating(record.Ratings.Clarity),
 			Difficulty:    formatRating(record.Ratings.Difficulty),
 			Fairness:      formatRating(record.Ratings.Fairness),
@@ -34,6 +35,13 @@ func NewListItems(records []model.StudyFeedback) []ListItem {
 		})
 	}
 	return items
+}
+
+func formatCategories(categories []string) string {
+	if len(categories) == 0 {
+		return "-"
+	}
+	return strings.Join(categories, ", ")
 }
 
 func formatRating(rating *float64) string {

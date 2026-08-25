@@ -13,7 +13,6 @@ func sampleFeedbackResponse() client.ListStudyFeedbackResponse {
 	clarity := 4.0
 	difficulty := 3.0
 	fairness := 5.0
-	category := feedbackTestCategory
 	text := "Instructions, were confusing."
 	participantID := "919"
 
@@ -21,7 +20,7 @@ func sampleFeedbackResponse() client.ListStudyFeedbackResponse {
 		Results: []model.StudyFeedback{
 			{
 				ParticipantID: &participantID,
-				Category:      &category,
+				Category:      []string{feedbackTestCategory, "other"},
 				Text:          &text,
 				Ratings: model.StudyFeedbackRatings{
 					Clarity:    &clarity,
@@ -43,7 +42,7 @@ func TestNewListItems(t *testing.T) {
 
 	first := items[0]
 	if first.ParticipantID != "919" ||
-		first.Category != feedbackTestCategory ||
+		first.Category != feedbackTestCategory+", other" ||
 		first.Clarity != "4" ||
 		first.Difficulty != "3" ||
 		first.Fairness != "5" ||
@@ -83,6 +82,7 @@ func TestListViewRendersSelectedFeedback(t *testing.T) {
 	for _, expected := range []string{
 		"Participant feedback",
 		"Participant: 919",
+		"Category:    study-not-as-described, other",
 		"Clarity:     4",
 		"Text:        Instructions, were confusing.",
 	} {

@@ -19,7 +19,7 @@ type feedbackListItem struct {
 func (i feedbackListItem) FilterValue() string {
 	return strings.Join([]string{
 		formatOptionalString(i.feedback.ParticipantID),
-		formatOptionalString(i.feedback.Category),
+		formatCategories(i.feedback.Category),
 		formatOptionalString(i.feedback.Text),
 	}, " ")
 }
@@ -31,7 +31,7 @@ func (i feedbackListItem) Title() string {
 func (i feedbackListItem) Description() string {
 	return fmt.Sprintf(
 		"%s · clarity %s · difficulty %s · fairness %s",
-		formatOptionalString(i.feedback.Category),
+		formatCategories(i.feedback.Category),
 		formatRating(i.feedback.Ratings.Clarity),
 		formatRating(i.feedback.Ratings.Difficulty),
 		formatRating(i.feedback.Ratings.Fairness),
@@ -107,7 +107,7 @@ func (lv ListView) View() string {
 	var content strings.Builder
 	content.WriteString(fmt.Sprintln(ui.RenderHeading("Participant feedback")))
 	content.WriteString(fmt.Sprintf("Participant: %s\n", formatOptionalString(lv.Feedback.ParticipantID)))
-	content.WriteString(fmt.Sprintf("Category:    %s\n", formatOptionalString(lv.Feedback.Category)))
+	content.WriteString(fmt.Sprintf("Category:    %s\n", formatCategories(lv.Feedback.Category)))
 	content.WriteString(fmt.Sprintf("Clarity:     %s\n", formatRating(lv.Feedback.Ratings.Clarity)))
 	content.WriteString(fmt.Sprintf("Difficulty:  %s\n", formatRating(lv.Feedback.Ratings.Difficulty)))
 	content.WriteString(fmt.Sprintf("Fairness:    %s\n", formatRating(lv.Feedback.Ratings.Fairness)))
