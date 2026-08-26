@@ -4,6 +4,12 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+## 1.2.3
+
+### Feedback
+
+- Add `feedback list` and `feedback ratings` commands to retrieve participant feedback and aggregate clarity, difficulty, and fairness ratings for studies
+
 ## 1.2.2
 
 ### Core
