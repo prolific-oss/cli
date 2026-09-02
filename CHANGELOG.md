@@ -4,6 +4,12 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+## 1.2.4
+
+### Filters
+
+- Correct three help-text drift issues from customer report
+
 ## 1.2.3
 
 ### Feedback
