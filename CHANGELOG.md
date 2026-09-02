@@ -6,7 +6,7 @@
 
 ## 1.2.4
 
-### Filters
+### Core
 
 - Correct three help-text drift issues from customer report
 
