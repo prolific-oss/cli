@@ -39,7 +39,7 @@ $ prolific message list -u 6262a15c0c745235a82a150c
 
 If, however, you want to see all messages in the last 30 days (or less), you can
 run
-$ prolific message list -c 2023-05-01
+$ prolific message list -c 2026-08-05
 
 You can also return unread messages. Please note, that if you call this command,
 it will not mark the messages as read in the web application.
