@@ -63,7 +63,7 @@ $ prolific eligibility-count -t /path/to/filters.json -w <workspace-id>`,
 	}
 
 	flags := cmd.Flags()
-	flags.StringVarP(&opts.TemplatePath, "template-path", "t", "", "Path to a YAML/JSON file containing the filters to count against")
+	flags.StringVarP(&opts.TemplatePath, "template-path", "t", "", "Path to a YAML/JSON file containing the filters to count against (required).")
 	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "The workspace ID to count eligible participants for (required).")
 
 	return cmd

@@ -34,7 +34,7 @@ Filter Sets are assigned to a workspace.
 		Example: `
 List the Filter Sets you have defined in a given workspace
 
-$ prolific filters list -w 6261321e223a605c7a4f7623
+$ prolific filter-sets list -w 6261321e223a605c7a4f7623
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
