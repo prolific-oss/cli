@@ -230,11 +230,11 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 
 | Operation | Method | Path | Coverage |
 |---|---|---|---|
-| `get-workspaces` | GET | `/api/v1/workspaces/` | ✅ `GetWorkspaces` |
-| `create-workspace` | POST | `/api/v1/workspaces/` | ✅ `CreateWorkspace` |
-| `get-workspace` | GET | `/api/v1/workspaces/{workspace_id}/` | ➖ Not exposed in the CLI |
-| `update-workspace` | PATCH | `/api/v1/workspaces/{workspace_id}/` | ➖ Not exposed in the CLI |
-| `get-workspace-balance` | GET | `/api/v1/workspaces/{workspace_id}/balance/` | ✅ `GetWorkspaceBalance` |
+| `workspaces_GetWorkspaces` | GET | `/api/v1/workspaces/` | ✅ `GetWorkspaces` |
+| `workspaces_CreateWorkspace` | POST | `/api/v1/workspaces/` | ✅ `CreateWorkspace` |
+| `workspaces_GetWorkspace` | GET | `/api/v1/workspaces/{workspace_id}/` | ➖ Not exposed in the CLI |
+| `workspaces_UpdateWorkspace` | PATCH | `/api/v1/workspaces/{workspace_id}/` | ➖ Not exposed in the CLI |
+| `workspaces_GetWorkspaceBalance` | GET | `/api/v1/workspaces/{workspace_id}/balance/` | ✅ `GetWorkspaceBalance` |
 
 </details>
 
@@ -243,11 +243,11 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 
 | Operation | Method | Path | Coverage |
 |---|---|---|---|
-| `get-projects` | GET | `/api/v1/workspaces/{workspace_id}/projects/` | ✅ `GetProjects` |
-| `create-project` | POST | `/api/v1/workspaces/{workspace_id}/projects/` | ✅ `CreateProject` |
-| `get-project` | GET | `/api/v1/projects/{project_id}/` | ✅ `GetProject` |
-| `update-project` | PATCH | `/api/v1/projects/{project_id}/` | ➖ Not exposed in the CLI |
-| `delete-project-study` | DELETE | `/api/v1/projects/{project_id}/studies/{study_id}/` | ➖ Not exposed in the CLI |
+| `projects_GetProjects` | GET | `/api/v1/workspaces/{workspace_id}/projects/` | ✅ `GetProjects` |
+| `projects_CreateProject` | POST | `/api/v1/workspaces/{workspace_id}/projects/` | ✅ `CreateProject` |
+| `projects_GetProject` | GET | `/api/v1/projects/{project_id}/` | ✅ `GetProject` |
+| `projects_UpdateProject` | PATCH | `/api/v1/projects/{project_id}/` | ➖ Not exposed in the CLI |
+| `studies_DeleteProjectStudy` | DELETE | `/api/v1/projects/{project_id}/studies/{study_id}/` | ➖ Not exposed in the CLI |
 
 </details>
 
@@ -256,9 +256,9 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 
 | Operation | Method | Path | Coverage |
 |---|---|---|---|
-| `get-filters` | GET | `/api/v1/filters/` | ✅ `GetFilters` |
-| `get-filter-distribution` | GET | `/api/v1/filters/{id}/distribution/` | ➖ Not exposed in the CLI |
-| `get-eligible-count` | POST | `/api/v1/eligibility-count/` | ✅ `GetEligibilityCount` |
+| `filters_GetFilters` | GET | `/api/v1/filters/` | ✅ `GetFilters` |
+| `filters_GetFilterDistribution` | GET | `/api/v1/filters/{id}/distribution/` | ➖ Not exposed in the CLI |
+| `filters_GetEligibleCount` | POST | `/api/v1/eligibility-count/` | ✅ `GetEligibilityCount` |
 
 </details>
 
@@ -267,14 +267,14 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 
 | Operation | Method | Path | Coverage |
 |---|---|---|---|
-| `get-filter-sets` | GET | `/api/v1/filter-sets/` | ✅ `GetFilterSets` |
-| `create-filter-set` | POST | `/api/v1/filter-sets/` | ✅ `CreateFilterSet` |
-| `get-filter-set` | GET | `/api/v1/filter-sets/{id}/` | ✅ `GetFilterSet` |
-| `delete-filter-set` | DELETE | `/api/v1/filter-sets/{id}/` | ➖ Not exposed in the CLI |
-| `update-filter-set` | PATCH | `/api/v1/filter-sets/{id}/` | ➖ Not exposed in the CLI |
-| `clone-filter-set` | POST | `/api/v1/filter-sets/{id}/clone/` | ➖ Not exposed in the CLI |
-| `lock-filter-set` | POST | `/api/v1/filter-sets/{id}/lock/` | ➖ Not exposed in the CLI |
-| `unlock-filter-set` | POST | `/api/v1/filter-sets/{id}/unlock/` | ➖ Not exposed in the CLI |
+| `filterSets_GetFilterSets` | GET | `/api/v1/filter-sets/` | ✅ `GetFilterSets` |
+| `filterSets_CreateFilterSet` | POST | `/api/v1/filter-sets/` | ✅ `CreateFilterSet` |
+| `filterSets_GetFilterSet` | GET | `/api/v1/filter-sets/{id}/` | ✅ `GetFilterSet` |
+| `filterSets_DeleteFilterSet` | DELETE | `/api/v1/filter-sets/{id}/` | ➖ Not exposed in the CLI |
+| `filterSets_UpdateFilterSet` | PATCH | `/api/v1/filter-sets/{id}/` | ➖ Not exposed in the CLI |
+| `filterSets_CloneFilterSet` | POST | `/api/v1/filter-sets/{id}/clone/` | ➖ Not exposed in the CLI |
+| `filterSets_LockFilterSet` | POST | `/api/v1/filter-sets/{id}/lock/` | ➖ Not exposed in the CLI |
+| `filterSets_UnlockFilterSet` | POST | `/api/v1/filter-sets/{id}/unlock/` | ➖ Not exposed in the CLI |
 
 </details>
 
@@ -283,16 +283,16 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 
 | Operation | Method | Path | Coverage |
 |---|---|---|---|
-| `get-event-types` | GET | `/api/v1/hooks/event-types/` | ✅ `GetHookEventTypes` |
-| `get-secrets` | GET | `/api/v1/hooks/secrets/` | ✅ `GetHookSecrets` |
-| `create-secret` | POST | `/api/v1/hooks/secrets/` | ✅ `CreateHookSecret` |
-| `get-subscriptions` | GET | `/api/v1/hooks/subscriptions/` | ✅ `GetHooks` |
-| `create-subscription` | POST | `/api/v1/hooks/subscriptions/` | ✅ `CreateHookSubscription` |
-| `get-subscription` | GET | `/api/v1/hooks/subscriptions/{subscription_id}/` | ➖ Not exposed in the CLI |
-| `confirm-subscription` | POST | `/api/v1/hooks/subscriptions/{subscription_id}/` | ✅ `ConfirmHookSubscription` |
-| `delete-subscription` | DELETE | `/api/v1/hooks/subscriptions/{subscription_id}/` | ✅ `DeleteHookSubscription` |
-| `update-subscription` | PATCH | `/api/v1/hooks/subscriptions/{subscription_id}/` | ✅ `UpdateHookSubscription` |
-| `get-events` | GET | `/api/v1/hooks/subscriptions/{subscription_id}/events/` | ✅ `GetEvents` |
+| `webhooks_GetEventTypes` | GET | `/api/v1/hooks/event-types/` | ✅ `GetHookEventTypes` |
+| `webhooks_GetSecrets` | GET | `/api/v1/hooks/secrets/` | ✅ `GetHookSecrets` |
+| `webhooks_CreateSecret` | POST | `/api/v1/hooks/secrets/` | ✅ `CreateHookSecret` |
+| `webhooks_GetSubscriptions` | GET | `/api/v1/hooks/subscriptions/` | ✅ `GetHooks` |
+| `webhooks_CreateSubscription` | POST | `/api/v1/hooks/subscriptions/` | ✅ `CreateHookSubscription` |
+| `webhooks_GetSubscription` | GET | `/api/v1/hooks/subscriptions/{subscription_id}/` | ➖ Not exposed in the CLI |
+| `webhooks_ConfirmSubscription` | POST | `/api/v1/hooks/subscriptions/{subscription_id}/` | ✅ `ConfirmHookSubscription` |
+| `webhooks_DeleteSubscription` | DELETE | `/api/v1/hooks/subscriptions/{subscription_id}/` | ✅ `DeleteHookSubscription` |
+| `webhooks_UpdateSubscription` | PATCH | `/api/v1/hooks/subscriptions/{subscription_id}/` | ✅ `UpdateHookSubscription` |
+| `webhooks_GetEvents` | GET | `/api/v1/hooks/subscriptions/{subscription_id}/events/` | ✅ `GetEvents` |
 
 </details>
 
@@ -301,16 +301,16 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 
 | Operation | Method | Path | Coverage |
 |---|---|---|---|
-| `get-surveys` | GET | `/api/v1/surveys/` | ✅ `GetSurveys` |
-| `create-survey` | POST | `/api/v1/surveys/` | ✅ `CreateSurvey` |
-| `get-survey` | GET | `/api/v1/surveys/{survey_id}` | ✅ `GetSurvey` |
-| `delete-survey` | DELETE | `/api/v1/surveys/{survey_id}` | ✅ `DeleteSurvey` |
-| `get-responses` | GET | `/api/v1/surveys/{survey_id}/responses/` | ✅ `GetSurveyResponses` |
-| `create-response` | POST | `/api/v1/surveys/{survey_id}/responses/` | ✅ `CreateSurveyResponse` |
-| `delete-responses` | DELETE | `/api/v1/surveys/{survey_id}/responses/` | ✅ `DeleteAllSurveyResponses` |
-| `get-summary` | GET | `/api/v1/surveys/{survey_id}/responses/summary/` | ✅ `GetSurveyResponseSummary` |
-| `get-response` | GET | `/api/v1/surveys/{survey_id}/responses/{response_id}` | ✅ `GetSurveyResponse` |
-| `delete-response` | DELETE | `/api/v1/surveys/{survey_id}/responses/{response_id}` | ✅ `DeleteSurveyResponse` |
+| `surveys_GetSurveys` | GET | `/api/v1/surveys/` | ✅ `GetSurveys` |
+| `surveys_CreateSurvey` | POST | `/api/v1/surveys/` | ✅ `CreateSurvey` |
+| `surveys_GetSurvey` | GET | `/api/v1/surveys/{survey_id}` | ✅ `GetSurvey` |
+| `surveys_DeleteSurvey` | DELETE | `/api/v1/surveys/{survey_id}` | ✅ `DeleteSurvey` |
+| `surveys_GetResponses` | GET | `/api/v1/surveys/{survey_id}/responses/` | ✅ `GetSurveyResponses` |
+| `surveys_CreateResponse` | POST | `/api/v1/surveys/{survey_id}/responses/` | ✅ `CreateSurveyResponse` |
+| `surveys_DeleteResponses` | DELETE | `/api/v1/surveys/{survey_id}/responses/` | ✅ `DeleteAllSurveyResponses` |
+| `surveys_GetSummary` | GET | `/api/v1/surveys/{survey_id}/responses/summary/` | ✅ `GetSurveyResponseSummary` |
+| `surveys_GetResponse` | GET | `/api/v1/surveys/{survey_id}/responses/{response_id}` | ✅ `GetSurveyResponse` |
+| `surveys_DeleteResponse` | DELETE | `/api/v1/surveys/{survey_id}/responses/{response_id}` | ✅ `DeleteSurveyResponse` |
 
 </details>
 
@@ -319,19 +319,19 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 
 | Operation | Method | Path | Coverage |
 |---|---|---|---|
-| `get-task-builder-batches` | GET | `/api/v1/data-collection/batches` | ✅ `GetAITaskBuilderBatches` |
-| `create-task-builder-batch` | POST | `/api/v1/data-collection/batches` | ✅ `CreateAITaskBuilderBatch` |
-| `get-task-builder-batch` | GET | `/api/v1/data-collection/batches/{batch_id}` | ✅ `GetAITaskBuilderBatch` |
-| `update-task-builder-batch` | PATCH | `/api/v1/data-collection/batches/{batch_id}` | ✅ `UpdateAITaskBuilderBatch` |
-| `get-task-builder-batch-status` | GET | `/api/v1/data-collection/batches/{batch_id}/status` | ✅ `GetAITaskBuilderBatchStatus` |
-| `setup-task-builder-batch` | POST | `/api/v1/data-collection/batches/{batch_id}/setup` | ✅ `SetupAITaskBuilderBatch` |
-| `get-task-builder-batch-task-responses` | GET | `/api/v1/data-collection/batches/{batch_id}/responses` | ✅ `GetAITaskBuilderResponses` |
-| `get-task-builder-batch-report` | GET | `/api/v1/data-collection/batches/{batch_id}/report/` | ➖ Not exposed in the CLI |
-| `duplicate-task-builder-batch` | POST | `/api/v1/data-collection/batches/{batch_id}/duplicate` | ➖ Not exposed in the CLI |
-| `sync-task-builder-batch` | POST | `/api/v1/data-collection/batches/{batch_id}/sync` | ✅ `SyncAITaskBuilderBatch` |
-| `get-batch-sync-status` | GET | `/api/v1/data-collection/batches/{batch_id}/syncs/{sync_id}` | ✅ `GetAITaskBuilderBatchSyncStatus` |
-| `request-batch-export` | POST | `/api/v1/data-collection/batches/{batch_id}/export` | ✅ `InitiateBatchExport` |
-| `get-batch-export-status` | GET | `/api/v1/data-collection/batches/{batch_id}/export/{export_id}` | ✅ `GetBatchExportStatus` |
+| `aiTaskBuilder_GetTaskBuilderBatches` | GET | `/api/v1/data-collection/batches` | ✅ `GetAITaskBuilderBatches` |
+| `aiTaskBuilder_CreateTaskBuilderBatch` | POST | `/api/v1/data-collection/batches` | ✅ `CreateAITaskBuilderBatch` |
+| `aiTaskBuilder_GetTaskBuilderBatch` | GET | `/api/v1/data-collection/batches/{batch_id}` | ✅ `GetAITaskBuilderBatch` |
+| `aiTaskBuilder_UpdateTaskBuilderBatch` | PATCH | `/api/v1/data-collection/batches/{batch_id}` | ✅ `UpdateAITaskBuilderBatch` |
+| `aiTaskBuilder_GetTaskBuilderBatchStatus` | GET | `/api/v1/data-collection/batches/{batch_id}/status` | ✅ `GetAITaskBuilderBatchStatus` |
+| `aiTaskBuilder_SetupTaskBuilderBatch` | POST | `/api/v1/data-collection/batches/{batch_id}/setup` | ✅ `SetupAITaskBuilderBatch` |
+| `aiTaskBuilder_GetTaskBuilderBatchTaskResponses` | GET | `/api/v1/data-collection/batches/{batch_id}/responses` | ✅ `GetAITaskBuilderResponses` |
+| `aiTaskBuilder_GetTaskBuilderBatchReport` | GET | `/api/v1/data-collection/batches/{batch_id}/report/` | ➖ Not exposed in the CLI |
+| `aiTaskBuilder_DuplicateTaskBuilderBatch` | POST | `/api/v1/data-collection/batches/{batch_id}/duplicate` | ➖ Not exposed in the CLI |
+| `aiTaskBuilder_SyncTaskBuilderBatch` | POST | `/api/v1/data-collection/batches/{batch_id}/sync` | ✅ `SyncAITaskBuilderBatch` |
+| `aiTaskBuilder_GetBatchSyncStatus` | GET | `/api/v1/data-collection/batches/{batch_id}/syncs/{sync_id}` | ✅ `GetAITaskBuilderBatchSyncStatus` |
+| `aiTaskBuilder_RequestBatchExport` | POST | `/api/v1/data-collection/batches/{batch_id}/export` | ✅ `InitiateBatchExport` |
+| `aiTaskBuilder_GetBatchExportStatus` | GET | `/api/v1/data-collection/batches/{batch_id}/export/{export_id}` | ✅ `GetBatchExportStatus` |
 
 </details>
 
@@ -340,14 +340,14 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 
 | Operation | Method | Path | Coverage |
 |---|---|---|---|
-| `create-task-builder-dataset` | POST | `/api/v1/data-collection/datasets` | ✅ `CreateAITaskBuilderDataset` |
-| `update-task-builder-dataset` | PATCH | `/api/v1/data-collection/datasets/{dataset_id}` | ➖ Not exposed in the CLI |
-| `append-dataset-datapoints` | POST | `/api/v1/data-collection/datasets/{dataset_id}/datapoints` | ➖ Not exposed in the CLI |
-| `get-dataset-upload-url` | GET | `/api/v1/data-collection/datasets/{dataset_id}/upload-url/{filename}` | ✅ `GetAITaskBuilderDatasetUploadURL` |
-| `get-task-builder-dataset` | GET | `/api/v1/data-collection/datasets/{dataset_id}` | ✅ `GetAITaskBuilderDataset` |
-| `get-task-builder-dataset-status` | GET | `/api/v1/data-collection/datasets/{dataset_id}/status` | ✅ `GetAITaskBuilderDatasetStatus` |
-| `get-dataset-import-status` | GET | `/api/v1/data-collection/datasets/{dataset_id}/imports/{import_id}` | ✅ `GetAITaskBuilderDatasetImportStatus` |
-| `get-schema-migration-status` | GET | `/api/v1/data-collection/datasets/{dataset_id}/schema-migrations/{job_id}` | ➖ Not exposed in the CLI |
+| `aiTaskBuilder_CreateTaskBuilderDataset` | POST | `/api/v1/data-collection/datasets` | ✅ `CreateAITaskBuilderDataset` |
+| `aiTaskBuilder_UpdateTaskBuilderDataset` | PATCH | `/api/v1/data-collection/datasets/{dataset_id}` | ➖ Not exposed in the CLI |
+| `aiTaskBuilder_AppendDatasetDatapoints` | POST | `/api/v1/data-collection/datasets/{dataset_id}/datapoints` | ➖ Not exposed in the CLI |
+| `aiTaskBuilder_getDatasetUploadUrl` | GET | `/api/v1/data-collection/datasets/{dataset_id}/upload-url/{filename}` | ✅ `GetAITaskBuilderDatasetUploadURL` |
+| `aiTaskBuilder_GetTaskBuilderDataset` | GET | `/api/v1/data-collection/datasets/{dataset_id}` | ✅ `GetAITaskBuilderDataset` |
+| `aiTaskBuilder_GetTaskBuilderDatasetStatus` | GET | `/api/v1/data-collection/datasets/{dataset_id}/status` | ✅ `GetAITaskBuilderDatasetStatus` |
+| `aiTaskBuilder_GetDatasetImportStatus` | GET | `/api/v1/data-collection/datasets/{dataset_id}/imports/{import_id}` | ✅ `GetAITaskBuilderDatasetImportStatus` |
+| `aiTaskBuilder_GetSchemaMigrationStatus` | GET | `/api/v1/data-collection/datasets/{dataset_id}/schema-migrations/{job_id}` | ➖ Not exposed in the CLI |
 
 </details>
 
@@ -356,9 +356,9 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 
 | Operation | Method | Path | Coverage |
 |---|---|---|---|
-| `get-task-builder-instructions` | GET | `/api/v1/data-collection/batches/{batch_id}/instructions` | ➖ Not exposed in the CLI |
-| `create-task-builder-instructions` | POST | `/api/v1/data-collection/batches/{batch_id}/instructions` | ✅ `CreateAITaskBuilderInstructions` |
-| `update-task-builder-instructions` | PUT | `/api/v1/data-collection/batches/{batch_id}/instructions` | ➖ Not exposed in the CLI |
+| `aiTaskBuilder_GetTaskBuilderInstructions` | GET | `/api/v1/data-collection/batches/{batch_id}/instructions` | ➖ Not exposed in the CLI |
+| `aiTaskBuilder_CreateTaskBuilderInstructions` | POST | `/api/v1/data-collection/batches/{batch_id}/instructions` | ✅ `CreateAITaskBuilderInstructions` |
+| `aiTaskBuilder_UpdateTaskBuilderInstructions` | PUT | `/api/v1/data-collection/batches/{batch_id}/instructions` | ➖ Not exposed in the CLI |
 
 </details>
 
@@ -367,13 +367,13 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 
 | Operation | Method | Path | Coverage |
 |---|---|---|---|
-| `list-collections` | GET | `/api/v1/data-collection/collections` | ✅ `GetCollections` |
-| `create-collection` | POST | `/api/v1/data-collection/collections` | ✅ `CreateAITaskBuilderCollection` |
-| `get-collection` | GET | `/api/v1/data-collection/collections/{collection_id}` | ✅ `GetCollection` |
-| `update-collection` | PUT | `/api/v1/data-collection/collections/{collection_id}` | ✅ `UpdateCollection` |
-| `get-collection-responses` | GET | `/api/v1/data-collection/collections/{collection_id}/responses` | ➖ Not exposed in the CLI |
-| `request-collection-export` | POST | `/api/v1/data-collection/collections/{collection_id}/export` | ✅ `InitiateCollectionExport` |
-| `get-collection-export-status` | GET | `/api/v1/data-collection/collections/{collection_id}/export/{export_id}` | ✅ `GetCollectionExportStatus` |
+| `aiTaskBuilder_ListCollections` | GET | `/api/v1/data-collection/collections` | ✅ `GetCollections` |
+| `aiTaskBuilder_CreateCollection` | POST | `/api/v1/data-collection/collections` | ✅ `CreateAITaskBuilderCollection` |
+| `aiTaskBuilder_GetCollection` | GET | `/api/v1/data-collection/collections/{collection_id}` | ✅ `GetCollection` |
+| `aiTaskBuilder_UpdateCollection` | PUT | `/api/v1/data-collection/collections/{collection_id}` | ✅ `UpdateCollection` |
+| `aiTaskBuilder_GetCollectionResponses` | GET | `/api/v1/data-collection/collections/{collection_id}/responses` | ➖ Not exposed in the CLI |
+| `aiTaskBuilder_RequestCollectionExport` | POST | `/api/v1/data-collection/collections/{collection_id}/export` | ✅ `InitiateCollectionExport` |
+| `aiTaskBuilder_GetCollectionExportStatus` | GET | `/api/v1/data-collection/collections/{collection_id}/export/{export_id}` | ✅ `GetCollectionExportStatus` |
 
 </details>
 
@@ -382,7 +382,7 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 
 | Operation | Method | Path | Coverage |
 |---|---|---|---|
-| `create-invitation` | POST | `/api/v1/invitations/` | ✅ `CreateInvitation` |
+| `invitations_CreateInvitation` | POST | `/api/v1/invitations/` | ✅ `CreateInvitation` |
 
 </details>
 
@@ -391,11 +391,13 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 
 | Operation | Method | Path | Coverage |
 |---|---|---|---|
-| `get-messages` | GET | `/api/v1/messages/` | ✅ `GetMessages` |
-| `send-message` | POST | `/api/v1/messages/` | ✅ `SendMessage` |
-| `bulk-message-participants` | POST | `/api/v1/messages/bulk/` | ✅ `BulkSendMessage` |
-| `send-message-to-participant-group` | POST | `/api/v1/messages/participant-group/` | ✅ `SendGroupMessage` |
-| `get-unread-messages` | GET | `/api/v1/messages/unread/` | ✅ `GetUnreadMessages` |
+| `messages_GetMessages` | GET | `/api/v1/messages/` | ✅ `GetMessages` |
+| `messages_SendMessage` | POST | `/api/v1/messages/` | ✅ `SendMessage` |
+| `messages_BulkMessageParticipants` | POST | `/api/v1/messages/bulk/` | ✅ `BulkSendMessage` |
+| `messages_SendMessageToParticipantGroup` | POST | `/api/v1/messages/participant-group/` | ✅ `SendGroupMessage` |
+| `messages_GetUnreadMessages` | GET | `/api/v1/messages/unread/` | ✅ `GetUnreadMessages` |
+| `messages_GetConversations` | GET | `/api/v1/conversations/` | ➖ Not exposed in the CLI |
+| `messages_GetConversationMessages` | GET | `/api/v1/conversations/{conversation_id}/messages/` | ➖ Not exposed in the CLI |
 
 </details>
 
@@ -404,25 +406,25 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 
 | Operation | Method | Path | Coverage |
 |---|---|---|---|
-| `get-studies` | GET | `/api/v1/studies/` | ✅ `GetStudies` |
-| `create-study` | POST | `/api/v1/studies/` | ✅ `CreateStudy` |
-| `get-project-studies` | GET | `/api/v1/projects/{project_id}/studies/` | ✅ `GetStudies` |
-| `delete-project-study` | DELETE | `/api/v1/projects/{project_id}/studies/{study_id}/` | ➖ Not exposed in the CLI |
-| `get-study` | GET | `/api/v1/studies/{id}/` | ✅ `GetStudy` |
-| `delete-study` | DELETE | `/api/v1/studies/{id}/` | ➖ Not exposed in the CLI |
-| `update-study` | PATCH | `/api/v1/studies/{id}/` | ✅ `UpdateStudy` |
-| `publish-study` | POST | `/api/v1/studies/{id}/transition/` | ✅ `TransitionStudy` |
-| `create-test-study` | POST | `/api/v1/studies/{id}/test-study` | ✅ `TestStudy` |
-| `get-study-access-details-progress` | GET | `/api/v1/studies/{id}/access-details-progress/` | ➖ Not exposed in the CLI |
-| `get-study-cost` | GET | `/api/v1/studies/{id}/cost/` | ➖ Not exposed in the CLI |
-| `get-study-submissions` | GET | `/api/v1/studies/{id}/submissions/` | ✅ `GetSubmissions` |
-| `count-study-submissions-by-status` | GET | `/api/v1/studies/{id}/submissions/counts/` | ✅ `GetStudySubmissionCounts` |
-| `download-study-credential-report` | GET | `/api/v1/studies/{id}/credentials/report/` | ✅ `GetStudyCredentialsUsageReportCSV` |
-| `export-study` | GET | `/api/v1/studies/{id}/export/` | ➖ Not exposed in the CLI |
-| `export-demographic-data` | POST | `/api/v1/studies/{id}/demographic-export/` | ✅ `ExportDemographics` |
-| `get-demographic-export-history` | GET | `/api/v1/studies/{id}/demographic-export-history/` | ➖ Not exposed in the CLI |
-| `duplicate-study` | POST | `/api/v1/studies/{id}/clone/` | ✅ `DuplicateStudy` |
-| `calculate-study-cost` | POST | `/api/v1/study-cost-calculator/` | ➖ Not exposed in the CLI |
+| `studies_GetStudies` | GET | `/api/v1/studies/` | ✅ `GetStudies` |
+| `studies_CreateStudy` | POST | `/api/v1/studies/` | ✅ `CreateStudy` |
+| `studies_GetProjectStudies` | GET | `/api/v1/projects/{project_id}/studies/` | ✅ `GetStudies` |
+| `studies_DeleteProjectStudy` | DELETE | `/api/v1/projects/{project_id}/studies/{study_id}/` | ➖ Not exposed in the CLI |
+| `studies_GetStudy` | GET | `/api/v1/studies/{id}/` | ✅ `GetStudy` |
+| `studies_DeleteStudy` | DELETE | `/api/v1/studies/{id}/` | ➖ Not exposed in the CLI |
+| `studies_UpdateStudy` | PATCH | `/api/v1/studies/{id}/` | ✅ `UpdateStudy` |
+| `studies_PublishStudy` | POST | `/api/v1/studies/{id}/transition/` | ✅ `TransitionStudy` |
+| `studies_CreateTestStudy` | POST | `/api/v1/studies/{id}/test-study` | ✅ `TestStudy` |
+| `studies_GetStudyAccessDetailsProgress` | GET | `/api/v1/studies/{id}/access-details-progress/` | ➖ Not exposed in the CLI |
+| `studies_GetStudyCost` | GET | `/api/v1/studies/{id}/cost/` | ➖ Not exposed in the CLI |
+| `studies_GetStudySubmissions` | GET | `/api/v1/studies/{id}/submissions/` | ✅ `GetSubmissions` |
+| `studies_CountStudySubmissionsByStatus` | GET | `/api/v1/studies/{id}/submissions/counts/` | ✅ `GetStudySubmissionCounts` |
+| `studies_DownloadStudyCredentialReport` | GET | `/api/v1/studies/{id}/credentials/report/` | ✅ `GetStudyCredentialsUsageReportCSV` |
+| `studies_ExportStudy` | GET | `/api/v1/studies/{id}/export/` | ➖ Not exposed in the CLI |
+| `studies_ExportDemographicData` | POST | `/api/v1/studies/{id}/demographic-export/` | ✅ `ExportDemographics` |
+| `studies_GetDemographicExportHistory` | GET | `/api/v1/studies/{id}/demographic-export-history/` | ➖ Not exposed in the CLI |
+| `studies_DuplicateStudy` | POST | `/api/v1/studies/{id}/clone/` | ✅ `DuplicateStudy` |
+| `studies_CalculateStudyCost` | POST | `/api/v1/study-cost-calculator/` | ➖ Not exposed in the CLI |
 
 </details>
 
@@ -431,9 +433,9 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 
 | Operation | Method | Path | Coverage |
 |---|---|---|---|
-| `list-credential-pools` | GET | `/api/v1/credentials/` | ✅ `ListCredentialPools` |
-| `create-credential-pool` | POST | `/api/v1/credentials/` | ✅ `CreateCredentialPool` |
-| `update-credential-pool` | PATCH | `/api/v1/credentials/{credential_pool_id}/` | ✅ `UpdateCredentialPool` |
+| `credentials_ListCredentialPools` | GET | `/api/v1/credentials/` | ✅ `ListCredentialPools` |
+| `credentials_CreateCredentialPool` | POST | `/api/v1/credentials/` | ✅ `CreateCredentialPool` |
+| `credentials_UpdateCredentialPool` | PATCH | `/api/v1/credentials/{credential_pool_id}/` | ✅ `UpdateCredentialPool` |
 
 </details>
 
@@ -442,7 +444,7 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 
 | Operation | Method | Path | Coverage |
 |---|---|---|---|
-| `calculate-reward-recommendations` | GET | `/api/v1/reward-recommendations/` | ✅ `GetRewardRecommendations` |
+| `rewardRecommendations_CalculateRewardRecommendations` | GET | `/api/v1/reward-recommendations/` | ✅ `GetRewardRecommendations` |
 
 </details>
 
@@ -451,7 +453,7 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 
 | Operation | Method | Path | Coverage |
 |---|---|---|---|
-| `get-study-jwks` | GET | `/.well-known/study/jwks.json` | ➖ Not exposed in the CLI |
+| `wellKnownEndpoints_getStudyJwks` | GET | `/.well-known/study/jwks.json` | ➖ Not exposed in the CLI |
 
 </details>
 
@@ -460,12 +462,12 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 
 | Operation | Method | Path | Coverage |
 |---|---|---|---|
-| `get-submissions` | GET | `/api/v1/submissions/` | ➖ Not exposed in the CLI |
-| `get-submission` | GET | `/api/v1/submissions/{id}/` | ➖ Not exposed in the CLI |
-| `transition-submission` | POST | `/api/v1/submissions/{id}/transition/` | ✅ `TransitionSubmission` |
-| `request-submission-return` | POST | `/api/v1/submissions/{id}/request-return/` | ✅ `RequestSubmissionReturn` |
-| `get-submission-feedback-upload-url` | GET | `/api/v1/submissions/signals/upload-url/{filename}` | ➖ Not exposed in the CLI |
-| `bulk-approve-submissions` | POST | `/api/v1/submissions/bulk-approve/` | ✅ `BulkApproveSubmissions` |
+| `submissions_GetSubmissions` | GET | `/api/v1/submissions/` | ➖ Not exposed in the CLI |
+| `submissions_GetSubmission` | GET | `/api/v1/submissions/{id}/` | ➖ Not exposed in the CLI |
+| `submissions_TransitionSubmission` | POST | `/api/v1/submissions/{id}/transition/` | ✅ `TransitionSubmission` |
+| `submissions_RequestSubmissionReturn` | POST | `/api/v1/submissions/{id}/request-return/` | ✅ `RequestSubmissionReturn` |
+| `submissionFeedbackUpload_GetSubmissionFeedbackUploadUrl` | GET | `/api/v1/submissions/signals/upload-url/{filename}` | ➖ Not exposed in the CLI |
+| `submissions_BulkApproveSubmissions` | POST | `/api/v1/submissions/bulk-approve/` | ✅ `BulkApproveSubmissions` |
 
 </details>
 
@@ -474,8 +476,8 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 
 | Operation | Method | Path | Coverage |
 |---|---|---|---|
-| `create-bonus-payments` | POST | `/api/v1/submissions/bonus-payments/` | ✅ `CreateBonusPayments` |
-| `pay-bonus-payments` | POST | `/api/v1/bulk-bonus-payments/{id}/pay/` | ✅ `PayBonusPayments` |
+| `bonuses_CreateBonusPayments` | POST | `/api/v1/submissions/bonus-payments/` | ✅ `CreateBonusPayments` |
+| `bonuses_PayBonusPayments` | POST | `/api/v1/bulk-bonus-payments/{id}/pay/` | ✅ `PayBonusPayments` |
 
 </details>
 
@@ -484,8 +486,8 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 
 | Operation | Method | Path | Coverage |
 |---|---|---|---|
-| `get-user` | GET | `/api/v1/users/me/` | ✅ `GetMe` |
-| `create-test-participant-for-researcher` | POST | `/api/v1/researchers/participants/` | ✅ `CreateTestParticipant` |
+| `users_GetUser` | GET | `/api/v1/users/me/` | ✅ `GetMe` |
+| `users_CreateTestParticipantForResearcher` | POST | `/api/v1/researchers/participants/` | ✅ `CreateTestParticipant` |
 
 </details>
 
@@ -494,14 +496,14 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 
 | Operation | Method | Path | Coverage |
 |---|---|---|---|
-| `get-participant-groups` | GET | `/api/v1/participant-groups/` | ⚠️ Covered, not spec-validated — test harness limitation |
-| `create-participant-group` | POST | `/api/v1/participant-groups/` | ✅ `CreateParticipantGroup` |
-| `get-participant-group` | GET | `/api/v1/participant-groups/{id}/` | ➖ Not exposed in the CLI |
-| `delete-participant-group` | DELETE | `/api/v1/participant-groups/{id}/` | ➖ Not exposed in the CLI |
-| `update-participant-group` | PATCH | `/api/v1/participant-groups/{id}/` | ➖ Not exposed in the CLI |
-| `get-participant-group-participants` | GET | `/api/v1/participant-groups/{id}/participants/` | ✅ `GetParticipantGroup` |
-| `add-to-participant-group` | POST | `/api/v1/participant-groups/{id}/participants/` | ➖ Not exposed in the CLI |
-| `remove-from-participant-group` | DELETE | `/api/v1/participant-groups/{id}/participants/` | ✅ `RemoveParticipantGroupMembers` |
+| `participantGroups_GetParticipantGroups` | GET | `/api/v1/participant-groups/` | ⚠️ Covered, not spec-validated — test harness limitation |
+| `participantGroups_CreateParticipantGroup` | POST | `/api/v1/participant-groups/` | ✅ `CreateParticipantGroup` |
+| `participantGroups_GetParticipantGroup` | GET | `/api/v1/participant-groups/{id}/` | ➖ Not exposed in the CLI |
+| `participantGroups_DeleteParticipantGroup` | DELETE | `/api/v1/participant-groups/{id}/` | ➖ Not exposed in the CLI |
+| `participantGroups_UpdateParticipantGroup` | PATCH | `/api/v1/participant-groups/{id}/` | ➖ Not exposed in the CLI |
+| `participantGroups_GetParticipantGroupParticipants` | GET | `/api/v1/participant-groups/{id}/participants/` | ✅ `GetParticipantGroup` |
+| `participantGroups_AddToParticipantGroup` | POST | `/api/v1/participant-groups/{id}/participants/` | ✅ `AddParticipantGroupMembers` |
+| `participantGroups_RemoveFromParticipantGroup` | DELETE | `/api/v1/participant-groups/{id}/participants/` | ✅ `RemoveParticipantGroupMembers` |
 
 </details>
 
