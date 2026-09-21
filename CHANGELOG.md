@@ -4,6 +4,10 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+## 1.2.5
+
+- Maintenance and dependency updates
+
 ## 1.2.4
 
 ### Core
