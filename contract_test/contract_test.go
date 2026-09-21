@@ -116,7 +116,6 @@ var operations = []operation{
 
 	// Filters
 	{operationID: "filters_GetFilters", call: func(c *client.Client) { c.GetFilters() }},
-	{operationID: "filters_GetFilterDistribution", skip: "OUTOFSCOPE: filter distribution not needed in CLI"},
 	{operationID: "filters_GetEligibleCount", call: func(c *client.Client) {
 		c.GetEligibilityCount(client.EligibilityCountPayload{Filters: []model.Filter{}, WorkspaceID: "ws-id"})
 	}},
