@@ -1199,6 +1199,21 @@ func (mr *MockAPIMockRecorder) RequestSubmissionReturn(ID, reasons interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RequestSubmissionReturn", reflect.TypeOf((*MockAPI)(nil).RequestSubmissionReturn), ID, reasons)
 }
 
+// SearchFilters mocks base method.
+func (m *MockAPI) SearchFilters(query, workspaceID string, limit, offset int) (*client.SearchFiltersResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchFilters", query, workspaceID, limit, offset)
+	ret0, _ := ret[0].(*client.SearchFiltersResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchFilters indicates an expected call of SearchFilters.
+func (mr *MockAPIMockRecorder) SearchFilters(query, workspaceID, limit, offset interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchFilters", reflect.TypeOf((*MockAPI)(nil).SearchFilters), query, workspaceID, limit, offset)
+}
+
 // SendGroupMessage mocks base method.
 func (m *MockAPI) SendGroupMessage(participantGroupID, body string, studyID *string) error {
 	m.ctrl.T.Helper()
@@ -1375,4 +1390,41 @@ func (m *MockAPI) UpdateStudy(ID string, study any) (*model.Study, error) {
 func (mr *MockAPIMockRecorder) UpdateStudy(ID, study interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateStudy", reflect.TypeOf((*MockAPI)(nil).UpdateStudy), ID, study)
+}
+
+// MockhttpStatusCoder is a mock of httpStatusCoder interface.
+type MockhttpStatusCoder struct {
+	ctrl     *gomock.Controller
+	recorder *MockhttpStatusCoderMockRecorder
+}
+
+// MockhttpStatusCoderMockRecorder is the mock recorder for MockhttpStatusCoder.
+type MockhttpStatusCoderMockRecorder struct {
+	mock *MockhttpStatusCoder
+}
+
+// NewMockhttpStatusCoder creates a new mock instance.
+func NewMockhttpStatusCoder(ctrl *gomock.Controller) *MockhttpStatusCoder {
+	mock := &MockhttpStatusCoder{ctrl: ctrl}
+	mock.recorder = &MockhttpStatusCoderMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockhttpStatusCoder) EXPECT() *MockhttpStatusCoderMockRecorder {
+	return m.recorder
+}
+
+// httpStatusCode mocks base method.
+func (m *MockhttpStatusCoder) httpStatusCode() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "httpStatusCode")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// httpStatusCode indicates an expected call of httpStatusCode.
+func (mr *MockhttpStatusCoderMockRecorder) httpStatusCode() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "httpStatusCode", reflect.TypeOf((*MockhttpStatusCoder)(nil).httpStatusCode))
 }

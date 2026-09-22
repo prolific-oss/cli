@@ -84,7 +84,7 @@ func NewRootCommand() *cobra.Command {
 		credentials.NewCredentialsCommand(&client, w),
 		eligibilitycount.NewCountCommand(&client, w),
 		feedback.NewFeedbackCommand(&client, w),
-		filters.NewListCommand(&client, w),
+		filters.NewFiltersCommand(&client, w),
 		filtersets.NewFilterSetCommand(&client, w),
 		hook.NewHookCommand(&client, w),
 		invitation.NewInvitationCommand(&client, w),

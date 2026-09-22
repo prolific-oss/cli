@@ -30,7 +30,7 @@ Available Commands:
   credentials   Manage credential pools
   feedback      View participant feedback for your studies
   filter-sets   Manage and view your filter sets
-  filters       List all filters available for your study
+  filters       Browse and search the filters available for your study
   help          Help about any command
   hook          Manage and view your hook subscriptions
   invitation    Manage workspace invitations
