@@ -90,9 +90,9 @@ func TestNewSearchCommand(t *testing.T) {
 		assert.Equal(t, shorthand, flag.Shorthand)
 	}
 
-	for _, name := range []string{"no-pager", "fields"} {
-		require.NotNil(t, cmd.Flags().Lookup(name), name)
-	}
+	require.NotNil(t, cmd.Flags().Lookup("fields"))
+	// --no-pager is a persistent root flag, not a per-command one.
+	assert.Nil(t, cmd.Flags().Lookup("no-pager"))
 }
 
 func TestSearchFilters(t *testing.T) {
@@ -231,7 +231,7 @@ func TestSearchFiltersValidation(t *testing.T) {
 		{name: "missing query", args: []string{}, want: "requires at least 1 arg(s)"},
 		{name: "blank query", args: []string{"   "}, want: "please provide a search query"},
 		{name: "query too long", args: []string{string(make([]rune, 201))}, want: "search query must be at most 200 characters"},
-		{name: "limit too low", args: []string{"dev", "--limit", "0"}, want: "limit must be greater than or equal to 1"},
+		{name: "negative limit", args: []string{"dev", "--limit", "-1"}, want: "limit must be greater than or equal to 0"},
 		{name: "all with limit", args: []string{"dev", "--all", "--limit", "10"}, want: "[all limit] were all set"},
 	}
 
@@ -422,4 +422,29 @@ func TestSearchFiltersHeaderUsesFirstPageTotal(t *testing.T) {
 	output := stripansi.Strip(b.String())
 	assert.True(t, strings.HasPrefix(output, "Filters matching \"dev\"\nShowing 120 records of 1000. Use --limit or --all to see more\n\n1. Filter 0\n"))
 	assert.Contains(t, output, "120. Filter 119\n")
+}
+
+func TestSearchFiltersLimitZeroFetchesAll(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	gomock.InOrder(
+		c.EXPECT().SearchFilters("dev", "", 100, 0).Return(pageOf(0, 100, 130), nil),
+		c.EXPECT().SearchFilters("dev", "", 100, 100).Return(pageOf(100, 30, 130), nil),
+	)
+
+	var b bytes.Buffer
+	w := bufio.NewWriter(&b)
+
+	cmd := filters.NewSearchCommand(c, w)
+	cmd.SetArgs([]string{"dev", "--limit", "0", "--json"})
+	err := cmd.Execute()
+	w.Flush()
+
+	require.NoError(t, err)
+
+	var decoded []model.FilterSearchResult
+	require.NoError(t, json.Unmarshal(b.Bytes(), &decoded))
+	assert.Len(t, decoded, 130)
 }

@@ -257,6 +257,7 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 | Operation | Method | Path | Coverage |
 |---|---|---|---|
 | `filters_GetFilters` | GET | `/api/v1/filters/` | ✅ `GetFilters` |
+| `filters_SearchFilters` | — | — | 🕒 `SearchFilters` — live endpoint, awaiting publication in the spec |
 | `filters_GetEligibleCount` | POST | `/api/v1/eligibility-count/` | ✅ `GetEligibilityCount` |
 
 </details>

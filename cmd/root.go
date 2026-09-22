@@ -28,6 +28,7 @@ import (
 	"github.com/prolific-oss/cli/cmd/project"
 	"github.com/prolific-oss/cli/cmd/researcher"
 	"github.com/prolific-oss/cli/cmd/rewardrecommendations"
+	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/cmd/study"
 	"github.com/prolific-oss/cli/cmd/submission"
 	"github.com/prolific-oss/cli/cmd/survey"
@@ -80,6 +81,7 @@ func NewRootCommand() *cobra.Command {
 	client := client.New()
 
 	cmd.PersistentFlags().StringVar(&client.Skill, "skill", "", "Optional identifier for the AI skill/workflow invoking this command; folded into the User-Agent header sent with API requests")
+	cmd.PersistentFlags().Bool(shared.NoPagerFlag, false, "Do not pipe long output into a pager")
 
 	w := os.Stdout
 

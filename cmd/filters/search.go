@@ -31,7 +31,6 @@ type SearchOptions struct {
 	All         bool
 	Output      shared.OutputOptions
 	Fields      string
-	NoPager     bool
 }
 
 // NewSearchCommand creates the `filters search` command.
@@ -51,13 +50,14 @@ Results are returned in ranked order. The parts of each filter that matched
 your query are highlighted, and up to three matching choices are previewed for
 filters with a fixed set of choices.
 
-By default the top 25 results are shown. Use --limit to ask for more, or --all
-to fetch every match; pages are fetched from the API automatically.
+By default the top 25 results are shown. Use --limit to ask for more, or
+--all (equivalently --limit 0) to fetch every match. Pages are fetched from
+the API automatically, so there is no --offset.
 
 When run in a terminal, output longer than one screen is shown in your pager
 (PROLIFIC_PAGER, then PAGER, defaulting to less) so the top result stays in
-view and you can scroll through the rest. Use --no-pager to print everything
-directly.`,
+view and you can scroll through the rest. Use the global --no-pager flag to
+print everything directly.`,
 		Example: `
 Search for filters matching a keyword
 $ prolific filters search developer
@@ -97,10 +97,9 @@ $ prolific filters search developer --json`,
 
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "Scope the search to filters available in this workspace.")
-	flags.IntVarP(&opts.Limit, "limit", "l", DefaultSearchLimit, "Maximum number of filters to return")
-	flags.BoolVarP(&opts.All, "all", "a", false, "Return every matching filter")
+	flags.IntVarP(&opts.Limit, "limit", "l", DefaultSearchLimit, "Maximum number of filters to return. Use 0 to fetch every match.")
+	flags.BoolVarP(&opts.All, "all", "a", false, "Return every matching filter (same as --limit 0)")
 	flags.StringVar(&opts.Fields, "fields", uifilters.SearchListFields, "Comma-separated list of columns for table or CSV output")
-	flags.BoolVar(&opts.NoPager, "no-pager", false, "Do not pipe output into a pager")
 	shared.AddOutputFlags(cmd, &opts.Output)
 
 	cmd.MarkFlagsMutuallyExclusive("all", "limit")
@@ -116,11 +115,12 @@ func renderSearch(cmd *cobra.Command, c client.API, opts SearchOptions, w io.Wri
 		return fmt.Errorf("search query must be at most %d characters", maxSearchQueryLength)
 	}
 
+	if opts.Limit < 0 {
+		return errors.New("limit must be greater than or equal to 0")
+	}
 	want := opts.Limit
 	if opts.All {
 		want = 0
-	} else if want < 1 {
-		return errors.New("limit must be greater than or equal to 1")
 	}
 
 	fetch := func(limit, offset int) (client.Page[model.FilterSearchResult], error) {
@@ -165,7 +165,7 @@ func renderSearch(cmd *cobra.Command, c client.API, opts SearchOptions, w io.Wri
 	render := func(out io.Writer) error {
 		return streamSearchResults(out, opts.Query, want, fetch)
 	}
-	if opts.NoPager {
+	if shared.NoPager(cmd) {
 		return render(w)
 	}
 	return ui.Page(cmd.Context(), w, render)

@@ -13,9 +13,14 @@
   keyword, with matched text highlighted and a preview of matching choices.
   `--json`, `--table` and `--csv` output are available, with `--fields` to
   choose columns. `--limit` is the number of results you want and `--all`
-  fetches every match; pages are requested from the API automatically and
-  streamed as they arrive. In a terminal, long output opens in your pager
-  (`PROLIFIC_PAGER`, `PAGER`, or `less`); use `--no-pager` to print directly.
+  (or `--limit 0`) fetches every match; pages are requested from the API
+  automatically and streamed as they arrive. In a terminal, long output opens
+  in your pager (`PROLIFIC_PAGER`, `PAGER`, or `less`).
+
+### Core
+
+- Add a global `--no-pager` flag to print long output directly instead of
+  piping it into a pager.
 
 ## 1.2.5
 

@@ -10,6 +10,9 @@
 //   - OUTOFSCOPE   — no CLI command exists or is planned for this endpoint
 //   - SPECMISMATCH — client request diverges from the spec; needs a fix
 //   - HARNESSGAP   — client behaviour is correct; kin-openapi can't validate this shape
+//   - NOTINSPEC    — endpoint is live and implemented but not yet in the published spec.
+//     The entry keeps its call so validation starts the moment the spec publishes:
+//     TestAPICoverage fails once the operationId appears, prompting removal of the skip.
 
 package contracttest
 
@@ -92,8 +95,8 @@ func findRoute(router routers.Router, r *http.Request) (*routers.Route, map[stri
 
 type operation struct {
 	operationID string
-	call        func(*client.Client) // nil when skipped
-	skip        string               // required reason when call is nil; prefix with OUTOFSCOPE or SPECMIS/MATCH
+	call        func(*client.Client) // nil when skipped, except NOTINSPEC entries which keep their call
+	skip        string               // required reason when call is nil; prefix with a tag from the package doc
 }
 
 // operations maps every operationId in openapi.yaml to either a client method call
@@ -116,6 +119,10 @@ var operations = []operation{
 
 	// Filters
 	{operationID: "filters_GetFilters", call: func(c *client.Client) { c.GetFilters() }},
+	// operationId assumed from Fern's tag_operation convention (source operationId is SearchFilters).
+	{operationID: "filters_SearchFilters", skip: "NOTINSPEC: live but unpublished, see prolific-oss/prolific#16270", call: func(c *client.Client) {
+		c.SearchFilters("developer", "ws-id", 25, 0)
+	}},
 	{operationID: "filters_GetEligibleCount", call: func(c *client.Client) {
 		c.GetEligibilityCount(client.EligibilityCountPayload{Filters: []model.Filter{}, WorkspaceID: "ws-id"})
 	}},
@@ -412,7 +419,13 @@ func TestAPICoverage(t *testing.T) {
 	}
 
 	for _, op := range operations {
-		if !specOps[op.operationID] {
+		notInSpec := strings.HasPrefix(op.skip, "NOTINSPEC")
+		switch {
+		case notInSpec && specOps[op.operationID]:
+			t.Errorf("operationId %q is now in openapi.yaml — remove its NOTINSPEC skip so the call is validated", op.operationID)
+		case notInSpec && op.call == nil:
+			t.Errorf("operationId %q is NOTINSPEC but has no call — add one so validation is ready when the spec publishes", op.operationID)
+		case !notInSpec && !specOps[op.operationID]:
 			t.Errorf("operationId %q is in the coverage table but not in openapi.yaml — stale entry", op.operationID)
 		}
 	}
