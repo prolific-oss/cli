@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -55,7 +56,7 @@ func Page(w io.Writer, render func(io.Writer) error) error {
 	}
 
 	parts := strings.Fields(pager)
-	cmd := exec.Command(parts[0], parts[1:]...) //nolint:gosec // pager comes from the user's own environment
+	cmd := exec.CommandContext(context.Background(), parts[0], parts[1:]...) //nolint:gosec // pager comes from the user's own environment
 	cmd.Stdout = w
 	cmd.Stderr = os.Stderr
 	cmd.Env = pagerEnv(os.Environ())
