@@ -176,19 +176,17 @@ func renderSearch(cmd *cobra.Command, c client.API, opts SearchOptions, w io.Wri
 // fetched.
 func streamSearchResults(out io.Writer, query string, want int, fetch client.PageFetcher[model.FilterSearchResult]) error {
 	rank := 0
+	total := 0
 
-	return client.EachPage(want, client.FilterSearchPageSize, fetch, func(page client.Page[model.FilterSearchResult]) error {
+	err := client.EachPage(want, client.FilterSearchPageSize, fetch, func(page client.Page[model.FilterSearchResult]) error {
 		if rank == 0 {
 			if page.Total == 0 && len(page.Results) == 0 {
 				_, err := fmt.Fprint(out, uifilters.RenderNoSearchResults(query))
 				return err
 			}
-			total := max(page.Total, len(page.Results))
-			shown := total
-			if want > 0 && want < total {
-				shown = want
-			}
-			if _, err := fmt.Fprint(out, uifilters.RenderSearchHeader(query, shown, total)); err != nil {
+			total = max(page.Total, len(page.Results))
+			truncated := want > 0 && want < total
+			if _, err := fmt.Fprint(out, uifilters.RenderSearchHeader(query, total, truncated)); err != nil {
 				return err
 			}
 		}
@@ -206,4 +204,12 @@ func streamSearchResults(out io.Writer, query string, want int, fetch client.Pag
 		}
 		return nil
 	})
+	if err != nil || rank == 0 {
+		return err
+	}
+
+	// The footer counts what was actually rendered, which can be fewer than
+	// the header's estimate if the API returned less than its own count.
+	_, err = fmt.Fprint(out, uifilters.RenderSearchFooter(rank, max(total, rank)))
+	return err
 }

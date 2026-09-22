@@ -161,20 +161,26 @@ func TestRenderSearchResultHighlightedTitleKeepsHeadingStyle(t *testing.T) {
 
 func TestRenderSearchHeader(t *testing.T) {
 	tests := []struct {
-		name         string
-		shown, total int
-		want         string
+		name      string
+		total     int
+		truncated bool
+		want      string
 	}{
-		{name: "all shown", shown: 2, total: 2, want: "Filters matching \"dev\"\nShowing 2 records of 2\n\n"},
-		{name: "single result", shown: 1, total: 1, want: "Filters matching \"dev\"\nShowing 1 record of 1\n\n"},
-		{name: "more available", shown: 25, total: 340, want: "Filters matching \"dev\"\nShowing 25 records of 340. Use --limit or --all to see more\n\n"},
+		{name: "all requested", total: 2, want: "Filters matching \"dev\"\n2 matching filters\n\n"},
+		{name: "single result", total: 1, want: "Filters matching \"dev\"\n1 matching filter\n\n"},
+		{name: "truncated", total: 340, truncated: true, want: "Filters matching \"dev\"\n340 matching filters. Use --limit or --all to see more\n\n"},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, stripansi.Strip(RenderSearchHeader("dev", tt.shown, tt.total)))
+			assert.Equal(t, tt.want, stripansi.Strip(RenderSearchHeader("dev", tt.total, tt.truncated)))
 		})
 	}
+}
+
+func TestRenderSearchFooter(t *testing.T) {
+	assert.Equal(t, "\nShowing 25 records of 340\n", stripansi.Strip(RenderSearchFooter(25, 340)))
+	assert.Equal(t, "\nShowing 1 record of 1\n", stripansi.Strip(RenderSearchFooter(1, 1)))
 }
 
 func TestRenderSearchRule(t *testing.T) {

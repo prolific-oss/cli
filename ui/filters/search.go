@@ -51,20 +51,29 @@ func NewSearchListItems(results []model.FilterSearchResult, firstRank int) []Sea
 }
 
 // RenderSearchHeader renders the title block shown above search results, so
-// the query and total are visible on the first screen without scrolling.
-func RenderSearchHeader(query string, shown, total int) string {
+// the query and the API's match count are visible on the first screen without
+// scrolling. It is written before results stream in, so it reports only what
+// the API has said: the total, and whether the caller asked for fewer than
+// that. The exact number rendered is reported by RenderSearchFooter.
+func RenderSearchHeader(query string, total int, truncated bool) string {
 	var b strings.Builder
 	b.WriteString(ui.RenderHeading(fmt.Sprintf("Filters matching %q", query)))
 	b.WriteString("\n")
 
-	summary := ui.RenderRecordCounter(shown, total)
-	if shown < total {
+	summary := fmt.Sprintf("%d matching %s", total, ui.Pluralise(total, "filter", "filters"))
+	if truncated {
 		summary += ". Use --limit or --all to see more"
 	}
 	b.WriteString(ui.RenderDimmed(summary))
 	b.WriteString("\n\n")
 
 	return b.String()
+}
+
+// RenderSearchFooter renders the closing line stating how many results were
+// actually rendered out of the total.
+func RenderSearchFooter(shown, total int) string {
+	return "\n" + ui.RenderDimmed(ui.RenderRecordCounter(shown, total)) + "\n"
 }
 
 // RenderSearchRule renders the divider drawn between results.

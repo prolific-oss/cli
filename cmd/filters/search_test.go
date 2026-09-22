@@ -115,7 +115,8 @@ func TestSearchFilters(t *testing.T) {
 	require.NoError(t, err)
 	output := stripansi.Strip(b.String())
 
-	assert.Contains(t, output, "Filters matching \"software developers\"\nShowing 2 records of 2\n\n")
+	assert.Contains(t, output, "Filters matching \"software developers\"\n2 matching filters\n\n")
+	assert.True(t, strings.HasSuffix(output, "\nShowing 2 records of 2\n"))
 	assert.Contains(t, output, "1. Job title\n   select · ChoiceID · Employment\n")
 	assert.Contains(t, output, "   Filter ID    job-title\n")
 	assert.Contains(t, output, "   Question     What is your job title?\n")
@@ -290,7 +291,8 @@ func TestSearchFiltersLimitAbovePageSizeFetchesMultiplePages(t *testing.T) {
 
 	require.NoError(t, err)
 	output := stripansi.Strip(b.String())
-	assert.Contains(t, output, "Showing 150 records of 300. Use --limit or --all to see more\n")
+	assert.Contains(t, output, "300 matching filters. Use --limit or --all to see more\n")
+	assert.True(t, strings.HasSuffix(output, "\nShowing 150 records of 300\n"))
 	assert.Contains(t, output, "1. Filter 0\n")
 	assert.Contains(t, output, "150. Filter 149\n")
 	assert.NotContains(t, output, "filter-150")
@@ -420,8 +422,31 @@ func TestSearchFiltersHeaderUsesFirstPageTotal(t *testing.T) {
 
 	require.NoError(t, err)
 	output := stripansi.Strip(b.String())
-	assert.True(t, strings.HasPrefix(output, "Filters matching \"dev\"\nShowing 120 records of 1000. Use --limit or --all to see more\n\n1. Filter 0\n"))
+	assert.True(t, strings.HasPrefix(output, "Filters matching \"dev\"\n1000 matching filters. Use --limit or --all to see more\n\n1. Filter 0\n"))
 	assert.Contains(t, output, "120. Filter 119\n")
+	assert.True(t, strings.HasSuffix(output, "\nShowing 120 records of 1000\n"))
+}
+
+func TestSearchFiltersFooterCountsWhatWasRendered(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	// The API claims 50 matches but hands back only 7 and then a short page.
+	c.EXPECT().SearchFilters("dev", "", 25, 0).Return(pageOf(0, 7, 50), nil)
+
+	var b bytes.Buffer
+	w := bufio.NewWriter(&b)
+
+	cmd := filters.NewSearchCommand(c, w)
+	cmd.SetArgs([]string{"dev"})
+	err := cmd.Execute()
+	w.Flush()
+
+	require.NoError(t, err)
+	output := stripansi.Strip(b.String())
+	assert.Contains(t, output, "50 matching filters. Use --limit or --all to see more\n")
+	assert.True(t, strings.HasSuffix(output, "\nShowing 7 records of 50\n"))
 }
 
 func TestSearchFiltersLimitZeroFetchesAll(t *testing.T) {

@@ -66,8 +66,9 @@ func Page(ctx context.Context, w io.Writer, render func(io.Writer) error) error 
 // pager cannot be started, render writes straight to w instead.
 //
 // The user quitting the pager early (for example pressing q in less) closes
-// the pipe, which surfaces to render as a broken-pipe write error. That is a
-// normal exit and is not reported as a failure.
+// the pipe, which surfaces to render as a broken-pipe write error. Cancelling
+// ctx (for example on ctrl-c) kills the pager, which surfaces as a signalled
+// exit. Both are normal ways to finish and are not reported as failures.
 func RunPager(ctx context.Context, pager string, w io.Writer, render func(io.Writer) error) error {
 	parts := strings.Fields(pager)
 	if len(parts) == 0 {
@@ -92,6 +93,11 @@ func RunPager(ctx context.Context, pager string, w io.Writer, render func(io.Wri
 	_ = stdin.Close()
 	waitErr := cmd.Wait()
 
+	if ctx.Err() != nil {
+		// The pager was terminated because the command was cancelled; any
+		// render or wait errors are consequences of that, not failures.
+		return nil
+	}
 	if renderErr != nil && !isBrokenPipe(renderErr) {
 		return renderErr
 	}

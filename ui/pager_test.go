@@ -100,6 +100,29 @@ func TestRunPagerTreatsEarlyQuitAsSuccess(t *testing.T) {
 	assert.Equal(t, "line 0\n", b.String())
 }
 
+func TestRunPagerTreatsCancellationAsSuccess(t *testing.T) {
+	// Cancelling the context mid-render kills the pager, which is what
+	// happens on ctrl-c. Neither the killed pager nor the resulting write
+	// failures should be reported as an error.
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	err := ui.RunPager(ctx, "sleep 30", &bytes.Buffer{}, func(w io.Writer) error {
+		if _, err := io.WriteString(w, "first line\n"); err != nil {
+			return err
+		}
+		cancel()
+		for i := 0; i < 100000; i++ {
+			if _, err := fmt.Fprintf(w, "line %d\n", i); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+
+	require.NoError(t, err)
+}
+
 func TestRunPagerStillReportsRealRenderErrors(t *testing.T) {
 	boom := errors.New("boom")
 
