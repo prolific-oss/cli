@@ -2,7 +2,9 @@ package ui_test
 
 import (
 	"bytes"
+	"context"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"testing"
@@ -19,7 +21,7 @@ func TestResolvePager(t *testing.T) {
 		pager         *string
 		want          string
 	}{
-		{name: "defaults to less", want: "less -FRX"},
+		{name: "defaults to less", want: "less"},
 		{name: "PAGER respected", pager: ptr("more"), want: "more"},
 		{name: "PROLIFIC_PAGER wins", prolificPager: ptr("bat"), pager: ptr("more"), want: "bat"},
 		{name: "empty PAGER disables", pager: ptr(""), want: ""},
@@ -51,7 +53,7 @@ func TestIsTerminalFalseForBuffer(t *testing.T) {
 func TestPageWritesDirectlyWhenNotATerminal(t *testing.T) {
 	var b bytes.Buffer
 
-	err := ui.Page(&b, func(w io.Writer) error {
+	err := ui.Page(context.Background(), &b, func(w io.Writer) error {
 		_, err := io.WriteString(w, "hello\n")
 		return err
 	})
@@ -63,9 +65,72 @@ func TestPageWritesDirectlyWhenNotATerminal(t *testing.T) {
 func TestPagePropagatesRenderError(t *testing.T) {
 	boom := errors.New("boom")
 
-	err := ui.Page(&bytes.Buffer{}, func(io.Writer) error { return boom })
+	err := ui.Page(context.Background(), &bytes.Buffer{}, func(io.Writer) error { return boom })
 
 	assert.ErrorIs(t, err, boom)
+}
+
+func TestRunPagerStreamsOutputThroughPager(t *testing.T) {
+	var b bytes.Buffer
+
+	err := ui.RunPager(context.Background(), "cat", &b, func(w io.Writer) error {
+		_, err := io.WriteString(w, "line 1\nline 2\n")
+		return err
+	})
+
+	require.NoError(t, err)
+	assert.Equal(t, "line 1\nline 2\n", b.String())
+}
+
+func TestRunPagerTreatsEarlyQuitAsSuccess(t *testing.T) {
+	// head exits after one line, closing the pipe while the renderer is still
+	// writing, which is what happens when a user presses q in less.
+	var b bytes.Buffer
+
+	err := ui.RunPager(context.Background(), "head -n 1", &b, func(w io.Writer) error {
+		for i := 0; i < 100000; i++ {
+			if _, err := fmt.Fprintf(w, "line %d\n", i); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+
+	require.NoError(t, err)
+	assert.Equal(t, "line 0\n", b.String())
+}
+
+func TestRunPagerStillReportsRealRenderErrors(t *testing.T) {
+	boom := errors.New("boom")
+
+	err := ui.RunPager(context.Background(), "cat", &bytes.Buffer{}, func(io.Writer) error { return boom })
+
+	assert.ErrorIs(t, err, boom)
+}
+
+func TestRunPagerFallsBackWhenPagerMissing(t *testing.T) {
+	var b bytes.Buffer
+
+	err := ui.RunPager(context.Background(), "definitely-not-a-real-pager-binary", &b, func(w io.Writer) error {
+		_, err := io.WriteString(w, "hello\n")
+		return err
+	})
+
+	require.NoError(t, err)
+	assert.Equal(t, "hello\n", b.String())
+}
+
+func TestRunPagerReportsPagerFailure(t *testing.T) {
+	err := ui.RunPager(context.Background(), "false", &bytes.Buffer{}, func(w io.Writer) error {
+		_, err := io.WriteString(w, "hello\n")
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "pager exited with an error")
 }
 
 func ptr[T any](v T) *T { return &v }

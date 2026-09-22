@@ -10,11 +10,12 @@
   behaviour has moved to `prolific filters list`; update any scripts or skills
   that call `prolific filters` or `prolific filters -n`.
 - Add `prolific filters search <query>` to search the filter catalogue by
-  keyword, with matched text highlighted, a preview of matching choices and
-  `--json` output. `--limit` is the number of results you want and `--all`
-  fetches every match; pages are requested from the API automatically. In a
-  terminal, long output opens in your pager (`PROLIFIC_PAGER`, `PAGER`, or
-  `less`); use `--no-pager` to print directly.
+  keyword, with matched text highlighted and a preview of matching choices.
+  `--json`, `--table` and `--csv` output are available, with `--fields` to
+  choose columns. `--limit` is the number of results you want and `--all`
+  fetches every match; pages are requested from the API automatically and
+  streamed as they arrive. In a terminal, long output opens in your pager
+  (`PROLIFIC_PAGER`, `PAGER`, or `less`); use `--no-pager` to print directly.
 
 ## 1.2.5
 

@@ -7,8 +7,10 @@ import (
 	"strings"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/model"
 	"github.com/prolific-oss/cli/ui"
+	uifilters "github.com/prolific-oss/cli/ui/filters"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -17,22 +19,18 @@ import (
 // accepted by the API after trimming.
 const maxSearchQueryLength = 200
 
-// searchPageSize is the maximum page size accepted by the API. Larger limits
-// are satisfied by fetching several pages.
-const searchPageSize = 100
-
 // DefaultSearchLimit is the default number of results returned by filter
 // search. It matches the API's default page size.
 const DefaultSearchLimit = 25
 
 // SearchOptions is the options for the filter search command.
 type SearchOptions struct {
-	Args        []string
 	Query       string
 	WorkspaceID string
 	Limit       int
 	All         bool
-	JSON        bool
+	Output      shared.OutputOptions
+	Fields      string
 	NoPager     bool
 }
 
@@ -79,19 +77,18 @@ $ prolific filters search developer --all
 Print everything without a pager
 $ prolific filters search developer --all --no-pager
 
+Output as a table or CSV, optionally choosing the columns
+$ prolific filters search developer --table
+$ prolific filters search developer --csv --fields Rank,FilterID,Title
+
 Output as JSON for scripting or AI agents
 $ prolific filters search developer --json`,
-		Args: cobra.ArbitraryArgs,
+		Args: cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.Args = args
 			opts.Query = strings.TrimSpace(strings.Join(args, " "))
 
-			if opts.All && cmd.Flags().Changed("limit") {
-				return errors.New("error: --all and --limit cannot be used together")
-			}
-
-			if err := renderSearch(c, opts, w); err != nil {
-				return fmt.Errorf("error: %s", err.Error())
+			if err := renderSearch(cmd, c, opts, w); err != nil {
+				return fmt.Errorf("error: %s", err)
 			}
 
 			return nil
@@ -102,19 +99,23 @@ $ prolific filters search developer --json`,
 	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "Scope the search to filters available in this workspace.")
 	flags.IntVarP(&opts.Limit, "limit", "l", DefaultSearchLimit, "Maximum number of filters to return")
 	flags.BoolVarP(&opts.All, "all", "a", false, "Return every matching filter")
-	flags.BoolVarP(&opts.JSON, "json", "j", false, "Output as JSON")
+	flags.StringVar(&opts.Fields, "fields", uifilters.SearchListFields, "Comma-separated list of columns for table or CSV output")
 	flags.BoolVar(&opts.NoPager, "no-pager", false, "Do not pipe output into a pager")
+	shared.AddOutputFlags(cmd, &opts.Output)
+
+	cmd.MarkFlagsMutuallyExclusive("all", "limit")
 
 	return cmd
 }
 
-func renderSearch(c client.API, opts SearchOptions, w io.Writer) error {
+func renderSearch(cmd *cobra.Command, c client.API, opts SearchOptions, w io.Writer) error {
 	if opts.Query == "" {
 		return errors.New("please provide a search query")
 	}
 	if len([]rune(opts.Query)) > maxSearchQueryLength {
 		return fmt.Errorf("search query must be at most %d characters", maxSearchQueryLength)
 	}
+
 	want := opts.Limit
 	if opts.All {
 		want = 0
@@ -134,42 +135,75 @@ func renderSearch(c client.API, opts SearchOptions, w io.Writer) error {
 		return page, nil
 	}
 
-	records, total, err := client.FetchPages(want, searchPageSize, fetch)
-	if err != nil {
-		return err
-	}
-	if records == nil {
-		records = []model.FilterSearchResult{}
-	}
-
-	if opts.JSON {
+	switch shared.ResolveFormat(opts.Output) {
+	case "json":
+		records, _, err := client.FetchPages(want, client.FilterSearchPageSize, fetch)
+		if err != nil {
+			return err
+		}
 		return ui.JSONRenderer[model.FilterSearchResult]{}.Render(records, w)
-	}
-
-	if total == 0 {
-		fmt.Fprintf(w, "No filters found matching %q\n", opts.Query)
-		return nil
+	case "csv":
+		records, _, err := client.FetchPages(want, client.FilterSearchPageSize, fetch)
+		if err != nil {
+			return err
+		}
+		renderer := ui.CsvRenderer[uifilters.SearchListItem]{}
+		return renderer.Render(uifilters.NewSearchListItems(records, 1), opts.Fields, w)
+	case "table":
+		records, total, err := client.FetchPages(want, client.FilterSearchPageSize, fetch)
+		if err != nil {
+			return err
+		}
+		renderer := ui.TableRenderer[uifilters.SearchListItem]{}
+		if err := renderer.Render(uifilters.NewSearchListItems(records, 1), opts.Fields, w); err != nil {
+			return err
+		}
+		_, err = fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(records), total))
+		return err
 	}
 
 	render := func(out io.Writer) error {
-		if _, err := fmt.Fprint(out, RenderSearchHeader(opts.Query, len(records), total)); err != nil {
-			return err
+		return streamSearchResults(out, opts.Query, want, fetch)
+	}
+	if opts.NoPager {
+		return render(w)
+	}
+	return ui.Page(cmd.Context(), w, render)
+}
+
+// streamSearchResults writes formatted results to out page by page as they
+// arrive from the API, so the first screen appears before every page has been
+// fetched.
+func streamSearchResults(out io.Writer, query string, want int, fetch client.PageFetcher[model.FilterSearchResult]) error {
+	rank := 0
+
+	return client.EachPage(want, client.FilterSearchPageSize, fetch, func(page client.Page[model.FilterSearchResult]) error {
+		if rank == 0 {
+			if page.Total == 0 && len(page.Results) == 0 {
+				_, err := fmt.Fprint(out, uifilters.RenderNoSearchResults(query))
+				return err
+			}
+			total := max(page.Total, len(page.Results))
+			shown := total
+			if want > 0 && want < total {
+				shown = want
+			}
+			if _, err := fmt.Fprint(out, uifilters.RenderSearchHeader(query, shown, total)); err != nil {
+				return err
+			}
 		}
-		for i, record := range records {
-			if i > 0 {
-				if _, err := fmt.Fprint(out, RenderSearchRule()); err != nil {
+
+		for _, record := range page.Results {
+			rank++
+			if rank > 1 {
+				if _, err := fmt.Fprint(out, uifilters.RenderSearchRule()); err != nil {
 					return err
 				}
 			}
-			if _, err := fmt.Fprint(out, RenderSearchResult(i+1, record)); err != nil {
+			if _, err := fmt.Fprint(out, uifilters.RenderSearchResult(rank, record)); err != nil {
 				return err
 			}
 		}
 		return nil
-	}
-
-	if opts.NoPager {
-		return render(w)
-	}
-	return ui.Page(w, render)
+	})
 }

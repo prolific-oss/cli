@@ -129,3 +129,90 @@ func TestFetchPagesPropagatesError(t *testing.T) {
 	assert.Nil(t, items)
 	assert.Equal(t, 0, total)
 }
+
+func TestFetchPagesTrimsWhenAPIIgnoresLimit(t *testing.T) {
+	// Always return 100 items regardless of the requested limit.
+	fetch := func(limit, offset int) (client.Page[int], error) {
+		return client.Page[int]{Results: seq(100), Total: 500}, nil
+	}
+
+	items, total, err := client.FetchPages(30, 100, fetch)
+
+	require.NoError(t, err)
+	assert.Len(t, items, 30)
+	assert.Equal(t, 500, total)
+}
+
+func TestFetchPagesKeepsTotalWhenLaterPageOmitsCount(t *testing.T) {
+	fetch := func(limit, offset int) (client.Page[int], error) {
+		if offset == 0 {
+			return client.Page[int]{Results: seq(100), Total: 300}, nil
+		}
+		return client.Page[int]{Results: seq(50)}, nil
+	}
+
+	items, total, err := client.FetchPages(0, 100, fetch)
+
+	require.NoError(t, err)
+	assert.Len(t, items, 150)
+	assert.Equal(t, 300, total)
+}
+
+func TestFetchPagesGuardsAgainstEndlessFullPages(t *testing.T) {
+	calls := 0
+	fetch := func(limit, offset int) (client.Page[int], error) {
+		calls++
+		return client.Page[int]{Results: seq(limit)}, nil
+	}
+
+	_, _, err := client.FetchPages(0, 100, fetch)
+
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "stopped after fetching 1000 pages")
+	assert.Equal(t, 1000, calls)
+}
+
+func TestEachPageYieldsPagesAsTheyArrive(t *testing.T) {
+	fetch, calls := fakeFetcher(seq(250), true)
+
+	var yielded [][]int
+	var totals []int
+	err := client.EachPage(0, 100, fetch, func(page client.Page[int]) error {
+		yielded = append(yielded, page.Results)
+		totals = append(totals, page.Total)
+		return nil
+	})
+
+	require.NoError(t, err)
+	require.Len(t, yielded, 3)
+	assert.Equal(t, seq(100), yielded[0])
+	assert.Equal(t, 100, len(yielded[1]))
+	assert.Equal(t, 50, len(yielded[2]))
+	assert.Equal(t, []int{250, 250, 250}, totals)
+	assert.Equal(t, []call{{100, 0}, {100, 100}, {100, 200}}, *calls)
+}
+
+func TestEachPageStopsWhenYieldFails(t *testing.T) {
+	fetch, calls := fakeFetcher(seq(500), true)
+	boom := errors.New("closed")
+
+	err := client.EachPage(0, 100, fetch, func(client.Page[int]) error { return boom })
+
+	assert.ErrorIs(t, err, boom)
+	assert.Len(t, *calls, 1)
+}
+
+func TestEachPageYieldsEmptyFirstPage(t *testing.T) {
+	fetch, _ := fakeFetcher(nil, true)
+
+	yields := 0
+	err := client.EachPage(25, 100, fetch, func(page client.Page[int]) error {
+		yields++
+		assert.Empty(t, page.Results)
+		assert.Equal(t, 0, page.Total)
+		return nil
+	})
+
+	require.NoError(t, err)
+	assert.Equal(t, 1, yields)
+}

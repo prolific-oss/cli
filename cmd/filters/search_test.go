@@ -84,36 +84,15 @@ func TestNewSearchCommand(t *testing.T) {
 	assert.Equal(t, "search <query>", cmd.Use)
 	assert.NotEmpty(t, cmd.Short)
 
-	for name, shorthand := range map[string]string{"workspace": "w", "limit": "l", "all": "a", "json": "j"} {
+	for name, shorthand := range map[string]string{"workspace": "w", "limit": "l", "all": "a", "json": "j", "csv": "c", "table": "t"} {
 		flag := cmd.Flags().Lookup(name)
 		require.NotNil(t, flag, name)
 		assert.Equal(t, shorthand, flag.Shorthand)
 	}
 
-	noPager := cmd.Flags().Lookup("no-pager")
-	require.NotNil(t, noPager)
-	assert.Equal(t, "false", noPager.DefValue)
-}
-
-func TestSearchFiltersNoPagerWritesDirectly(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	c := mock_client.NewMockAPI(ctrl)
-
-	c.EXPECT().
-		SearchFilters("developers", "", filters.DefaultSearchLimit, client.DefaultRecordOffset).
-		Return(searchResponse(), nil)
-
-	var b bytes.Buffer
-	w := bufio.NewWriter(&b)
-
-	cmd := filters.NewSearchCommand(c, w)
-	cmd.SetArgs([]string{"developers", "--no-pager"})
-	err := cmd.Execute()
-	w.Flush()
-
-	require.NoError(t, err)
-	assert.Contains(t, stripansi.Strip(b.String()), "Showing 2 of 2 results")
+	for _, name := range []string{"no-pager", "fields"} {
+		require.NotNil(t, cmd.Flags().Lookup(name), name)
+	}
 }
 
 func TestSearchFilters(t *testing.T) {
@@ -136,7 +115,7 @@ func TestSearchFilters(t *testing.T) {
 	require.NoError(t, err)
 	output := stripansi.Strip(b.String())
 
-	assert.Contains(t, output, "Filters matching \"software developers\"\nShowing 2 of 2 results\n\n")
+	assert.Contains(t, output, "Filters matching \"software developers\"\nShowing 2 records of 2\n\n")
 	assert.Contains(t, output, "1. Job title\n   select · ChoiceID · Employment\n")
 	assert.Contains(t, output, "   Filter ID    job-title\n")
 	assert.Contains(t, output, "   Question     What is your job title?\n")
@@ -151,7 +130,6 @@ func TestSearchFilters(t *testing.T) {
 
 	// A rule separates the two results.
 	assert.Equal(t, 1, strings.Count(output, strings.Repeat("─", 60)+"\n"))
-	assert.NotContains(t, output, "Showing 2 records of 2")
 }
 
 func TestSearchFiltersJSON(t *testing.T) {
@@ -250,11 +228,11 @@ func TestSearchFiltersValidation(t *testing.T) {
 		args []string
 		want string
 	}{
-		{name: "missing query", args: []string{}, want: "please provide a search query"},
+		{name: "missing query", args: []string{}, want: "requires at least 1 arg(s)"},
 		{name: "blank query", args: []string{"   "}, want: "please provide a search query"},
 		{name: "query too long", args: []string{string(make([]rune, 201))}, want: "search query must be at most 200 characters"},
 		{name: "limit too low", args: []string{"dev", "--limit", "0"}, want: "limit must be greater than or equal to 1"},
-		{name: "all with limit", args: []string{"dev", "--all", "--limit", "10"}, want: "--all and --limit cannot be used together"},
+		{name: "all with limit", args: []string{"dev", "--all", "--limit", "10"}, want: "[all limit] were all set"},
 	}
 
 	for _, tt := range tests {
@@ -312,7 +290,7 @@ func TestSearchFiltersLimitAbovePageSizeFetchesMultiplePages(t *testing.T) {
 
 	require.NoError(t, err)
 	output := stripansi.Strip(b.String())
-	assert.Contains(t, output, "Showing 150 of 300 results. Use --limit or --all to see more\n")
+	assert.Contains(t, output, "Showing 150 records of 300. Use --limit or --all to see more\n")
 	assert.Contains(t, output, "1. Filter 0\n")
 	assert.Contains(t, output, "150. Filter 149\n")
 	assert.NotContains(t, output, "filter-150")
@@ -364,6 +342,84 @@ func TestSearchFiltersErrorOnLaterPage(t *testing.T) {
 	err := cmd.Execute()
 	w.Flush()
 
+	// Results stream as pages arrive, so the first page is already written
+	// when the second fails; the error must still be reported.
 	require.Error(t, err)
-	assert.Empty(t, b.String())
+	output := stripansi.Strip(b.String())
+	assert.Contains(t, output, "100. Filter 99\n")
+	assert.NotContains(t, output, "Filter 100")
+}
+
+func TestSearchFiltersTable(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	c.EXPECT().
+		SearchFilters("developers", "", filters.DefaultSearchLimit, client.DefaultRecordOffset).
+		Return(searchResponse(), nil)
+
+	var b bytes.Buffer
+	w := bufio.NewWriter(&b)
+
+	cmd := filters.NewSearchCommand(c, w)
+	cmd.SetArgs([]string{"developers", "--table"})
+	err := cmd.Execute()
+	w.Flush()
+
+	require.NoError(t, err)
+	output := b.String()
+	assert.Contains(t, output, "Rank")
+	assert.Contains(t, output, "FilterID")
+	assert.Contains(t, output, "MatchedOn")
+	assert.Regexp(t, `1\s+job-title\s+Job title\s+select\s+ChoiceID\s+Employment\s+choices`, output)
+	assert.Regexp(t, `2\s+age\s+Age\s+range\s+integer\s+title`, output)
+	assert.Contains(t, output, "Showing 2 records of 2")
+}
+
+func TestSearchFiltersCSVWithFields(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	c.EXPECT().
+		SearchFilters("developers", "", filters.DefaultSearchLimit, client.DefaultRecordOffset).
+		Return(searchResponse(), nil)
+
+	var b bytes.Buffer
+	w := bufio.NewWriter(&b)
+
+	cmd := filters.NewSearchCommand(c, w)
+	cmd.SetArgs([]string{"developers", "--csv", "--fields", "Rank,FilterID,Title"})
+	err := cmd.Execute()
+	w.Flush()
+
+	require.NoError(t, err)
+	assert.Equal(t, "Rank,FilterID,Title\n1,job-title,Job title\n2,age,Age\n", b.String())
+}
+
+func TestSearchFiltersHeaderUsesFirstPageTotal(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	// The header must be written from the first page, before later pages
+	// arrive, and reflect how many will be shown out of the total.
+	gomock.InOrder(
+		c.EXPECT().SearchFilters("dev", "", 100, 0).Return(pageOf(0, 100, 1000), nil),
+		c.EXPECT().SearchFilters("dev", "", 20, 100).Return(pageOf(100, 20, 1000), nil),
+	)
+
+	var b bytes.Buffer
+	w := bufio.NewWriter(&b)
+
+	cmd := filters.NewSearchCommand(c, w)
+	cmd.SetArgs([]string{"dev", "--limit", "120"})
+	err := cmd.Execute()
+	w.Flush()
+
+	require.NoError(t, err)
+	output := stripansi.Strip(b.String())
+	assert.True(t, strings.HasPrefix(output, "Filters matching \"dev\"\nShowing 120 records of 1000. Use --limit or --all to see more\n\n1. Filter 0\n"))
+	assert.Contains(t, output, "120. Filter 119\n")
 }

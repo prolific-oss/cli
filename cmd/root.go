@@ -4,8 +4,10 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"os/signal"
 	"strings"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -52,8 +54,13 @@ func Execute() {
 	// Build the root command
 	cmd := NewRootCommand()
 
+	// Cancel the command context on interrupt so child processes such as a
+	// pager are terminated with the CLI.
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
 	// Execute the application
-	if err := cmd.Execute(); err != nil {
+	if err := cmd.ExecuteContext(ctx); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}

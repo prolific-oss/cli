@@ -19,35 +19,7 @@ func withColour(t *testing.T) {
 	t.Cleanup(func() { lipgloss.SetColorProfile(previous) })
 }
 
-func TestHighlightText(t *testing.T) {
-	hl := ui.RenderHighlightedText
-
-	tests := []struct {
-		name  string
-		text  string
-		spans []HighlightSpan
-		want  string
-	}{
-		{name: "no spans", text: "Software developers", want: "Software developers"},
-		{name: "empty text", text: "", spans: []HighlightSpan{{0, 3}}, want: ""},
-		{name: "single span", text: "Software developers", spans: []HighlightSpan{{9, 19}}, want: "Software " + hl("developers")},
-		{name: "span at start", text: "Age", spans: []HighlightSpan{{0, 3}}, want: hl("Age")},
-		{name: "multiple spans", text: "a b c", spans: []HighlightSpan{{0, 1}, {4, 5}}, want: hl("a") + " b " + hl("c")},
-		{name: "unsorted overlapping spans merged", text: "abcdef", spans: []HighlightSpan{{2, 4}, {0, 3}}, want: hl("abcd") + "ef"},
-		{name: "adjacent spans merged", text: "abcdef", spans: []HighlightSpan{{0, 2}, {2, 4}}, want: hl("abcd") + "ef"},
-		{name: "out of range clamped", text: "abc", spans: []HighlightSpan{{-2, 10}}, want: hl("abc")},
-		{name: "inverted span ignored", text: "abc", spans: []HighlightSpan{{2, 1}}, want: "abc"},
-		// Offsets are code points, not bytes: "é" is two bytes but one code point.
-		{name: "code point offsets", text: "Café owner", spans: []HighlightSpan{{5, 10}}, want: "Café " + hl("owner")},
-		{name: "multi-byte inside span", text: "Zoë Jones", spans: []HighlightSpan{{0, 3}}, want: hl("Zoë") + " Jones"},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, HighlightText(tt.text, tt.spans))
-		})
-	}
-}
+func ptr[T any](v T) *T { return &v }
 
 func TestRenderSearchResultMinimal(t *testing.T) {
 	r := model.FilterSearchResult{
@@ -63,14 +35,13 @@ func TestRenderSearchResultMinimal(t *testing.T) {
 }
 
 func TestRenderSearchResultCategoryAndSubcategory(t *testing.T) {
-	category, subcategory := "Employment", "Occupation"
 	r := model.FilterSearchResult{
 		FilterID:    "job-title",
 		Title:       "Job title",
 		Type:        "select",
 		DataType:    "ChoiceID",
-		Category:    &category,
-		Subcategory: &subcategory,
+		Category:    ptr("Employment"),
+		Subcategory: ptr("Occupation"),
 	}
 
 	out := stripansi.Strip(RenderSearchResult(1, r))
@@ -90,6 +61,28 @@ func TestRenderSearchResultRangeWithMissingBound(t *testing.T) {
 	assert.Contains(t, out, "   Range        18 to -\n")
 }
 
+func TestRenderSearchResultMatchedChoices(t *testing.T) {
+	r := model.FilterSearchResult{
+		FilterID:   "job-title",
+		Title:      "Job title",
+		Type:       "select",
+		DataType:   "ChoiceID",
+		NumChoices: ptr(5),
+		MatchedChoices: &model.FilterMatchingChoices{
+			Matched:   4,
+			Truncated: true,
+			Results: []model.FilterChoiceSearchResult{
+				{ID: "100", Label: "Software developers", NumDescendants: 3},
+			},
+		},
+	}
+
+	out := stripansi.Strip(RenderSearchResult(1, r))
+	assert.Contains(t, out, "   Choices      5 (4 matching)\n")
+	assert.Contains(t, out, "                100  Software developers  (+3 nested)\n")
+	assert.Contains(t, out, "                …and 3 more matching choices\n")
+}
+
 func TestRenderSearchResultMatchedChoicesNotTruncated(t *testing.T) {
 	r := model.FilterSearchResult{
 		FilterID: "job-title",
@@ -97,11 +90,8 @@ func TestRenderSearchResultMatchedChoicesNotTruncated(t *testing.T) {
 		Type:     "select",
 		DataType: "ChoiceID",
 		MatchedChoices: &model.FilterMatchingChoices{
-			Matched:   1,
-			Truncated: false,
-			Results: []model.FilterChoiceSearchResult{
-				{ID: "7", Label: "Nurse"},
-			},
+			Matched: 1,
+			Results: []model.FilterChoiceSearchResult{{ID: "7", Label: "Nurse"}},
 		},
 	}
 
@@ -116,11 +106,10 @@ func TestRenderSearchResultMatchedChoicesNotTruncated(t *testing.T) {
 func TestRenderSearchResultAppliesHighlights(t *testing.T) {
 	withColour(t)
 
-	question := "What is your job title?"
 	r := model.FilterSearchResult{
 		FilterID: "job-title",
 		Title:    "Job title",
-		Question: &question,
+		Question: ptr("What is your job title?"),
 		Type:     "select",
 		DataType: "ChoiceID",
 		Match: model.FilterSearchMatch{
@@ -166,8 +155,6 @@ func TestRenderSearchResultHighlightedTitleKeepsHeadingStyle(t *testing.T) {
 
 	out := RenderSearchResult(1, r)
 
-	// Each plain segment is bolded separately so the text after the highlight
-	// keeps the heading style.
 	want := ui.RenderHeading("Software ") + ui.RenderHighlightedText("development") + ui.RenderHeading(" experience") + "\n"
 	assert.Contains(t, out, want)
 }
@@ -178,9 +165,9 @@ func TestRenderSearchHeader(t *testing.T) {
 		shown, total int
 		want         string
 	}{
-		{name: "all shown", shown: 2, total: 2, want: "Filters matching \"dev\"\nShowing 2 of 2 results\n\n"},
-		{name: "single result", shown: 1, total: 1, want: "Filters matching \"dev\"\nShowing 1 of 1 result\n\n"},
-		{name: "more available", shown: 25, total: 340, want: "Filters matching \"dev\"\nShowing 25 of 340 results. Use --limit or --all to see more\n\n"},
+		{name: "all shown", shown: 2, total: 2, want: "Filters matching \"dev\"\nShowing 2 records of 2\n\n"},
+		{name: "single result", shown: 1, total: 1, want: "Filters matching \"dev\"\nShowing 1 record of 1\n\n"},
+		{name: "more available", shown: 25, total: 340, want: "Filters matching \"dev\"\nShowing 25 records of 340. Use --limit or --all to see more\n\n"},
 	}
 
 	for _, tt := range tests {
@@ -188,4 +175,37 @@ func TestRenderSearchHeader(t *testing.T) {
 			assert.Equal(t, tt.want, stripansi.Strip(RenderSearchHeader("dev", tt.shown, tt.total)))
 		})
 	}
+}
+
+func TestRenderSearchRule(t *testing.T) {
+	out := stripansi.Strip(RenderSearchRule())
+	assert.Equal(t, 60, len([]rune(out))-1)
+	assert.True(t, out[len(out)-1] == '\n')
+}
+
+func TestNewSearchListItems(t *testing.T) {
+	results := []model.FilterSearchResult{
+		{
+			FilterID:    "job-title",
+			Title:       "Job title",
+			Type:        "select",
+			DataType:    "ChoiceID",
+			Category:    ptr("Employment"),
+			Subcategory: ptr("Occupation"),
+			Match:       model.FilterSearchMatch{Fields: []string{"title", "choices"}},
+		},
+		{FilterID: "age", Title: "Age", Type: "range", DataType: "integer"},
+	}
+
+	items := NewSearchListItems(results, 5)
+
+	assert.Equal(t, []SearchListItem{
+		{Rank: 5, FilterID: "job-title", Title: "Job title", Type: "select", DataType: "ChoiceID", Category: "Employment / Occupation", MatchedOn: "title, choices"},
+		{Rank: 6, FilterID: "age", Title: "Age", Type: "range", DataType: "integer"},
+	}, items)
+}
+
+func TestNewSearchListItemsEmpty(t *testing.T) {
+	assert.Empty(t, NewSearchListItems(nil, 1))
+	assert.NotNil(t, NewSearchListItems(nil, 1))
 }

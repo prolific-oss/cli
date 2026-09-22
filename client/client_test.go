@@ -562,3 +562,72 @@ func TestExecuteSetsAgentInUserAgent(t *testing.T) {
 		t.Fatalf("User-Agent = %q, want %q", gotUserAgent, want)
 	}
 }
+
+// TestSearchFiltersSendsExpectedRequest guards the request shape directly,
+// since the operation is not yet in the published spec and so is not covered
+// by contract_test.
+func TestSearchFiltersSendsExpectedRequest(t *testing.T) {
+	var gotMethod, gotPath string
+	var gotQuery url.Values
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotMethod = r.Method
+		gotPath = r.URL.Path
+		gotQuery = r.URL.Query()
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(SearchFiltersResponse{}); err != nil {
+			t.Logf("failed to encode response: %v", err)
+		}
+	}))
+	defer server.Close()
+
+	c := Client{
+		Client:  server.Client(),
+		BaseURL: server.URL,
+		Token:   "test-token",
+	}
+
+	_, err := c.SearchFilters("software developer", "ws-id", 25, 50)
+	if err != nil {
+		t.Fatalf("SearchFilters returned error: %v", err)
+	}
+
+	if gotMethod != http.MethodGet {
+		t.Errorf("method = %q, want %q", gotMethod, http.MethodGet)
+	}
+	if want := "/api/v1/filters/search/"; gotPath != want {
+		t.Errorf("path = %q, want %q", gotPath, want)
+	}
+	if got := gotQuery.Get("q"); got != "software developer" {
+		t.Errorf("q = %q, want %q", got, "software developer")
+	}
+	if got := gotQuery.Get("workspace_id"); got != "ws-id" {
+		t.Errorf("workspace_id = %q, want %q", got, "ws-id")
+	}
+	if got := gotQuery.Get("limit"); got != "25" {
+		t.Errorf("limit = %q, want %q", got, "25")
+	}
+	if got := gotQuery.Get("offset"); got != "50" {
+		t.Errorf("offset = %q, want %q", got, "50")
+	}
+}
+
+func TestSearchFiltersOmitsWorkspaceIDWhenEmpty(t *testing.T) {
+	var gotQuery url.Values
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotQuery = r.URL.Query()
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(SearchFiltersResponse{})
+	}))
+	defer server.Close()
+
+	c := Client{Client: server.Client(), BaseURL: server.URL, Token: "test-token"}
+
+	if _, err := c.SearchFilters("dev", "", 25, 0); err != nil {
+		t.Fatalf("SearchFilters returned error: %v", err)
+	}
+	if gotQuery.Has("workspace_id") {
+		t.Errorf("workspace_id should not be sent when empty, got %q", gotQuery.Get("workspace_id"))
+	}
+}
