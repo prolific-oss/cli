@@ -78,9 +78,13 @@ func TestRenderSearchResultMatchedChoices(t *testing.T) {
 	}
 
 	out := stripansi.Strip(RenderSearchResult(1, r))
-	assert.Contains(t, out, "   Choices      5 (4 matching)\n")
-	assert.Contains(t, out, "                100  Software developers  (+3 nested)\n")
-	assert.Contains(t, out, "                …and 3 more matching choices\n")
+	assert.Contains(t, out, "   Choices      5 total, 4 matching\n")
+	want := "\n" +
+		"                Choice ID    Label\n" +
+		"                100          Software developers  (+3 nested)\n" +
+		"                …and 3 more matching choices\n" +
+		"\n"
+	assert.Contains(t, out, want)
 }
 
 func TestRenderSearchResultMatchedChoicesNotTruncated(t *testing.T) {
@@ -96,7 +100,7 @@ func TestRenderSearchResultMatchedChoicesNotTruncated(t *testing.T) {
 	}
 
 	out := stripansi.Strip(RenderSearchResult(1, r))
-	assert.Contains(t, out, "                7  Nurse\n")
+	assert.Contains(t, out, "                Choice ID    Label\n                7            Nurse\n")
 	assert.NotContains(t, out, "more matching")
 	assert.NotContains(t, out, "nested")
 	// No num_choices means no Choices line, even with a matched preview.
@@ -131,7 +135,7 @@ func TestRenderSearchResultAppliesHighlights(t *testing.T) {
 	out := RenderSearchResult(1, r)
 
 	assert.Contains(t, out, "Question     What is your "+ui.RenderHighlightedText("job")+" title?")
-	assert.Contains(t, out, "  Software "+ui.RenderHighlightedText("developers"))
+	assert.Contains(t, out, "100          Software "+ui.RenderHighlightedText("developers"))
 	// Title has no highlight for this match, so it must be rendered as a plain heading.
 	assert.Contains(t, out, ui.RenderHeading("Job title")+"\n")
 	assert.NotContains(t, out, ui.RenderHighlightedText("Job"))

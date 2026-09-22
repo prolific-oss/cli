@@ -120,8 +120,9 @@ func TestSearchFilters(t *testing.T) {
 	assert.Contains(t, output, "1. Job title\n   select · ChoiceID · Employment\n")
 	assert.Contains(t, output, "   Filter ID    job-title\n")
 	assert.Contains(t, output, "   Question     What is your job title?\n")
-	assert.Contains(t, output, "   Choices      5 (4 matching)\n")
-	assert.Contains(t, output, "100  Software developers  (+3 nested)\n")
+	assert.Contains(t, output, "   Choices      5 total, 4 matching\n")
+	assert.Contains(t, output, "Choice ID    Label\n")
+	assert.Contains(t, output, "100          Software developers  (+3 nested)\n")
 	assert.Contains(t, output, "…and 3 more matching choices\n")
 	assert.Contains(t, output, "   Matched on   choices\n")
 

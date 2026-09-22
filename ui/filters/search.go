@@ -123,9 +123,9 @@ func RenderSearchResult(rank int, r model.FilterSearchResult) string {
 		field("Range", renderRange(r.Min, r.Max))
 	}
 	if r.NumChoices != nil {
-		choices := fmt.Sprintf("%d", *r.NumChoices)
+		choices := fmt.Sprintf("%d total", *r.NumChoices)
 		if r.MatchedChoices != nil {
-			choices += ui.RenderDimmed(fmt.Sprintf(" (%d matching)", r.MatchedChoices.Matched))
+			choices += fmt.Sprintf(", %d matching", r.MatchedChoices.Matched)
 		}
 		field("Choices", choices)
 	}
@@ -153,15 +153,23 @@ func newHighlights(highlights []model.FilterSearchHighlight) ui.FieldHighlights 
 	return h
 }
 
+// renderMatchedChoices renders the preview of matching choices as a small
+// indented table. It sits under the metadata block, with its ID column the
+// same width as the field labels so the label column lines up with the field
+// values above it.
 func renderMatchedChoices(mc model.FilterMatchingChoices) string {
 	var b strings.Builder
 	choiceIndent := indent + strings.Repeat(" ", fieldWidth)
 
+	b.WriteString("\n")
+	b.WriteString(choiceIndent)
+	b.WriteString(ui.RenderDimmed(fmt.Sprintf("%-*s%s", fieldWidth, "Choice ID", "Label")))
+	b.WriteString("\n")
+
 	for _, choice := range mc.Results {
 		label := newHighlights(choice.Match.Highlights).Render("label", choice.Label)
 		b.WriteString(choiceIndent)
-		b.WriteString(ui.RenderDimmed(choice.ID))
-		b.WriteString("  ")
+		fmt.Fprintf(&b, "%-*s", fieldWidth, choice.ID)
 		b.WriteString(label)
 		if choice.NumDescendants > 0 {
 			b.WriteString(ui.RenderDimmed(fmt.Sprintf("  (+%d nested)", choice.NumDescendants)))
@@ -174,6 +182,7 @@ func renderMatchedChoices(mc model.FilterMatchingChoices) string {
 		b.WriteString(ui.RenderDimmed(fmt.Sprintf("…and %d more matching %s", remaining, ui.Pluralise(remaining, "choice", "choices"))))
 		b.WriteString("\n")
 	}
+	b.WriteString("\n")
 	return b.String()
 }
 
