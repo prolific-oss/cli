@@ -93,6 +93,7 @@ type API interface {
 
 	GetFilters() (*ListFiltersResponse, error)
 	GetEligibilityCount(payload EligibilityCountPayload) (*EligibilityCountResponse, error)
+	GetFilterBreakdown(payload FilterBreakdownPayload) (*FilterBreakdownResponse, error)
 
 	GetRewardRecommendations(workspaceID, currency string, screenerIDs []string) (*RewardRecommendationsResponse, error)
 
@@ -1043,6 +1044,25 @@ func (c *Client) GetEligibilityCount(payload EligibilityCountPayload) (*Eligibil
 	var response EligibilityCountResponse
 
 	const url = "/api/v1/eligibility-count/"
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(payload).
+		Status(http.StatusOK).
+		Decode(&response).
+		Execute()
+	if err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// GetFilterBreakdown returns eligible participant counts for a set of base
+// filters, broken down by the values of a single distributable filter.
+func (c *Client) GetFilterBreakdown(payload FilterBreakdownPayload) (*FilterBreakdownResponse, error) {
+	var response FilterBreakdownResponse
+
+	const url = "/api/v1/eligibility-count/filter-breakdown/"
 	_, err := c.ExecuteBuilder().
 		PostRequest(url).
 		Body(payload).

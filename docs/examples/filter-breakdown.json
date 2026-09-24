@@ -1,0 +1,16 @@
+{
+  "filters": [
+    {
+      "filter_id": "age",
+      "selected_range": { "lower": 18, "upper": 20 }
+    },
+    {
+      "filter_id": "gender",
+      "selected_values": ["0"]
+    }
+  ],
+  "breakdown_filter": {
+    "filter_id": "handedness",
+    "selected_values": ["1", "2"]
+  }
+}

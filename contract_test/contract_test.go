@@ -269,6 +269,7 @@ var operations = []operation{
 	{operationID: "messages_GetUnreadMessages", call: func(c *client.Client) { c.GetUnreadMessages() }},
 	{operationID: "messages_GetConversations", skip: "OUTOFSCOPE: no CLI command for listing conversations"},
 	{operationID: "messages_GetConversationMessages", skip: "OUTOFSCOPE: no CLI command for retrieving conversation messages"},
+	{operationID: "messages_CreateConversation", skip: "OUTOFSCOPE: no CLI command for creating a conversation"},
 
 	// Studies
 	{operationID: "studies_GetStudies", call: func(c *client.Client) { c.GetStudies("", "") }},

@@ -13,6 +13,15 @@ type EligibilityCountPayload struct {
 	WorkspaceID string         `json:"workspace_id,omitempty"`
 }
 
+// FilterBreakdownPayload represents the JSON payload for counting eligible
+// participants matching a set of base filters, broken down by the values of
+// a single distributable breakdown filter.
+type FilterBreakdownPayload struct {
+	Filters         []model.Filter `json:"filters"`
+	BreakdownFilter model.Filter   `json:"breakdown_filter"`
+	WorkspaceID     string         `json:"workspace_id,omitempty"`
+}
+
 // SendMessagePayload represents the JSON payload for sending a message.
 type SendMessagePayload struct {
 	RecipientID string `json:"recipient_id"`
