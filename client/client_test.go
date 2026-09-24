@@ -11,6 +11,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/prolific-oss/cli/model"
 	"github.com/prolific-oss/cli/version"
 )
 
@@ -560,5 +561,81 @@ func TestExecuteSetsAgentInUserAgent(t *testing.T) {
 
 	if want := "prolific-oss/cli/" + version.Get() + " agent/claude-code"; gotUserAgent != want {
 		t.Fatalf("User-Agent = %q, want %q", gotUserAgent, want)
+	}
+}
+
+// TestGetFilterBreakdownSendsRequestAndDecodesResponse guards the request and
+// response shape directly, since this endpoint isn't published in the
+// OpenAPI spec yet and so contract_test cannot validate it.
+func TestGetFilterBreakdownSendsRequestAndDecodesResponse(t *testing.T) {
+	var gotMethod, gotPath string
+	var gotBody FilterBreakdownPayload
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotMethod = r.Method
+		gotPath = r.URL.Path
+		if err := json.NewDecoder(r.Body).Decode(&gotBody); err != nil {
+			t.Fatalf("failed to decode request body: %v", err)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(FilterBreakdownResponse{
+			Breakdown: map[string]int{"0": 4, "1": 3, "N/A": 5},
+		}); err != nil {
+			t.Logf("failed to encode response: %v", err)
+		}
+	}))
+	defer server.Close()
+
+	c := Client{
+		Client:  server.Client(),
+		BaseURL: server.URL,
+		Token:   "test-token",
+	}
+
+	payload := FilterBreakdownPayload{
+		Filters: []model.Filter{
+			{FilterID: "age", SelectedRange: &model.FilterRange{Lower: float64(18), Upper: float64(65)}},
+		},
+		BreakdownFilter: model.Filter{FilterID: "handedness", SelectedValues: []string{"0", "1"}},
+		WorkspaceID:     "ws-id",
+	}
+
+	response, err := c.GetFilterBreakdown(payload)
+	if err != nil {
+		t.Fatalf("GetFilterBreakdown returned error: %v", err)
+	}
+
+	if gotMethod != http.MethodPost {
+		t.Errorf("method = %q, want %q", gotMethod, http.MethodPost)
+	}
+	if want := "/api/v1/eligibility-count/filter-breakdown/"; gotPath != want {
+		t.Errorf("path = %q, want %q", gotPath, want)
+	}
+
+	if gotBody.WorkspaceID != payload.WorkspaceID {
+		t.Errorf("request workspace_id = %q, want %q", gotBody.WorkspaceID, payload.WorkspaceID)
+	}
+	if len(gotBody.Filters) != 1 || gotBody.Filters[0].FilterID != "age" {
+		t.Errorf("request filters = %+v, want a single 'age' filter", gotBody.Filters)
+	}
+	if gotBody.Filters[0].SelectedRange == nil || gotBody.Filters[0].SelectedRange.Lower != float64(18) || gotBody.Filters[0].SelectedRange.Upper != float64(65) {
+		t.Errorf("request filters[0].selected_range = %+v, want {18 65}", gotBody.Filters[0].SelectedRange)
+	}
+	if gotBody.BreakdownFilter.FilterID != "handedness" {
+		t.Errorf("request breakdown_filter.filter_id = %q, want %q", gotBody.BreakdownFilter.FilterID, "handedness")
+	}
+	if want := []string{"0", "1"}; len(gotBody.BreakdownFilter.SelectedValues) != len(want) ||
+		gotBody.BreakdownFilter.SelectedValues[0] != want[0] || gotBody.BreakdownFilter.SelectedValues[1] != want[1] {
+		t.Errorf("request breakdown_filter.selected_values = %v, want %v", gotBody.BreakdownFilter.SelectedValues, want)
+	}
+
+	wantBreakdown := map[string]int{"0": 4, "1": 3, "N/A": 5}
+	if len(response.Breakdown) != len(wantBreakdown) {
+		t.Fatalf("Breakdown = %+v, want %+v", response.Breakdown, wantBreakdown)
+	}
+	for key, want := range wantBreakdown {
+		if got := response.Breakdown[key]; got != want {
+			t.Errorf("Breakdown[%q] = %d, want %d", key, got, want)
+		}
 	}
 }
