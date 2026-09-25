@@ -397,6 +397,7 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 | `messages_GetUnreadMessages` | GET | `/api/v1/messages/unread/` | ✅ `GetUnreadMessages` |
 | `messages_GetConversations` | GET | `/api/v1/conversations/` | ➖ Not exposed in the CLI |
 | `messages_GetConversationMessages` | GET | `/api/v1/conversations/{conversation_id}/messages/` | ➖ Not exposed in the CLI |
+| `messages_CreateConversation` | POST | `/api/v1/conversations/` | ➖ Not exposed in the CLI |
 
 </details>
 

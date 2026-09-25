@@ -91,6 +91,19 @@ type EligibilityCountResponse struct {
 	Count int `json:"count"`
 }
 
+// FilterBreakdownNAKey is the Breakdown key covering participants who match
+// the base filters but don't fall into any of the breakdown filter's
+// selected values or range.
+const FilterBreakdownNAKey = "N/A"
+
+// FilterBreakdownResponse is the response for the filter breakdown endpoint.
+// Breakdown is keyed by the breakdown filter's value (or bucket label, for
+// range filters), with FilterBreakdownNAKey covering participants who don't
+// match any bucket.
+type FilterBreakdownResponse struct {
+	Breakdown map[string]int `json:"breakdown"`
+}
+
 // RewardRecommendationsResponse is the response for the reward
 // recommendations endpoint. The API guarantees the first item is the most
 // recent set of rates.
