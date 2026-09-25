@@ -162,8 +162,14 @@ func renderSearch(cmd *cobra.Command, c client.API, opts SearchOptions, w io.Wri
 		return err
 	}
 
+	// Show progress on stderr while the first page loads. It is cleared as
+	// soon as output begins, or before an error is returned, and is a no-op
+	// when stderr is not a terminal.
+	clearStatus := ui.Status(fmt.Sprintf("Searching filters for %q…", opts.Query))
+	defer clearStatus()
+
 	render := func(out io.Writer) error {
-		return streamSearchResults(out, opts.Query, want, fetch)
+		return streamSearchResults(out, opts.Query, want, fetch, clearStatus)
 	}
 	if shared.NoPager(cmd) {
 		return render(w)
@@ -173,13 +179,15 @@ func renderSearch(cmd *cobra.Command, c client.API, opts SearchOptions, w io.Wri
 
 // streamSearchResults writes formatted results to out page by page as they
 // arrive from the API, so the first screen appears before every page has been
-// fetched.
-func streamSearchResults(out io.Writer, query string, want int, fetch client.PageFetcher[model.FilterSearchResult]) error {
+// fetched. beforeOutput is called once the first page has arrived, before
+// anything is written, so any progress indicator can be cleared.
+func streamSearchResults(out io.Writer, query string, want int, fetch client.PageFetcher[model.FilterSearchResult], beforeOutput func()) error {
 	rank := 0
 	total := 0
 
 	err := client.EachPage(want, client.FilterSearchPageSize, fetch, func(page client.Page[model.FilterSearchResult]) error {
 		if rank == 0 {
+			beforeOutput()
 			if page.Total == 0 && len(page.Results) == 0 {
 				_, err := fmt.Fprint(out, uifilters.RenderNoSearchResults(query))
 				return err

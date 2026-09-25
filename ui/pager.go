@@ -17,13 +17,14 @@ import (
 // defaultPager is used when neither PROLIFIC_PAGER nor PAGER is set.
 const defaultPager = "less"
 
-// defaultLessFlags are applied when the pager is less and the user has not
-// configured LESS themselves:
+// lessFlags are always passed on the command line when the pager is less.
+// Command-line options combine with the user's LESS variable rather than
+// being overridden by it, so these apply even when LESS is set:
 //
 //	F quit immediately if the output fits on one screen
 //	R pass ANSI colour sequences through so highlights render
 //	X don't clear the screen on exit, so output stays in the scrollback
-const defaultLessFlags = "FRX"
+const lessFlags = "-FRX"
 
 // ResolvePager returns the pager command line to use, or "" to disable paging.
 // PROLIFIC_PAGER takes precedence over PAGER. Setting either to an empty
@@ -61,9 +62,13 @@ func Page(ctx context.Context, w io.Writer, render func(io.Writer) error) error 
 	return RunPager(ctx, pager, w, render)
 }
 
-// RunPager starts the pager command line and feeds it render's output as it
-// is produced, so the first screen appears before rendering finishes. If the
-// pager cannot be started, render writes straight to w instead.
+// RunPager feeds render's output through the pager command line. The pager
+// is started lazily on the first byte of output, so if render fails before
+// producing anything (for example an API error on the first request) the
+// error is returned without the pager ever taking over the screen. Once
+// output has started it streams as it is produced, so the first screen
+// appears before rendering finishes. If the pager cannot be started, output
+// goes straight to w instead.
 //
 // The user quitting the pager early (for example pressing q in less) closes
 // the pipe, which surfaces to render as a broken-pipe write error. Cancelling
@@ -75,23 +80,17 @@ func RunPager(ctx context.Context, pager string, w io.Writer, render func(io.Wri
 		return render(w)
 	}
 
-	cmd := exec.CommandContext(ctx, parts[0], parts[1:]...) //nolint:gosec // pager comes from the user's own environment
-	cmd.Stdout = w
-	cmd.Stderr = os.Stderr
-	cmd.Env = pagerEnv(parts[0])
+	lp := &lazyPager{ctx: ctx, args: pagerArgs(parts), out: w}
+	renderErr := render(lp)
 
-	stdin, err := cmd.StdinPipe()
-	if err != nil {
-		return render(w)
-	}
-	if err := cmd.Start(); err != nil {
-		_ = stdin.Close()
-		return render(w)
+	if lp.cmd == nil {
+		// Nothing was written, or the pager could not start and output went
+		// straight to w. Either way there is no pager process to wait on.
+		return renderErr
 	}
 
-	renderErr := render(stdin)
-	_ = stdin.Close()
-	waitErr := cmd.Wait()
+	_ = lp.stdin.Close()
+	waitErr := lp.cmd.Wait()
 
 	if ctx.Err() != nil {
 		// The pager was terminated because the command was cancelled; any
@@ -107,22 +106,61 @@ func RunPager(ctx context.Context, pager string, w io.Writer, render func(io.Wri
 	return nil
 }
 
+// pagerArgs returns the pager command line to execute. When the pager is
+// less, the standard flags are appended so short output exits immediately
+// and colours render, whatever the user's LESS variable says.
+func pagerArgs(parts []string) []string {
+	args := append([]string(nil), parts...)
+	if filepath.Base(args[0]) == "less" {
+		args = append(args, lessFlags)
+	}
+	return args
+}
+
+// lazyPager is an io.Writer that starts the pager process on the first Write
+// and forwards subsequent writes to its stdin. If the pager fails to start,
+// all writes fall through to out.
+type lazyPager struct {
+	ctx      context.Context
+	args     []string
+	out      io.Writer
+	cmd      *exec.Cmd
+	stdin    io.WriteCloser
+	fallback bool
+}
+
+func (lp *lazyPager) Write(p []byte) (int, error) {
+	if lp.cmd == nil && !lp.fallback {
+		lp.start()
+	}
+	if lp.fallback {
+		return lp.out.Write(p)
+	}
+	return lp.stdin.Write(p)
+}
+
+func (lp *lazyPager) start() {
+	cmd := exec.CommandContext(lp.ctx, lp.args[0], lp.args[1:]...) //nolint:gosec // pager comes from the user's own environment
+	cmd.Stdout = lp.out
+	cmd.Stderr = os.Stderr
+
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		lp.fallback = true
+		return
+	}
+	if err := cmd.Start(); err != nil {
+		_ = stdin.Close()
+		lp.fallback = true
+		return
+	}
+
+	lp.cmd = cmd
+	lp.stdin = stdin
+}
+
 // isBrokenPipe reports whether err is the result of writing to a pipe whose
 // reader has gone away.
 func isBrokenPipe(err error) bool {
 	return errors.Is(err, syscall.EPIPE) || errors.Is(err, io.ErrClosedPipe) || errors.Is(err, os.ErrClosed)
-}
-
-// pagerEnv returns the environment for the pager. When the pager is less and
-// the user has not set LESS, the default flags are supplied so the standard
-// behaviour applies however less was selected.
-func pagerEnv(pagerBinary string) []string {
-	env := os.Environ()
-	if filepath.Base(pagerBinary) != "less" {
-		return env
-	}
-	if _, set := os.LookupEnv("LESS"); set {
-		return env
-	}
-	return append(env, "LESS="+defaultLessFlags)
 }

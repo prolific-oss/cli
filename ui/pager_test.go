@@ -123,6 +123,20 @@ func TestRunPagerTreatsCancellationAsSuccess(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestRunPagerDoesNotStartPagerWhenRenderFailsBeforeOutput(t *testing.T) {
+	// "false" exits non-zero, so if the pager had been started the error would
+	// be about the pager rather than the render failure. Nothing was written,
+	// so the pager must never have run.
+	boom := errors.New("PROLIFIC_TOKEN not set")
+	var b bytes.Buffer
+
+	err := ui.RunPager(context.Background(), "false", &b, func(io.Writer) error { return boom })
+
+	assert.ErrorIs(t, err, boom)
+	assert.NotContains(t, err.Error(), "pager exited")
+	assert.Empty(t, b.String())
+}
+
 func TestRunPagerStillReportsRealRenderErrors(t *testing.T) {
 	boom := errors.New("boom")
 
