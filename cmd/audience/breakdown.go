@@ -29,8 +29,8 @@ type breakdownTemplate struct {
 }
 
 // NewBreakdownCommand creates a new `audience breakdown` command to count how
-// many participants match a set of base filters, broken down by the values
-// of a single distributable filter.
+// many participants match a set of base filters, split by the values of a
+// single breakdown filter.
 func NewBreakdownCommand(client client.API, w io.Writer) *cobra.Command {
 	var opts BreakdownOptions
 
@@ -38,8 +38,8 @@ func NewBreakdownCommand(client client.API, w io.Writer) *cobra.Command {
 		Use:   "breakdown",
 		Short: "Count eligible participants broken down by a filter",
 		Long: `Count how many participants would be eligible for a study defined by a
-set of base filters, broken down by the values (or bucketed ranges, for
-numeric filters) of a single distributable breakdown filter.
+set of base filters, split by the values (or bucketed ranges, for numeric
+filters) of a single breakdown filter.
 
 The result includes an "N/A" count: participants who match the base
 filters but don't fall into any of the breakdown filter's selected values

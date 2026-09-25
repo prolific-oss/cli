@@ -14,8 +14,8 @@ type EligibilityCountPayload struct {
 }
 
 // FilterBreakdownPayload represents the JSON payload for counting eligible
-// participants matching a set of base filters, broken down by the values of
-// a single distributable breakdown filter.
+// participants matching a set of base filters, split by the values of a
+// single breakdown filter.
 type FilterBreakdownPayload struct {
 	Filters         []model.Filter `json:"filters"`
 	BreakdownFilter model.Filter   `json:"breakdown_filter"`

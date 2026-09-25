@@ -1058,7 +1058,7 @@ func (c *Client) GetEligibilityCount(payload EligibilityCountPayload) (*Eligibil
 }
 
 // GetFilterBreakdown returns eligible participant counts for a set of base
-// filters, broken down by the values of a single distributable filter.
+// filters, split by the values of a single breakdown filter.
 func (c *Client) GetFilterBreakdown(payload FilterBreakdownPayload) (*FilterBreakdownResponse, error) {
 	var response FilterBreakdownResponse
 
