@@ -83,7 +83,7 @@ func TestBreakdownCommandRendersBreakdown(t *testing.T) {
 	c.
 		EXPECT().
 		GetFilterBreakdown(gomock.Eq(expectedPayload)).
-		Return(&client.FilterBreakdownResponse{Breakdown: map[string]int{"0": 4, "1": 3, "N/A": 5}}, nil).
+		Return(&client.FilterBreakdownResponse{Breakdown: map[string]int{"0": 4, "1": 3, client.FilterBreakdownNAKey: 5}}, nil).
 		Times(1)
 
 	templatePath := mustWriteTempTemplate(t, `{
@@ -241,7 +241,7 @@ func TestBreakdownCommandHandlesAPIError(t *testing.T) {
 }
 
 func TestRenderBreakdown(t *testing.T) {
-	breakdown := map[string]int{"1": 3, "0": 4, "N/A": 5}
+	breakdown := map[string]int{"1": 3, "0": 4, client.FilterBreakdownNAKey: 5}
 
 	expected := "VALUE   COUNT\n0       4\n1       3\nN/A     5\n"
 	actual := audience.RenderBreakdown(breakdown)

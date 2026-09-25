@@ -110,18 +110,18 @@ func getBreakdown(c client.API, opts BreakdownOptions) (map[string]int, error) {
 }
 
 // RenderBreakdown produces a human-readable table of eligible participant
-// counts per breakdown value, sorted alphabetically with "N/A" (participants
-// who don't match any bucket) always shown last.
+// counts per breakdown value, sorted alphabetically with
+// client.FilterBreakdownNAKey always shown last.
 func RenderBreakdown(breakdown map[string]int) string {
 	keys := make([]string, 0, len(breakdown))
 	for key := range breakdown {
-		if key != "N/A" {
+		if key != client.FilterBreakdownNAKey {
 			keys = append(keys, key)
 		}
 	}
 	sort.Strings(keys)
-	if _, ok := breakdown["N/A"]; ok {
-		keys = append(keys, "N/A")
+	if _, ok := breakdown[client.FilterBreakdownNAKey]; ok {
+		keys = append(keys, client.FilterBreakdownNAKey)
 	}
 
 	var buf bytes.Buffer

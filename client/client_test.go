@@ -579,7 +579,7 @@ func TestGetFilterBreakdownSendsRequestAndDecodesResponse(t *testing.T) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(FilterBreakdownResponse{
-			Breakdown: map[string]int{"0": 4, "1": 3, "N/A": 5},
+			Breakdown: map[string]int{"0": 4, "1": 3, FilterBreakdownNAKey: 5},
 		}); err != nil {
 			t.Logf("failed to encode response: %v", err)
 		}
@@ -629,7 +629,7 @@ func TestGetFilterBreakdownSendsRequestAndDecodesResponse(t *testing.T) {
 		t.Errorf("request breakdown_filter.selected_values = %v, want %v", gotBody.BreakdownFilter.SelectedValues, want)
 	}
 
-	wantBreakdown := map[string]int{"0": 4, "1": 3, "N/A": 5}
+	wantBreakdown := map[string]int{"0": 4, "1": 3, FilterBreakdownNAKey: 5}
 	if len(response.Breakdown) != len(wantBreakdown) {
 		t.Fatalf("Breakdown = %+v, want %+v", response.Breakdown, wantBreakdown)
 	}
