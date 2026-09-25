@@ -63,12 +63,12 @@ func TestRenderSearchResultRangeWithMissingBound(t *testing.T) {
 
 func TestRenderSearchResultMatchedChoices(t *testing.T) {
 	r := model.FilterSearchResult{
-		FilterID:   "job-title",
-		Title:      "Job title",
-		Type:       "select",
-		DataType:   "ChoiceID",
-		NumChoices: ptr(5),
-		MatchedChoices: &model.FilterMatchingChoices{
+		FilterID: "job-title",
+		Title:    "Job title",
+		Type:     "select",
+		DataType: "ChoiceID",
+		Choices: &model.FilterSearchChoices{
+			Total:     5,
 			Matched:   4,
 			Truncated: true,
 			Results: []model.FilterChoiceSearchResult{
@@ -79,6 +79,7 @@ func TestRenderSearchResultMatchedChoices(t *testing.T) {
 
 	out := stripansi.Strip(RenderSearchResult(1, r))
 	assert.Contains(t, out, "   Choices      5 total, 4 matching\n")
+	assert.Contains(t, out, "   Matched on   choices\n")
 	want := "\n" +
 		"                Choice ID    Label\n" +
 		"                100          Software developers  (+3 nested)\n" +
@@ -93,18 +94,38 @@ func TestRenderSearchResultMatchedChoicesNotTruncated(t *testing.T) {
 		Title:    "Job title",
 		Type:     "select",
 		DataType: "ChoiceID",
-		MatchedChoices: &model.FilterMatchingChoices{
+		Choices: &model.FilterSearchChoices{
+			Total:   40,
 			Matched: 1,
 			Results: []model.FilterChoiceSearchResult{{ID: "7", Label: "Nurse"}},
 		},
 	}
 
 	out := stripansi.Strip(RenderSearchResult(1, r))
+	assert.Contains(t, out, "   Choices      40 total, 1 matching\n")
 	assert.Contains(t, out, "                Choice ID    Label\n                7            Nurse\n")
 	assert.NotContains(t, out, "more matching")
 	assert.NotContains(t, out, "nested")
-	// No num_choices means no Choices line, even with a matched preview.
-	assert.NotContains(t, out, "Choices")
+}
+
+func TestRenderSearchResultMetadataOnlyMatchOnEnumerableFilter(t *testing.T) {
+	// A metadata-only match still reports the total choices, but with nothing
+	// matched there is no preview table and "choices" is not a matched field.
+	r := model.FilterSearchResult{
+		FilterID: "job-title",
+		Title:    "Job title",
+		Type:     "select",
+		DataType: "ChoiceID",
+		Matches: []model.FilterSearchHighlight{
+			{Field: "title", QueryTerm: "job", MatchedText: "Job", Start: 0, End: 3},
+		},
+		Choices: &model.FilterSearchChoices{Total: 40, Results: []model.FilterChoiceSearchResult{}},
+	}
+
+	out := stripansi.Strip(RenderSearchResult(1, r))
+	assert.Contains(t, out, "   Choices      40 total, 0 matching\n")
+	assert.NotContains(t, out, "Choice ID")
+	assert.Contains(t, out, "   Matched on   title\n")
 }
 
 func TestRenderSearchResultAppliesHighlights(t *testing.T) {
@@ -116,18 +137,16 @@ func TestRenderSearchResultAppliesHighlights(t *testing.T) {
 		Question: ptr("What is your job title?"),
 		Type:     "select",
 		DataType: "ChoiceID",
-		Match: model.FilterSearchMatch{
-			Fields: []string{"question", "choices"},
-			Highlights: []model.FilterSearchHighlight{
-				{Field: "question", QueryTerm: "job", MatchedText: "job", Start: 13, End: 16},
-			},
+		Matches: []model.FilterSearchHighlight{
+			{Field: "question", QueryTerm: "job", MatchedText: "job", Start: 13, End: 16},
 		},
-		MatchedChoices: &model.FilterMatchingChoices{
+		Choices: &model.FilterSearchChoices{
+			Total:   5,
 			Matched: 1,
 			Results: []model.FilterChoiceSearchResult{
-				{ID: "100", Label: "Software developers", Match: model.FilterChoiceMatch{Highlights: []model.FilterSearchHighlight{
+				{ID: "100", Label: "Software developers", Matches: []model.FilterSearchHighlight{
 					{Field: "label", QueryTerm: "developers", MatchedText: "developers", Start: 9, End: 19},
-				}}},
+				}},
 			},
 		},
 	}
@@ -149,11 +168,8 @@ func TestRenderSearchResultHighlightedTitleKeepsHeadingStyle(t *testing.T) {
 		Title:    "Software development experience",
 		Type:     "range",
 		DataType: "integer",
-		Match: model.FilterSearchMatch{
-			Fields: []string{"title"},
-			Highlights: []model.FilterSearchHighlight{
-				{Field: "title", QueryTerm: "developers", MatchedText: "development", Start: 9, End: 20},
-			},
+		Matches: []model.FilterSearchHighlight{
+			{Field: "title", QueryTerm: "developers", MatchedText: "development", Start: 9, End: 20},
 		},
 	}
 
@@ -202,7 +218,12 @@ func TestNewSearchListItems(t *testing.T) {
 			DataType:    "ChoiceID",
 			Category:    ptr("Employment"),
 			Subcategory: ptr("Occupation"),
-			Match:       model.FilterSearchMatch{Fields: []string{"title", "choices"}},
+			Matches: []model.FilterSearchHighlight{
+				{Field: "title", Start: 0, End: 3},
+				{Field: "title", Start: 4, End: 9},
+				{Field: "question", Start: 0, End: 3},
+			},
+			Choices: &model.FilterSearchChoices{Total: 5, Matched: 2},
 		},
 		{FilterID: "age", Title: "Age", Type: "range", DataType: "integer"},
 	}
@@ -210,7 +231,7 @@ func TestNewSearchListItems(t *testing.T) {
 	items := NewSearchListItems(results, 5)
 
 	assert.Equal(t, []SearchListItem{
-		{Rank: 5, FilterID: "job-title", Title: "Job title", Type: "select", DataType: "ChoiceID", Category: "Employment / Occupation", MatchedOn: "title, choices"},
+		{Rank: 5, FilterID: "job-title", Title: "Job title", Type: "select", DataType: "ChoiceID", Category: "Employment / Occupation", MatchedOn: "title, question, choices"},
 		{Rank: 6, FilterID: "age", Title: "Age", Type: "range", DataType: "integer"},
 	}, items)
 }

@@ -31,12 +31,9 @@ func searchResponse() *client.SearchFiltersResponse {
 				Category:    ptr("Employment"),
 				Type:        "select",
 				DataType:    "ChoiceID",
-				Match: model.FilterSearchMatch{
-					Fields:     []string{"choices"},
-					Highlights: []model.FilterSearchHighlight{},
-				},
-				NumChoices: ptr(5),
-				MatchedChoices: &model.FilterMatchingChoices{
+				Matches:     []model.FilterSearchHighlight{},
+				Choices: &model.FilterSearchChoices{
+					Total:     5,
 					Matched:   4,
 					Truncated: true,
 					Results: []model.FilterChoiceSearchResult{
@@ -45,9 +42,9 @@ func searchResponse() *client.SearchFiltersResponse {
 							Label:          "Software developers",
 							NumChildren:    3,
 							NumDescendants: 3,
-							Match: model.FilterChoiceMatch{Highlights: []model.FilterSearchHighlight{
+							Matches: []model.FilterSearchHighlight{
 								{Field: "label", QueryTerm: "developers", MatchedText: "developers", Start: 9, End: 19},
-							}},
+							},
 						},
 					},
 				},
@@ -60,11 +57,8 @@ func searchResponse() *client.SearchFiltersResponse {
 				DataType:    "integer",
 				Min:         18,
 				Max:         100,
-				Match: model.FilterSearchMatch{
-					Fields: []string{"title"},
-					Highlights: []model.FilterSearchHighlight{
-						{Field: "title", QueryTerm: "age", MatchedText: "Age", Start: 0, End: 3},
-					},
+				Matches: []model.FilterSearchHighlight{
+					{Field: "title", QueryTerm: "age", MatchedText: "Age", Start: 0, End: 3},
 				},
 			},
 		},
@@ -157,7 +151,7 @@ func TestSearchFiltersJSON(t *testing.T) {
 	require.NoError(t, json.Unmarshal(b.Bytes(), &decoded))
 	require.Len(t, decoded, 2)
 	assert.Equal(t, "job-title", decoded[0].FilterID)
-	assert.Equal(t, 4, decoded[0].MatchedChoices.Matched)
+	assert.Equal(t, 4, decoded[0].Choices.Matched)
 	assert.Equal(t, "age", decoded[1].FilterID)
 }
 

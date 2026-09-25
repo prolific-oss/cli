@@ -44,7 +44,7 @@ func NewSearchListItems(results []model.FilterSearchResult, firstRank int) []Sea
 			Type:      r.Type,
 			DataType:  r.DataType,
 			Category:  joinCategory(deref(r.Category), deref(r.Subcategory)),
-			MatchedOn: strings.Join(r.Match.Fields, ", "),
+			MatchedOn: strings.Join(matchedFields(r), ", "),
 		})
 	}
 	return items
@@ -91,7 +91,7 @@ func RenderNoSearchResults(query string) string {
 // matching choices.
 func RenderSearchResult(rank int, r model.FilterSearchResult) string {
 	var b strings.Builder
-	h := newHighlights(r.Match.Highlights)
+	h := newHighlights(r.Matches)
 
 	// Title line: rank and highlighted title.
 	b.WriteString(ui.RenderDimmed(fmt.Sprintf("%d.", rank)))
@@ -122,25 +122,38 @@ func RenderSearchResult(rank int, r model.FilterSearchResult) string {
 	if r.Type == "range" && (r.Min != nil || r.Max != nil) {
 		field("Range", renderRange(r.Min, r.Max))
 	}
-	if r.NumChoices != nil {
-		choices := fmt.Sprintf("%d total", *r.NumChoices)
-		if r.MatchedChoices != nil {
-			choices += fmt.Sprintf(", %d matching", r.MatchedChoices.Matched)
+	if r.Choices != nil {
+		field("Choices", fmt.Sprintf("%d total, %d matching", r.Choices.Total, r.Choices.Matched))
+		if len(r.Choices.Results) > 0 {
+			b.WriteString(renderMatchedChoices(*r.Choices))
 		}
-		field("Choices", choices)
 	}
 
-	if r.MatchedChoices != nil && len(r.MatchedChoices.Results) > 0 {
-		b.WriteString(renderMatchedChoices(*r.MatchedChoices))
-	}
-
-	if len(r.Match.Fields) > 0 {
+	if fields := matchedFields(r); len(fields) > 0 {
 		b.WriteString(indent)
-		b.WriteString(ui.RenderDimmed(fmt.Sprintf("%-*s%s", fieldWidth, "Matched on", strings.Join(r.Match.Fields, ", "))))
+		b.WriteString(ui.RenderDimmed(fmt.Sprintf("%-*s%s", fieldWidth, "Matched on", strings.Join(fields, ", "))))
 		b.WriteString("\n")
 	}
 
 	return b.String()
+}
+
+// matchedFields summarises where a filter matched: the distinct fields of its
+// own text matches in first-seen order, plus "choices" when any of its
+// choices matched. The API no longer provides this summary directly.
+func matchedFields(r model.FilterSearchResult) []string {
+	var fields []string
+	seen := make(map[string]bool)
+	for _, m := range r.Matches {
+		if !seen[m.Field] {
+			seen[m.Field] = true
+			fields = append(fields, m.Field)
+		}
+	}
+	if r.Choices != nil && r.Choices.Matched > 0 {
+		fields = append(fields, "choices")
+	}
+	return fields
 }
 
 // newHighlights indexes API highlights by field so each field is rendered
@@ -157,7 +170,7 @@ func newHighlights(highlights []model.FilterSearchHighlight) ui.FieldHighlights 
 // indented table. It sits under the metadata block, with its ID column the
 // same width as the field labels so the label column lines up with the field
 // values above it.
-func renderMatchedChoices(mc model.FilterMatchingChoices) string {
+func renderMatchedChoices(mc model.FilterSearchChoices) string {
 	var b strings.Builder
 	choiceIndent := indent + strings.Repeat(" ", fieldWidth)
 
@@ -167,7 +180,7 @@ func renderMatchedChoices(mc model.FilterMatchingChoices) string {
 	b.WriteString("\n")
 
 	for _, choice := range mc.Results {
-		label := newHighlights(choice.Match.Highlights).Render("label", choice.Label)
+		label := newHighlights(choice.Matches).Render("label", choice.Label)
 		b.WriteString(choiceIndent)
 		fmt.Fprintf(&b, "%-*s", fieldWidth, choice.ID)
 		b.WriteString(label)
