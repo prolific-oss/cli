@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"unicode/utf8"
@@ -92,6 +93,7 @@ type API interface {
 	CreateTestParticipant(email string) (*CreateTestParticipantResponse, error)
 
 	GetFilters() (*ListFiltersResponse, error)
+	SearchFilters(query, workspaceID string, limit, offset int) (*SearchFiltersResponse, error)
 	GetEligibilityCount(payload EligibilityCountPayload) (*EligibilityCountResponse, error)
 
 	GetRewardRecommendations(workspaceID, currency string, screenerIDs []string) (*RewardRecommendationsResponse, error)
@@ -1031,6 +1033,29 @@ func (c *Client) GetFilters() (*ListFiltersResponse, error) {
 
 	url := "/api/v1/filters/"
 	if _, err := c.ExecuteBuilder().Get(url, &response); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// SearchFilters searches the filter catalogue by keyword. Results are returned
+// in ranked order with highlight offsets and a preview of matching choices.
+// workspaceID is optional and scopes the catalogue to filters accessible in
+// that workspace.
+func (c *Client) SearchFilters(query, workspaceID string, limit, offset int) (*SearchFiltersResponse, error) {
+	var response SearchFiltersResponse
+
+	params := url.Values{}
+	params.Set("q", query)
+	params.Set("limit", strconv.Itoa(limit))
+	params.Set("offset", strconv.Itoa(offset))
+	if workspaceID != "" {
+		params.Set("workspace_id", workspaceID)
+	}
+
+	requestURL := "/api/v1/filters/search/?" + params.Encode()
+	if _, err := c.ExecuteBuilder().Get(requestURL, &response); err != nil {
 		return nil, err
 	}
 

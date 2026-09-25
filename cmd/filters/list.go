@@ -10,31 +10,23 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// NewListCommand creates the `filters list` command.
 func NewListCommand(client client.API, w io.Writer) *cobra.Command {
 	var nonInteractive bool
 
 	cmd := &cobra.Command{
-		Use:   "filters",
+		Use:   "list",
 		Short: "List all filters available for your study",
-		Long: `Filters allow you to restrict access to your study based on
-participant demographics and attributes.
+		Long: `List every filter in the catalogue.
 
-You can save combinations of filters, known as filter sets, to re-use across
-studies. These are useful if you're running multiple studies with the same
-audience filters.
-
-There are two types of filters:
-
-- A select type filter allows you to select one or more options from a list of
-  pre-defined choices.
-- A range type filter allows you to select an upper and / or a lower bound for
-  a given participant attribute.`,
+Use this when you want to browse the full set of filters. To find filters by
+keyword, use ` + "`prolific filters search`" + ` instead.`,
 		Example: `
 List all filters in an interactive, searchable interface
-$ prolific filters
+$ prolific filters list
 
 List all filters in a non-interactive format for scripting or AI agents
-$ prolific filters -n`,
+$ prolific filters list -n`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var err error
 			if nonInteractive {

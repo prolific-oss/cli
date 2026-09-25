@@ -4,8 +4,10 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"os/signal"
 	"strings"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -26,6 +28,7 @@ import (
 	"github.com/prolific-oss/cli/cmd/project"
 	"github.com/prolific-oss/cli/cmd/researcher"
 	"github.com/prolific-oss/cli/cmd/rewardrecommendations"
+	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/cmd/study"
 	"github.com/prolific-oss/cli/cmd/submission"
 	"github.com/prolific-oss/cli/cmd/survey"
@@ -52,8 +55,13 @@ func Execute() {
 	// Build the root command
 	cmd := NewRootCommand()
 
+	// Cancel the command context on interrupt so child processes such as a
+	// pager are terminated with the CLI.
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
 	// Execute the application
-	if err := cmd.Execute(); err != nil {
+	if err := cmd.ExecuteContext(ctx); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
@@ -73,6 +81,7 @@ func NewRootCommand() *cobra.Command {
 	client := client.New()
 
 	cmd.PersistentFlags().StringVar(&client.Skill, "skill", "", "Optional identifier for the AI skill/workflow invoking this command; folded into the User-Agent header sent with API requests")
+	cmd.PersistentFlags().Bool(shared.NoPagerFlag, false, "Do not pipe long output into a pager")
 
 	w := os.Stdout
 
@@ -84,7 +93,7 @@ func NewRootCommand() *cobra.Command {
 		credentials.NewCredentialsCommand(&client, w),
 		eligibilitycount.NewCountCommand(&client, w),
 		feedback.NewFeedbackCommand(&client, w),
-		filters.NewListCommand(&client, w),
+		filters.NewFiltersCommand(&client, w),
 		filtersets.NewFilterSetCommand(&client, w),
 		hook.NewHookCommand(&client, w),
 		invitation.NewInvitationCommand(&client, w),

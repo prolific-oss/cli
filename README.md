@@ -30,7 +30,7 @@ Available Commands:
   credentials   Manage credential pools
   feedback      View participant feedback for your studies
   filter-sets   Manage and view your filter sets
-  filters       List all filters available for your study
+  filters       Browse and search the filters available for your study
   help          Help about any command
   hook          Manage and view your hook subscriptions
   invitation    Manage workspace invitations
@@ -257,6 +257,7 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 | Operation | Method | Path | Coverage |
 |---|---|---|---|
 | `filters_GetFilters` | GET | `/api/v1/filters/` | ✅ `GetFilters` |
+| `filters_SearchFilters` | — | — | 🕒 `SearchFilters` — live endpoint, awaiting publication in the spec |
 | `filters_GetEligibleCount` | POST | `/api/v1/eligibility-count/` | ✅ `GetEligibilityCount` |
 
 </details>
