@@ -1,0 +1,15 @@
+{
+  "filters": [
+    {
+      "filter_id": "age",
+      "selected_range": {
+        "lower": 18,
+        "upper": 30
+      }
+    },
+    {
+      "filter_id": "sex",
+      "selected_values": ["0"]
+    }
+  ]
+}
