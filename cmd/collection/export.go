@@ -36,8 +36,11 @@ var downloadClient = http.DefaultClient
 
 // ExportOptions is the options for the collection export command.
 type ExportOptions struct {
-	Args   []string
-	Output string
+	Args    []string
+	Output  string
+	StudyID string
+	From    string
+	To      string
 }
 
 // NewExportCommand creates a new `collection export` command to export a
@@ -60,7 +63,14 @@ the resulting ZIP file. The archive contains:
   - files/           — participant-uploaded files (if any)
 
 The export is generated asynchronously. This command will poll until the
-archive is ready and then download it automatically.`,
+archive is ready and then download it automatically.
+
+Use --study-id, --from, and/or --to to narrow the export to a subset of
+responses. Combining them applies all filters together (AND): --study-id
+restricts the export to a specific Study, while --from/--to restrict it to
+responses whose created_at falls within an ISO 8601 datetime range (--from
+is inclusive, --to is exclusive). Omit all three for a full, unfiltered
+export.`,
 		Example: `
 Export a collection to the default filename (<collection-id>-export-<timestamp>.zip):
 
@@ -69,6 +79,14 @@ $ prolific collection export 5f8e3c2a-1d4b-4e6f-9a7c-2b0d8f3e1c5a
 Export to a custom output path:
 
 $ prolific collection export 5f8e3c2a-1d4b-4e6f-9a7c-2b0d8f3e1c5a --output /tmp/my-export.zip
+
+Export only responses for a specific study:
+
+$ prolific collection export 5f8e3c2a-1d4b-4e6f-9a7c-2b0d8f3e1c5a --study-id 60d3b2f1a2b3c4d5e6f7a8b9
+
+Export only responses created in a date range:
+
+$ prolific collection export 5f8e3c2a-1d4b-4e6f-9a7c-2b0d8f3e1c5a --from 2024-01-01T00:00:00Z --to 2024-02-01T00:00:00Z
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
@@ -86,6 +104,14 @@ $ prolific collection export 5f8e3c2a-1d4b-4e6f-9a7c-2b0d8f3e1c5a --output /tmp/
 	}
 
 	cmd.Flags().StringVarP(&opts.Output, "output", "o", "", "Output file path (default: <collection-id>-export.zip)")
+	cmd.Flags().StringVar(&opts.StudyID, "study-id", "", "Restrict the export to responses submitted under this Study ID")
+	cmd.Flags().StringVar(&opts.From, "from", "", "Restrict the export to responses created on or after this ISO 8601 datetime (inclusive)")
+	cmd.Flags().StringVar(&opts.To, "to", "", "Restrict the export to responses created before this ISO 8601 datetime (exclusive)")
+
+	cmd.AddCommand(
+		NewExportListCommand(c, w),
+		NewExportDeleteCommand(c, w),
+	)
 
 	return cmd
 }
@@ -96,7 +122,8 @@ func exportCollection(c client.API, opts ExportOptions, w io.Writer) error {
 	fmt.Fprintf(w, "Requesting export for collection %s...\n", collectionID)
 
 	// Step 1: POST to initiate the export job.
-	initResult, err := c.InitiateCollectionExport(collectionID)
+	filter := client.ExportFilter{StudyID: opts.StudyID, From: opts.From, To: opts.To}
+	initResult, err := c.InitiateCollectionExport(collectionID, filter)
 	if err != nil {
 		if shared.IsFeatureNotEnabledError(err) {
 			ui.RenderFeatureAccessMessage(FeatureNameAITBCollection, FeatureContactURLAITBCollection)

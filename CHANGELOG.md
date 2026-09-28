@@ -4,6 +4,11 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+### AI Task Builder
+
+- Support export slicing: `aitaskbuilder batch export` and `collection export` accept `--study-id`, `--from`, and `--to` to narrow an export to a subset of responses
+- Add `aitaskbuilder batch export list`/`delete` and `collection export list`/`delete` subcommands to list and remove export jobs
+
 ## 1.2.5
 
 - Maintenance and dependency updates
