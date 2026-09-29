@@ -331,6 +331,8 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 | `aiTaskBuilder_GetBatchSyncStatus` | GET | `/api/v1/data-collection/batches/{batch_id}/syncs/{sync_id}` | ✅ `GetAITaskBuilderBatchSyncStatus` |
 | `aiTaskBuilder_RequestBatchExport` | POST | `/api/v1/data-collection/batches/{batch_id}/export` | ✅ `InitiateBatchExport` |
 | `aiTaskBuilder_GetBatchExportStatus` | GET | `/api/v1/data-collection/batches/{batch_id}/export/{export_id}` | ✅ `GetBatchExportStatus` |
+| `aiTaskBuilder_ListBatchExportJobs` | GET | `/api/v1/data-collection/batches/{batch_id}/export` | ➖ Not exposed in the CLI |
+| `aiTaskBuilder_DeleteBatchExport` | DELETE | `/api/v1/data-collection/batches/{batch_id}/export/{export_id}` | ➖ Not exposed in the CLI |
 
 </details>
 
@@ -373,6 +375,8 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 | `aiTaskBuilder_GetCollectionResponses` | GET | `/api/v1/data-collection/collections/{collection_id}/responses` | ➖ Not exposed in the CLI |
 | `aiTaskBuilder_RequestCollectionExport` | POST | `/api/v1/data-collection/collections/{collection_id}/export` | ✅ `InitiateCollectionExport` |
 | `aiTaskBuilder_GetCollectionExportStatus` | GET | `/api/v1/data-collection/collections/{collection_id}/export/{export_id}` | ✅ `GetCollectionExportStatus` |
+| `aiTaskBuilder_ListCollectionExportJobs` | GET | `/api/v1/data-collection/collections/{collection_id}/export` | ➖ Not exposed in the CLI |
+| `aiTaskBuilder_DeleteCollectionExport` | DELETE | `/api/v1/data-collection/collections/{collection_id}/export/{export_id}` | ➖ Not exposed in the CLI |
 
 </details>
 

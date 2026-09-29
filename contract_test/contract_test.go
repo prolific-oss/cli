@@ -197,6 +197,8 @@ var operations = []operation{
 	{operationID: "aiTaskBuilder_GetBatchSyncStatus", call: func(c *client.Client) { c.GetAITaskBuilderBatchSyncStatus("batch-id", "sync-id") }},
 	{operationID: "aiTaskBuilder_RequestBatchExport", call: func(c *client.Client) { c.InitiateBatchExport("batch-id") }},
 	{operationID: "aiTaskBuilder_GetBatchExportStatus", call: func(c *client.Client) { c.GetBatchExportStatus("batch-id", "export-id") }},
+	{operationID: "aiTaskBuilder_ListBatchExportJobs", skip: "OUTOFSCOPE: no CLI command for listing a batch's export jobs"},
+	{operationID: "aiTaskBuilder_DeleteBatchExport", skip: "OUTOFSCOPE: no CLI command for deleting a batch export"},
 
 	// AI Task Builder — Datasets
 	{operationID: "aiTaskBuilder_CreateTaskBuilderDataset", call: func(c *client.Client) {
@@ -244,6 +246,8 @@ var operations = []operation{
 	{operationID: "aiTaskBuilder_GetCollectionExportStatus", call: func(c *client.Client) {
 		c.GetCollectionExportStatus("coll-id", "export-id")
 	}},
+	{operationID: "aiTaskBuilder_ListCollectionExportJobs", skip: "OUTOFSCOPE: no CLI command for listing a collection's export jobs"},
+	{operationID: "aiTaskBuilder_DeleteCollectionExport", skip: "OUTOFSCOPE: no CLI command for deleting a collection export"},
 
 	// Invitations
 	{operationID: "invitations_CreateInvitation", call: func(c *client.Client) {
