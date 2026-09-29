@@ -20,6 +20,7 @@ const PrivacyThreshold = 5
 // CountOptions is the options for the count command.
 type CountOptions struct {
 	TemplatePath string
+	FiltersJSON  string
 	FilterSetID  string
 	WorkspaceID  string
 	JSON         bool
@@ -53,20 +54,23 @@ func NewCountCommand(client client.API, w io.Writer) *cobra.Command {
 		Long: `Count how many participants would be eligible for a study defined by a
 set of filters, without creating the study or saving a filter set.
 
-Count either an unsaved set of filters with -t/--template-path, or a
-saved filter set with --filter-set.
+Count either an unsaved set of filters with -t/--template-path or
+--filters, or a saved filter set with --filter-set.
 
 Counts below 5 are reported as 0 by the Prolific API, to protect
 participant privacy. A count of 0 may mean either "zero eligible" or
 "somewhere between 1 and 4 eligible" — the CLI cannot tell these apart.
 
-A template holds a flat list of filters, which the API combines with AND.
-The API also supports nested and/or filter groups, but those cannot yet be
-expressed in a CLI template.`,
+Filters are a flat list, which the API combines with AND. The API also
+supports nested and/or filter groups, but those cannot yet be expressed
+via -t/--template-path or --filters.`,
 		Example: `
 Count participants matching the filters in a JSON/YAML file (see
 "prolific study create --help" for the filter format)
 $ prolific audience count -t /path/to/filters.json -w <workspace-id>
+
+Count participants matching filters given directly as a flag
+$ prolific audience count --filters '[{"filter_id":"age","selected_range":{"lower":18,"upper":65}}]' -w <workspace-id>
 
 Count participants matching a saved filter set
 $ prolific audience count --filter-set <filter-set-id>
@@ -74,15 +78,18 @@ $ prolific audience count --filter-set <filter-set-id>
 Emit machine-readable output for scripting
 $ prolific audience count -t /path/to/filters.json -w <workspace-id> --json`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if opts.TemplatePath == "" && opts.FilterSetID == "" {
-				return fmt.Errorf("error: a filter template or a filter set is required, use -t/--template-path or --filter-set")
+			usingTemplate := opts.TemplatePath != ""
+			usingFlags := opts.FiltersJSON != ""
+			usingFilterSet := opts.FilterSetID != ""
+
+			switch {
+			case usingTemplate && usingFlags, usingTemplate && usingFilterSet, usingFlags && usingFilterSet:
+				return fmt.Errorf("error: use only one of -t/--template-path, --filters, or --filter-set")
+			case !usingTemplate && !usingFlags && !usingFilterSet:
+				return fmt.Errorf("error: a filter template, --filters, or a filter set is required, use -t/--template-path, --filters, or --filter-set")
 			}
 
-			if opts.TemplatePath != "" && opts.FilterSetID != "" {
-				return fmt.Errorf("error: -t/--template-path and --filter-set cannot be used together")
-			}
-
-			if opts.TemplatePath != "" && opts.WorkspaceID == "" {
+			if (usingTemplate || usingFlags) && opts.WorkspaceID == "" {
 				return fmt.Errorf("error: workspace ID is required")
 			}
 
@@ -104,6 +111,7 @@ $ prolific audience count -t /path/to/filters.json -w <workspace-id> --json`,
 
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.TemplatePath, "template-path", "t", "", "Path to a YAML/JSON file containing the filters to count against.")
+	flags.StringVar(&opts.FiltersJSON, "filters", "", `JSON array of filters to count against, e.g. '[{"filter_id":"age","selected_range":{"lower":18,"upper":65}}]'. Alternative to -t/--template-path.`)
 	flags.StringVar(&opts.FilterSetID, "filter-set", "", "ID of a saved filter set to count, instead of a template.")
 	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "The workspace ID to count eligible participants for (required with -t/--template-path).")
 	// -j is bound by hand rather than through shared.AddOutputFlags, which
@@ -123,15 +131,22 @@ func getCount(c client.API, opts CountOptions) (int, error) {
 		return filterSet.EligibleParticipantCount, nil
 	}
 
-	v := viper.New()
-	v.SetConfigFile(opts.TemplatePath)
-	if err := v.ReadInConfig(); err != nil {
-		return 0, err
-	}
-
 	var tmpl countTemplate
-	if err := v.Unmarshal(&tmpl); err != nil {
-		return 0, fmt.Errorf("unable to map %s to filters: %s", opts.TemplatePath, err)
+
+	if opts.FiltersJSON != "" {
+		if err := json.Unmarshal([]byte(opts.FiltersJSON), &tmpl.Filters); err != nil {
+			return 0, fmt.Errorf("unable to parse --filters as JSON: %s", err)
+		}
+	} else {
+		v := viper.New()
+		v.SetConfigFile(opts.TemplatePath)
+		if err := v.ReadInConfig(); err != nil {
+			return 0, err
+		}
+
+		if err := v.Unmarshal(&tmpl); err != nil {
+			return 0, fmt.Errorf("unable to map %s to filters: %s", opts.TemplatePath, err)
+		}
 	}
 
 	// The API requires "filters" to be present and non-null, even when empty.
