@@ -110,6 +110,7 @@ $ prolific aitaskbuilder batch export 5f8e3c2a-1d4b-4e6f-9a7c-2b0d8f3e1c5a --fro
 	cmd.AddCommand(
 		NewBatchExportListCommand(c, w),
 		NewBatchExportDeleteCommand(c, w),
+		NewBatchExportDownloadCommand(c, w),
 	)
 
 	return cmd
@@ -136,14 +137,27 @@ func exportBatch(c client.API, opts BatchExportOptions, w io.Writer) error {
 		return fmt.Errorf("unexpected export status %q for batch %s", initResult.Status, batchID)
 	}
 
-	exportID := initResult.ExportID
-
 	// Step 2: Poll GET until complete or failed.
+	url, err := pollBatchExportUntilDone(c, batchID, initResult.ExportID, w)
+	if err != nil {
+		return err
+	}
+
+	return batchDownloadExport(url, opts.Output, w)
+}
+
+// pollBatchExportUntilDone polls GetBatchExportStatus for batchID/exportID
+// until the job reaches "complete" or "failed" (or the poll deadline is
+// exceeded), printing a "." to w for each poll. It returns the presigned
+// download URL on success. Shared by exportBatch (which polls a job it just
+// requested) and downloadBatchExport (which polls a pre-existing job that
+// was still generating).
+func pollBatchExportUntilDone(c client.API, batchID, exportID string, w io.Writer) (string, error) {
 	deadline := time.Now().Add(batchExportTimeout)
 
 	for {
 		if time.Now().After(deadline) {
-			return fmt.Errorf("export timed out after 10 minutes for batch %s", batchID)
+			return "", fmt.Errorf("export timed out after 10 minutes for batch %s", batchID)
 		}
 
 		fmt.Fprint(w, ".")
@@ -151,18 +165,18 @@ func exportBatch(c client.API, opts BatchExportOptions, w io.Writer) error {
 
 		pollResult, err := c.GetBatchExportStatus(batchID, exportID)
 		if err != nil {
-			return fmt.Errorf("error polling export status: %s", err.Error())
+			return "", fmt.Errorf("error polling export status: %s", err.Error())
 		}
 
 		switch pollResult.Status {
 		case batchExportStatusComplete:
-			return batchDownloadExport(pollResult.URL, opts.Output, w)
+			return pollResult.URL, nil
 		case batchExportStatusFailed:
-			return fmt.Errorf("export generation failed for batch %s", batchID)
+			return "", fmt.Errorf("export generation failed for batch %s", batchID)
 		case batchExportStatusGenerating:
 			// continue polling
 		default:
-			return fmt.Errorf("unexpected export status %q for batch %s", pollResult.Status, batchID)
+			return "", fmt.Errorf("unexpected export status %q for batch %s", pollResult.Status, batchID)
 		}
 	}
 }

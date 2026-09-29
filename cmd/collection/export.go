@@ -111,6 +111,7 @@ $ prolific collection export 5f8e3c2a-1d4b-4e6f-9a7c-2b0d8f3e1c5a --from 2024-01
 	cmd.AddCommand(
 		NewExportListCommand(c, w),
 		NewExportDeleteCommand(c, w),
+		NewExportDownloadCommand(c, w),
 	)
 
 	return cmd
@@ -141,14 +142,27 @@ func exportCollection(c client.API, opts ExportOptions, w io.Writer) error {
 		return fmt.Errorf("unexpected export status %q for collection %s", initResult.Status, collectionID)
 	}
 
-	exportID := initResult.ExportID
-
 	// Step 2: Poll GET until complete or failed.
+	url, err := pollCollectionExportUntilDone(c, collectionID, initResult.ExportID, w)
+	if err != nil {
+		return err
+	}
+
+	return downloadExport(url, opts.Output, w)
+}
+
+// pollCollectionExportUntilDone polls GetCollectionExportStatus for
+// collectionID/exportID until the job reaches "complete" or "failed" (or
+// the poll deadline is exceeded), printing a "." to w for each poll. It
+// returns the presigned download URL on success. Shared by exportCollection
+// (which polls a job it just requested) and downloadCollectionExport (which
+// polls a pre-existing job that was still generating).
+func pollCollectionExportUntilDone(c client.API, collectionID, exportID string, w io.Writer) (string, error) {
 	deadline := time.Now().Add(exportTimeout)
 
 	for {
 		if time.Now().After(deadline) {
-			return fmt.Errorf("export timed out after 10 minutes for collection %s", collectionID)
+			return "", fmt.Errorf("export timed out after 10 minutes for collection %s", collectionID)
 		}
 
 		fmt.Fprint(w, ".")
@@ -156,18 +170,18 @@ func exportCollection(c client.API, opts ExportOptions, w io.Writer) error {
 
 		pollResult, err := c.GetCollectionExportStatus(collectionID, exportID)
 		if err != nil {
-			return fmt.Errorf("error polling export status: %s", err.Error())
+			return "", fmt.Errorf("error polling export status: %s", err.Error())
 		}
 
 		switch pollResult.Status {
 		case exportStatusComplete:
-			return downloadExport(pollResult.URL, opts.Output, w)
+			return pollResult.URL, nil
 		case exportStatusFailed:
-			return fmt.Errorf("export generation failed for collection %s", collectionID)
+			return "", fmt.Errorf("export generation failed for collection %s", collectionID)
 		case exportStatusGenerating:
 			// continue polling
 		default:
-			return fmt.Errorf("unexpected export status %q for collection %s", pollResult.Status, collectionID)
+			return "", fmt.Errorf("unexpected export status %q for collection %s", pollResult.Status, collectionID)
 		}
 	}
 }

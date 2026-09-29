@@ -7,7 +7,7 @@
 ### AI Task Builder
 
 - Support export slicing: `aitaskbuilder batch export` and `collection export` accept `--study-id`, `--from`, and `--to` to narrow an export to a subset of responses
-- Add `aitaskbuilder batch export list`/`delete` and `collection export list`/`delete` subcommands to list and remove export jobs
+- Add `aitaskbuilder batch export list`/`delete`/`download` and `collection export list`/`delete`/`download` subcommands to list, remove, and (re-)download export jobs without starting a new export
 
 ## 1.2.5
 
