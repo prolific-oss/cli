@@ -331,6 +331,8 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 | `aiTaskBuilder_GetBatchSyncStatus` | GET | `/api/v1/data-collection/batches/{batch_id}/syncs/{sync_id}` | ✅ `GetAITaskBuilderBatchSyncStatus` |
 | `aiTaskBuilder_RequestBatchExport` | POST | `/api/v1/data-collection/batches/{batch_id}/export` | ✅ `InitiateBatchExport` |
 | `aiTaskBuilder_GetBatchExportStatus` | GET | `/api/v1/data-collection/batches/{batch_id}/export/{export_id}` | ✅ `GetBatchExportStatus` |
+| `aiTaskBuilder_ListBatchExportJobs` | GET | `/api/v1/data-collection/batches/{batch_id}/export` | ✅ `ListBatchExportJobs` |
+| `aiTaskBuilder_DeleteBatchExport` | DELETE | `/api/v1/data-collection/batches/{batch_id}/export/{export_id}` | ✅ `DeleteBatchExport` |
 
 </details>
 
@@ -373,6 +375,8 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 | `aiTaskBuilder_GetCollectionResponses` | GET | `/api/v1/data-collection/collections/{collection_id}/responses` | ➖ Not exposed in the CLI |
 | `aiTaskBuilder_RequestCollectionExport` | POST | `/api/v1/data-collection/collections/{collection_id}/export` | ✅ `InitiateCollectionExport` |
 | `aiTaskBuilder_GetCollectionExportStatus` | GET | `/api/v1/data-collection/collections/{collection_id}/export/{export_id}` | ✅ `GetCollectionExportStatus` |
+| `aiTaskBuilder_ListCollectionExportJobs` | GET | `/api/v1/data-collection/collections/{collection_id}/export` | ✅ `ListCollectionExportJobs` |
+| `aiTaskBuilder_DeleteCollectionExport` | DELETE | `/api/v1/data-collection/collections/{collection_id}/export/{export_id}` | ✅ `DeleteCollectionExport` |
 
 </details>
 
@@ -396,6 +400,7 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 | `messages_SendMessageToParticipantGroup` | POST | `/api/v1/messages/participant-group/` | ✅ `SendGroupMessage` |
 | `messages_GetUnreadMessages` | GET | `/api/v1/messages/unread/` | ✅ `GetUnreadMessages` |
 | `messages_GetConversations` | GET | `/api/v1/conversations/` | ➖ Not exposed in the CLI |
+| `messages_CreateConversation` | POST | `/api/v1/conversations/` | ➖ Not exposed in the CLI |
 | `messages_GetConversationMessages` | GET | `/api/v1/conversations/{conversation_id}/messages/` | ➖ Not exposed in the CLI |
 
 </details>
