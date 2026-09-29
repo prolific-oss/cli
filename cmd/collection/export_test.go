@@ -77,7 +77,7 @@ func TestExportCommandImmediateComplete(t *testing.T) {
 
 	mockClient.
 		EXPECT().
-		InitiateCollectionExport(gomock.Eq(testCollectionID)).
+		InitiateCollectionExport(gomock.Eq(testCollectionID), gomock.Eq(client.ExportFilter{})).
 		Return(&client.CollectionExportResponse{
 			Status:    "complete",
 			URL:       srv.URL + "/export.zip",
@@ -128,7 +128,7 @@ func TestExportCommandPollingToComplete(t *testing.T) {
 	mockClient := mock_client.NewMockAPI(ctrl)
 
 	mockClient.EXPECT().
-		InitiateCollectionExport(gomock.Eq(testCollectionID)).
+		InitiateCollectionExport(gomock.Eq(testCollectionID), gomock.Eq(client.ExportFilter{})).
 		Return(&client.CollectionExportResponse{
 			Status:   "generating",
 			ExportID: testExportID,
@@ -178,7 +178,7 @@ func TestExportCommandFailedStatus(t *testing.T) {
 	mockClient := mock_client.NewMockAPI(ctrl)
 
 	mockClient.EXPECT().
-		InitiateCollectionExport(gomock.Eq(testCollectionID)).
+		InitiateCollectionExport(gomock.Eq(testCollectionID), gomock.Eq(client.ExportFilter{})).
 		Return(&client.CollectionExportResponse{
 			Status:   "generating",
 			ExportID: testExportID,
@@ -210,7 +210,7 @@ func TestExportCommandInitiateError(t *testing.T) {
 	mockClient := mock_client.NewMockAPI(ctrl)
 
 	mockClient.EXPECT().
-		InitiateCollectionExport(gomock.Eq(testCollectionID)).
+		InitiateCollectionExport(gomock.Eq(testCollectionID), gomock.Eq(client.ExportFilter{})).
 		Return(nil, errors.New("network error")).
 		Times(1)
 
@@ -225,6 +225,58 @@ func TestExportCommandInitiateError(t *testing.T) {
 	}
 }
 
+// TestExportCommandWithFilterFlags covers passing --study-id, --from, and
+// --to flags, ensuring they are forwarded as a client.ExportFilter.
+func TestExportCommandWithFilterFlags(t *testing.T) {
+	zipContent := []byte("PK\x03\x04fake zip content")
+	srv := newZIPServer(t, zipContent)
+	defer collection.SetDownloadClientForTesting(srv.Client())()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockClient := mock_client.NewMockAPI(ctrl)
+
+	wantFilter := client.ExportFilter{
+		StudyID: "study-id-123",
+		From:    "2024-01-01T00:00:00Z",
+		To:      "2024-02-01T00:00:00Z",
+	}
+
+	mockClient.
+		EXPECT().
+		InitiateCollectionExport(gomock.Eq(testCollectionID), gomock.Eq(wantFilter)).
+		Return(&client.CollectionExportResponse{
+			Status:    "complete",
+			URL:       srv.URL + "/export.zip",
+			ExpiresAt: "2099-01-01T00:00:00Z",
+		}, nil).
+		Times(1)
+
+	outputPath := filepath.Join(t.TempDir(), "filtered-export.zip")
+
+	var b bytes.Buffer
+	w := bufio.NewWriter(&b)
+	cmd := collection.NewExportCommand(mockClient, w)
+	if err := cmd.Flags().Set("output", outputPath); err != nil {
+		t.Fatalf("failed to set output flag: %v", err)
+	}
+	if err := cmd.Flags().Set("study-id", wantFilter.StudyID); err != nil {
+		t.Fatalf("failed to set study-id flag: %v", err)
+	}
+	if err := cmd.Flags().Set("from", wantFilter.From); err != nil {
+		t.Fatalf("failed to set from flag: %v", err)
+	}
+	if err := cmd.Flags().Set("to", wantFilter.To); err != nil {
+		t.Fatalf("failed to set to flag: %v", err)
+	}
+
+	err := cmd.RunE(cmd, []string{testCollectionID})
+	w.Flush()
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+}
+
 func TestExportCommandDefaultOutputPath(t *testing.T) {
 	zipContent := []byte("PK\x03\x04fake zip content")
 	srv := newZIPServer(t, zipContent)
@@ -235,7 +287,7 @@ func TestExportCommandDefaultOutputPath(t *testing.T) {
 	mockClient := mock_client.NewMockAPI(ctrl)
 
 	mockClient.EXPECT().
-		InitiateCollectionExport(gomock.Eq(testCollectionID)).
+		InitiateCollectionExport(gomock.Eq(testCollectionID), gomock.Eq(client.ExportFilter{})).
 		Return(&client.CollectionExportResponse{
 			Status:    "complete",
 			URL:       srv.URL + "/export.zip",

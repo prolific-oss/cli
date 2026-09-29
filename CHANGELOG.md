@@ -15,6 +15,11 @@
   - `audience count` reports the privacy floor as 5 rather than the 25 stated by
     the removed command; the API obscures counts below 5.
 
+### AI Task Builder
+
+- Support export slicing: `aitaskbuilder batch export` and `collection export` accept `--study-id`, `--from`, and `--to` to narrow an export to a subset of responses
+- Add `aitaskbuilder batch export list`/`delete`/`download` and `collection export list`/`delete`/`download` subcommands to list, remove, and (re-)download export jobs without starting a new export
+
 ## 1.2.5
 
 - Maintenance and dependency updates
