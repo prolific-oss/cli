@@ -34,8 +34,11 @@ var batchExportDownloadClient = http.DefaultClient
 
 // BatchExportOptions holds the options for the batch export command.
 type BatchExportOptions struct {
-	Args   []string
-	Output string
+	Args    []string
+	Output  string
+	StudyID string
+	From    string
+	To      string
 }
 
 // NewBatchExportCommand creates a new `aitaskbuilder batch export` command to
@@ -59,7 +62,14 @@ the resulting ZIP file. The archive contains:
   - files/                         — participant-uploaded files (if any)
 
 The export is generated asynchronously. This command will poll until the
-archive is ready and then download it automatically.`,
+archive is ready and then download it automatically.
+
+Use --study-id, --from, and/or --to to narrow the export to a subset of
+responses. Combining them applies all filters together (AND): --study-id
+restricts the export to a specific Study, while --from/--to restrict it to
+responses whose created_at falls within an ISO 8601 datetime range (--from
+is inclusive, --to is exclusive). Omit all three for a full, unfiltered
+export.`,
 		Example: `
 Export a batch to the default filename (<batch-id>-export-<timestamp>.zip):
 
@@ -68,6 +78,14 @@ $ prolific aitaskbuilder batch export 5f8e3c2a-1d4b-4e6f-9a7c-2b0d8f3e1c5a
 Export to a custom output path:
 
 $ prolific aitaskbuilder batch export 5f8e3c2a-1d4b-4e6f-9a7c-2b0d8f3e1c5a --output /tmp/my-export.zip
+
+Export only responses for a specific study:
+
+$ prolific aitaskbuilder batch export 5f8e3c2a-1d4b-4e6f-9a7c-2b0d8f3e1c5a --study-id 60d3b2f1a2b3c4d5e6f7a8b9
+
+Export only responses created in a date range:
+
+$ prolific aitaskbuilder batch export 5f8e3c2a-1d4b-4e6f-9a7c-2b0d8f3e1c5a --from 2024-01-01T00:00:00Z --to 2024-02-01T00:00:00Z
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
@@ -85,6 +103,15 @@ $ prolific aitaskbuilder batch export 5f8e3c2a-1d4b-4e6f-9a7c-2b0d8f3e1c5a --out
 	}
 
 	cmd.Flags().StringVarP(&opts.Output, "output", "o", "", "Output file path (default: <batch-id>-export-<timestamp>.zip)")
+	cmd.Flags().StringVar(&opts.StudyID, "study-id", "", "Restrict the export to responses submitted under this Study ID")
+	cmd.Flags().StringVar(&opts.From, "from", "", "Restrict the export to responses created on or after this ISO 8601 datetime (inclusive)")
+	cmd.Flags().StringVar(&opts.To, "to", "", "Restrict the export to responses created before this ISO 8601 datetime (exclusive)")
+
+	cmd.AddCommand(
+		NewBatchExportListCommand(c, w),
+		NewBatchExportDeleteCommand(c, w),
+		NewBatchExportDownloadCommand(c, w),
+	)
 
 	return cmd
 }
@@ -95,7 +122,8 @@ func exportBatch(c client.API, opts BatchExportOptions, w io.Writer) error {
 	fmt.Fprintf(w, "Requesting export for batch %s...\n", batchID)
 
 	// Step 1: POST to initiate the export job.
-	initResult, err := c.InitiateBatchExport(batchID)
+	filter := client.ExportFilter{StudyID: opts.StudyID, From: opts.From, To: opts.To}
+	initResult, err := c.InitiateBatchExport(batchID, filter)
 	if err != nil {
 		return fmt.Errorf("error requesting export: %s", err.Error())
 	}
@@ -109,14 +137,27 @@ func exportBatch(c client.API, opts BatchExportOptions, w io.Writer) error {
 		return fmt.Errorf("unexpected export status %q for batch %s", initResult.Status, batchID)
 	}
 
-	exportID := initResult.ExportID
-
 	// Step 2: Poll GET until complete or failed.
+	url, err := pollBatchExportUntilDone(c, batchID, initResult.ExportID, w)
+	if err != nil {
+		return err
+	}
+
+	return batchDownloadExport(url, opts.Output, w)
+}
+
+// pollBatchExportUntilDone polls GetBatchExportStatus for batchID/exportID
+// until the job reaches "complete" or "failed" (or the poll deadline is
+// exceeded), printing a "." to w for each poll. It returns the presigned
+// download URL on success. Shared by exportBatch (which polls a job it just
+// requested) and downloadBatchExport (which polls a pre-existing job that
+// was still generating).
+func pollBatchExportUntilDone(c client.API, batchID, exportID string, w io.Writer) (string, error) {
 	deadline := time.Now().Add(batchExportTimeout)
 
 	for {
 		if time.Now().After(deadline) {
-			return fmt.Errorf("export timed out after 10 minutes for batch %s", batchID)
+			return "", fmt.Errorf("export timed out after 10 minutes for batch %s", batchID)
 		}
 
 		fmt.Fprint(w, ".")
@@ -124,18 +165,18 @@ func exportBatch(c client.API, opts BatchExportOptions, w io.Writer) error {
 
 		pollResult, err := c.GetBatchExportStatus(batchID, exportID)
 		if err != nil {
-			return fmt.Errorf("error polling export status: %s", err.Error())
+			return "", fmt.Errorf("error polling export status: %s", err.Error())
 		}
 
 		switch pollResult.Status {
 		case batchExportStatusComplete:
-			return batchDownloadExport(pollResult.URL, opts.Output, w)
+			return pollResult.URL, nil
 		case batchExportStatusFailed:
-			return fmt.Errorf("export generation failed for batch %s", batchID)
+			return "", fmt.Errorf("export generation failed for batch %s", batchID)
 		case batchExportStatusGenerating:
 			// continue polling
 		default:
-			return fmt.Errorf("unexpected export status %q for batch %s", pollResult.Status, batchID)
+			return "", fmt.Errorf("unexpected export status %q for batch %s", pollResult.Status, batchID)
 		}
 	}
 }
