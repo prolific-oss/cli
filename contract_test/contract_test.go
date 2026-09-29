@@ -195,7 +195,13 @@ var operations = []operation{
 	{operationID: "aiTaskBuilder_DuplicateTaskBuilderBatch", skip: "OUTOFSCOPE: no CLI command for duplicating a batch"},
 	{operationID: "aiTaskBuilder_SyncTaskBuilderBatch", call: func(c *client.Client) { c.SyncAITaskBuilderBatch("batch-id") }},
 	{operationID: "aiTaskBuilder_GetBatchSyncStatus", call: func(c *client.Client) { c.GetAITaskBuilderBatchSyncStatus("batch-id", "sync-id") }},
-	{operationID: "aiTaskBuilder_RequestBatchExport", call: func(c *client.Client) { c.InitiateBatchExport("batch-id", client.ExportFilter{}) }},
+	{operationID: "aiTaskBuilder_RequestBatchExport", call: func(c *client.Client) {
+		c.InitiateBatchExport("batch-id", client.ExportFilter{
+			StudyID: "study-id",
+			From:    "2024-01-01T00:00:00Z",
+			To:      "2024-02-01T00:00:00Z",
+		})
+	}},
 	{operationID: "aiTaskBuilder_GetBatchExportStatus", call: func(c *client.Client) { c.GetBatchExportStatus("batch-id", "export-id") }},
 	{operationID: "aiTaskBuilder_ListBatchExportJobs", call: func(c *client.Client) { c.ListBatchExportJobs("batch-id") }},
 	{operationID: "aiTaskBuilder_DeleteBatchExport", call: func(c *client.Client) { c.DeleteBatchExport("batch-id", "export-id") }},
@@ -242,7 +248,13 @@ var operations = []operation{
 		})
 	}},
 	{operationID: "aiTaskBuilder_GetCollectionResponses", skip: "OUTOFSCOPE: no CLI command for getting collection responses"},
-	{operationID: "aiTaskBuilder_RequestCollectionExport", call: func(c *client.Client) { c.InitiateCollectionExport("coll-id", client.ExportFilter{}) }},
+	{operationID: "aiTaskBuilder_RequestCollectionExport", call: func(c *client.Client) {
+		c.InitiateCollectionExport("coll-id", client.ExportFilter{
+			StudyID: "study-id",
+			From:    "2024-01-01T00:00:00Z",
+			To:      "2024-02-01T00:00:00Z",
+		})
+	}},
 	{operationID: "aiTaskBuilder_GetCollectionExportStatus", call: func(c *client.Client) {
 		c.GetCollectionExportStatus("coll-id", "export-id")
 	}},

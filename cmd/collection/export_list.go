@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"strings"
-	"text/tabwriter"
 
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/shared"
@@ -15,7 +14,8 @@ import (
 
 // ExportListOptions is the options for the collection export list command.
 type ExportListOptions struct {
-	Args []string
+	Args   []string
+	Output shared.OutputOptions
 }
 
 // NewExportListCommand creates a new `collection export list` command to
@@ -37,6 +37,15 @@ once.`,
 List all export jobs for a collection:
 
 $ prolific collection export list 5f8e3c2a-1d4b-4e6f-9a7c-2b0d8f3e1c5a
+
+You can output as a table
+$ prolific collection export list 5f8e3c2a-1d4b-4e6f-9a7c-2b0d8f3e1c5a --table
+
+You can output as CSV
+$ prolific collection export list 5f8e3c2a-1d4b-4e6f-9a7c-2b0d8f3e1c5a --csv
+
+You can output as JSON
+$ prolific collection export list 5f8e3c2a-1d4b-4e6f-9a7c-2b0d8f3e1c5a --json
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
@@ -48,6 +57,8 @@ $ prolific collection export list 5f8e3c2a-1d4b-4e6f-9a7c-2b0d8f3e1c5a
 			return listCollectionExports(c, opts, w)
 		},
 	}
+
+	shared.AddOutputFlags(cmd, &opts.Output)
 
 	return cmd
 }
@@ -64,18 +75,29 @@ func listCollectionExports(c client.API, opts ExportListOptions, w io.Writer) er
 		return fmt.Errorf("error listing exports: %s", err.Error())
 	}
 
-	if len(jobs) == 0 {
-		fmt.Fprintf(w, "No export jobs found for collection %s\n", collectionID)
-		return nil
+	switch shared.ResolveFormat(opts.Output) {
+	case "json":
+		r := ui.JSONRenderer[client.ExportJobListItem]{}
+		if err := r.Render(jobs, w); err != nil {
+			return fmt.Errorf("error: %s", err)
+		}
+	case "csv":
+		r := ui.CsvRenderer[ExportListItem]{}
+		if err := r.Render(NewExportListItems(jobs), ExportListFields, w); err != nil {
+			return fmt.Errorf("error: %s", err)
+		}
+	default:
+		if len(jobs) == 0 {
+			fmt.Fprintf(w, "No export jobs found for collection %s\n", collectionID)
+			return nil
+		}
+		r := ui.TableRenderer[ExportListItem]{}
+		if err := r.Render(NewExportListItems(jobs), ExportListFields, w); err != nil {
+			return fmt.Errorf("error: %s", err)
+		}
 	}
 
-	tw := tabwriter.NewWriter(w, 0, 1, 1, ' ', 0)
-	fmt.Fprintf(tw, "%s\t%s\t%s\t%s\n", "Export ID", "Filter", "Status", "Created At")
-	for _, job := range jobs {
-		fmt.Fprintf(tw, "%s\t%s\t%s\t%s\n", job.ExportID, formatExportJobFilter(job.Filter), job.Status, job.CreatedAt)
-	}
-
-	return tw.Flush()
+	return nil
 }
 
 // formatExportJobFilter renders an export job's filter as a short,
