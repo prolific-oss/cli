@@ -284,6 +284,7 @@ var operations = []operation{
 	}},
 	{operationID: "messages_GetUnreadMessages", call: func(c *client.Client) { c.GetUnreadMessages() }},
 	{operationID: "messages_GetConversations", skip: "OUTOFSCOPE: no CLI command for listing conversations"},
+	{operationID: "messages_CreateConversation", skip: "OUTOFSCOPE: no CLI command for starting a conversation"},
 	{operationID: "messages_GetConversationMessages", skip: "OUTOFSCOPE: no CLI command for retrieving conversation messages"},
 
 	// Studies
