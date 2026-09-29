@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"errors"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -111,13 +110,15 @@ func TestBreakdownCommandRendersBreakdown(t *testing.T) {
 	}
 }
 
-func TestBreakdownCommandReadsTemplateFromStdin(t *testing.T) {
+func TestBreakdownCommandRendersBreakdownFromFlags(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
 	expectedPayload := client.FilterBreakdownPayload{
-		Filters:         []model.Filter{},
+		Filters: []model.Filter{
+			{FilterID: "age", SelectedRange: &model.FilterRange{Lower: float64(18), Upper: float64(65)}},
+		},
 		BreakdownFilter: model.Filter{FilterID: "handedness"},
 		WorkspaceID:     "ws-id",
 	}
@@ -132,9 +133,9 @@ func TestBreakdownCommandReadsTemplateFromStdin(t *testing.T) {
 	writer := bufio.NewWriter(&b)
 
 	cmd := audience.NewBreakdownCommand(c, writer)
-	_ = cmd.Flags().Set("template-path", "-")
+	_ = cmd.Flags().Set("filters", `[{"filter_id":"age","selected_range":{"lower":18,"upper":65}}]`)
+	_ = cmd.Flags().Set("breakdown", `{"filter_id":"handedness"}`)
 	_ = cmd.Flags().Set("workspace", "ws-id")
-	cmd.SetIn(strings.NewReader(`{"filters": [], "breakdown_filter": {"filter_id": "handedness"}}`))
 
 	if err := cmd.RunE(cmd, nil); err != nil {
 		t.Fatalf("unexpected error: %s", err)
@@ -148,22 +149,64 @@ func TestBreakdownCommandReadsTemplateFromStdin(t *testing.T) {
 	}
 }
 
-func TestBreakdownCommandHandlesMalformedStdinTemplate(t *testing.T) {
+func TestBreakdownCommandFlagsWithoutFiltersSendsEmptySlice(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
+
+	expectedPayload := client.FilterBreakdownPayload{
+		Filters:         []model.Filter{},
+		BreakdownFilter: model.Filter{FilterID: "handedness"},
+		WorkspaceID:     "ws-id",
+	}
+
+	c.
+		EXPECT().
+		GetFilterBreakdown(gomock.Eq(expectedPayload)).
+		Return(&client.FilterBreakdownResponse{Breakdown: map[string]int{}}, nil).
+		Times(1)
 
 	var b bytes.Buffer
 	writer := bufio.NewWriter(&b)
 
 	cmd := audience.NewBreakdownCommand(c, writer)
-	_ = cmd.Flags().Set("template-path", "-")
+	_ = cmd.Flags().Set("breakdown", `{"filter_id":"handedness"}`)
 	_ = cmd.Flags().Set("workspace", "ws-id")
-	cmd.SetIn(strings.NewReader("not json"))
 
-	err := cmd.RunE(cmd, nil)
-	if err == nil {
-		t.Fatal("expected an error, got nil")
+	if err := cmd.RunE(cmd, nil); err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+}
+
+func TestBreakdownCommandHandlesMalformedFlagJSON(t *testing.T) {
+	tests := []struct {
+		name      string
+		filters   string
+		breakdown string
+	}{
+		{name: "malformed --filters", filters: "not json", breakdown: `{"filter_id":"handedness"}`},
+		{name: "malformed --breakdown", filters: "[]", breakdown: "not json"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			c := mock_client.NewMockAPI(ctrl)
+
+			var b bytes.Buffer
+			writer := bufio.NewWriter(&b)
+
+			cmd := audience.NewBreakdownCommand(c, writer)
+			_ = cmd.Flags().Set("filters", tt.filters)
+			_ = cmd.Flags().Set("breakdown", tt.breakdown)
+			_ = cmd.Flags().Set("workspace", "ws-id")
+
+			err := cmd.RunE(cmd, nil)
+			if err == nil {
+				t.Fatal("expected an error, got nil")
+			}
+		})
 	}
 }
 
@@ -204,13 +247,28 @@ func TestBreakdownCommandValidatesInput(t *testing.T) {
 	tests := []struct {
 		name          string
 		templateJSON  string // empty means -t/--template-path is left unset
+		filtersJSON   string
+		breakdownJSON string
 		workspaceID   string
 		expectedError string
 	}{
 		{
-			name:          "missing template path",
+			name:          "neither template nor flags",
 			workspaceID:   "ws-id",
-			expectedError: "error: a filter template is required, use -t/--template-path",
+			expectedError: "error: provide filters via -t/--template-path or --filters/--breakdown",
+		},
+		{
+			name:          "template and flags both given",
+			templateJSON:  `{"breakdown_filter": {"filter_id": "handedness"}}`,
+			breakdownJSON: `{"filter_id": "handedness"}`,
+			workspaceID:   "ws-id",
+			expectedError: "error: use either -t/--template-path or --filters/--breakdown, not both",
+		},
+		{
+			name:          "filters given without breakdown",
+			filtersJSON:   "[]",
+			workspaceID:   "ws-id",
+			expectedError: "error: --breakdown is required when using --filters",
 		},
 		{
 			name:          "missing workspace",
@@ -218,10 +276,16 @@ func TestBreakdownCommandValidatesInput(t *testing.T) {
 			expectedError: "error: workspace ID is required",
 		},
 		{
-			name:          "missing breakdown filter",
+			name:          "missing breakdown filter in template",
 			templateJSON:  `{"filters": []}`,
 			workspaceID:   "ws-id",
-			expectedError: "error: template must include a breakdown_filter with a filter_id",
+			expectedError: "error: breakdown filter must include a filter_id",
+		},
+		{
+			name:          "missing breakdown filter_id via flags",
+			breakdownJSON: `{}`,
+			workspaceID:   "ws-id",
+			expectedError: "error: breakdown filter must include a filter_id",
 		},
 	}
 
@@ -237,6 +301,12 @@ func TestBreakdownCommandValidatesInput(t *testing.T) {
 
 			if tt.templateJSON != "" {
 				_ = cmd.Flags().Set("template-path", mustWriteTempTemplate(t, tt.templateJSON))
+			}
+			if tt.filtersJSON != "" {
+				_ = cmd.Flags().Set("filters", tt.filtersJSON)
+			}
+			if tt.breakdownJSON != "" {
+				_ = cmd.Flags().Set("breakdown", tt.breakdownJSON)
 			}
 			_ = cmd.Flags().Set("workspace", tt.workspaceID)
 
