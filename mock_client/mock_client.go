@@ -348,6 +348,34 @@ func (mr *MockAPIMockRecorder) DeleteAllSurveyResponses(surveyID interface{}) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllSurveyResponses", reflect.TypeOf((*MockAPI)(nil).DeleteAllSurveyResponses), surveyID)
 }
 
+// DeleteBatchExport mocks base method.
+func (m *MockAPI) DeleteBatchExport(batchID, exportID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteBatchExport", batchID, exportID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteBatchExport indicates an expected call of DeleteBatchExport.
+func (mr *MockAPIMockRecorder) DeleteBatchExport(batchID, exportID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBatchExport", reflect.TypeOf((*MockAPI)(nil).DeleteBatchExport), batchID, exportID)
+}
+
+// DeleteCollectionExport mocks base method.
+func (m *MockAPI) DeleteCollectionExport(collectionID, exportID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteCollectionExport", collectionID, exportID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteCollectionExport indicates an expected call of DeleteCollectionExport.
+func (mr *MockAPIMockRecorder) DeleteCollectionExport(collectionID, exportID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCollectionExport", reflect.TypeOf((*MockAPI)(nil).DeleteCollectionExport), collectionID, exportID)
+}
+
 // DeleteHookSubscription mocks base method.
 func (m *MockAPI) DeleteHookSubscription(subscriptionID string) error {
 	m.ctrl.T.Helper()
@@ -1126,33 +1154,63 @@ func (mr *MockAPIMockRecorder) GetWorkspaces(limit, offset interface{}) *gomock.
 }
 
 // InitiateBatchExport mocks base method.
-func (m *MockAPI) InitiateBatchExport(batchID string) (*client.BatchExportResponse, error) {
+func (m *MockAPI) InitiateBatchExport(batchID string, filter client.ExportFilter) (*client.BatchExportResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "InitiateBatchExport", batchID)
+	ret := m.ctrl.Call(m, "InitiateBatchExport", batchID, filter)
 	ret0, _ := ret[0].(*client.BatchExportResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // InitiateBatchExport indicates an expected call of InitiateBatchExport.
-func (mr *MockAPIMockRecorder) InitiateBatchExport(batchID interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) InitiateBatchExport(batchID, filter interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitiateBatchExport", reflect.TypeOf((*MockAPI)(nil).InitiateBatchExport), batchID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitiateBatchExport", reflect.TypeOf((*MockAPI)(nil).InitiateBatchExport), batchID, filter)
 }
 
 // InitiateCollectionExport mocks base method.
-func (m *MockAPI) InitiateCollectionExport(collectionID string) (*client.CollectionExportResponse, error) {
+func (m *MockAPI) InitiateCollectionExport(collectionID string, filter client.ExportFilter) (*client.CollectionExportResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "InitiateCollectionExport", collectionID)
+	ret := m.ctrl.Call(m, "InitiateCollectionExport", collectionID, filter)
 	ret0, _ := ret[0].(*client.CollectionExportResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // InitiateCollectionExport indicates an expected call of InitiateCollectionExport.
-func (mr *MockAPIMockRecorder) InitiateCollectionExport(collectionID interface{}) *gomock.Call {
+func (mr *MockAPIMockRecorder) InitiateCollectionExport(collectionID, filter interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitiateCollectionExport", reflect.TypeOf((*MockAPI)(nil).InitiateCollectionExport), collectionID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitiateCollectionExport", reflect.TypeOf((*MockAPI)(nil).InitiateCollectionExport), collectionID, filter)
+}
+
+// ListBatchExportJobs mocks base method.
+func (m *MockAPI) ListBatchExportJobs(batchID string) ([]client.ExportJobListItem, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListBatchExportJobs", batchID)
+	ret0, _ := ret[0].([]client.ExportJobListItem)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListBatchExportJobs indicates an expected call of ListBatchExportJobs.
+func (mr *MockAPIMockRecorder) ListBatchExportJobs(batchID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListBatchExportJobs", reflect.TypeOf((*MockAPI)(nil).ListBatchExportJobs), batchID)
+}
+
+// ListCollectionExportJobs mocks base method.
+func (m *MockAPI) ListCollectionExportJobs(collectionID string) ([]client.ExportJobListItem, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListCollectionExportJobs", collectionID)
+	ret0, _ := ret[0].([]client.ExportJobListItem)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListCollectionExportJobs indicates an expected call of ListCollectionExportJobs.
+func (mr *MockAPIMockRecorder) ListCollectionExportJobs(collectionID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListCollectionExportJobs", reflect.TypeOf((*MockAPI)(nil).ListCollectionExportJobs), collectionID)
 }
 
 // ListCredentialPools mocks base method.

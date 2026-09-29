@@ -1,6 +1,8 @@
 package client
 
 import (
+	"net/url"
+
 	"github.com/prolific-oss/cli/model"
 )
 
@@ -476,6 +478,65 @@ type BatchExportResponse struct {
 	ExportID  string `json:"export_id,omitempty"`
 	URL       string `json:"url,omitempty"`
 	ExpiresAt string `json:"expires_at,omitempty"`
+}
+
+// ExportFilter narrows a batch/collection export to a subset of responses.
+// All fields are optional; when every field is empty the export is
+// unfiltered (a "full" export of every response).
+type ExportFilter struct {
+	// StudyID restricts the export to responses submitted under this
+	// Prolific Study ID.
+	StudyID string
+	// From restricts the export to responses created on or after this ISO
+	// 8601 datetime (inclusive).
+	From string
+	// To restricts the export to responses created before this ISO 8601
+	// datetime (exclusive).
+	To string
+}
+
+// IsEmpty reports whether the filter has no fields set, i.e. it requests an
+// unfiltered ("full") export.
+func (f ExportFilter) IsEmpty() bool {
+	return f.StudyID == "" && f.From == "" && f.To == ""
+}
+
+// query encodes the filter as a URL query string. It returns an empty
+// string when the filter is empty, so callers can append it unconditionally.
+func (f ExportFilter) query() string {
+	if f.IsEmpty() {
+		return ""
+	}
+
+	values := url.Values{}
+	if f.StudyID != "" {
+		values.Set("study_id", f.StudyID)
+	}
+	if f.From != "" {
+		values.Set("from", f.From)
+	}
+	if f.To != "" {
+		values.Set("to", f.To)
+	}
+
+	return "?" + values.Encode()
+}
+
+// ExportJobFilter describes the filter (if any) an export job was requested
+// with, as returned by the list-export-jobs endpoints.
+type ExportJobFilter struct {
+	StudyID string `json:"study_id,omitempty"`
+	From    string `json:"from,omitempty"`
+	To      string `json:"to,omitempty"`
+}
+
+// ExportJobListItem summarizes one export job, as returned by the
+// list-export-jobs endpoints for batches and collections.
+type ExportJobListItem struct {
+	ExportID  string           `json:"export_id"`
+	Filter    *ExportJobFilter `json:"filter"`
+	Status    string           `json:"status"`
+	CreatedAt string           `json:"created_at"`
 }
 
 // AITaskBuilderBatchSyncResponse is the response for both starting a batch sync
