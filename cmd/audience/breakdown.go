@@ -48,7 +48,10 @@ question, or their answer falls outside what you specified.`,
 		Example: `
 Count participants matching the base filters and breakdown_filter in a
 JSON/YAML file (see "prolific study create --help" for the filter format):
-$ prolific audience breakdown -t /path/to/filters.json -w <workspace-id>`,
+$ prolific audience breakdown -t /path/to/filters.json -w <workspace-id>
+
+Pipe JSON from stdin instead of a file, using - for the template path:
+$ echo '{"filters": [], "breakdown_filter": {"filter_id": "handedness"}}' | prolific audience breakdown -t - -w <workspace-id>`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if opts.TemplatePath == "" {
 				return fmt.Errorf("error: a filter template is required, use -t/--template-path")
@@ -58,7 +61,7 @@ $ prolific audience breakdown -t /path/to/filters.json -w <workspace-id>`,
 				return fmt.Errorf("error: workspace ID is required")
 			}
 
-			breakdown, err := getBreakdown(client, opts)
+			breakdown, err := getBreakdown(client, opts, cmd.InOrStdin())
 			if err != nil {
 				return fmt.Errorf("error: %s", err)
 			}
@@ -70,17 +73,24 @@ $ prolific audience breakdown -t /path/to/filters.json -w <workspace-id>`,
 	}
 
 	flags := cmd.Flags()
-	flags.StringVarP(&opts.TemplatePath, "template-path", "t", "", "Path to a YAML/JSON file containing the base filters and breakdown_filter to count against (required).")
+	flags.StringVarP(&opts.TemplatePath, "template-path", "t", "", "Path to a YAML/JSON file containing the base filters and breakdown_filter to count against, or - to read JSON from stdin (required).")
 	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "The workspace ID to count eligible participants for (required).")
 
 	return cmd
 }
 
-func getBreakdown(c client.API, opts BreakdownOptions) (map[string]int, error) {
+func getBreakdown(c client.API, opts BreakdownOptions, stdin io.Reader) (map[string]int, error) {
 	v := viper.New()
-	v.SetConfigFile(opts.TemplatePath)
-	if err := v.ReadInConfig(); err != nil {
-		return nil, err
+	if opts.TemplatePath == "-" {
+		v.SetConfigType("json")
+		if err := v.ReadConfig(stdin); err != nil {
+			return nil, err
+		}
+	} else {
+		v.SetConfigFile(opts.TemplatePath)
+		if err := v.ReadInConfig(); err != nil {
+			return nil, err
+		}
 	}
 
 	var tmpl breakdownTemplate

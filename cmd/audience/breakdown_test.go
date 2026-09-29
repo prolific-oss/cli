@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"errors"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -107,6 +108,62 @@ func TestBreakdownCommandRendersBreakdown(t *testing.T) {
 	expected := "VALUE   COUNT\n0       4\n1       3\nN/A     5\n"
 	if b.String() != expected {
 		t.Fatalf("expected %q, got %q", expected, b.String())
+	}
+}
+
+func TestBreakdownCommandReadsTemplateFromStdin(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	expectedPayload := client.FilterBreakdownPayload{
+		Filters:         []model.Filter{},
+		BreakdownFilter: model.Filter{FilterID: "handedness"},
+		WorkspaceID:     "ws-id",
+	}
+
+	c.
+		EXPECT().
+		GetFilterBreakdown(gomock.Eq(expectedPayload)).
+		Return(&client.FilterBreakdownResponse{Breakdown: map[string]int{"1": 2}}, nil).
+		Times(1)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := audience.NewBreakdownCommand(c, writer)
+	_ = cmd.Flags().Set("template-path", "-")
+	_ = cmd.Flags().Set("workspace", "ws-id")
+	cmd.SetIn(strings.NewReader(`{"filters": [], "breakdown_filter": {"filter_id": "handedness"}}`))
+
+	if err := cmd.RunE(cmd, nil); err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	writer.Flush()
+
+	expected := "VALUE   COUNT\n1       2\n"
+	if b.String() != expected {
+		t.Fatalf("expected %q, got %q", expected, b.String())
+	}
+}
+
+func TestBreakdownCommandHandlesMalformedStdinTemplate(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := audience.NewBreakdownCommand(c, writer)
+	_ = cmd.Flags().Set("template-path", "-")
+	_ = cmd.Flags().Set("workspace", "ws-id")
+	cmd.SetIn(strings.NewReader("not json"))
+
+	err := cmd.RunE(cmd, nil)
+	if err == nil {
+		t.Fatal("expected an error, got nil")
 	}
 }
 
