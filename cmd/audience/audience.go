@@ -16,6 +16,7 @@ func NewAudienceCommand(client client.API, w io.Writer) *cobra.Command {
 
 	cmd.AddCommand(
 		NewBreakdownCommand(client, w),
+		NewCountCommand(client, w),
 	)
 
 	return cmd
