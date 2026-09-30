@@ -10,8 +10,9 @@
   - Removed `eligibility-count`, replaced by `audience count`. The template
     format and `-w/--workspace` flag are unchanged, so `prolific
     eligibility-count -t filters.json -w <id>` becomes `prolific audience count
-    -t filters.json -w <id>`. The new command also accepts `--filter-set <id>`
-    to count a saved filter set, and `-j/--json` for machine-readable output.
+    -t filters.json -w <id>`. The new command also accepts `--filters` (a raw
+    JSON array, for scripting without a temp file), and `-j/--json` for
+    machine-readable output.
   - `audience count` reports the privacy floor as 5 rather than the 25 stated by
     the removed command; the API obscures counts below 5.
 

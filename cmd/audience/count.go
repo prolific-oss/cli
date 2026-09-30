@@ -21,7 +21,6 @@ const PrivacyThreshold = 5
 type CountOptions struct {
 	TemplatePath string
 	FiltersJSON  string
-	FilterSetID  string
 	WorkspaceID  string
 	JSON         bool
 }
@@ -54,8 +53,7 @@ func NewCountCommand(client client.API, w io.Writer) *cobra.Command {
 		Long: `Count how many participants would be eligible for a study defined by a
 set of filters, without creating the study or saving a filter set.
 
-Count either an unsaved set of filters with -t/--template-path or
---filters, or a saved filter set with --filter-set.
+Count a set of filters given via -t/--template-path or --filters.
 
 Counts below 5 are reported as 0 by the Prolific API, to protect
 participant privacy. A count of 0 may mean either "zero eligible" or
@@ -72,24 +70,20 @@ $ prolific audience count -t /path/to/filters.json -w <workspace-id>
 Count participants matching filters given directly as a flag
 $ prolific audience count --filters '[{"filter_id":"age","selected_range":{"lower":18,"upper":65}}]' -w <workspace-id>
 
-Count participants matching a saved filter set
-$ prolific audience count --filter-set <filter-set-id>
-
 Emit machine-readable output for scripting
 $ prolific audience count -t /path/to/filters.json -w <workspace-id> --json`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			usingTemplate := opts.TemplatePath != ""
 			usingFlags := opts.FiltersJSON != ""
-			usingFilterSet := opts.FilterSetID != ""
 
 			switch {
-			case usingTemplate && usingFlags, usingTemplate && usingFilterSet, usingFlags && usingFilterSet:
-				return fmt.Errorf("error: use only one of -t/--template-path, --filters, or --filter-set")
-			case !usingTemplate && !usingFlags && !usingFilterSet:
-				return fmt.Errorf("error: a filter template, --filters, or a filter set is required, use -t/--template-path, --filters, or --filter-set")
+			case usingTemplate && usingFlags:
+				return fmt.Errorf("error: use only one of -t/--template-path or --filters")
+			case !usingTemplate && !usingFlags:
+				return fmt.Errorf("error: a filter template or --filters is required, use -t/--template-path or --filters")
 			}
 
-			if (usingTemplate || usingFlags) && opts.WorkspaceID == "" {
+			if opts.WorkspaceID == "" {
 				return fmt.Errorf("error: workspace ID is required")
 			}
 
@@ -112,8 +106,7 @@ $ prolific audience count -t /path/to/filters.json -w <workspace-id> --json`,
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.TemplatePath, "template-path", "t", "", "Path to a YAML/JSON file containing the filters to count against.")
 	flags.StringVar(&opts.FiltersJSON, "filters", "", `JSON array of filters to count against, e.g. '[{"filter_id":"age","selected_range":{"lower":18,"upper":65}}]'. Alternative to -t/--template-path.`)
-	flags.StringVar(&opts.FilterSetID, "filter-set", "", "ID of a saved filter set to count, instead of a template.")
-	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "The workspace ID to count eligible participants for (required with -t/--template-path).")
+	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "The workspace ID to count eligible participants for (required).")
 	// -j is bound by hand rather than through shared.AddOutputFlags, which
 	// would claim -t for --table and collide with --template-path.
 	flags.BoolVarP(&opts.JSON, "json", "j", false, "Output as JSON")
@@ -122,15 +115,6 @@ $ prolific audience count -t /path/to/filters.json -w <workspace-id> --json`,
 }
 
 func getCount(c client.API, opts CountOptions) (int, error) {
-	if opts.FilterSetID != "" {
-		filterSet, err := c.GetFilterSet(opts.FilterSetID)
-		if err != nil {
-			return 0, err
-		}
-
-		return filterSet.EligibleParticipantCount, nil
-	}
-
 	var tmpl countTemplate
 
 	if opts.FiltersJSON != "" {

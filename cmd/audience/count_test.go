@@ -173,39 +173,6 @@ func TestCountCommandHandlesMalformedFlagJSON(t *testing.T) {
 	}
 }
 
-func TestCountCommandCountsSavedFilterSet(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	c := mock_client.NewMockAPI(ctrl)
-
-	c.
-		EXPECT().
-		GetFilterSet(gomock.Eq("filter-set-id")).
-		Return(&model.FilterSet{ID: "filter-set-id", EligibleParticipantCount: 42}, nil).
-		Times(1)
-
-	// A saved filter set is counted from the single record the API already
-	// returns, so no eligibility count call is made.
-	c.EXPECT().GetEligibilityCount(gomock.Any()).Times(0)
-
-	var b bytes.Buffer
-	writer := bufio.NewWriter(&b)
-
-	cmd := audience.NewCountCommand(c, writer)
-	_ = cmd.Flags().Set("filter-set", "filter-set-id")
-
-	if err := cmd.RunE(cmd, nil); err != nil {
-		t.Fatalf("unexpected error: %s", err)
-	}
-
-	writer.Flush()
-
-	expected := "Eligible participants: 42\n"
-	if b.String() != expected {
-		t.Fatalf("expected %q, got %q", expected, b.String())
-	}
-}
-
 func TestCountCommandRendersJSON(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -296,35 +263,20 @@ func TestCountCommandValidatesInput(t *testing.T) {
 		name          string
 		templateJSON  string // empty means -t/--template-path is left unset
 		filtersJSON   string
-		filterSetID   string
 		workspaceID   string
 		expectedError string
 	}{
 		{
-			name:          "no template, filters, or filter set",
+			name:          "no template or filters",
 			workspaceID:   "ws-id",
-			expectedError: "error: a filter template, --filters, or a filter set is required, use -t/--template-path, --filters, or --filter-set",
-		},
-		{
-			name:          "both template and filter set",
-			templateJSON:  `{"filters": []}`,
-			filterSetID:   "filter-set-id",
-			workspaceID:   "ws-id",
-			expectedError: "error: use only one of -t/--template-path, --filters, or --filter-set",
+			expectedError: "error: a filter template or --filters is required, use -t/--template-path or --filters",
 		},
 		{
 			name:          "both template and filters",
 			templateJSON:  `{"filters": []}`,
 			filtersJSON:   `[]`,
 			workspaceID:   "ws-id",
-			expectedError: "error: use only one of -t/--template-path, --filters, or --filter-set",
-		},
-		{
-			name:          "both filters and filter set",
-			filtersJSON:   `[]`,
-			filterSetID:   "filter-set-id",
-			workspaceID:   "ws-id",
-			expectedError: "error: use only one of -t/--template-path, --filters, or --filter-set",
+			expectedError: "error: use only one of -t/--template-path or --filters",
 		},
 		{
 			name:          "missing workspace with template",
@@ -352,7 +304,6 @@ func TestCountCommandValidatesInput(t *testing.T) {
 				_ = cmd.Flags().Set("template-path", mustWriteTempTemplate(t, tt.templateJSON))
 			}
 			_ = cmd.Flags().Set("filters", tt.filtersJSON)
-			_ = cmd.Flags().Set("filter-set", tt.filterSetID)
 			_ = cmd.Flags().Set("workspace", tt.workspaceID)
 
 			err := cmd.RunE(cmd, nil)
@@ -395,13 +346,6 @@ func TestCountCommandHandlesAPIError(t *testing.T) {
 				c.EXPECT().GetEligibilityCount(gomock.Any()).Return(nil, errors.New("boom")).Times(1)
 				_ = cmd.Flags().Set("template-path", mustWriteTempTemplate(t, `{"filters": []}`))
 				_ = cmd.Flags().Set("workspace", "ws-id")
-			},
-		},
-		{
-			name: "filter set lookup fails",
-			setup: func(t *testing.T, c *mock_client.MockAPI, cmd *cobra.Command) {
-				c.EXPECT().GetFilterSet(gomock.Any()).Return(nil, errors.New("boom")).Times(1)
-				_ = cmd.Flags().Set("filter-set", "filter-set-id")
 			},
 		},
 	}
