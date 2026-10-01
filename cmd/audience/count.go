@@ -12,11 +12,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-// PrivacyThreshold is the smallest count the Prolific API reports exactly.
-// Anything below it comes back as 0, so that individual participants can't be
-// identified from a count.
-const PrivacyThreshold = 5
-
 // CountOptions is the options for the count command.
 type CountOptions struct {
 	TemplatePath string
@@ -32,13 +27,9 @@ type countTemplate struct {
 	Filters []model.Filter `mapstructure:"filters"`
 }
 
-// CountResult is the machine-readable shape emitted by --json. Count is 0 both
-// when nobody is eligible and when fewer than PrivacyThreshold are, so
-// BelowPrivacyThreshold tells a caller to treat a 0 as "unknown, but small"
-// rather than "none".
+// CountResult is the machine-readable shape emitted by --json.
 type CountResult struct {
-	Count                 int  `json:"count"`
-	BelowPrivacyThreshold bool `json:"below_privacy_threshold"`
+	Count int `json:"count"`
 }
 
 // NewCountCommand creates a new `audience count` command to count how many
@@ -54,10 +45,6 @@ func NewCountCommand(client client.API, w io.Writer) *cobra.Command {
 set of filters, without creating the study or saving a filter set.
 
 Count a set of filters given via -t/--template-path or --filters.
-
-Counts below 5 are reported as 0 by the Prolific API, to protect
-participant privacy. A count of 0 may mean either "zero eligible" or
-"somewhere between 1 and 4 eligible" — the CLI cannot tell these apart.
 
 Filters are a flat list, which the API combines with AND. The API also
 supports nested and/or filter groups, but those cannot yet be expressed
@@ -149,24 +136,16 @@ func getCount(c client.API, opts CountOptions) (int, error) {
 	return response.Count, nil
 }
 
-// RenderCount produces output for an eligibility count, flagging the
-// sub-PrivacyThreshold floor explicitly rather than presenting 0 as an exact
-// count.
+// RenderCount produces output for an eligibility count. A zero is printed as 0,
+// matching the API and audience breakdown.
 func RenderCount(count int, asJSON bool) (string, error) {
 	if asJSON {
-		payload, err := json.Marshal(CountResult{
-			Count:                 count,
-			BelowPrivacyThreshold: count == 0,
-		})
+		payload, err := json.Marshal(CountResult{Count: count})
 		if err != nil {
 			return "", err
 		}
 
 		return string(payload), nil
-	}
-
-	if count == 0 {
-		return fmt.Sprintf("Eligible participants: 0 (or fewer than %d — exact counts under %d aren't shown, to protect participant privacy)", PrivacyThreshold, PrivacyThreshold), nil
 	}
 
 	return fmt.Sprintf("Eligible participants: %d", count), nil

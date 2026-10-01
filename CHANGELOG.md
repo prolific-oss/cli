@@ -13,8 +13,6 @@
     -t filters.json -w <id>`. The new command also accepts `--filters` (a raw
     JSON array, for scripting without a temp file), and `-j/--json` for
     machine-readable output.
-  - `audience count` reports the privacy floor as 5 rather than the 25 stated by
-    the removed command; the API obscures counts below 5.
 
 ### AI Task Builder
 

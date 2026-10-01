@@ -165,12 +165,12 @@ func TestCountCommandRendersJSON(t *testing.T) {
 		{
 			name:     "exact count",
 			count:    1234,
-			expected: `{"count":1234,"below_privacy_threshold":false}` + "\n",
+			expected: `{"count":1234}` + "\n",
 		},
 		{
-			name:     "obscured count",
+			name:     "zero count",
 			count:    0,
-			expected: `{"count":0,"below_privacy_threshold":true}` + "\n",
+			expected: `{"count":0}` + "\n",
 		},
 	}
 
@@ -368,21 +368,21 @@ func TestRenderCount(t *testing.T) {
 			expected: "Eligible participants: 1234",
 		},
 		{
-			name:     "obscured count names the privacy floor",
+			name:     "zero count",
 			count:    0,
-			expected: "Eligible participants: 0 (or fewer than 5 — exact counts under 5 aren't shown, to protect participant privacy)",
+			expected: "Eligible participants: 0",
 		},
 		{
 			name:     "json exact count",
 			count:    1234,
 			asJSON:   true,
-			expected: `{"count":1234,"below_privacy_threshold":false}`,
+			expected: `{"count":1234}`,
 		},
 		{
-			name:     "json obscured count",
+			name:     "json zero count",
 			count:    0,
 			asJSON:   true,
-			expected: `{"count":0,"below_privacy_threshold":true}`,
+			expected: `{"count":0}`,
 		},
 	}
 
