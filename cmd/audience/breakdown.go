@@ -40,10 +40,12 @@ Count participants matching the base filters and breakdown_filter in a
 JSON/YAML file (see "prolific study create --help" for the filter format):
 $ prolific audience breakdown -t /path/to/filters.json -w <workspace-id>
 
-Or provide the filters directly as flags:
+Or provide the filters directly as flags. A choice-type breakdown filter
+needs selected_values listing which choices to split by — the API rejects
+a filter_id with no values:
 $ prolific audience breakdown \
     --filters '[{"filter_id":"age","selected_range":{"lower":18,"upper":65}}]' \
-    --breakdown '{"filter_id":"handedness"}' \
+    --breakdown '{"filter_id":"handedness","selected_values":["0","1"]}' \
     -w <workspace-id>
 
 Emit machine-readable output for scripting

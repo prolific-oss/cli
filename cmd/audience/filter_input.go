@@ -45,7 +45,7 @@ func addFilterFlags(cmd *cobra.Command, in *filterInput, withBreakdown bool) {
 	flags.StringVarP(&in.TemplatePath, "template-path", "t", "", templateHelp)
 	flags.StringVar(&in.FiltersJSON, "filters", "", filtersHelp)
 	if withBreakdown {
-		flags.StringVar(&in.BreakdownJSON, "breakdown", "", `JSON object for the single filter to break results down by, e.g. '{"filter_id":"handedness"}'. Required with --filters; alternative to -t/--template-path.`)
+		flags.StringVar(&in.BreakdownJSON, "breakdown", "", `JSON object for the single filter to break results down by, e.g. '{"filter_id":"handedness","selected_values":["0","1"]}' for a choice filter (selected_values is required) or '{"filter_id":"age","selected_range":{"lower":18,"upper":65}}' for a range filter. Required with --filters; alternative to -t/--template-path.`)
 	}
 	flags.StringVarP(&in.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "The workspace ID to count eligible participants for (required).")
 }
