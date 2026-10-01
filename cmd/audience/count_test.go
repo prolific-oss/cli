@@ -252,14 +252,14 @@ func TestCountCommandValidatesInput(t *testing.T) {
 		{
 			name:          "no template or filters",
 			workspaceID:   "ws-id",
-			expectedError: "error: a filter template or --filters is required, use -t/--template-path or --filters",
+			expectedError: "error: provide filters via -t/--template-path or --filters",
 		},
 		{
 			name:          "both template and filters",
 			templateJSON:  `{"filters": []}`,
 			filtersJSON:   `[]`,
 			workspaceID:   "ws-id",
-			expectedError: "error: use only one of -t/--template-path or --filters",
+			expectedError: "error: use either -t/--template-path or --filters, not both",
 		},
 		{
 			name:          "missing workspace with template",

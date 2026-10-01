@@ -1,3 +1,4 @@
+//nolint:dupl // Similar patterns are expected for CLI commands
 package audience
 
 import (
@@ -9,36 +10,16 @@ import (
 	"text/tabwriter"
 
 	"github.com/prolific-oss/cli/client"
-	"github.com/prolific-oss/cli/model"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
-
-// BreakdownOptions is the options for the breakdown command. Filters are
-// provided either via TemplatePath, or via FiltersJSON/BreakdownJSON — not
-// both.
-type BreakdownOptions struct {
-	TemplatePath  string
-	FiltersJSON   string
-	BreakdownJSON string
-	WorkspaceID   string
-}
-
-// breakdownTemplate is the shape of the -t/--template-path file: the same
-// flat list of base filters that `eligibility-count` accepts, plus a single
-// breakdown_filter to split the resulting counts by. --filters/--breakdown
-// populate the same fields directly, bypassing the file.
-type breakdownTemplate struct {
-	Filters         []model.Filter `mapstructure:"filters"`
-	BreakdownFilter model.Filter   `mapstructure:"breakdown_filter"`
-}
 
 // NewBreakdownCommand creates a new `audience breakdown` command to count how
 // many participants match a set of base filters, split by the values of a
 // single breakdown filter.
 func NewBreakdownCommand(client client.API, w io.Writer) *cobra.Command {
-	var opts BreakdownOptions
+	var in filterInput
+	var asJSON bool
 
 	cmd := &cobra.Command{
 		Use:   "breakdown",
@@ -63,80 +44,53 @@ Or provide the filters directly as flags:
 $ prolific audience breakdown \
     --filters '[{"filter_id":"age","selected_range":{"lower":18,"upper":65}}]' \
     --breakdown '{"filter_id":"handedness"}' \
-    -w <workspace-id>`,
+    -w <workspace-id>
+
+Emit machine-readable output for scripting
+$ prolific audience breakdown -t /path/to/filters.json -w <workspace-id> --json`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			usingTemplate := opts.TemplatePath != ""
-			usingFlags := opts.FiltersJSON != "" || opts.BreakdownJSON != ""
-
-			switch {
-			case usingTemplate && usingFlags:
-				return fmt.Errorf("error: use either -t/--template-path or --filters/--breakdown, not both")
-			case !usingTemplate && !usingFlags:
-				return fmt.Errorf("error: provide filters via -t/--template-path or --filters/--breakdown")
-			case usingFlags && opts.BreakdownJSON == "":
-				return fmt.Errorf("error: --breakdown is required when using --filters")
+			if err := in.validate(true); err != nil {
+				return err
 			}
 
-			if opts.WorkspaceID == "" {
-				return fmt.Errorf("error: workspace ID is required")
-			}
-
-			breakdown, err := getBreakdown(client, opts)
+			breakdown, err := getBreakdown(client, in)
 			if err != nil {
 				return fmt.Errorf("error: %s", err)
 			}
 
-			fmt.Fprint(w, RenderBreakdown(breakdown))
+			rendered, err := RenderBreakdown(breakdown, asJSON)
+			if err != nil {
+				return fmt.Errorf("error: %s", err)
+			}
+
+			fmt.Fprint(w, rendered)
 
 			return nil
 		},
 	}
 
-	flags := cmd.Flags()
-	flags.StringVarP(&opts.TemplatePath, "template-path", "t", "", "Path to a YAML/JSON file containing the base filters and breakdown_filter to count against. Alternative to --filters/--breakdown.")
-	flags.StringVar(&opts.FiltersJSON, "filters", "", `JSON array of base filters to count against, e.g. '[{"filter_id":"age","selected_range":{"lower":18,"upper":65}}]'. Optional; alternative to -t/--template-path.`)
-	flags.StringVar(&opts.BreakdownJSON, "breakdown", "", `JSON object for the single filter to break results down by, e.g. '{"filter_id":"handedness"}'. Required with --filters; alternative to -t/--template-path.`)
-	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "The workspace ID to count eligible participants for (required).")
+	addFilterFlags(cmd, &in, true)
+	// -j is bound by hand rather than through shared.AddOutputFlags, which
+	// would claim -t for --table and collide with --template-path.
+	cmd.Flags().BoolVarP(&asJSON, "json", "j", false, "Output as JSON")
 
 	return cmd
 }
 
-func getBreakdown(c client.API, opts BreakdownOptions) (map[string]int, error) {
-	var tmpl breakdownTemplate
-
-	if opts.TemplatePath != "" {
-		v := viper.New()
-		v.SetConfigFile(opts.TemplatePath)
-		if err := v.ReadInConfig(); err != nil {
-			return nil, err
-		}
-		if err := v.Unmarshal(&tmpl); err != nil {
-			return nil, fmt.Errorf("unable to map %s to filters: %s", opts.TemplatePath, err)
-		}
-	} else {
-		if opts.FiltersJSON != "" {
-			if err := json.Unmarshal([]byte(opts.FiltersJSON), &tmpl.Filters); err != nil {
-				return nil, fmt.Errorf("unable to parse --filters as JSON: %s", err)
-			}
-		}
-		if err := json.Unmarshal([]byte(opts.BreakdownJSON), &tmpl.BreakdownFilter); err != nil {
-			return nil, fmt.Errorf("unable to parse --breakdown as JSON: %s", err)
-		}
+func getBreakdown(c client.API, in filterInput) (map[string]int, error) {
+	spec, err := in.resolve()
+	if err != nil {
+		return nil, err
 	}
 
-	if tmpl.BreakdownFilter.FilterID == "" {
+	if spec.BreakdownFilter.FilterID == "" {
 		return nil, fmt.Errorf("breakdown filter must include a filter_id")
 	}
 
-	// The API requires "filters" to be present and non-null, even when empty.
-	if tmpl.Filters == nil {
-		tmpl.Filters = []model.Filter{}
-	}
-
 	response, err := c.GetFilterBreakdown(client.FilterBreakdownPayload{
-		Filters:         tmpl.Filters,
-		BreakdownFilter: tmpl.BreakdownFilter,
-		WorkspaceID:     opts.WorkspaceID,
+		Filters:         spec.Filters,
+		BreakdownFilter: spec.BreakdownFilter,
+		WorkspaceID:     in.WorkspaceID,
 	})
 	if err != nil {
 		return nil, err
@@ -145,10 +99,19 @@ func getBreakdown(c client.API, opts BreakdownOptions) (map[string]int, error) {
 	return response.Breakdown, nil
 }
 
-// RenderBreakdown produces a human-readable table of eligible participant
-// counts per breakdown value, sorted alphabetically with
-// client.FilterBreakdownNAKey always shown last.
-func RenderBreakdown(breakdown map[string]int) string {
+// RenderBreakdown produces output for a filter breakdown. The table form is
+// sorted alphabetically with client.FilterBreakdownNAKey always shown last;
+// --json instead emits the raw API response shape.
+func RenderBreakdown(breakdown map[string]int, asJSON bool) (string, error) {
+	if asJSON {
+		payload, err := json.Marshal(client.FilterBreakdownResponse{Breakdown: breakdown})
+		if err != nil {
+			return "", err
+		}
+
+		return string(payload), nil
+	}
+
 	keys := make([]string, 0, len(breakdown))
 	for key := range breakdown {
 		if key != client.FilterBreakdownNAKey {
@@ -168,5 +131,5 @@ func RenderBreakdown(breakdown map[string]int) string {
 	}
 	tw.Flush()
 
-	return buf.String()
+	return buf.String(), nil
 }

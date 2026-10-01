@@ -8,7 +8,7 @@
       }
     },
     {
-      "filter_id": "sex",
+      "filter_id": "gender",
       "selected_values": ["0"]
     }
   ]

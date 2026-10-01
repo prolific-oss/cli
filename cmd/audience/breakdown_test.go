@@ -210,6 +210,39 @@ func TestBreakdownCommandHandlesMalformedFlagJSON(t *testing.T) {
 	}
 }
 
+func TestBreakdownCommandRendersJSON(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	c.
+		EXPECT().
+		GetFilterBreakdown(gomock.Any()).
+		Return(&client.FilterBreakdownResponse{Breakdown: map[string]int{"0": 4, "1": 3}}, nil).
+		Times(1)
+
+	templatePath := mustWriteTempTemplate(t, `{"filters": [], "breakdown_filter": {"filter_id": "handedness"}}`)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := audience.NewBreakdownCommand(c, writer)
+	_ = cmd.Flags().Set("template-path", templatePath)
+	_ = cmd.Flags().Set("workspace", "ws-id")
+	_ = cmd.Flags().Set("json", "true")
+
+	if err := cmd.RunE(cmd, nil); err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	writer.Flush()
+
+	expected := `{"breakdown":{"0":4,"1":3}}`
+	if b.String() != expected {
+		t.Fatalf("expected %q, got %q", expected, b.String())
+	}
+}
+
 func TestBreakdownCommandSendsEmptyFiltersNotNil(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -371,7 +404,24 @@ func TestRenderBreakdown(t *testing.T) {
 	breakdown := map[string]int{"1": 3, "0": 4, client.FilterBreakdownNAKey: 5}
 
 	expected := "VALUE   COUNT\n0       4\n1       3\nN/A     5\n"
-	actual := audience.RenderBreakdown(breakdown)
+	actual, err := audience.RenderBreakdown(breakdown, false)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	if actual != expected {
+		t.Fatalf("expected %q, got %q", expected, actual)
+	}
+}
+
+func TestRenderBreakdownJSON(t *testing.T) {
+	breakdown := map[string]int{"1": 3, "0": 4, client.FilterBreakdownNAKey: 5}
+
+	expected := `{"breakdown":{"0":4,"1":3,"N/A":5}}`
+	actual, err := audience.RenderBreakdown(breakdown, true)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
 
 	if actual != expected {
 		t.Fatalf("expected %q, got %q", expected, actual)

@@ -86,9 +86,9 @@ type ListFiltersResponse struct {
 }
 
 // EligibilityCountResponse is the response for the eligibility count
-// endpoint. Counts below 25 are floored to 0 by the API to protect
-// participant privacy, so a Count of 0 does not necessarily mean zero
-// eligible participants.
+// endpoint. Small counts are floored to 0 by the API to protect participant
+// privacy, so a Count of 0 does not necessarily mean zero eligible
+// participants.
 type EligibilityCountResponse struct {
 	Count int `json:"count"`
 }
