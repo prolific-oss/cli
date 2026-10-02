@@ -86,11 +86,24 @@ type ListFiltersResponse struct {
 }
 
 // EligibilityCountResponse is the response for the eligibility count
-// endpoint. Counts below 25 are floored to 0 by the API to protect
-// participant privacy, so a Count of 0 does not necessarily mean zero
-// eligible participants.
+// endpoint. Small counts are floored to 0 by the API to protect participant
+// privacy, so a Count of 0 does not necessarily mean zero eligible
+// participants.
 type EligibilityCountResponse struct {
 	Count int `json:"count"`
+}
+
+// FilterBreakdownNAKey is the Breakdown key covering participants who match
+// the base filters but don't fall into any of the breakdown filter's
+// selected values or range.
+const FilterBreakdownNAKey = "N/A"
+
+// FilterBreakdownResponse is the response for the filter breakdown endpoint.
+// Breakdown is keyed by the breakdown filter's value (or bucket label, for
+// range filters), with FilterBreakdownNAKey covering participants who don't
+// match any bucket.
+type FilterBreakdownResponse struct {
+	Breakdown map[string]int `json:"breakdown"`
 }
 
 // RewardRecommendationsResponse is the response for the reward
