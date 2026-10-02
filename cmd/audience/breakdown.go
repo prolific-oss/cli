@@ -1,4 +1,3 @@
-//nolint:dupl // Similar patterns are expected for CLI commands
 package audience
 
 import (
@@ -19,7 +18,6 @@ import (
 // single breakdown filter.
 func NewBreakdownCommand(client client.API, w io.Writer) *cobra.Command {
 	var in filterInput
-	var asJSON bool
 
 	cmd := &cobra.Command{
 		Use:   "breakdown",
@@ -51,7 +49,7 @@ $ prolific audience breakdown \
 Emit machine-readable output for scripting
 $ prolific audience breakdown -t /path/to/filters.json -w <workspace-id> --json`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := in.validate(true); err != nil {
+			if err := in.validateBreakdown(); err != nil {
 				return err
 			}
 
@@ -60,7 +58,7 @@ $ prolific audience breakdown -t /path/to/filters.json -w <workspace-id> --json`
 				return fmt.Errorf("error: %s", err)
 			}
 
-			rendered, err := RenderBreakdown(breakdown, asJSON)
+			rendered, err := RenderBreakdown(breakdown, in.JSON)
 			if err != nil {
 				return fmt.Errorf("error: %s", err)
 			}
@@ -71,10 +69,7 @@ $ prolific audience breakdown -t /path/to/filters.json -w <workspace-id> --json`
 		},
 	}
 
-	addFilterFlags(cmd, &in, true)
-	// -j is bound by hand rather than through shared.AddOutputFlags, which
-	// would claim -t for --table and collide with --template-path.
-	cmd.Flags().BoolVarP(&asJSON, "json", "j", false, "Output as JSON")
+	addBreakdownFlags(cmd, &in)
 
 	return cmd
 }
