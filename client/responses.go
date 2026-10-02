@@ -85,6 +85,13 @@ type ListFiltersResponse struct {
 	*JSONAPIMeta
 }
 
+// SearchFiltersResponse is the response for searching filters by keyword
+type SearchFiltersResponse struct {
+	Results []model.FilterSearchResult `json:"results"`
+	*JSONAPILinks
+	*JSONAPIMeta
+}
+
 // EligibilityCountResponse is the response for the eligibility count
 // endpoint. Small counts are floored to 0 by the API to protect participant
 // privacy, so a Count of 0 does not necessarily mean zero eligible

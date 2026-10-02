@@ -20,7 +20,7 @@ func TestNewListCommand(t *testing.T) {
 
 	cmd := filters.NewListCommand(c, nil)
 
-	assert.Equal(t, "filters", cmd.Use)
+	assert.Equal(t, "list", cmd.Use)
 	assert.NotEmpty(t, cmd.Short)
 
 	flag := cmd.Flags().Lookup("non-interactive")

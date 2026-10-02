@@ -35,7 +35,7 @@ type entry struct {
 	section      string
 	operationID  string
 	clientMethod string // empty if skipped
-	skipTag      string // OUTOFSCOPE, SPECMISMATCH, HARNESSGAP, or "" if covered
+	skipTag      string // OUTOFSCOPE, SPECMISMATCH, HARNESSGAP, NOTINSPEC, or "" if covered
 	skipReason   string
 }
 
@@ -149,7 +149,10 @@ func parseOperations(path string) ([]entry, error) {
 			} else {
 				e.skipReason = reason
 			}
-		} else if callMatch := reClientCall.FindStringSubmatch(chunk); callMatch != nil {
+		}
+		// NOTINSPEC entries carry both a skip and a call, so look for the
+		// client method whenever one is present.
+		if callMatch := reClientCall.FindStringSubmatch(chunk); callMatch != nil {
 			e.clientMethod = callMatch[1]
 		}
 
@@ -219,7 +222,7 @@ func downloadSpec() ([]byte, error) {
 func renderTable(entries []entry, specOps map[string]specOp) (string, error) {
 	var missing []string
 	for _, e := range entries {
-		if _, ok := specOps[e.operationID]; !ok {
+		if _, ok := specOps[e.operationID]; !ok && e.skipTag != "NOTINSPEC" {
 			missing = append(missing, e.operationID)
 		}
 	}
@@ -242,9 +245,12 @@ func renderTable(entries []entry, specOps map[string]specOp) (string, error) {
 			if e.section != section {
 				continue
 			}
-			op := specOps[e.operationID]
-			b.WriteString(fmt.Sprintf("| `%s` | %s | `%s` | %s |\n",
-				e.operationID, op.method, op.path, statusCell(e)))
+			method, path := "—", "—"
+			if op, ok := specOps[e.operationID]; ok {
+				method, path = op.method, "`"+op.path+"`"
+			}
+			b.WriteString(fmt.Sprintf("| `%s` | %s | %s | %s |\n",
+				e.operationID, method, path, statusCell(e)))
 		}
 		b.WriteString("\n</details>\n\n")
 	}
@@ -253,6 +259,8 @@ func renderTable(entries []entry, specOps map[string]specOp) (string, error) {
 
 func statusCell(e entry) string {
 	switch {
+	case e.skipTag == "NOTINSPEC":
+		return fmt.Sprintf("🕒 `%s` — live endpoint, awaiting publication in the spec", e.clientMethod)
 	case e.clientMethod != "":
 		return fmt.Sprintf("✅ `%s`", e.clientMethod)
 	case e.skipTag == "OUTOFSCOPE":
