@@ -13,11 +13,11 @@ import (
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/aitaskbuilder"
+	"github.com/prolific-oss/cli/cmd/audience"
 	"github.com/prolific-oss/cli/cmd/bonus"
 	"github.com/prolific-oss/cli/cmd/campaign"
 	"github.com/prolific-oss/cli/cmd/collection"
 	"github.com/prolific-oss/cli/cmd/credentials"
-	"github.com/prolific-oss/cli/cmd/eligibilitycount"
 	"github.com/prolific-oss/cli/cmd/feedback"
 	"github.com/prolific-oss/cli/cmd/filters"
 	"github.com/prolific-oss/cli/cmd/filtersets"
@@ -87,11 +87,11 @@ func NewRootCommand() *cobra.Command {
 
 	cmd.AddCommand(
 		aitaskbuilder.NewAITaskBuilderCommand(&client, w),
+		audience.NewAudienceCommand(&client, w),
 		bonus.NewBonusCommand(&client, w),
 		campaign.NewListCommand("campaign", &client, w),
 		collection.NewCollectionCommand(&client, w),
 		credentials.NewCredentialsCommand(&client, w),
-		eligibilitycount.NewCountCommand(&client, w),
 		feedback.NewFeedbackCommand(&client, w),
 		filters.NewFiltersCommand(&client, w),
 		filtersets.NewFilterSetCommand(&client, w),

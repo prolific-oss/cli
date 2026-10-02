@@ -202,8 +202,16 @@ var operations = []operation{
 	{operationID: "aiTaskBuilder_DuplicateTaskBuilderBatch", skip: "OUTOFSCOPE: no CLI command for duplicating a batch"},
 	{operationID: "aiTaskBuilder_SyncTaskBuilderBatch", call: func(c *client.Client) { c.SyncAITaskBuilderBatch("batch-id") }},
 	{operationID: "aiTaskBuilder_GetBatchSyncStatus", call: func(c *client.Client) { c.GetAITaskBuilderBatchSyncStatus("batch-id", "sync-id") }},
-	{operationID: "aiTaskBuilder_RequestBatchExport", call: func(c *client.Client) { c.InitiateBatchExport("batch-id") }},
+	{operationID: "aiTaskBuilder_RequestBatchExport", call: func(c *client.Client) {
+		c.InitiateBatchExport("batch-id", client.ExportFilter{
+			StudyID: "study-id",
+			From:    "2024-01-01T00:00:00Z",
+			To:      "2024-02-01T00:00:00Z",
+		})
+	}},
 	{operationID: "aiTaskBuilder_GetBatchExportStatus", call: func(c *client.Client) { c.GetBatchExportStatus("batch-id", "export-id") }},
+	{operationID: "aiTaskBuilder_ListBatchExportJobs", call: func(c *client.Client) { c.ListBatchExportJobs("batch-id") }},
+	{operationID: "aiTaskBuilder_DeleteBatchExport", call: func(c *client.Client) { c.DeleteBatchExport("batch-id", "export-id") }},
 
 	// AI Task Builder — Datasets
 	{operationID: "aiTaskBuilder_CreateTaskBuilderDataset", call: func(c *client.Client) {
@@ -247,10 +255,18 @@ var operations = []operation{
 		})
 	}},
 	{operationID: "aiTaskBuilder_GetCollectionResponses", skip: "OUTOFSCOPE: no CLI command for getting collection responses"},
-	{operationID: "aiTaskBuilder_RequestCollectionExport", call: func(c *client.Client) { c.InitiateCollectionExport("coll-id") }},
+	{operationID: "aiTaskBuilder_RequestCollectionExport", call: func(c *client.Client) {
+		c.InitiateCollectionExport("coll-id", client.ExportFilter{
+			StudyID: "study-id",
+			From:    "2024-01-01T00:00:00Z",
+			To:      "2024-02-01T00:00:00Z",
+		})
+	}},
 	{operationID: "aiTaskBuilder_GetCollectionExportStatus", call: func(c *client.Client) {
 		c.GetCollectionExportStatus("coll-id", "export-id")
 	}},
+	{operationID: "aiTaskBuilder_ListCollectionExportJobs", call: func(c *client.Client) { c.ListCollectionExportJobs("coll-id") }},
+	{operationID: "aiTaskBuilder_DeleteCollectionExport", call: func(c *client.Client) { c.DeleteCollectionExport("coll-id", "export-id") }},
 
 	// Invitations
 	{operationID: "invitations_CreateInvitation", call: func(c *client.Client) {
@@ -275,6 +291,7 @@ var operations = []operation{
 	}},
 	{operationID: "messages_GetUnreadMessages", call: func(c *client.Client) { c.GetUnreadMessages() }},
 	{operationID: "messages_GetConversations", skip: "OUTOFSCOPE: no CLI command for listing conversations"},
+	{operationID: "messages_CreateConversation", skip: "OUTOFSCOPE: no CLI command for starting a conversation"},
 	{operationID: "messages_GetConversationMessages", skip: "OUTOFSCOPE: no CLI command for retrieving conversation messages"},
 
 	// Studies

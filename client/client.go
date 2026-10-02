@@ -61,8 +61,10 @@ type API interface {
 
 	GetCollections(workspaceID string, limit, offset int) (*ListCollectionsResponse, error)
 	GetCollection(ID string) (*model.Collection, error)
-	InitiateCollectionExport(collectionID string) (*CollectionExportResponse, error)
+	InitiateCollectionExport(collectionID string, filter ExportFilter) (*CollectionExportResponse, error)
 	GetCollectionExportStatus(collectionID, exportID string) (*CollectionExportResponse, error)
+	ListCollectionExportJobs(collectionID string) ([]ExportJobListItem, error)
+	DeleteCollectionExport(collectionID, exportID string) error
 	UpdateCollection(ID string, collection model.UpdateCollection) (*model.Collection, error)
 
 	GetHooks(workspaceID string, enabled bool, limit, offset int) (*ListHooksResponse, error)
@@ -95,6 +97,7 @@ type API interface {
 	GetFilters() (*ListFiltersResponse, error)
 	SearchFilters(query, workspaceID string, limit, offset int) (*SearchFiltersResponse, error)
 	GetEligibilityCount(payload EligibilityCountPayload) (*EligibilityCountResponse, error)
+	GetFilterBreakdown(payload FilterBreakdownPayload) (*FilterBreakdownResponse, error)
 
 	GetRewardRecommendations(workspaceID, currency string, screenerIDs []string) (*RewardRecommendationsResponse, error)
 
@@ -136,8 +139,10 @@ type API interface {
 	GetAITaskBuilderResponses(batchID string) (*GetAITaskBuilderResponsesResponse, error)
 	GetAITaskBuilderTasks(batchID string) (*GetAITaskBuilderTasksResponse, error)
 	GetAITaskBuilderTaskGroups(batchID string) (*GetAITaskBuilderTaskGroupsResponse, error)
-	InitiateBatchExport(batchID string) (*BatchExportResponse, error)
+	InitiateBatchExport(batchID string, filter ExportFilter) (*BatchExportResponse, error)
 	GetBatchExportStatus(batchID, exportID string) (*BatchExportResponse, error)
+	ListBatchExportJobs(batchID string) ([]ExportJobListItem, error)
+	DeleteBatchExport(batchID, exportID string) error
 	SyncAITaskBuilderBatch(batchID string) (*AITaskBuilderBatchSyncResponse, error)
 	GetAITaskBuilderBatchSyncStatus(batchID, syncID string) (*AITaskBuilderBatchSyncResponse, error)
 	GetAITaskBuilderDatasetStatus(datasetID string) (*GetAITaskBuilderDatasetStatusResponse, error)
@@ -573,10 +578,13 @@ func (c *Client) GetCollection(ID string) (*model.Collection, error) {
 // InitiateCollectionExport starts a collection export job via POST.
 // Returns "generating" + ExportID (202) if a new job was enqueued,
 // or "complete" + URL immediately (200) if a valid export already exists.
-func (c *Client) InitiateCollectionExport(collectionID string) (*CollectionExportResponse, error) {
+// filter optionally slices the export down to responses for a specific
+// study_id and/or a from/to created_at date range; a zero-value ExportFilter
+// requests a full, unfiltered export.
+func (c *Client) InitiateCollectionExport(collectionID string, filter ExportFilter) (*CollectionExportResponse, error) {
 	var response CollectionExportResponse
 
-	url := fmt.Sprintf("/api/v1/data-collection/collections/%s/export", collectionID)
+	url := fmt.Sprintf("/api/v1/data-collection/collections/%s/export%s", collectionID, filter.query())
 	_, err := c.ExecuteBuilder().PostRequest(url).Decode(&response).Execute()
 	if err != nil {
 		return nil, err
@@ -597,6 +605,38 @@ func (c *Client) GetCollectionExportStatus(collectionID, exportID string) (*Coll
 	}
 
 	return &response, nil
+}
+
+// ListCollectionExportJobs returns every export job requested for a
+// collection, most recent first. Manually deleted jobs are excluded.
+func (c *Client) ListCollectionExportJobs(collectionID string) ([]ExportJobListItem, error) {
+	var response []ExportJobListItem
+
+	url := fmt.Sprintf("/api/v1/data-collection/collections/%s/export", collectionID)
+	_, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	return response, nil
+}
+
+// DeleteCollectionExport permanently deletes an export job and, if it
+// completed, its ZIP archive. An export that is still generating cannot be
+// deleted (the API returns 409 Conflict).
+func (c *Client) DeleteCollectionExport(collectionID, exportID string) error {
+	url := fmt.Sprintf("/api/v1/data-collection/collections/%s/export/%s", collectionID, exportID)
+	httpResponse, err := c.Execute(http.MethodDelete, url, nil, nil)
+	if err != nil {
+		return fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusNoContent {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+	}
+
+	return nil
 }
 
 // UpdateStudy is responsible for updating the Study with a PATCH request.
@@ -1068,6 +1108,25 @@ func (c *Client) GetEligibilityCount(payload EligibilityCountPayload) (*Eligibil
 	var response EligibilityCountResponse
 
 	const url = "/api/v1/eligibility-count/"
+	_, err := c.ExecuteBuilder().
+		PostRequest(url).
+		Body(payload).
+		Status(http.StatusOK).
+		Decode(&response).
+		Execute()
+	if err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// GetFilterBreakdown returns eligible participant counts for a set of base
+// filters, split by the values of a single breakdown filter.
+func (c *Client) GetFilterBreakdown(payload FilterBreakdownPayload) (*FilterBreakdownResponse, error) {
+	var response FilterBreakdownResponse
+
+	const url = "/api/v1/eligibility-count/filter-breakdown/"
 	_, err := c.ExecuteBuilder().
 		PostRequest(url).
 		Body(payload).
@@ -1574,10 +1633,13 @@ func (c *Client) GetAITaskBuilderTaskGroups(batchID string) (*GetAITaskBuilderTa
 // InitiateBatchExport starts a batch export job via POST.
 // Returns "generating" + ExportID (202) if a new job was enqueued,
 // or "complete" + URL immediately (200) if a valid export already exists.
-func (c *Client) InitiateBatchExport(batchID string) (*BatchExportResponse, error) {
+// filter optionally slices the export down to responses for a specific
+// study_id and/or a from/to created_at date range; a zero-value ExportFilter
+// requests a full, unfiltered export.
+func (c *Client) InitiateBatchExport(batchID string, filter ExportFilter) (*BatchExportResponse, error) {
 	var response BatchExportResponse
 
-	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/export", batchID)
+	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/export%s", batchID, filter.query())
 	_, err := c.ExecuteBuilder().
 		PostRequest(url).
 		Status(http.StatusOK, http.StatusAccepted).
@@ -1602,6 +1664,43 @@ func (c *Client) GetBatchExportStatus(batchID, exportID string) (*BatchExportRes
 	}
 
 	return &response, nil
+}
+
+// ListBatchExportJobs returns every export job requested for a batch, most
+// recent first. Manually deleted jobs are excluded.
+func (c *Client) ListBatchExportJobs(batchID string) ([]ExportJobListItem, error) {
+	var response []ExportJobListItem
+
+	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/export", batchID)
+	httpResponse, err := c.Execute(http.MethodGet, url, nil, &response)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return nil, fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+	}
+
+	return response, nil
+}
+
+// DeleteBatchExport permanently deletes an export job and, if it completed,
+// its ZIP archive. An export that is still generating cannot be deleted (the
+// API returns 409 Conflict).
+func (c *Client) DeleteBatchExport(batchID, exportID string) error {
+	url := fmt.Sprintf("/api/v1/data-collection/batches/%s/export/%s", batchID, exportID)
+	httpResponse, err := c.Execute(http.MethodDelete, url, nil, nil)
+	if err != nil {
+		return fmt.Errorf("unable to fulfil request %s: %s", url, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusNoContent {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+	}
+
+	return nil
 }
 
 // SyncAITaskBuilderBatch starts an async sync job that extends a batch with tasks

@@ -1,6 +1,8 @@
 package client
 
 import (
+	"net/url"
+
 	"github.com/prolific-oss/cli/model"
 )
 
@@ -91,11 +93,24 @@ type SearchFiltersResponse struct {
 }
 
 // EligibilityCountResponse is the response for the eligibility count
-// endpoint. Counts below 25 are floored to 0 by the API to protect
-// participant privacy, so a Count of 0 does not necessarily mean zero
-// eligible participants.
+// endpoint. Small counts are floored to 0 by the API to protect participant
+// privacy, so a Count of 0 does not necessarily mean zero eligible
+// participants.
 type EligibilityCountResponse struct {
 	Count int `json:"count"`
+}
+
+// FilterBreakdownNAKey is the Breakdown key covering participants who match
+// the base filters but don't fall into any of the breakdown filter's
+// selected values or range.
+const FilterBreakdownNAKey = "N/A"
+
+// FilterBreakdownResponse is the response for the filter breakdown endpoint.
+// Breakdown is keyed by the breakdown filter's value (or bucket label, for
+// range filters), with FilterBreakdownNAKey covering participants who don't
+// match any bucket.
+type FilterBreakdownResponse struct {
+	Breakdown map[string]int `json:"breakdown"`
 }
 
 // RewardRecommendationsResponse is the response for the reward
@@ -470,6 +485,65 @@ type BatchExportResponse struct {
 	ExportID  string `json:"export_id,omitempty"`
 	URL       string `json:"url,omitempty"`
 	ExpiresAt string `json:"expires_at,omitempty"`
+}
+
+// ExportFilter narrows a batch/collection export to a subset of responses.
+// All fields are optional; when every field is empty the export is
+// unfiltered (a "full" export of every response).
+type ExportFilter struct {
+	// StudyID restricts the export to responses submitted under this
+	// Prolific Study ID.
+	StudyID string
+	// From restricts the export to responses created on or after this ISO
+	// 8601 datetime (inclusive).
+	From string
+	// To restricts the export to responses created before this ISO 8601
+	// datetime (exclusive).
+	To string
+}
+
+// IsEmpty reports whether the filter has no fields set, i.e. it requests an
+// unfiltered ("full") export.
+func (f ExportFilter) IsEmpty() bool {
+	return f.StudyID == "" && f.From == "" && f.To == ""
+}
+
+// query encodes the filter as a URL query string. It returns an empty
+// string when the filter is empty, so callers can append it unconditionally.
+func (f ExportFilter) query() string {
+	if f.IsEmpty() {
+		return ""
+	}
+
+	values := url.Values{}
+	if f.StudyID != "" {
+		values.Set("study_id", f.StudyID)
+	}
+	if f.From != "" {
+		values.Set("from", f.From)
+	}
+	if f.To != "" {
+		values.Set("to", f.To)
+	}
+
+	return "?" + values.Encode()
+}
+
+// ExportJobFilter describes the filter (if any) an export job was requested
+// with, as returned by the list-export-jobs endpoints.
+type ExportJobFilter struct {
+	StudyID string `json:"study_id,omitempty"`
+	From    string `json:"from,omitempty"`
+	To      string `json:"to,omitempty"`
+}
+
+// ExportJobListItem summarizes one export job, as returned by the
+// list-export-jobs endpoints for batches and collections.
+type ExportJobListItem struct {
+	ExportID  string           `json:"export_id"`
+	Filter    *ExportJobFilter `json:"filter"`
+	Status    string           `json:"status"`
+	CreatedAt string           `json:"created_at"`
 }
 
 // AITaskBuilderBatchSyncResponse is the response for both starting a batch sync

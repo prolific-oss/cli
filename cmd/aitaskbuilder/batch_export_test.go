@@ -78,7 +78,7 @@ func TestBatchExportCommandImmediateComplete(t *testing.T) {
 
 	mockClient.
 		EXPECT().
-		InitiateBatchExport(gomock.Eq(testBatchID)).
+		InitiateBatchExport(gomock.Eq(testBatchID), gomock.Eq(client.ExportFilter{})).
 		Return(&client.BatchExportResponse{
 			Status:    "complete",
 			URL:       srv.URL + "/export.zip",
@@ -129,7 +129,7 @@ func TestBatchExportCommandPollingToComplete(t *testing.T) {
 	mockClient := mock_client.NewMockAPI(ctrl)
 
 	mockClient.EXPECT().
-		InitiateBatchExport(gomock.Eq(testBatchID)).
+		InitiateBatchExport(gomock.Eq(testBatchID), gomock.Eq(client.ExportFilter{})).
 		Return(&client.BatchExportResponse{
 			Status:   "generating",
 			ExportID: testBatchExportID,
@@ -179,7 +179,7 @@ func TestBatchExportCommandFailedStatus(t *testing.T) {
 	mockClient := mock_client.NewMockAPI(ctrl)
 
 	mockClient.EXPECT().
-		InitiateBatchExport(gomock.Eq(testBatchID)).
+		InitiateBatchExport(gomock.Eq(testBatchID), gomock.Eq(client.ExportFilter{})).
 		Return(&client.BatchExportResponse{
 			Status:   "generating",
 			ExportID: testBatchExportID,
@@ -211,7 +211,7 @@ func TestBatchExportCommandInitiateError(t *testing.T) {
 	mockClient := mock_client.NewMockAPI(ctrl)
 
 	mockClient.EXPECT().
-		InitiateBatchExport(gomock.Eq(testBatchID)).
+		InitiateBatchExport(gomock.Eq(testBatchID), gomock.Eq(client.ExportFilter{})).
 		Return(nil, errors.New("network error")).
 		Times(1)
 
@@ -236,7 +236,7 @@ func TestBatchExportCommandDefaultOutputPath(t *testing.T) {
 	mockClient := mock_client.NewMockAPI(ctrl)
 
 	mockClient.EXPECT().
-		InitiateBatchExport(gomock.Eq(testBatchID)).
+		InitiateBatchExport(gomock.Eq(testBatchID), gomock.Eq(client.ExportFilter{})).
 		Return(&client.BatchExportResponse{
 			Status:    "complete",
 			URL:       srv.URL + "/export.zip",
@@ -275,5 +275,100 @@ func TestBatchExportCommandDefaultOutputPath(t *testing.T) {
 	}
 	if len(matches) == 0 {
 		t.Fatalf("expected a default output file matching %s-export-*.zip to be created", testBatchID)
+	}
+}
+
+// TestBatchExportCommandWithFilterFlags covers passing --study-id, --from,
+// and --to, which should be forwarded to InitiateBatchExport as a populated
+// client.ExportFilter.
+func TestBatchExportCommandWithFilterFlags(t *testing.T) {
+	zipContent := []byte("PK\x03\x04fake zip content")
+	srv := newBatchZIPServer(t, zipContent)
+	defer aitaskbuilder.SetBatchExportDownloadClientForTesting(srv.Client())()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockClient := mock_client.NewMockAPI(ctrl)
+
+	wantFilter := client.ExportFilter{
+		StudyID: "study-id-789",
+		From:    "2024-01-01T00:00:00Z",
+		To:      "2024-02-01T00:00:00Z",
+	}
+
+	mockClient.
+		EXPECT().
+		InitiateBatchExport(gomock.Eq(testBatchID), gomock.Eq(wantFilter)).
+		Return(&client.BatchExportResponse{
+			Status:    "complete",
+			URL:       srv.URL + "/export.zip",
+			ExpiresAt: "2099-01-01T00:00:00Z",
+		}, nil).
+		Times(1)
+
+	outputPath := filepath.Join(t.TempDir(), "filtered-export.zip")
+
+	var b bytes.Buffer
+	w := bufio.NewWriter(&b)
+	cmd := aitaskbuilder.NewBatchExportCommand(mockClient, w)
+	if err := cmd.Flags().Set("output", outputPath); err != nil {
+		t.Fatalf("failed to set output flag: %v", err)
+	}
+	if err := cmd.Flags().Set("study-id", wantFilter.StudyID); err != nil {
+		t.Fatalf("failed to set study-id flag: %v", err)
+	}
+	if err := cmd.Flags().Set("from", wantFilter.From); err != nil {
+		t.Fatalf("failed to set from flag: %v", err)
+	}
+	if err := cmd.Flags().Set("to", wantFilter.To); err != nil {
+		t.Fatalf("failed to set to flag: %v", err)
+	}
+
+	err := cmd.RunE(cmd, []string{testBatchID})
+	w.Flush()
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
+	}
+}
+
+// TestBatchExportCommandWithStudyIDOnly covers passing just --study-id,
+// leaving --from and --to empty in the resulting filter.
+func TestBatchExportCommandWithStudyIDOnly(t *testing.T) {
+	zipContent := []byte("PK\x03\x04fake zip content")
+	srv := newBatchZIPServer(t, zipContent)
+	defer aitaskbuilder.SetBatchExportDownloadClientForTesting(srv.Client())()
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockClient := mock_client.NewMockAPI(ctrl)
+
+	wantFilter := client.ExportFilter{StudyID: "study-id-789"}
+
+	mockClient.
+		EXPECT().
+		InitiateBatchExport(gomock.Eq(testBatchID), gomock.Eq(wantFilter)).
+		Return(&client.BatchExportResponse{
+			Status:    "complete",
+			URL:       srv.URL + "/export.zip",
+			ExpiresAt: "2099-01-01T00:00:00Z",
+		}, nil).
+		Times(1)
+
+	outputPath := filepath.Join(t.TempDir(), "study-only-export.zip")
+
+	var b bytes.Buffer
+	w := bufio.NewWriter(&b)
+	cmd := aitaskbuilder.NewBatchExportCommand(mockClient, w)
+	if err := cmd.Flags().Set("output", outputPath); err != nil {
+		t.Fatalf("failed to set output flag: %v", err)
+	}
+	if err := cmd.Flags().Set("study-id", wantFilter.StudyID); err != nil {
+		t.Fatalf("failed to set study-id flag: %v", err)
+	}
+
+	err := cmd.RunE(cmd, []string{testBatchID})
+	w.Flush()
+	if err != nil {
+		t.Fatalf("expected no error, got: %v", err)
 	}
 }

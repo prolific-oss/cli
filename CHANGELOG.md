@@ -4,6 +4,16 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+### Audience
+
+- **Breaking changes:**
+  - Removed `eligibility-count`, replaced by `audience count`. The template
+    format and `-w/--workspace` flag are unchanged, so `prolific
+    eligibility-count -t filters.json -w <id>` becomes `prolific audience count
+    -t filters.json -w <id>`. The new command also accepts `--filters` (a raw
+    JSON array, for scripting without a temp file), and `-j/--json` for
+    machine-readable output.
+
 ### Filters
 
 - **Breaking change:** `prolific filters` is now a parent command. The previous
@@ -16,6 +26,11 @@
   (or `--limit 0`) fetches every match; pages are requested from the API
   automatically and streamed as they arrive. In a terminal, long output opens
   in your pager (`PROLIFIC_PAGER`, `PAGER`, or `less`).
+
+### AI Task Builder
+
+- Support export slicing: `aitaskbuilder batch export` and `collection export` accept `--study-id`, `--from`, and `--to` to narrow an export to a subset of responses
+- Add `aitaskbuilder batch export list`/`delete`/`download` and `collection export list`/`delete`/`download` subcommands to list, remove, and (re-)download export jobs without starting a new export
 
 ### Core
 
