@@ -36,6 +36,7 @@ $ prolific filters search "software developer"`,
 	cmd.AddCommand(
 		NewListCommand(client, w),
 		NewSearchCommand(client, w),
+		NewRuleTreeCommand(client, w),
 	)
 
 	return cmd

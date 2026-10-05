@@ -118,6 +118,9 @@ var operations = []operation{
 	{operationID: "studies_DeleteProjectStudy", skip: "OUTOFSCOPE: no CLI command for removing a study from a project"},
 
 	// Filters
+	{operationID: "filters_GetRuleTree", skip: "NOTINSPEC: rule-tree is implemented in the backend but not published in the spec; confirm operationId on publication", call: func(c *client.Client) {
+		c.GetFilterRuleTree("ws-id")
+	}},
 	{operationID: "filters_GetFilters", call: func(c *client.Client) { c.GetFilters() }},
 	// operationId assumed from Fern's tag_operation convention (source operationId is SearchFilters).
 	{operationID: "filters_SearchFilters", skip: "NOTINSPEC: live but unpublished, see prolific-oss/prolific#16270", call: func(c *client.Client) {
