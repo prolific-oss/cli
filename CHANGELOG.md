@@ -4,6 +4,8 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+## 1.2.6
+
 ### Audience
 
 - **Breaking changes:**
@@ -18,6 +20,15 @@
 
 - Support export slicing: `aitaskbuilder batch export` and `collection export` accept `--study-id`, `--from`, and `--to` to narrow an export to a subset of responses
 - Add `aitaskbuilder batch export list`/`delete`/`download` and `collection export list`/`delete`/`download` subcommands to list, remove, and (re-)download export jobs without starting a new export
+- Support export slicing and list/delete export jobs (#529)
+
+### Core
+
+- Add audience breakdown command
+- Unify count/breakdown filter input, address review comments
+- Drop 'distributable' jargon from breakdown docs
+- Extract FilterBreakdownNAKey constant
+- Add HTTP-backed test for GetFilterBreakdown
 
 ## 1.2.5
 
