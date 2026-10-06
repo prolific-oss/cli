@@ -28,6 +28,7 @@ Participant groups allow you do the following:
 
 	cmd.AddCommand(
 		NewListCommand("list", client, w),
+		NewSearchCommand(client, w),
 		NewViewCommand("view", client, w),
 		NewCreateCommand("create", client, w),
 		NewRemoveCommand("remove", client, w),

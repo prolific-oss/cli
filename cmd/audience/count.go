@@ -31,9 +31,10 @@ set of filters, without creating the study or saving a filter set.
 
 Count a set of filters given via -t/--template-path or --filters.
 
-Filters are a flat list, which the API combines with AND. The API also
-supports nested and/or filter groups, but those cannot yet be expressed
-via -t/--template-path or --filters.`,
+Top-level filters are combined with AND. To express nested AND/OR groups,
+use filter_id "and" or "or" with a selected_filters array of child filters.
+Both -t/--template-path and --filters preserve this structure; the API
+validates which combinations are allowed.`,
 		Example: `
 Count participants matching the filters in a JSON/YAML file (see
 "prolific study create --help" for the filter format)
