@@ -22,10 +22,28 @@
     JSON array, for scripting without a temp file), and `-j/--json` for
     machine-readable output.
 
+### Filters
+
+- **Breaking change:** `prolific filters` is now a parent command. The previous
+  behaviour has moved to `prolific filters list`; update any scripts or skills
+  that call `prolific filters` or `prolific filters -n`.
+- Add `prolific filters search <query>` to search the filter catalogue by
+  keyword, with matched text highlighted and a preview of matching choices.
+  `--json`, `--table` and `--csv` output are available, with `--fields` to
+  choose columns. `--limit` is the number of results you want and `--all`
+  (or `--limit 0`) fetches every match; pages are requested from the API
+  automatically and streamed as they arrive. In a terminal, long output opens
+  in your pager (`PROLIFIC_PAGER`, `PAGER`, or `less`).
+
 ### AI Task Builder
 
 - Support export slicing: `aitaskbuilder batch export` and `collection export` accept `--study-id`, `--from`, and `--to` to narrow an export to a subset of responses
 - Add `aitaskbuilder batch export list`/`delete`/`download` and `collection export list`/`delete`/`download` subcommands to list, remove, and (re-)download export jobs without starting a new export
+
+### Core
+
+- Add a global `--no-pager` flag to print long output directly instead of
+  piping it into a pager.
 
 ## 1.2.5
 

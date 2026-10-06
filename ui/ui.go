@@ -51,13 +51,20 @@ func RenderMoney(amount float64, currencyCode string) string {
 // are being shown out of the total collection. This will take care of pluralisation
 // for you.
 func RenderRecordCounter(count, total int) string {
-	word := "record"
+	return fmt.Sprintf("Showing %v %s of %v", count, Pluralise(count, "record", "records"), total)
+}
 
-	if count > 1 {
-		word = "records"
+// Pluralise returns singular when n is exactly one and plural otherwise.
+func Pluralise(n int, singular, plural string) string {
+	if n == 1 {
+		return singular
 	}
+	return plural
+}
 
-	return fmt.Sprintf("Showing %v %s of %v", count, word, total)
+// RenderDimmed renders secondary text in the standard muted colour.
+func RenderDimmed(text string) string {
+	return lipgloss.NewStyle().Foreground(lipgloss.Color(DarkGrey)).Render(text)
 }
 
 // RenderApplicationLink will standardise the way we render application links.

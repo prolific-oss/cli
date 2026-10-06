@@ -73,7 +73,7 @@ func TestSearch(t *testing.T) {
 				case tc.noMeta:
 					require.NotContains(t, output.String(), "Showing")
 				case tc.empty:
-					require.Contains(t, output.String(), "Showing 0 record of 42")
+					require.Contains(t, output.String(), "Showing 0 records of 42")
 				default:
 					require.Contains(t, output.String(), "Showing 1 record of 42")
 				}
