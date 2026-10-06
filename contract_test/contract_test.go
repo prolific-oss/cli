@@ -10,7 +10,9 @@
 //   - OUTOFSCOPE   — no CLI command exists or is planned for this endpoint
 //   - SPECMISMATCH — client request diverges from the spec; needs a fix
 //   - HARNESSGAP   — client behaviour is correct; kin-openapi can't validate this shape
-//   - NOTINSPEC    — endpoint is live and implemented but not yet in the published spec.
+//   - NOTINSPEC    — endpoint is implemented and reachable but not yet in the published spec.
+//     This does not mean it is generally released: it may be dark-launched, behind a flag,
+//     or awaiting docs, so it is not guaranteed to work for every account.
 //     The entry keeps its call so validation starts the moment the spec publishes:
 //     TestAPICoverage fails once the operationId appears, prompting removal of the skip.
 
