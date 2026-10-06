@@ -433,7 +433,7 @@ func TestGetParticipantGroupsSendsWorkspaceIDQueryParam(t *testing.T) {
 		Token:   "test-token",
 	}
 
-	_, err := c.GetParticipantGroups("ws-id", 10, 0)
+	_, err := c.GetParticipantGroups("ws/+&name=value", 10, 0)
 	if err != nil {
 		t.Fatalf("GetParticipantGroups returned error: %v", err)
 	}
@@ -444,8 +444,8 @@ func TestGetParticipantGroupsSendsWorkspaceIDQueryParam(t *testing.T) {
 	if want := "/api/v1/participant-groups/"; gotPath != want {
 		t.Errorf("path = %q, want %q", gotPath, want)
 	}
-	if got := gotQuery.Get("workspace_id"); got != "ws-id" {
-		t.Errorf("workspace_id = %q, want %q", got, "ws-id")
+	if got := gotQuery.Get("workspace_id"); got != "ws/+&name=value" {
+		t.Errorf("workspace_id = %q, want %q", got, "ws/+&name=value")
 	}
 	if got := gotQuery.Get("limit"); got != "10" {
 		t.Errorf("limit = %q, want %q", got, "10")

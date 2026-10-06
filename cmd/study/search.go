@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/model"
 	"github.com/prolific-oss/cli/ui"
 	"github.com/spf13/cobra"
@@ -16,7 +17,8 @@ import (
 type SearchOptions struct {
 	WorkspaceID string
 	Page        int
-	JSON        bool
+	Fields      string
+	Output      shared.OutputOptions
 }
 
 // NewSearchCommand searches studies without opening the interactive list.
@@ -25,7 +27,7 @@ func NewSearchCommand(c client.API, w io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "search <query>",
 		Short:   "Search accessible studies by name, internal name, or ID",
-		Long:    "Search studies on the server. Results are scoped to your access and optionally a workspace. Use --page for another page; the studies endpoint ignores limit/offset. JSON retains results and pagination metadata.",
+		Long:    "Search studies on the server. Results are scoped to your access and optionally a workspace. Use --page for another page; the studies endpoint ignores limit/offset. JSON emits an object with results, meta, and _links for pagination.",
 		Example: "prolific study search 'memory task' --workspace WORKSPACE_ID --json",
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -43,10 +45,21 @@ func NewSearchCommand(c client.API, w io.Writer) *cobra.Command {
 			if response.Results == nil {
 				response.Results = []model.Study{}
 			}
-			if opts.JSON {
-				return json.NewEncoder(w).Encode(response)
+			switch shared.ResolveFormat(opts.Output) {
+			case "json":
+				encoder := json.NewEncoder(w)
+				encoder.SetIndent("", "  ")
+				if err := encoder.Encode(response); err != nil {
+					return fmt.Errorf("error: %s", err)
+				}
+				return nil
+			case "csv":
+				if err := (ui.CsvRenderer[model.Study]{}).Render(response.Results, opts.Fields, w); err != nil {
+					return fmt.Errorf("error: %s", err)
+				}
+				return nil
 			}
-			if err := (ui.TableRenderer[model.Study]{}).Render(response.Results, "ID,Name,InternalName,Status", w); err != nil {
+			if err := (ui.TableRenderer[model.Study]{}).Render(response.Results, opts.Fields, w); err != nil {
 				return fmt.Errorf("error: %s", err)
 			}
 			if response.JSONAPIMeta != nil {
@@ -59,6 +72,7 @@ func NewSearchCommand(c client.API, w io.Writer) *cobra.Command {
 	}
 	cmd.Flags().StringVarP(&opts.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "Scope search to a workspace.")
 	cmd.Flags().IntVar(&opts.Page, "page", 1, "Result page (starting at 1).")
-	cmd.Flags().BoolVarP(&opts.JSON, "json", "j", false, "Output results and pagination metadata as JSON.")
+	cmd.Flags().StringVarP(&opts.Fields, "fields", "f", "ID,Name,InternalName,Status", "Comma separated fields to display in table or CSV output.")
+	shared.AddOutputFlags(cmd, &opts.Output)
 	return cmd
 }

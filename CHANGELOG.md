@@ -6,7 +6,9 @@
 
 ### Participant groups and studies
 
-- Add `participant search <query>` and `study search <query>` using server-side name search, with workspace scoping, plain table output, and `--json` preserving pagination metadata. Group search supports `--limit`/`--offset`; study search supports `--page`.
+- Rename `participant` to `participant-group`, retaining `participant` as a compatibility alias.
+
+- Add `participant-group search <query>` and `study search <query>` using server-side name search, with workspace scoping, table/CSV output with field selection, and `--json` preserving pagination metadata. Group search supports `--limit`/`--offset`; study search supports `--page`.
 
 ### Audience
 

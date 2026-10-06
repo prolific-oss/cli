@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/model"
 	"github.com/prolific-oss/cli/ui"
 	"github.com/spf13/cobra"
@@ -17,7 +18,8 @@ type SearchOptions struct {
 	WorkspaceID string
 	Limit       int
 	Offset      int
-	JSON        bool
+	Fields      string
+	Output      shared.OutputOptions
 }
 
 // NewSearchCommand searches participant group names on the server.
@@ -26,8 +28,8 @@ func NewSearchCommand(c client.API, w io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "search <query>",
 		Short:   "Search participant groups by name within a workspace",
-		Long:    "Search participant group names on the server. JSON retains results and pagination metadata; use --limit and --offset to retrieve further matches.",
-		Example: "prolific participant search 'pilot cohort' --workspace WORKSPACE_ID --json",
+		Long:    "Search participant group names on the server. JSON emits an object with results, meta, and _links for pagination; use --limit and --offset to retrieve further matches.",
+		Example: "prolific participant-group search 'pilot cohort' --workspace WORKSPACE_ID --json",
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			query := strings.TrimSpace(args[0])
@@ -47,10 +49,21 @@ func NewSearchCommand(c client.API, w io.Writer) *cobra.Command {
 			if response.Results == nil {
 				response.Results = []model.ParticipantGroup{}
 			}
-			if opts.JSON {
-				return json.NewEncoder(w).Encode(response)
+			switch shared.ResolveFormat(opts.Output) {
+			case "json":
+				encoder := json.NewEncoder(w)
+				encoder.SetIndent("", "  ")
+				if err := encoder.Encode(response); err != nil {
+					return fmt.Errorf("error: %s", err)
+				}
+				return nil
+			case "csv":
+				if err := (ui.CsvRenderer[model.ParticipantGroup]{}).Render(response.Results, opts.Fields, w); err != nil {
+					return fmt.Errorf("error: %s", err)
+				}
+				return nil
 			}
-			if err := (ui.TableRenderer[model.ParticipantGroup]{}).Render(response.Results, "ID,Name", w); err != nil {
+			if err := (ui.TableRenderer[model.ParticipantGroup]{}).Render(response.Results, opts.Fields, w); err != nil {
 				return fmt.Errorf("error: %s", err)
 			}
 			if response.JSONAPIMeta != nil {
@@ -64,6 +77,7 @@ func NewSearchCommand(c client.API, w io.Writer) *cobra.Command {
 	cmd.Flags().StringVarP(&opts.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "Workspace to search (required).")
 	cmd.Flags().IntVarP(&opts.Limit, "limit", "l", client.DefaultRecordLimit, "Maximum groups per page.")
 	cmd.Flags().IntVarP(&opts.Offset, "offset", "o", client.DefaultRecordOffset, "Number of matching groups to skip.")
-	cmd.Flags().BoolVarP(&opts.JSON, "json", "j", false, "Output results and pagination metadata as JSON.")
+	cmd.Flags().StringVarP(&opts.Fields, "fields", "f", "ID,Name", "Comma separated fields to display in table or CSV output.")
+	shared.AddOutputFlags(cmd, &opts.Output)
 	return cmd
 }

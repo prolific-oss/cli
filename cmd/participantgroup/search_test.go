@@ -92,3 +92,36 @@ func TestSearchRejectsInvalidInput(t *testing.T) {
 		require.Error(t, cmd.Execute())
 	}
 }
+
+func TestSearchOutputFormats(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		flags []string
+		csv   bool
+	}{
+		{name: "table", flags: []string{"-t"}},
+		{name: "non-interactive", flags: []string{"-n"}},
+		{name: "CSV", flags: []string{"-c"}, csv: true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := mock_client.NewMockAPI(gomock.NewController(t))
+			response := &client.ListParticipantGroupsResponse{Results: []model.ParticipantGroup{{ID: "id1", Name: "Memory, pilot"}}, JSONAPIMeta: &client.JSONAPIMeta{}}
+			response.Meta.Count = 42
+			c.EXPECT().SearchParticipantGroups("memory", "ws", client.DefaultRecordLimit, client.DefaultRecordOffset).Return(response, nil)
+			var output bytes.Buffer
+			cmd := participantgroup.NewSearchCommand(c, &output)
+			args := []string{"memory", "--workspace", "ws"}
+			args = append(args, tc.flags...)
+			args = append(args, "--fields", "Name")
+			cmd.SetArgs(args)
+			require.NoError(t, cmd.Execute())
+			if tc.csv {
+				require.Equal(t, "Name\n\"Memory, pilot\"\n", output.String())
+			} else {
+				require.Contains(t, output.String(), "Memory, pilot")
+				require.NotContains(t, output.String(), "id1")
+				require.Contains(t, output.String(), "Showing 1 record of 42")
+			}
+		})
+	}
+}

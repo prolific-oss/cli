@@ -7,11 +7,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// NewParticipantCommand creates a new `participant` command
+// NewParticipantCommand creates a new `participant-group` command
 func NewParticipantCommand(client client.API, w io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "participant",
-		Short: "Manage and view your participant groups",
+		Use:     "participant-group",
+		Aliases: []string{"participant"},
+		Short:   "Manage and view your participant groups",
 		Long: `List your participant groups
 
 Participant Groups allow you to create, modify, and use lists of participants

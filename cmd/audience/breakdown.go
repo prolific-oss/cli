@@ -29,6 +29,12 @@ filters) of a single breakdown filter.
 Provide the filters either as a -t/--template-path file, or directly via
 --filters and --breakdown — not both.
 
+Base filters can contain nested AND/OR groups: use filter_id "and" or "or"
+with a selected_filters array of child filters. The API validates allowed
+combinations for your workspace. The --breakdown filter remains a single
+choice or range filter, not an AND/OR group. See "prolific study create --help"
+and docs/examples/study-with-nested-filters.json for the base filter format.
+
 The result includes an "N/A" count: participants who match the base
 filters but don't fall into any of the breakdown filter's selected values
 or range — for example, because they haven't answered that screener
