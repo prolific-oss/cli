@@ -1,4 +1,3 @@
-//nolint:dupl // Similar patterns are expected for CLI commands
 package audience
 
 import (
@@ -11,17 +10,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// CountResult is the machine-readable shape emitted by --json.
-type CountResult struct {
-	Count int `json:"count"`
-}
-
 // NewCountCommand creates a new `audience count` command to count how many
 // participants match a set of filters, without creating a study or saving a
 // filter set.
 func NewCountCommand(client client.API, w io.Writer) *cobra.Command {
 	var in filterInput
-	var asJSON bool
 
 	cmd := &cobra.Command{
 		Use:   "count",
@@ -45,7 +38,7 @@ $ prolific audience count --filters '[{"filter_id":"age","selected_range":{"lowe
 Emit machine-readable output for scripting
 $ prolific audience count -t /path/to/filters.json -w <workspace-id> --json`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := in.validate(false); err != nil {
+			if err := in.validateCount(); err != nil {
 				return err
 			}
 
@@ -54,7 +47,7 @@ $ prolific audience count -t /path/to/filters.json -w <workspace-id> --json`,
 				return fmt.Errorf("error: %s", err)
 			}
 
-			rendered, err := RenderCount(count, asJSON)
+			rendered, err := RenderCount(count, in.JSON)
 			if err != nil {
 				return fmt.Errorf("error: %s", err)
 			}
@@ -65,10 +58,7 @@ $ prolific audience count -t /path/to/filters.json -w <workspace-id> --json`,
 		},
 	}
 
-	addFilterFlags(cmd, &in, false)
-	// -j is bound by hand rather than through shared.AddOutputFlags, which
-	// would claim -t for --table and collide with --template-path.
-	cmd.Flags().BoolVarP(&asJSON, "json", "j", false, "Output as JSON")
+	addCountFlags(cmd, &in)
 
 	return cmd
 }
@@ -90,11 +80,11 @@ func getCount(c client.API, in filterInput) (int, error) {
 	return response.Count, nil
 }
 
-// RenderCount produces output for an eligibility count. A zero is printed as
-// 0, matching the API and audience breakdown.
+// RenderCount produces output for an eligibility count. --json emits
+// client.EligibilityCountResponse, the API payload.
 func RenderCount(count int, asJSON bool) (string, error) {
 	if asJSON {
-		payload, err := json.Marshal(CountResult{Count: count})
+		payload, err := json.Marshal(client.EligibilityCountResponse{Count: count})
 		if err != nil {
 			return "", err
 		}
