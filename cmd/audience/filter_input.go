@@ -18,6 +18,7 @@ type filterInput struct {
 	FiltersJSON   string
 	BreakdownJSON string
 	WorkspaceID   string
+	JSON          bool
 }
 
 // filterSpec is the shape every -t/--template-path file (and the
@@ -29,9 +30,20 @@ type filterSpec struct {
 	BreakdownFilter model.Filter   `mapstructure:"breakdown_filter"`
 }
 
-// addFilterFlags registers the shared -t/--template-path, --filters, and
-// -w/--workspace flags on cmd, bound to in. withBreakdown also registers
-// --breakdown, for commands that split results by a second filter.
+// addCountFlags registers -t/--template-path, --filters, -w/--workspace, and
+// -j/--json on cmd, bound to in.
+func addCountFlags(cmd *cobra.Command, in *filterInput) {
+	addFilterFlags(cmd, in, false)
+}
+
+// addBreakdownFlags registers the count flags plus --breakdown on cmd, bound
+// to in.
+func addBreakdownFlags(cmd *cobra.Command, in *filterInput) {
+	addFilterFlags(cmd, in, true)
+}
+
+// addFilterFlags is the shared registrar. Call addCountFlags or
+// addBreakdownFlags from command constructors.
 func addFilterFlags(cmd *cobra.Command, in *filterInput, withBreakdown bool) {
 	flags := cmd.Flags()
 
@@ -48,6 +60,17 @@ func addFilterFlags(cmd *cobra.Command, in *filterInput, withBreakdown bool) {
 		flags.StringVar(&in.BreakdownJSON, "breakdown", "", `JSON object for the single filter to break results down by, e.g. '{"filter_id":"handedness","selected_values":["0","1"]}' for a choice filter (selected_values is required) or '{"filter_id":"age","selected_range":{"lower":18,"upper":65}}' for a range filter. Required with --filters; alternative to -t/--template-path.`)
 	}
 	flags.StringVarP(&in.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "The workspace ID to count eligible participants for (required).")
+	// -j is bound by hand rather than through shared.AddOutputFlags, which
+	// would claim -t for --table and collide with --template-path.
+	flags.BoolVarP(&in.JSON, "json", "j", false, "Output as JSON")
+}
+
+func (in filterInput) validateCount() error {
+	return in.validate(false)
+}
+
+func (in filterInput) validateBreakdown() error {
+	return in.validate(true)
 }
 
 // validate checks that exactly one of a template file or --filters was
