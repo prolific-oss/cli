@@ -4,13 +4,16 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"text/tabwriter"
 
 	"github.com/prolific-oss/cli/client"
-	"github.com/prolific-oss/cli/ui"
+	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
+
+// defaultListFields is the default column selection for participant groups,
+// shared by the list and search commands so both render the same table.
+const defaultListFields = "ID,Name"
 
 // ListOptions is the options for the listing participant groups command.
 type ListOptions struct {
@@ -18,6 +21,8 @@ type ListOptions struct {
 	WorkspaceID string
 	Limit       int
 	Offset      int
+	Fields      string
+	Output      shared.OutputOptions
 }
 
 // NewListCommand creates a new command to deal with participant groups
@@ -35,6 +40,11 @@ Participant groups are assigned to a workspace.
 List the participant groups you have defined in a given workspace
 
 $ prolific participant-group list -w 6261321e223a605c7a4f7623
+
+You can output as a table, CSV or JSON
+$ prolific participant-group list -w 6261321e223a605c7a4f7623 --table
+$ prolific participant-group list -w 6261321e223a605c7a4f7623 --csv
+$ prolific participant-group list -w 6261321e223a605c7a4f7623 --json
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
@@ -52,35 +62,24 @@ $ prolific participant-group list -w 6261321e223a605c7a4f7623
 	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "Filter participant groups by workspace.")
 	flags.IntVarP(&opts.Limit, "limit", "l", client.DefaultRecordLimit, "Limit the number of participant groups returned")
 	flags.IntVarP(&opts.Offset, "offset", "o", client.DefaultRecordOffset, "The number of participant groups to offset")
+	flags.StringVarP(&opts.Fields, "fields", "f", defaultListFields, "Comma separated fields to display in table or CSV output.")
+	shared.AddOutputFlags(cmd, &opts.Output)
 
 	return cmd
 }
 
 // render will list your participant groups
-func render(client client.API, opts ListOptions, w io.Writer) error {
+func render(c client.API, opts ListOptions, w io.Writer) error {
 	if opts.WorkspaceID == "" {
 		return errors.New("please provide a workspace ID")
 	}
 
-	groups, err := client.GetParticipantGroups(opts.WorkspaceID, opts.Limit, opts.Offset)
+	groups, err := c.GetParticipantGroups(opts.WorkspaceID, opts.Limit, opts.Offset)
 	if err != nil {
 		return err
 	}
 
-	count := 0
-	if groups.JSONAPIMeta != nil {
-		count = groups.Meta.Count
-	}
+	page := client.PageOf(groups.Results, groups.JSONAPIMeta)
 
-	tw := tabwriter.NewWriter(w, 0, 1, 1, ' ', 0)
-	fmt.Fprintf(tw, "%s\t%s\n", "ID", "Name")
-	for _, group := range groups.Results {
-		fmt.Fprintf(tw, "%s\t%s\n", group.ID, group.Name)
-	}
-
-	_ = tw.Flush()
-
-	fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(groups.Results), count))
-
-	return nil
+	return shared.RenderRecords(w, opts.Output, opts.Fields, page.Results, page.Total)
 }

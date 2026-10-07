@@ -19,21 +19,20 @@ func (r TableRenderer[T]) Render(items []T, fields string, w io.Writer) error {
 
 	fieldList := splitFields(fields)
 
-	for _, field := range fieldList {
-		fmt.Fprintf(tw, "%s\t", strings.Trim(field, " "))
+	headings := make([]string, len(fieldList))
+	for i, field := range fieldList {
+		headings[i] = strings.Trim(field, " ")
 	}
-	fmt.Fprint(tw, "\n")
+	fmt.Fprintln(tw, strings.Join(headings, "\t"))
 
 	for _, item := range items {
-		for _, field := range fieldList {
-			v := reflect.ValueOf(item).FieldByName(strings.Trim(field, " "))
-			if !v.IsValid() {
-				fmt.Fprintf(tw, "\t")
-				continue
+		cells := make([]string, len(fieldList))
+		for i, field := range fieldList {
+			if v := reflect.ValueOf(item).FieldByName(strings.Trim(field, " ")); v.IsValid() {
+				cells[i] = fmt.Sprintf("%v", v)
 			}
-			fmt.Fprintf(tw, "%v\t", v)
 		}
-		fmt.Fprint(tw, "\n")
+		fmt.Fprintln(tw, strings.Join(cells, "\t"))
 	}
 
 	return tw.Flush()

@@ -22,6 +22,23 @@ type Page[T any] struct {
 // PageFetcher fetches one page of results using the given limit and offset.
 type PageFetcher[T any] func(limit, offset int) (Page[T], error)
 
+// PageOf builds a Page from a list response's results and its meta block,
+// which the API omits on some responses. It keeps the nil check in one place
+// rather than in every fetcher.
+func PageOf[T any](results []T, meta *JSONAPIMeta) Page[T] {
+	page := Page[T]{Results: results}
+	if meta != nil {
+		page.Total = meta.Meta.Count
+	}
+	return page
+}
+
+// pageLimitError reports that a walk gave up before reaching the end of a
+// collection, so an API that keeps returning full pages cannot loop forever.
+func pageLimitError() error {
+	return fmt.Errorf("stopped after fetching %d pages without reaching the end of the collection", maxPages)
+}
+
 // EachPage fetches pages in order and passes each to yield as it arrives, so
 // callers can stream output rather than waiting for the whole collection.
 //
@@ -44,7 +61,7 @@ func EachPage[T any](want, pageSize int, fetch PageFetcher[T], yield func(Page[T
 
 	for pages := 0; ; pages++ {
 		if pages >= maxPages {
-			return fmt.Errorf("stopped after fetching %d pages without reaching the end of the collection", maxPages)
+			return pageLimitError()
 		}
 
 		limit := pageSize

@@ -24,7 +24,6 @@ import (
 	"github.com/prolific-oss/cli/model"
 	"github.com/prolific-oss/cli/version"
 	"github.com/spf13/viper"
-	"golang.org/x/exp/slices"
 )
 
 // DefaultRecordOffset defines how many records we should offset to start with.
@@ -335,118 +334,12 @@ func (c *Client) Execute(method, url string, body any, response any) (*http.Resp
 	return httpResponse, nil
 }
 
-// CreateStudy is responsible for hitting the Prolific API to create a study.
-func (c *Client) CreateStudy(study model.CreateStudy) (*model.Study, error) {
-	var response model.Study
-
-	url := "/api/v1/studies/"
-	_, err := c.ExecuteBuilder().
-		PostRequest(url).
-		Body(study).
-		Status(http.StatusCreated).
-		Decode(&response).
-		Execute()
-	if err != nil {
-		return nil, err
-	}
-
-	return &response, nil
-}
-
 // GetMe will return your user account details.
 func (c *Client) GetMe() (*MeResponse, error) {
 	var response MeResponse
 
 	url := "/api/v1/users/me"
 	if _, err := c.ExecuteBuilder().Get(url, &response); err != nil {
-		return nil, err
-	}
-
-	return &response, nil
-}
-
-// DuplicateStudy will duplicate an existing study.
-func (c *Client) DuplicateStudy(ID string) (*model.Study, error) {
-	var response model.Study
-
-	url := fmt.Sprintf("/api/v1/studies/%s/clone/", ID)
-	_, err := c.ExecuteBuilder().
-		PostRequest(url).
-		Status(http.StatusOK).
-		Decode(&response).
-		Execute()
-	if err != nil {
-		return nil, err
-	}
-
-	return &response, nil
-}
-
-// GetStudies will return you a list of Study objects.
-func (c *Client) GetStudies(status, projectID string) (*ListStudiesResponse, error) {
-	var response ListStudiesResponse
-	var url string
-
-	// Validate status if it's not "all" or empty
-	if status != "" && status != model.StatusAll {
-		if !slices.Contains(model.StudyListStatus, status) {
-			return nil, fmt.Errorf("%s is not a valid status: %s", status, strings.Join(model.StudyListStatus, ", "))
-		}
-	}
-
-	// Build status fragment if status filtering is needed
-	statusFragment := ""
-	if status != "" && status != model.StatusAll {
-		if status == model.StatusUnpublished {
-			statusFragment = "published=0"
-		} else {
-			statusFragment = fmt.Sprintf("%s=1", status)
-		}
-	}
-
-	// Build URL based on whether projectID is provided
-	if projectID != "" {
-		if statusFragment != "" {
-			url = fmt.Sprintf("/api/v1/projects/%s/studies/?%s", projectID, statusFragment)
-		} else {
-			url = fmt.Sprintf("/api/v1/projects/%s/studies/", projectID)
-		}
-	} else {
-		if statusFragment != "" {
-			url = fmt.Sprintf("/api/v1/studies/?%s", statusFragment)
-		} else {
-			url = "/api/v1/studies/"
-		}
-	}
-
-	_, err := c.ExecuteBuilder().GetInto(url, &response)
-	if err != nil {
-		return nil, err
-	}
-
-	return &response, nil
-}
-
-// GetStudy will return a single study
-func (c *Client) GetStudy(ID string) (*model.Study, error) {
-	var response model.Study
-
-	url := fmt.Sprintf("/api/v1/studies/%s", ID)
-	_, err := c.ExecuteBuilder().Get(url, &response)
-	if err != nil {
-		return nil, err
-	}
-
-	return &response, nil
-}
-
-// GetStudySubmissionCounts returns submission counts grouped by status for a study.
-func (c *Client) GetStudySubmissionCounts(ID string) (*model.SubmissionCounts, error) {
-	var response model.SubmissionCounts
-
-	url := fmt.Sprintf("/api/v1/studies/%s/submissions/counts/", ID)
-	_, err := c.ExecuteBuilder().Get(url, &response)
-	if err != nil {
 		return nil, err
 	}
 
@@ -513,29 +406,6 @@ func (c *Client) BulkApproveSubmissions(payload BulkApproveSubmissionsPayload) e
 	}
 
 	return nil
-}
-
-// TransitionStudy will move the study status to a desired state.
-func (c *Client) TransitionStudy(ID, action string) (*TransitionStudyResponse, error) {
-	var response TransitionStudyResponse
-
-	transition := struct {
-		Action string `json:"action"`
-	}{
-		Action: action,
-	}
-
-	url := fmt.Sprintf("/api/v1/studies/%s/transition/", ID)
-	_, err := c.ExecuteBuilder().
-		PostRequest(url).
-		Body(transition).
-		Decode(&response).
-		Execute()
-	if err != nil {
-		return nil, err
-	}
-
-	return &response, nil
 }
 
 // GetCampaigns will return you a list of Campaign objects.
@@ -641,40 +511,6 @@ func (c *Client) DeleteCollectionExport(collectionID, exportID string) error {
 	return nil
 }
 
-// UpdateStudy is responsible for updating the Study with a PATCH request.
-func (c *Client) UpdateStudy(ID string, study any) (*model.Study, error) {
-	var response model.Study
-
-	url := fmt.Sprintf("/api/v1/studies/%s/", ID)
-	_, err := c.ExecuteBuilder().
-		PatchRequest(url).
-		Body(study).
-		Status(http.StatusOK).
-		Decode(&response).
-		Execute()
-	if err != nil {
-		return nil, err
-	}
-
-	return &response, nil
-}
-
-// GetStudyCredentialsUsageReportCSV will return the credentials usage report for a study as CSV.
-func (c *Client) GetStudyCredentialsUsageReportCSV(ID string) (string, error) {
-	endpointURL := fmt.Sprintf("/api/v1/studies/%s/credentials/report/", ID)
-	httpResponse, err := c.ExecuteBuilder().GetRequest(endpointURL).Execute()
-	if err != nil {
-		return "", err
-	}
-
-	responseBody, err := io.ReadAll(httpResponse.Body)
-	if err != nil {
-		return "", fmt.Errorf("unable to read response body: %w", err)
-	}
-
-	return string(responseBody), nil
-}
-
 // ExportDemographics triggers a demographic data export for all submissions in a study.
 func (c *Client) ExportDemographics(ID string) (string, error) {
 	url := fmt.Sprintf("/api/v1/studies/%s/demographic-export/", ID)
@@ -689,23 +525,6 @@ func (c *Client) ExportDemographics(ID string) (string, error) {
 	}
 
 	return string(responseBody), nil
-}
-
-// TestStudy creates a test run of a study to validate configuration before going live.
-func (c *Client) TestStudy(ID string) (*TestStudyResponse, error) {
-	var response TestStudyResponse
-
-	url := fmt.Sprintf("/api/v1/studies/%s/test-study/", ID)
-	_, err := c.ExecuteBuilder().
-		PostRequest(url).
-		Status(http.StatusOK).
-		Decode(&response).
-		Execute()
-	if err != nil {
-		return nil, err
-	}
-
-	return &response, nil
 }
 
 // GetHooks will return the subscriptions to event types for current user.
@@ -956,89 +775,6 @@ func (c *Client) CreateProject(workspaceID string, project model.Project) (*Crea
 	_, err := c.ExecuteBuilder().
 		PostRequest(url).
 		Body(project).
-		Decode(&response).
-		Execute()
-	if err != nil {
-		return nil, err
-	}
-
-	return &response, nil
-}
-
-// GetParticipantGroups will return all the participant groups you have access to for a given WorkspaceID
-func (c *Client) GetParticipantGroups(workspaceID string, limit, offset int) (*ListParticipantGroupsResponse, error) {
-	var response ListParticipantGroupsResponse
-
-	params := url.Values{"workspace_id": {workspaceID}, "limit": {strconv.Itoa(limit)}, "offset": {strconv.Itoa(offset)}}
-	_, err := c.ExecuteBuilder().GetInto("/api/v1/participant-groups/?"+params.Encode(), &response)
-	if err != nil {
-		return nil, err
-	}
-
-	return &response, nil
-}
-
-// GetParticipantGroup will return the membership in the group
-func (c *Client) GetParticipantGroup(groupID string) (*ViewParticipantGroupResponse, error) {
-	var response ViewParticipantGroupResponse
-
-	url := fmt.Sprintf("/api/v1/participant-groups/%s/participants/", groupID)
-	_, err := c.ExecuteBuilder().GetInto(url, &response)
-	if err != nil {
-		return nil, err
-	}
-
-	return &response, nil
-}
-
-// CreateParticipantGroup will create a new participant group
-func (c *Client) CreateParticipantGroup(group model.CreateParticipantGroup) (*CreateParticipantGroupResponse, error) {
-	var response CreateParticipantGroupResponse
-
-	url := "/api/v1/participant-groups/"
-	_, err := c.ExecuteBuilder().
-		PostRequest(url).
-		Body(group).
-		Decode(&response).
-		Execute()
-	if err != nil {
-		return nil, err
-	}
-
-	return &response, nil
-}
-
-func (c *Client) RemoveParticipantGroupMembers(groupID string, participantIDs []string) (*ViewParticipantGroupResponse, error) {
-	payload := RemoveParticipantGroupMembersPayload{
-		ParticipantIDs: participantIDs,
-	}
-	var response ViewParticipantGroupResponse
-
-	url := fmt.Sprintf("/api/v1/participant-groups/%s/participants/", groupID)
-	_, err := c.ExecuteBuilder().
-		DeleteRequest(url).
-		Body(payload).
-		Status(http.StatusOK).
-		Decode(&response).
-		Execute()
-	if err != nil {
-		return nil, err
-	}
-
-	return &response, nil
-}
-
-func (c *Client) AddParticipantGroupMembers(groupID string, participantIDs []string) (*ViewParticipantGroupResponse, error) {
-	payload := AddParticipantGroupMembersPayload{
-		ParticipantIDs: participantIDs,
-	}
-	var response ViewParticipantGroupResponse
-
-	url := fmt.Sprintf("/api/v1/participant-groups/%s/participants/", groupID)
-	_, err := c.ExecuteBuilder().
-		PostRequest(url).
-		Body(payload).
-		Status(http.StatusOK).
 		Decode(&response).
 		Execute()
 	if err != nil {

@@ -128,11 +128,7 @@ func renderSearch(cmd *cobra.Command, c client.API, opts SearchOptions, w io.Wri
 		if err != nil {
 			return client.Page[model.FilterSearchResult]{}, err
 		}
-		page := client.Page[model.FilterSearchResult]{Results: response.Results}
-		if response.JSONAPIMeta != nil {
-			page.Total = response.Meta.Count
-		}
-		return page, nil
+		return client.PageOf(response.Results, response.JSONAPIMeta), nil
 	}
 
 	switch shared.ResolveFormat(opts.Output) {

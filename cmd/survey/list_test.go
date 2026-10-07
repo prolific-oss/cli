@@ -61,7 +61,7 @@ func TestListSurveys(t *testing.T) {
 					},
 				},
 			},
-			expectedOutput: "ID                                   Title            DateCreated                   \n6ba7b810-9dad-11d1-80b4-00c04fd430c8 Screening Survey 2026-01-15 00:00:00 +0000 UTC \n7ca8c921-0ebe-22e2-91c5-11d15ge541d9 Follow-up Survey 2026-02-20 00:00:00 +0000 UTC \n",
+			expectedOutput: "ID                                   Title            DateCreated\n6ba7b810-9dad-11d1-80b4-00c04fd430c8 Screening Survey 2026-01-15 00:00:00 +0000 UTC\n7ca8c921-0ebe-22e2-91c5-11d15ge541d9 Follow-up Survey 2026-02-20 00:00:00 +0000 UTC\n",
 		},
 		{
 			name:     "json output",
