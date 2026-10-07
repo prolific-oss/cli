@@ -80,20 +80,32 @@ var (
 	reOpID       = regexp.MustCompile(`operationID:\s*"([^"]+)"`)
 	reSkip       = regexp.MustCompile(`skip:\s*"((?:[^"\\]|\\.)*)"`)
 	reClientCall = regexp.MustCompile(`\bc\.([A-Z]\w+)\(`)
+	// reNoteTag matches the leading tag of an explanatory note on an entry,
+	// such as SPECGAP or HARNESSGAP, which is never how a section is labelled.
+	reNoteTag = regexp.MustCompile(`^[A-Z]{3,}:`)
 )
+
+// isSectionLabel reports whether the comment at lines[i], whose text is the
+// part after "// ", is a section label ("// Studies") rather than part of a
+// tagged note about the entry below it ("// SPECGAP: ...", and the lines that
+// continue it). Notes used to be read as labels, which replaced the section
+// heading in the generated README with the note's first line.
+//
+// A label is the first line of its comment block and carries no tag prefix.
+// Deliberately not a length or punctuation test: a long section label, or one
+// containing a comma, would silently file its operations under the previous
+// section.
+func isSectionLabel(lines []string, i int, text string) bool {
+	isComment := func(j int) bool {
+		return j >= 0 && j < len(lines) && strings.HasPrefix(lines[j], "\t//")
+	}
+	return !isComment(i-1) && !reNoteTag.MatchString(text)
+}
 
 // parseOperations extracts the operations table from contract_test.go by
 // scanning for top-level `{operationID: ...}` entries (tracking brace depth
 // so multi-line `call: func(...) {...}` closures don't get split), and the
 // `// Section` comments that group them.
-// isSectionLabel reports whether a tab-indented comment in the operations table
-// is a section label ("// Studies") rather than a note about the entry below it
-// ("// SPECGAP: ..."). Labels are short and carry no sentence punctuation; notes
-// do, and used to end up as the section heading in the generated README.
-func isSectionLabel(text string) bool {
-	return len(text) <= 40 && !strings.ContainsAny(text, ".:;,")
-}
-
 func parseOperations(path string) ([]entry, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -122,7 +134,7 @@ func parseOperations(path string) ([]entry, error) {
 	for i < end {
 		line := lines[i]
 
-		if m := reSection.FindStringSubmatch(line); m != nil && isSectionLabel(m[1]) {
+		if m := reSection.FindStringSubmatch(line); m != nil && isSectionLabel(lines, i, m[1]) {
 			section = m[1]
 			i++
 			continue

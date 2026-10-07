@@ -52,13 +52,23 @@ func EachNumberedPage[T any](want int, fetch NumberedPageFetcher[T], yield func(
 
 		delivered += len(result.Results)
 
-		if fetched == 0 || fetched < pageSize {
+		if fetched == 0 {
 			return nil
 		}
 		if want > 0 && delivered >= want {
 			return nil
 		}
-		if total > 0 && delivered >= total {
+		if total > 0 {
+			// The count is authoritative: a page can come back short because
+			// the server filtered an item out, so stopping on a short page
+			// here would silently truncate the walk. An over-reported count
+			// costs one extra request, which returns empty and stops above.
+			if delivered >= total {
+				return nil
+			}
+			continue
+		}
+		if fetched < pageSize {
 			return nil
 		}
 	}

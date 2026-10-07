@@ -46,7 +46,7 @@ Output as JSON for scripting or AI agents
 $ prolific study search memory --json`,
 		Args: cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := renderSearch(c, opts, args, w); err != nil {
+			if err := renderSearch(cmd, c, opts, args, w); err != nil {
 				return fmt.Errorf("error: %s", err)
 			}
 
@@ -54,12 +54,15 @@ $ prolific study search memory --json`,
 		},
 	}
 
-	shared.AddSearchFlags(cmd, &opts, defaultSearchFields, "Scope the search to a workspace.")
+	shared.AddSearchFlags(cmd, &opts, shared.SearchFlags{
+		DefaultFields:  defaultSearchFields,
+		WorkspaceUsage: "Scope the search to a workspace.",
+	})
 
 	return cmd
 }
 
-func renderSearch(c client.API, opts shared.SearchOptions, args []string, w io.Writer) error {
+func renderSearch(cmd *cobra.Command, c client.API, opts shared.SearchOptions, args []string, w io.Writer) error {
 	query, err := shared.SearchQuery(args)
 	if err != nil {
 		return err
@@ -83,5 +86,5 @@ func renderSearch(c client.API, opts shared.SearchOptions, args []string, w io.W
 		return err
 	}
 
-	return shared.RenderRecords(w, opts.Output, opts.Fields, records, total)
+	return shared.RenderRecordsPaged(cmd, w, opts.Output, opts.Fields, records, total)
 }

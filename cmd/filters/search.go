@@ -1,10 +1,8 @@
 package filters
 
 import (
-	"errors"
 	"fmt"
 	"io"
-	"strings"
 
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/shared"
@@ -12,7 +10,6 @@ import (
 	"github.com/prolific-oss/cli/ui"
 	uifilters "github.com/prolific-oss/cli/ui/filters"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // maxSearchQueryLength is the maximum length of a search query, in characters,
@@ -23,19 +20,9 @@ const maxSearchQueryLength = 200
 // search. It matches the API's default page size.
 const DefaultSearchLimit = 25
 
-// SearchOptions is the options for the filter search command.
-type SearchOptions struct {
-	Query       string
-	WorkspaceID string
-	Limit       int
-	All         bool
-	Output      shared.OutputOptions
-	Fields      string
-}
-
 // NewSearchCommand creates the `filters search` command.
 func NewSearchCommand(c client.API, w io.Writer) *cobra.Command {
-	var opts SearchOptions
+	var opts shared.SearchOptions
 
 	cmd := &cobra.Command{
 		Use:   "search <query>",
@@ -85,9 +72,7 @@ Output as JSON for scripting or AI agents
 $ prolific filters search developer --json`,
 		Args: cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			opts.Query = strings.TrimSpace(strings.Join(args, " "))
-
-			if err := renderSearch(cmd, c, opts, w); err != nil {
+			if err := renderSearch(cmd, c, opts, args, w); err != nil {
 				return fmt.Errorf("error: %s", err)
 			}
 
@@ -95,36 +80,31 @@ $ prolific filters search developer --json`,
 		},
 	}
 
-	flags := cmd.Flags()
-	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "Scope the search to filters available in this workspace.")
-	flags.IntVarP(&opts.Limit, "limit", "l", DefaultSearchLimit, "Maximum number of filters to return. Use 0 to fetch every match.")
-	flags.BoolVarP(&opts.All, "all", "a", false, "Return every matching filter (same as --limit 0)")
-	flags.StringVar(&opts.Fields, "fields", uifilters.SearchListFields, "Comma-separated list of columns for table or CSV output")
-	shared.AddOutputFlags(cmd, &opts.Output)
-
-	cmd.MarkFlagsMutuallyExclusive("all", "limit")
+	shared.AddSearchFlags(cmd, &opts, shared.SearchFlags{
+		DefaultFields:  uifilters.SearchListFields,
+		DefaultLimit:   DefaultSearchLimit,
+		WorkspaceUsage: "Scope the search to filters available in this workspace.",
+	})
 
 	return cmd
 }
 
-func renderSearch(cmd *cobra.Command, c client.API, opts SearchOptions, w io.Writer) error {
-	if opts.Query == "" {
-		return errors.New("please provide a search query")
+func renderSearch(cmd *cobra.Command, c client.API, opts shared.SearchOptions, args []string, w io.Writer) error {
+	query, err := shared.SearchQuery(args)
+	if err != nil {
+		return err
 	}
-	if len([]rune(opts.Query)) > maxSearchQueryLength {
+	if len([]rune(query)) > maxSearchQueryLength {
 		return fmt.Errorf("search query must be at most %d characters", maxSearchQueryLength)
 	}
 
-	if opts.Limit < 0 {
-		return errors.New("limit must be greater than or equal to 0")
-	}
-	want := opts.Limit
-	if opts.All {
-		want = 0
+	want, err := opts.Want()
+	if err != nil {
+		return err
 	}
 
 	fetch := func(limit, offset int) (client.Page[model.FilterSearchResult], error) {
-		response, err := c.SearchFilters(opts.Query, opts.WorkspaceID, limit, offset)
+		response, err := c.SearchFilters(query, opts.WorkspaceID, limit, offset)
 		if err != nil {
 			return client.Page[model.FilterSearchResult]{}, err
 		}
@@ -161,11 +141,11 @@ func renderSearch(cmd *cobra.Command, c client.API, opts SearchOptions, w io.Wri
 	// Show progress on stderr while the first page loads. It is cleared as
 	// soon as output begins, or before an error is returned, and is a no-op
 	// when stderr is not a terminal.
-	clearStatus := ui.Status(fmt.Sprintf("Searching filters for %q…", opts.Query))
+	clearStatus := ui.Status(fmt.Sprintf("Searching filters for %q…", query))
 	defer clearStatus()
 
 	render := func(out io.Writer) error {
-		return streamSearchResults(out, opts.Query, want, fetch, clearStatus)
+		return streamSearchResults(out, query, want, fetch, clearStatus)
 	}
 	if shared.NoPager(cmd) {
 		return render(w)

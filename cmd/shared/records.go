@@ -5,6 +5,7 @@ import (
 	"io"
 
 	"github.com/prolific-oss/cli/ui"
+	"github.com/spf13/cobra"
 )
 
 // RenderRecords writes a page of records in the format selected by out.
@@ -17,6 +18,21 @@ import (
 //
 // Commands call this instead of switching on the format themselves, so the
 // output contract stays identical across the CLI.
+// RenderRecordsPaged renders like RenderRecords, but when no format flag was
+// given and the output is an interactive terminal it sends the table through
+// the user's pager, so a large result set doesn't scroll past. An explicit
+// --json/--csv/--table, or --no-pager, writes straight out: that is scripted
+// or machine-read output. This mirrors what `filters search` already does.
+func RenderRecordsPaged[T any](cmd *cobra.Command, w io.Writer, out OutputOptions, fields string, records []T, total int) error {
+	if ResolveFormat(out) != "" || NoPager(cmd) {
+		return RenderRecords(w, out, fields, records, total)
+	}
+
+	return ui.Page(cmd.Context(), w, func(paged io.Writer) error {
+		return RenderRecords(paged, out, fields, records, total)
+	})
+}
+
 func RenderRecords[T any](w io.Writer, out OutputOptions, fields string, records []T, total int) error {
 	switch ResolveFormat(out) {
 	case "json":

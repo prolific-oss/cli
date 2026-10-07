@@ -64,7 +64,7 @@ func TestAddSearchFlagsRegistersTheCommonSurface(t *testing.T) {
 	var opts shared.SearchOptions
 	cmd := &cobra.Command{Use: "search"}
 
-	shared.AddSearchFlags(cmd, &opts, "ID,Name", "Workspace to search.")
+	shared.AddSearchFlags(cmd, &opts, shared.SearchFlags{DefaultFields: "ID,Name", WorkspaceUsage: "Workspace to search."})
 
 	for _, name := range []string{"workspace", "limit", "all", "fields", "json", "csv", "table"} {
 		require.NotNil(t, cmd.Flags().Lookup(name), "flag %q must be registered", name)
@@ -73,13 +73,23 @@ func TestAddSearchFlagsRegistersTheCommonSurface(t *testing.T) {
 	require.Equal(t, "Workspace to search.", cmd.Flags().Lookup("workspace").Usage)
 
 	require.NoError(t, cmd.Flags().Parse(nil))
-	require.Equal(t, client.DefaultRecordLimit, opts.Limit)
+	require.Equal(t, client.DefaultRecordLimit, opts.Limit, "a zero DefaultLimit falls back to the record limit")
+}
+
+func TestAddSearchFlagsHonoursAPerResourceLimitDefault(t *testing.T) {
+	var opts shared.SearchOptions
+	cmd := &cobra.Command{Use: "search"}
+
+	shared.AddSearchFlags(cmd, &opts, shared.SearchFlags{DefaultFields: "ID", DefaultLimit: 25})
+
+	require.NoError(t, cmd.Flags().Parse(nil))
+	require.Equal(t, 25, opts.Limit)
 }
 
 func TestAddSearchFlagsMakesAllAndLimitMutuallyExclusive(t *testing.T) {
 	var opts shared.SearchOptions
 	cmd := &cobra.Command{Use: "search", RunE: func(*cobra.Command, []string) error { return nil }}
-	shared.AddSearchFlags(cmd, &opts, "ID,Name", "Workspace to search.")
+	shared.AddSearchFlags(cmd, &opts, shared.SearchFlags{DefaultFields: "ID,Name", WorkspaceUsage: "Workspace to search."})
 	cmd.SetArgs([]string{"--all", "--limit", "10"})
 
 	require.ErrorContains(t, cmd.Execute(), "none of the others can be")

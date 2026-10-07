@@ -71,6 +71,15 @@ func TestParseOperationsIgnoresEntryNotesWhenNamingSections(t *testing.T) {
 	}
 }
 
+func TestIsSectionLabelRejectsNoteContinuationLines(t *testing.T) {
+	// The second line of a SPECGAP note starts with a capital and carries no
+	// tag, so only its position inside the comment block rules it out.
+	lines := []string{"", "	// SPECGAP: something", "	// Those parameters are not validated.", "	{operationID: \"x\"},"}
+	if isSectionLabel(lines, 2, "Those parameters are not validated.") {
+		t.Error("a note continuation line must not be read as a section label")
+	}
+}
+
 func TestIsSectionLabel(t *testing.T) {
 	for _, tc := range []struct {
 		text string
@@ -79,11 +88,12 @@ func TestIsSectionLabel(t *testing.T) {
 		{text: "Studies", want: true},
 		{text: "Participant Groups", want: true},
 		{text: "AI Task Builder", want: true},
+		{text: "AI Task Builder — Collections, Exports and Batches", want: true},
 		{text: "SPECGAP: SearchStudies hits this operation", want: false},
 		{text: "HARNESSGAP: kin-openapi mis-decodes a param", want: false},
-		{text: "A note that runs on at some considerable length indeed", want: false},
 	} {
-		if got := isSectionLabel(tc.text); got != tc.want {
+		lines := []string{"", "	// " + tc.text, "	{operationID: \"x\"},"}
+		if got := isSectionLabel(lines, 1, tc.text); got != tc.want {
 			t.Errorf("isSectionLabel(%q) = %v, want %v", tc.text, got, tc.want)
 		}
 	}

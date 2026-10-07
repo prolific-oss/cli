@@ -17,18 +17,15 @@ type TableRenderer[T any] struct{}
 func (r TableRenderer[T]) Render(items []T, fields string, w io.Writer) error {
 	tw := tabwriter.NewWriter(w, 0, 1, 1, ' ', 0)
 
+	// splitFields has already trimmed every name and dropped the empties.
 	fieldList := splitFields(fields)
 
-	headings := make([]string, len(fieldList))
-	for i, field := range fieldList {
-		headings[i] = strings.Trim(field, " ")
-	}
-	fmt.Fprintln(tw, strings.Join(headings, "\t"))
+	fmt.Fprintln(tw, strings.Join(fieldList, "\t"))
 
 	for _, item := range items {
 		cells := make([]string, len(fieldList))
 		for i, field := range fieldList {
-			if v := reflect.ValueOf(item).FieldByName(strings.Trim(field, " ")); v.IsValid() {
+			if v := reflect.ValueOf(item).FieldByName(field); v.IsValid() {
 				cells[i] = fmt.Sprintf("%v", v)
 			}
 		}
