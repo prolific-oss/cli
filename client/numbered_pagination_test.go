@@ -9,9 +9,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// fakeNumberedFetcher serves a fixed collection of ints in pages of pageSize,
-// recording the page number of each request. Page numbers start at 1.
-func fakeNumberedFetcher(collection []int, pageSize int, reportTotal bool) (client.NumberedPageFetcher[int], *[]int) {
+// numberedPageSize is the page size the fake endpoint serves.
+const numberedPageSize = 100
+
+// fakeNumberedFetcher serves a fixed collection of ints in pages of
+// numberedPageSize, recording the page number of each request. Page numbers
+// start at 1.
+func fakeNumberedFetcher(collection []int, reportTotal bool) (client.NumberedPageFetcher[int], *[]int) {
+	pageSize := numberedPageSize
 	pages := &[]int{}
 	return func(page int) (client.Page[int], error) {
 		*pages = append(*pages, page)
@@ -32,7 +37,7 @@ func fakeNumberedFetcher(collection []int, pageSize int, reportTotal bool) (clie
 }
 
 func TestFetchNumberedPagesStopsOnceWantIsSatisfied(t *testing.T) {
-	fetch, pages := fakeNumberedFetcher(seq(500), 100, true)
+	fetch, pages := fakeNumberedFetcher(seq(500), true)
 
 	items, total, err := client.FetchNumberedPages(25, fetch)
 
@@ -43,7 +48,7 @@ func TestFetchNumberedPagesStopsOnceWantIsSatisfied(t *testing.T) {
 }
 
 func TestFetchNumberedPagesSpansPagesAndTrimsToWant(t *testing.T) {
-	fetch, pages := fakeNumberedFetcher(seq(500), 100, true)
+	fetch, pages := fakeNumberedFetcher(seq(500), true)
 
 	items, total, err := client.FetchNumberedPages(250, fetch)
 
@@ -54,7 +59,7 @@ func TestFetchNumberedPagesSpansPagesAndTrimsToWant(t *testing.T) {
 }
 
 func TestFetchNumberedPagesAllStopsAtReportedTotal(t *testing.T) {
-	fetch, pages := fakeNumberedFetcher(seq(230), 100, true)
+	fetch, pages := fakeNumberedFetcher(seq(230), true)
 
 	items, total, err := client.FetchNumberedPages(0, fetch)
 
@@ -65,7 +70,7 @@ func TestFetchNumberedPagesAllStopsAtReportedTotal(t *testing.T) {
 }
 
 func TestFetchNumberedPagesAllStopsOnEmptyPageWithoutTotal(t *testing.T) {
-	fetch, pages := fakeNumberedFetcher(seq(150), 100, false)
+	fetch, pages := fakeNumberedFetcher(seq(150), false)
 
 	items, total, err := client.FetchNumberedPages(0, fetch)
 
@@ -76,7 +81,7 @@ func TestFetchNumberedPagesAllStopsOnEmptyPageWithoutTotal(t *testing.T) {
 }
 
 func TestFetchNumberedPagesEmptyCollection(t *testing.T) {
-	fetch, pages := fakeNumberedFetcher(nil, 100, true)
+	fetch, pages := fakeNumberedFetcher(nil, true)
 
 	items, total, err := client.FetchNumberedPages(0, fetch)
 
@@ -108,7 +113,7 @@ func TestFetchNumberedPagesStopsAtMaxPages(t *testing.T) {
 }
 
 func TestEachNumberedPageYieldsPagesAsTheyArrive(t *testing.T) {
-	fetch, _ := fakeNumberedFetcher(seq(250), 100, true)
+	fetch, _ := fakeNumberedFetcher(seq(250), true)
 
 	var sizes []int
 	var totals []int
@@ -125,7 +130,7 @@ func TestEachNumberedPageYieldsPagesAsTheyArrive(t *testing.T) {
 
 func TestEachNumberedPageStopsWhenYieldFails(t *testing.T) {
 	boom := errors.New("stop")
-	fetch, pages := fakeNumberedFetcher(seq(500), 100, true)
+	fetch, pages := fakeNumberedFetcher(seq(500), true)
 
 	err := client.EachNumberedPage(0, fetch, func(client.Page[int]) error { return boom })
 

@@ -86,6 +86,14 @@ var (
 // scanning for top-level `{operationID: ...}` entries (tracking brace depth
 // so multi-line `call: func(...) {...}` closures don't get split), and the
 // `// Section` comments that group them.
+// isSectionLabel reports whether a tab-indented comment in the operations table
+// is a section label ("// Studies") rather than a note about the entry below it
+// ("// SPECGAP: ..."). Labels are short and carry no sentence punctuation; notes
+// do, and used to end up as the section heading in the generated README.
+func isSectionLabel(text string) bool {
+	return len(text) <= 40 && !strings.ContainsAny(text, ".:;,")
+}
+
 func parseOperations(path string) ([]entry, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -114,7 +122,7 @@ func parseOperations(path string) ([]entry, error) {
 	for i < end {
 		line := lines[i]
 
-		if m := reSection.FindStringSubmatch(line); m != nil {
+		if m := reSection.FindStringSubmatch(line); m != nil && isSectionLabel(m[1]) {
 			section = m[1]
 			i++
 			continue

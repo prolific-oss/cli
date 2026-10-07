@@ -73,7 +73,8 @@ Main features include:
 - Ability to list your hook subscriptions.
 - Ability to send and retrieve messages.
 - Ability to list and view your filter sets.
-- Ability to list and view your participant groups.
+- Ability to list, search and view your participant groups.
+- Ability to search your studies by name, internal name or ID.
 - Ability to retrieve participant feedback and aggregate study ratings.
 
 Checkout the [wiki](https://github.com/prolific-oss/cli/wiki) for more tips and tricks.

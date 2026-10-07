@@ -8,7 +8,9 @@
 
 - Rename `participant` to `participant-group`, retaining `participant` as a compatibility alias.
 
-- Add `participant-group search <query>` and `study search <query>` using server-side name search, with workspace scoping, table/CSV output with field selection, and `--json` preserving pagination metadata. Group search supports `--limit`/`--offset`; study search supports `--page`.
+- Add `participant-group search <query>` and `study search <query>` using server-side name search, with workspace scoping and table/CSV/JSON output with field selection. Both page through the API for you: `--limit` caps the results and `--all` (equivalently `--limit 0`) fetches every match, matching `filters search`. `--json` emits an array of records, the same shape every other list command emits.
+
+- `participant-group list` now supports `--json`, `--csv` and `--table`/`-n`, and `--fields` to choose columns.
 
 ### Audience
 

@@ -10,6 +10,13 @@
 //   - OUTOFSCOPE   — no CLI command exists or is planned for this endpoint
 //   - SPECMISMATCH — client request diverges from the spec; needs a fix
 //   - HARNESSGAP   — client behaviour is correct; kin-openapi can't validate this shape
+//   - SPECGAP     — not a skip. A comment on an entry whose operation IS covered and
+//     validated, but which the client also calls with query parameters the published
+//     spec does not declare. Those parameters are not validated by anything here:
+//     kin-openapi ignores undeclared query params, so a second entry exercising them
+//     would pass without proving they exist. The comment records what is unverified
+//     and where the request shape is pinned instead, so the gap is visible rather
+//     than implied by a passing test.
 //   - NOTINSPEC    — endpoint is implemented and reachable but not yet in the published spec.
 //     This does not mean it is generally released: it may be dark-launched, behind a flag,
 //     or awaiting docs, so it is not guaranteed to work for every account.
@@ -297,7 +304,11 @@ var operations = []operation{
 	{operationID: "messages_GetConversationMessages", skip: "OUTOFSCOPE: no CLI command for retrieving conversation messages"},
 
 	// Studies
-	{operationID: "studies_GetStudies", call: func(c *client.Client) { c.GetStudies("", "") }}, // SearchStudies parameters: client/search_test.go.
+	// SPECGAP: SearchStudies hits this operation with search, page and
+	// workspace_id, none of which openapi.yaml declares for it — it lists only
+	// status and state. client/search_test.go pins the request shape the client
+	// sends, but nothing here validates those parameters against the spec.
+	{operationID: "studies_GetStudies", call: func(c *client.Client) { c.GetStudies("", "") }},
 	{operationID: "studies_CreateStudy", call: func(c *client.Client) {
 		c.CreateStudy(model.CreateStudy{
 			Name:                    "t",
@@ -380,7 +391,12 @@ var operations = []operation{
 	}},
 
 	// Participant Groups
-	{operationID: "participantGroups_GetParticipantGroups", skip: "HARNESSGAP: kin-openapi v0.146.0 mis-decodes a top-level oneOf-of-objects query param under the default form/explode=true style — it always resolves to the last oneOf branch (project_id), discarding an earlier correct match (workspace_id), so oneOf validation fails regardless of how the client sends it. Client's flat workspace_id=X is correct per spec defaults and per the real API (see commit 8c7aae6 / DCP-2272). SearchParticipantGroups parameters are covered in client/search_test.go."},
+	// SPECGAP: SearchParticipantGroups hits this operation with search, limit
+	// and offset, none of which openapi.yaml declares for it — it lists only
+	// active and filter. client/search_test.go pins the request shape the client
+	// sends. The operation cannot be spec-validated here at all, for the
+	// separate reason below.
+	{operationID: "participantGroups_GetParticipantGroups", skip: "HARNESSGAP: kin-openapi v0.146.0 mis-decodes a top-level oneOf-of-objects query param under the default form/explode=true style — it always resolves to the last oneOf branch (project_id), discarding an earlier correct match (workspace_id), so oneOf validation fails regardless of how the client sends it. Client's flat workspace_id=X is correct per spec defaults and per the real API (see commit 8c7aae6 / DCP-2272)."},
 	{operationID: "participantGroups_CreateParticipantGroup", call: func(c *client.Client) {
 		c.CreateParticipantGroup(model.CreateParticipantGroup{Name: "t", WorkspaceID: "ws-id"})
 	}},

@@ -10,6 +10,11 @@ import (
 )
 
 // SearchParticipantGroups searches group names within a workspace on the server.
+//
+// openapi.yaml declares only active and filter for this operation, so search,
+// limit and offset are undocumented and unvalidated — see the SPECGAP note in
+// contract_test. limit/offset are long-standing usage shared with
+// GetParticipantGroups; search is new and worth confirming against the API.
 func (c *Client) SearchParticipantGroups(query, workspaceID string, limit, offset int) (*ListParticipantGroupsResponse, error) {
 	params := url.Values{"search": {query}, "workspace_id": {workspaceID}, "limit": {strconv.Itoa(limit)}, "offset": {strconv.Itoa(offset)}}
 	var response ListParticipantGroupsResponse

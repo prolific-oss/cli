@@ -12,8 +12,15 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-// SearchStudies searches accessible studies by name, internal name, or study ID.
-// Studies use page-number pagination; the endpoint does not support limit/offset.
+// SearchStudies searches accessible studies by name, internal name, or study ID,
+// paginating by page number rather than limit and offset.
+//
+// openapi.yaml declares only status and state for this operation, so search,
+// page and workspace_id are undocumented: they are not covered by contract_test
+// (see its SPECGAP note) and the page-number behaviour below is an observation
+// about the live API, not something the spec states. Confirm against the API
+// before relying on it, and prefer FetchNumberedPages over calling this
+// directly so callers never depend on the pagination model.
 func (c *Client) SearchStudies(query, workspaceID string, page int) (*ListStudiesResponse, error) {
 	params := url.Values{"search": {query}, "page": {strconv.Itoa(page)}}
 	if workspaceID != "" {
