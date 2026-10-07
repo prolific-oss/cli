@@ -30,9 +30,9 @@ func NewSearchCommand(c client.API, w io.Writer) *cobra.Command {
 		Short:   "Search participant groups by name within a workspace",
 		Long:    "Search participant group names on the server. JSON emits an object with results, meta, and _links for pagination; use --limit and --offset to retrieve further matches.",
 		Example: "prolific participant-group search 'pilot cohort' --workspace WORKSPACE_ID --json",
-		Args:    cobra.ExactArgs(1),
+		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			query := strings.TrimSpace(args[0])
+			query := strings.TrimSpace(strings.Join(args, " "))
 			if query == "" {
 				return fmt.Errorf("error: search query must not be empty")
 			}

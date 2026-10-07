@@ -85,12 +85,23 @@ func TestSearch(t *testing.T) {
 func TestSearchRejectsInvalidInput(t *testing.T) {
 	viper.Reset()
 	t.Cleanup(viper.Reset)
-	for _, args := range [][]string{{}, {"one", "two"}, {" "}, {"query", "--workspace", ""}, {"query", "--workspace", "ws", "--limit", "0"}, {"query", "--workspace", "ws", "--offset", "-1"}} {
+	for _, args := range [][]string{{}, {" "}, {" ", "  "}, {"query", "--workspace", ""}, {"query", "--workspace", "ws", "--limit", "0"}, {"query", "--workspace", "ws", "--offset", "-1"}} {
 		c := mock_client.NewMockAPI(gomock.NewController(t))
 		cmd := participantgroup.NewSearchCommand(c, &bytes.Buffer{})
 		cmd.SetArgs(args)
 		require.Error(t, cmd.Execute())
 	}
+}
+
+func TestSearchJoinsMultiWordQuery(t *testing.T) {
+	viper.Reset()
+	t.Cleanup(viper.Reset)
+	c := mock_client.NewMockAPI(gomock.NewController(t))
+	c.EXPECT().SearchParticipantGroups("pilot cohort", "ws", client.DefaultRecordLimit, client.DefaultRecordOffset).
+		Return(&client.ListParticipantGroupsResponse{}, nil)
+	cmd := participantgroup.NewSearchCommand(c, &bytes.Buffer{})
+	cmd.SetArgs([]string{"pilot", "cohort", "--workspace", "ws", "-t"})
+	require.NoError(t, cmd.Execute())
 }
 
 func TestSearchOutputFormats(t *testing.T) {

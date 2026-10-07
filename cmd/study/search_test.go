@@ -85,12 +85,22 @@ func TestSearch(t *testing.T) {
 func TestSearchRejectsInvalidInput(t *testing.T) {
 	viper.Reset()
 	t.Cleanup(viper.Reset)
-	for _, args := range [][]string{{}, {"one", "two"}, {" "}, {"query", "--page", "0"}} {
+	for _, args := range [][]string{{}, {" "}, {" ", "  "}, {"query", "--page", "0"}} {
 		c := mock_client.NewMockAPI(gomock.NewController(t))
 		cmd := study.NewSearchCommand(c, &bytes.Buffer{})
 		cmd.SetArgs(args)
 		require.Error(t, cmd.Execute())
 	}
+}
+
+func TestSearchJoinsMultiWordQuery(t *testing.T) {
+	viper.Reset()
+	t.Cleanup(viper.Reset)
+	c := mock_client.NewMockAPI(gomock.NewController(t))
+	c.EXPECT().SearchStudies("memory attention", "", 1).Return(&client.ListStudiesResponse{}, nil)
+	cmd := study.NewSearchCommand(c, &bytes.Buffer{})
+	cmd.SetArgs([]string{"memory", "attention", "-t"})
+	require.NoError(t, cmd.Execute())
 }
 
 func TestSearchOutputFormats(t *testing.T) {

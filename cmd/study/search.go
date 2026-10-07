@@ -29,9 +29,9 @@ func NewSearchCommand(c client.API, w io.Writer) *cobra.Command {
 		Short:   "Search accessible studies by name, internal name, or ID",
 		Long:    "Search studies on the server. Results are scoped to your access and optionally a workspace. Use --page for another page; the studies endpoint ignores limit/offset. JSON emits an object with results, meta, and _links for pagination.",
 		Example: "prolific study search 'memory task' --workspace WORKSPACE_ID --json",
-		Args:    cobra.ExactArgs(1),
+		Args:    cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			query := strings.TrimSpace(args[0])
+			query := strings.TrimSpace(strings.Join(args, " "))
 			if query == "" {
 				return fmt.Errorf("error: search query must not be empty")
 			}
