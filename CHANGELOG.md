@@ -4,7 +4,15 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+### Participant groups and studies
+
+- Rename `participant` to `participant-group`, retaining `participant` as a compatibility alias.
+
+- Add `participant-group search <query>` and `study search <query>` using server-side name search, with workspace scoping, table/CSV output with field selection, and `--json` preserving pagination metadata. Group search supports `--limit`/`--offset`; study search supports `--page`.
+
 ### Audience
+
+- Preserve nested AND/OR `selected_filters` in JSON flags and JSON/YAML templates for audience counts and breakdowns.
 
 - **Breaking changes:**
   - Removed `eligibility-count`, replaced by `audience count`. The template

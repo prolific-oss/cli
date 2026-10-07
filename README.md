@@ -22,28 +22,28 @@ Usage:
   prolific [command]
 
 Available Commands:
-  aitaskbuilder AI Task Builder tools and utilities
-  bonus         Create and pay bonuses for study participants
-  campaign      Provide details about your campaigns
-  collection    Manage and view your collections
-  completion    Generate the autocompletion script for the specified shell
-  credentials   Manage credential pools
-  feedback      View participant feedback for your studies
-  filter-sets   Manage and view your filter sets
-  filters       Browse and search the filters available for your study
-  help          Help about any command
-  hook          Manage and view your hook subscriptions
-  invitation    Manage workspace invitations
-  message       Send and retrieve messages
-  participant   Manage and view your participant groups
-  project       Manage and view your projects in a workspace
-  researcher    Manage researcher resources
-  studies       List all of your studies
-  study         Manage and view your studies
-  submission    Manage and view your study submissions
-  template      Browse and retrieve study and collection templates
-  whoami        View details about your account
-  workspace     Manage and view your workspaces
+  aitaskbuilder     AI Task Builder tools and utilities
+  bonus             Create and pay bonuses for study participants
+  campaign          Provide details about your campaigns
+  collection        Manage and view your collections
+  completion        Generate the autocompletion script for the specified shell
+  credentials       Manage credential pools
+  feedback          View participant feedback for your studies
+  filter-sets       Manage and view your filter sets
+  filters           Browse and search the filters available for your study
+  help              Help about any command
+  hook              Manage and view your hook subscriptions
+  invitation        Manage workspace invitations
+  message           Send and retrieve messages
+  participant-group Manage and view your participant groups
+  project           Manage and view your projects in a workspace
+  researcher        Manage researcher resources
+  studies           List all of your studies
+  study             Manage and view your studies
+  submission        Manage and view your study submissions
+  template          Browse and retrieve study and collection templates
+  whoami            View details about your account
+  workspace         Manage and view your workspaces
 
 Flags:
       --config string   config file (default is $HOME/.config/prolific-oss/prolific.yaml)

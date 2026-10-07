@@ -40,6 +40,7 @@ type API interface {
 	CreateStudy(model.CreateStudy) (*model.Study, error)
 	DuplicateStudy(ID string) (*model.Study, error)
 	GetStudies(status, projectID string) (*ListStudiesResponse, error)
+	SearchStudies(query, workspaceID string, page int) (*ListStudiesResponse, error)
 	GetStudy(ID string) (*model.Study, error)
 	GetSubmissions(ID string, limit, offset int) (*ListSubmissionsResponse, error)
 	GetStudyFeedback(studyID string, hasWrittenFeedback bool, limit, offset int) (*ListStudyFeedbackResponse, error)
@@ -88,6 +89,7 @@ type API interface {
 	GetProject(ID string) (*model.Project, error)
 
 	GetParticipantGroups(workspaceID string, limit, offset int) (*ListParticipantGroupsResponse, error)
+	SearchParticipantGroups(query, workspaceID string, limit, offset int) (*ListParticipantGroupsResponse, error)
 	GetParticipantGroup(groupID string) (*ViewParticipantGroupResponse, error)
 	CreateParticipantGroup(group model.CreateParticipantGroup) (*CreateParticipantGroupResponse, error)
 	RemoveParticipantGroupMembers(groupID string, participantIDs []string) (*ViewParticipantGroupResponse, error)
@@ -968,8 +970,8 @@ func (c *Client) CreateProject(workspaceID string, project model.Project) (*Crea
 func (c *Client) GetParticipantGroups(workspaceID string, limit, offset int) (*ListParticipantGroupsResponse, error) {
 	var response ListParticipantGroupsResponse
 
-	url := fmt.Sprintf("/api/v1/participant-groups/?workspace_id=%s&limit=%v&offset=%v", workspaceID, limit, offset)
-	_, err := c.ExecuteBuilder().GetInto(url, &response)
+	params := url.Values{"workspace_id": {workspaceID}, "limit": {strconv.Itoa(limit)}, "offset": {strconv.Itoa(offset)}}
+	_, err := c.ExecuteBuilder().GetInto("/api/v1/participant-groups/?"+params.Encode(), &response)
 	if err != nil {
 		return nil, err
 	}

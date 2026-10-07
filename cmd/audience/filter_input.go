@@ -22,7 +22,7 @@ type filterInput struct {
 }
 
 // filterSpec is the shape every -t/--template-path file (and the
-// --filters/--breakdown flags) resolve to: a flat list of base filters, the
+// --filters/--breakdown flags) resolve to: base filters (including nested groups), the
 // same format `study create` accepts, plus an optional single breakdown
 // filter to split results by.
 type filterSpec struct {

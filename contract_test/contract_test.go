@@ -300,7 +300,7 @@ var operations = []operation{
 	{operationID: "messages_GetConversationMessages", skip: "OUTOFSCOPE: no CLI command for retrieving conversation messages"},
 
 	// Studies
-	{operationID: "studies_GetStudies", call: func(c *client.Client) { c.GetStudies("", "") }},
+	{operationID: "studies_GetStudies", call: func(c *client.Client) { c.GetStudies("", "") }}, // SearchStudies parameters: client/search_test.go.
 	{operationID: "studies_CreateStudy", call: func(c *client.Client) {
 		c.CreateStudy(model.CreateStudy{
 			Name:                    "t",
@@ -383,7 +383,7 @@ var operations = []operation{
 	}},
 
 	// Participant Groups
-	{operationID: "participantGroups_GetParticipantGroups", skip: "HARNESSGAP: kin-openapi v0.146.0 mis-decodes a top-level oneOf-of-objects query param under the default form/explode=true style — it always resolves to the last oneOf branch (project_id), discarding an earlier correct match (workspace_id), so oneOf validation fails regardless of how the client sends it. Client's flat workspace_id=X is correct per spec defaults and per the real API (see commit 8c7aae6 / DCP-2272)."},
+	{operationID: "participantGroups_GetParticipantGroups", skip: "HARNESSGAP: kin-openapi v0.146.0 mis-decodes a top-level oneOf-of-objects query param under the default form/explode=true style — it always resolves to the last oneOf branch (project_id), discarding an earlier correct match (workspace_id), so oneOf validation fails regardless of how the client sends it. Client's flat workspace_id=X is correct per spec defaults and per the real API (see commit 8c7aae6 / DCP-2272). SearchParticipantGroups parameters are covered in client/search_test.go."},
 	{operationID: "participantGroups_CreateParticipantGroup", call: func(c *client.Client) {
 		c.CreateParticipantGroup(model.CreateParticipantGroup{Name: "t", WorkspaceID: "ws-id"})
 	}},

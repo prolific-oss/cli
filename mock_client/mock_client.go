@@ -1302,6 +1302,36 @@ func (mr *MockAPIMockRecorder) SearchFilters(query, workspaceID, limit, offset i
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchFilters", reflect.TypeOf((*MockAPI)(nil).SearchFilters), query, workspaceID, limit, offset)
 }
 
+// SearchParticipantGroups mocks base method.
+func (m *MockAPI) SearchParticipantGroups(query, workspaceID string, limit, offset int) (*client.ListParticipantGroupsResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchParticipantGroups", query, workspaceID, limit, offset)
+	ret0, _ := ret[0].(*client.ListParticipantGroupsResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchParticipantGroups indicates an expected call of SearchParticipantGroups.
+func (mr *MockAPIMockRecorder) SearchParticipantGroups(query, workspaceID, limit, offset interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchParticipantGroups", reflect.TypeOf((*MockAPI)(nil).SearchParticipantGroups), query, workspaceID, limit, offset)
+}
+
+// SearchStudies mocks base method.
+func (m *MockAPI) SearchStudies(query, workspaceID string, page int) (*client.ListStudiesResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchStudies", query, workspaceID, page)
+	ret0, _ := ret[0].(*client.ListStudiesResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchStudies indicates an expected call of SearchStudies.
+func (mr *MockAPIMockRecorder) SearchStudies(query, workspaceID, page interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchStudies", reflect.TypeOf((*MockAPI)(nil).SearchStudies), query, workspaceID, page)
+}
+
 // SendGroupMessage mocks base method.
 func (m *MockAPI) SendGroupMessage(participantGroupID, body string, studyID *string) error {
 	m.ctrl.T.Helper()
