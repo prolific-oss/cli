@@ -85,6 +85,82 @@ func EachPage[T any](want, pageSize int, fetch PageFetcher[T], yield func(Page[T
 	}
 }
 
+// NumberedPageFetcher fetches one page of results by its 1-based page number,
+// for endpoints that paginate by page rather than by limit and offset.
+type NumberedPageFetcher[T any] func(page int) (Page[T], error)
+
+// EachNumberedPage is EachPage for endpoints that only accept a page number.
+// The API chooses the page size, so callers cannot cap it; want still bounds
+// how many items are delivered in total.
+//
+// Fetching stops when want is satisfied, a page comes back empty, the API's
+// reported count has been reached, or yield returns an error. An API that
+// reports no count and never returns an empty page is bounded by maxPages.
+func EachNumberedPage[T any](want int, fetch NumberedPageFetcher[T], yield func(Page[T]) error) error {
+	total := 0
+	delivered := 0
+	seen := 0
+
+	for pageNumber := 1; ; pageNumber++ {
+		if pageNumber > maxPages {
+			return fmt.Errorf("stopped after fetching %d pages without reaching the end of the collection", maxPages)
+		}
+
+		page, err := fetch(pageNumber)
+		if err != nil {
+			return err
+		}
+
+		fetched := len(page.Results)
+		if want > 0 && delivered+fetched > want {
+			page.Results = page.Results[:want-delivered]
+		}
+		if page.Total > total {
+			total = page.Total
+		}
+		page.Total = total
+
+		if err := yield(page); err != nil {
+			return err
+		}
+
+		delivered += len(page.Results)
+		seen += fetched
+
+		if fetched == 0 {
+			return nil
+		}
+		if want > 0 && delivered >= want {
+			return nil
+		}
+		if total > 0 && seen >= total {
+			return nil
+		}
+	}
+}
+
+// FetchNumberedPages collects results across multiple pages using
+// EachNumberedPage, for callers that need the whole collection before
+// rendering. It mirrors FetchPages.
+func FetchNumberedPages[T any](want int, fetch NumberedPageFetcher[T]) ([]T, int, error) {
+	var items []T
+	total := 0
+
+	err := EachNumberedPage(want, fetch, func(page Page[T]) error {
+		items = append(items, page.Results...)
+		total = page.Total
+		return nil
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+
+	if total < len(items) {
+		total = len(items)
+	}
+	return items, total, nil
+}
+
 // FetchPages collects results across multiple pages using EachPage, for
 // callers that need the whole collection before rendering. The returned total
 // is the API's reported count, or the number of items collected if the API

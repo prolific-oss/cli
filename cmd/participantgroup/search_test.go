@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -26,8 +27,6 @@ func TestSearch(t *testing.T) {
 			c := mock_client.NewMockAPI(gomock.NewController(t))
 			response := &client.ListParticipantGroupsResponse{Results: []model.ParticipantGroup{{ID: "g1", Name: "Memory"}}, JSONAPIMeta: &client.JSONAPIMeta{}}
 			response.Meta.Count = 42
-			response.JSONAPILinks = &client.JSONAPILinks{}
-			response.Links.Next.Href = "https://api.prolific.com/api/v1/participant-groups/?search=memory&limit=10&offset=30"
 			if tc.noMeta {
 				response.JSONAPIMeta = nil
 			}
@@ -38,10 +37,12 @@ func TestSearch(t *testing.T) {
 			if tc.fail {
 				apiErr = errors.New("access denied")
 			}
-			c.EXPECT().SearchParticipantGroups("memory & attention", "ws", 10, 20).Return(response, apiErr)
+			c.EXPECT().SearchParticipantGroups("memory & attention", "ws", 1, 0).Return(response, apiErr)
 			var output bytes.Buffer
 			cmd := participantgroup.NewParticipantCommand(c, &output)
-			argv := []string{"search", "memory & attention", "--workspace", "ws", "--limit", "10", "--offset", "20"}
+			// --limit 1 keeps this to a single page even though the API
+			// reports more matches.
+			argv := []string{"search", "memory & attention", "--workspace", "ws", "--limit", "1"}
 			if tc.asJSON {
 				argv = append(argv, "--json")
 			}
@@ -54,38 +55,64 @@ func TestSearch(t *testing.T) {
 			}
 			require.NoError(t, err)
 			if tc.asJSON {
-				var got map[string]json.RawMessage
+				var got []model.ParticipantGroup
 				require.NoError(t, json.Unmarshal(output.Bytes(), &got))
-				require.JSONEq(t, `{"count":42}`, string(got["meta"]))
-				var links client.JSONAPILinks
-				require.NoError(t, json.Unmarshal(output.Bytes(), &links))
-				require.Equal(t, response.Links.Next.Href, links.Links.Next.Href)
 				if tc.empty {
-					require.JSONEq(t, "[]", string(got["results"]))
+					require.Empty(t, got)
 				} else {
-					require.Contains(t, string(got["results"]), "Memory")
+					require.Len(t, got, 1)
+					require.Equal(t, "Memory", got[0].Name)
 				}
-			} else {
-				if !tc.empty {
-					require.Contains(t, output.String(), "Memory")
-				}
-				switch {
-				case tc.noMeta:
-					require.NotContains(t, output.String(), "Showing")
-				case tc.empty:
-					require.Contains(t, output.String(), "Showing 0 records of 42")
-				default:
-					require.Contains(t, output.String(), "Showing 1 record of 42")
-				}
+				return
+			}
+			if !tc.empty {
+				require.Contains(t, output.String(), "Memory")
+			}
+			switch {
+			case tc.noMeta:
+				// With no meta the counter falls back to what was collected.
+				require.Contains(t, output.String(), "Showing 1 record of 1")
+			case tc.empty:
+				require.Contains(t, output.String(), "Showing 0 records of 42")
+			default:
+				require.Contains(t, output.String(), "Showing 1 record of 42")
 			}
 		})
 	}
 }
 
+func TestSearchFollowsPagesUpToLimit(t *testing.T) {
+	viper.Reset()
+	t.Cleanup(viper.Reset)
+	c := mock_client.NewMockAPI(gomock.NewController(t))
+
+	// A full page means there may be more, so a second page is fetched. A
+	// short page ends it.
+	first := &client.ListParticipantGroupsResponse{JSONAPIMeta: &client.JSONAPIMeta{}}
+	for i := range client.DefaultRecordLimit {
+		first.Results = append(first.Results, model.ParticipantGroup{ID: fmt.Sprintf("g%d", i), Name: fmt.Sprintf("Group %d", i)})
+	}
+	first.Meta.Count = client.DefaultRecordLimit + 1
+	second := &client.ListParticipantGroupsResponse{Results: []model.ParticipantGroup{{ID: "last", Name: "Final group"}}, JSONAPIMeta: &client.JSONAPIMeta{}}
+	second.Meta.Count = client.DefaultRecordLimit + 1
+
+	c.EXPECT().SearchParticipantGroups("pilot", "ws", client.DefaultRecordLimit, 0).Return(first, nil)
+	c.EXPECT().SearchParticipantGroups("pilot", "ws", client.DefaultRecordLimit, client.DefaultRecordLimit).Return(second, nil)
+
+	var output bytes.Buffer
+	cmd := participantgroup.NewSearchCommand(c, &output)
+	cmd.SetArgs([]string{"pilot", "--workspace", "ws", "--all", "-t"})
+	require.NoError(t, cmd.Execute())
+
+	require.Contains(t, output.String(), "Group 0")
+	require.Contains(t, output.String(), "Final group")
+	require.Contains(t, output.String(), fmt.Sprintf("Showing %d records of %d", client.DefaultRecordLimit+1, client.DefaultRecordLimit+1))
+}
+
 func TestSearchRejectsInvalidInput(t *testing.T) {
 	viper.Reset()
 	t.Cleanup(viper.Reset)
-	for _, args := range [][]string{{}, {" "}, {" ", "  "}, {"query", "--workspace", ""}, {"query", "--workspace", "ws", "--limit", "0"}, {"query", "--workspace", "ws", "--offset", "-1"}} {
+	for _, args := range [][]string{{}, {" "}, {" ", "  "}, {"query", "--workspace", ""}, {"query", "--workspace", "ws", "--limit", "-1"}, {"query", "--workspace", "ws", "--all", "--limit", "5"}} {
 		c := mock_client.NewMockAPI(gomock.NewController(t))
 		cmd := participantgroup.NewSearchCommand(c, &bytes.Buffer{})
 		cmd.SetArgs(args)
@@ -97,7 +124,7 @@ func TestSearchJoinsMultiWordQuery(t *testing.T) {
 	viper.Reset()
 	t.Cleanup(viper.Reset)
 	c := mock_client.NewMockAPI(gomock.NewController(t))
-	c.EXPECT().SearchParticipantGroups("pilot cohort", "ws", client.DefaultRecordLimit, client.DefaultRecordOffset).
+	c.EXPECT().SearchParticipantGroups("pilot cohort", "ws", client.DefaultRecordLimit, 0).
 		Return(&client.ListParticipantGroupsResponse{}, nil)
 	cmd := participantgroup.NewSearchCommand(c, &bytes.Buffer{})
 	cmd.SetArgs([]string{"pilot", "cohort", "--workspace", "ws", "-t"})
@@ -117,8 +144,8 @@ func TestSearchOutputFormats(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			c := mock_client.NewMockAPI(gomock.NewController(t))
 			response := &client.ListParticipantGroupsResponse{Results: []model.ParticipantGroup{{ID: "id1", Name: "Memory, pilot"}}, JSONAPIMeta: &client.JSONAPIMeta{}}
-			response.Meta.Count = 42
-			c.EXPECT().SearchParticipantGroups("memory", "ws", client.DefaultRecordLimit, client.DefaultRecordOffset).Return(response, nil)
+			response.Meta.Count = 1
+			c.EXPECT().SearchParticipantGroups("memory", "ws", client.DefaultRecordLimit, 0).Return(response, nil)
 			var output bytes.Buffer
 			cmd := participantgroup.NewSearchCommand(c, &output)
 			args := []string{"memory", "--workspace", "ws"}
@@ -131,7 +158,7 @@ func TestSearchOutputFormats(t *testing.T) {
 			} else {
 				require.Contains(t, output.String(), "Memory, pilot")
 				require.NotContains(t, output.String(), "id1")
-				require.Contains(t, output.String(), "Showing 1 record of 42")
+				require.Contains(t, output.String(), "Showing 1 record of 1")
 			}
 		})
 	}

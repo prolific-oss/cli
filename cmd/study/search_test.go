@@ -26,8 +26,6 @@ func TestSearch(t *testing.T) {
 			c := mock_client.NewMockAPI(gomock.NewController(t))
 			response := &client.ListStudiesResponse{Results: []model.Study{{ID: "s1", Name: "Memory", InternalName: "Pilot"}}, JSONAPIMeta: &client.JSONAPIMeta{}}
 			response.Meta.Count = 42
-			response.JSONAPILinks = &client.JSONAPILinks{}
-			response.Links.Next.Href = "https://api.prolific.com/api/v1/studies/?search=memory&page=3"
 			if tc.noMeta {
 				response.JSONAPIMeta = nil
 			}
@@ -38,10 +36,12 @@ func TestSearch(t *testing.T) {
 			if tc.fail {
 				apiErr = errors.New("access denied")
 			}
-			c.EXPECT().SearchStudies("memory & attention", "ws", 2).Return(response, apiErr)
+			c.EXPECT().SearchStudies("memory & attention", "ws", 1).Return(response, apiErr)
 			var output bytes.Buffer
 			cmd := study.NewStudyCommand(c, &output)
-			argv := []string{"search", "memory & attention", "--workspace", "ws", "--page", "2"}
+			// --limit 1 keeps this to a single page even though the API
+			// reports more matches.
+			argv := []string{"search", "memory & attention", "--workspace", "ws", "--limit", "1"}
 			if tc.asJSON {
 				argv = append(argv, "--json")
 			}
@@ -54,38 +54,59 @@ func TestSearch(t *testing.T) {
 			}
 			require.NoError(t, err)
 			if tc.asJSON {
-				var got map[string]json.RawMessage
+				var got []model.Study
 				require.NoError(t, json.Unmarshal(output.Bytes(), &got))
-				require.JSONEq(t, `{"count":42}`, string(got["meta"]))
-				var links client.JSONAPILinks
-				require.NoError(t, json.Unmarshal(output.Bytes(), &links))
-				require.Equal(t, response.Links.Next.Href, links.Links.Next.Href)
 				if tc.empty {
-					require.JSONEq(t, "[]", string(got["results"]))
+					require.Empty(t, got)
 				} else {
-					require.Contains(t, string(got["results"]), "Memory")
+					require.Len(t, got, 1)
+					require.Equal(t, "Memory", got[0].Name)
 				}
-			} else {
-				if !tc.empty {
-					require.Contains(t, output.String(), "Memory")
-				}
-				switch {
-				case tc.noMeta:
-					require.NotContains(t, output.String(), "Showing")
-				case tc.empty:
-					require.Contains(t, output.String(), "Showing 0 records of 42")
-				default:
-					require.Contains(t, output.String(), "Showing 1 record of 42")
-				}
+				return
+			}
+			if !tc.empty {
+				require.Contains(t, output.String(), "Memory")
+			}
+			switch {
+			case tc.noMeta:
+				// With no meta the counter falls back to what was collected.
+				require.Contains(t, output.String(), "Showing 1 record of 1")
+			case tc.empty:
+				require.Contains(t, output.String(), "Showing 0 records of 42")
+			default:
+				require.Contains(t, output.String(), "Showing 1 record of 42")
 			}
 		})
 	}
 }
 
+func TestSearchFollowsPagesUpToLimit(t *testing.T) {
+	viper.Reset()
+	t.Cleanup(viper.Reset)
+	c := mock_client.NewMockAPI(gomock.NewController(t))
+
+	first := &client.ListStudiesResponse{Results: []model.Study{{ID: "s1", Name: "One"}, {ID: "s2", Name: "Two"}}, JSONAPIMeta: &client.JSONAPIMeta{}}
+	first.Meta.Count = 3
+	second := &client.ListStudiesResponse{Results: []model.Study{{ID: "s3", Name: "Three"}}, JSONAPIMeta: &client.JSONAPIMeta{}}
+	second.Meta.Count = 3
+
+	c.EXPECT().SearchStudies("memory", "", 1).Return(first, nil)
+	c.EXPECT().SearchStudies("memory", "", 2).Return(second, nil)
+
+	var output bytes.Buffer
+	cmd := study.NewSearchCommand(c, &output)
+	cmd.SetArgs([]string{"memory", "--all", "-t"})
+	require.NoError(t, cmd.Execute())
+
+	require.Contains(t, output.String(), "One")
+	require.Contains(t, output.String(), "Three")
+	require.Contains(t, output.String(), "Showing 3 records of 3")
+}
+
 func TestSearchRejectsInvalidInput(t *testing.T) {
 	viper.Reset()
 	t.Cleanup(viper.Reset)
-	for _, args := range [][]string{{}, {" "}, {" ", "  "}, {"query", "--page", "0"}} {
+	for _, args := range [][]string{{}, {" "}, {" ", "  "}, {"query", "--limit", "-1"}, {"query", "--all", "--limit", "5"}} {
 		c := mock_client.NewMockAPI(gomock.NewController(t))
 		cmd := study.NewSearchCommand(c, &bytes.Buffer{})
 		cmd.SetArgs(args)
@@ -116,7 +137,7 @@ func TestSearchOutputFormats(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			c := mock_client.NewMockAPI(gomock.NewController(t))
 			response := &client.ListStudiesResponse{Results: []model.Study{{ID: "id1", Name: "Memory, pilot"}}, JSONAPIMeta: &client.JSONAPIMeta{}}
-			response.Meta.Count = 42
+			response.Meta.Count = 1
 			c.EXPECT().SearchStudies("memory", "ws", 1).Return(response, nil)
 			var output bytes.Buffer
 			cmd := study.NewSearchCommand(c, &output)
@@ -130,7 +151,7 @@ func TestSearchOutputFormats(t *testing.T) {
 			} else {
 				require.Contains(t, output.String(), "Memory, pilot")
 				require.NotContains(t, output.String(), "id1")
-				require.Contains(t, output.String(), "Showing 1 record of 42")
+				require.Contains(t, output.String(), "Showing 1 record of 1")
 			}
 		})
 	}

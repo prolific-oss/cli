@@ -9,6 +9,78 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestEachNumberedPageWalksPagesUntilExhausted(t *testing.T) {
+	var pages []int
+	fetch := func(page int) (client.Page[string], error) {
+		pages = append(pages, page)
+		if page == 1 {
+			return client.Page[string]{Results: []string{"a", "b"}, Total: 3}, nil
+		}
+		return client.Page[string]{Results: []string{"c"}, Total: 3}, nil
+	}
+
+	items, total, err := client.FetchNumberedPages(0, fetch)
+
+	require.NoError(t, err)
+	assert.Equal(t, []int{1, 2}, pages)
+	assert.Equal(t, []string{"a", "b", "c"}, items)
+	assert.Equal(t, 3, total)
+}
+
+func TestEachNumberedPageStopsOnEmptyPageWhenTotalUnknown(t *testing.T) {
+	var pages []int
+	fetch := func(page int) (client.Page[string], error) {
+		pages = append(pages, page)
+		if page == 1 {
+			return client.Page[string]{Results: []string{"a"}}, nil
+		}
+		return client.Page[string]{}, nil
+	}
+
+	items, total, err := client.FetchNumberedPages(0, fetch)
+
+	require.NoError(t, err)
+	assert.Equal(t, []int{1, 2}, pages)
+	assert.Equal(t, []string{"a"}, items)
+	assert.Equal(t, 1, total)
+}
+
+func TestEachNumberedPageTrimsToWant(t *testing.T) {
+	var pages []int
+	fetch := func(page int) (client.Page[string], error) {
+		pages = append(pages, page)
+		return client.Page[string]{Results: []string{"a", "b", "c"}, Total: 9}, nil
+	}
+
+	items, total, err := client.FetchNumberedPages(2, fetch)
+
+	require.NoError(t, err)
+	assert.Equal(t, []int{1}, pages, "should not fetch a page it does not need")
+	assert.Equal(t, []string{"a", "b"}, items)
+	assert.Equal(t, 9, total)
+}
+
+func TestEachNumberedPagePropagatesFetchError(t *testing.T) {
+	boom := errors.New("boom")
+	_, _, err := client.FetchNumberedPages(0, func(int) (client.Page[string], error) {
+		return client.Page[string]{}, boom
+	})
+	assert.ErrorIs(t, err, boom)
+}
+
+func TestEachNumberedPageStopsWhenYieldErrors(t *testing.T) {
+	boom := errors.New("stop")
+	pages := 0
+	err := client.EachNumberedPage(0, func(int) (client.Page[string], error) {
+		pages++
+		return client.Page[string]{Results: []string{"a"}, Total: 100}, nil
+	}, func(client.Page[string]) error {
+		return boom
+	})
+	assert.ErrorIs(t, err, boom)
+	assert.Equal(t, 1, pages)
+}
+
 type call struct{ limit, offset int }
 
 // fakeFetcher serves a fixed collection of ints, recording each page request.
