@@ -97,6 +97,7 @@ type API interface {
 	CreateTestParticipant(email string) (*CreateTestParticipantResponse, error)
 
 	GetFilters() (*ListFiltersResponse, error)
+	GetFilterRuleTree(workspaceID string) (*FilterRuleTreeResponse, error)
 	SearchFilters(query, workspaceID string, limit, offset int) (*SearchFiltersResponse, error)
 	GetEligibilityCount(payload EligibilityCountPayload) (*EligibilityCountResponse, error)
 	GetFilterBreakdown(payload FilterBreakdownPayload) (*FilterBreakdownResponse, error)
@@ -1078,6 +1079,24 @@ func (c *Client) GetFilters() (*ListFiltersResponse, error) {
 		return nil, err
 	}
 
+	return &response, nil
+}
+
+// GetFilterRuleTree retrieves the server's composite filter constraints.
+// An empty workspaceID requests the default rules rather than workspace-specific rules.
+func (c *Client) GetFilterRuleTree(workspaceID string) (*FilterRuleTreeResponse, error) {
+	var response FilterRuleTreeResponse
+	requestURL := "/api/v1/filters/rule-tree/"
+	if workspaceID != "" {
+		params := url.Values{"workspace_id": {workspaceID}}
+		requestURL += "?" + params.Encode()
+	}
+	if _, err := c.ExecuteBuilder().Get(requestURL, &response); err != nil {
+		return nil, err
+	}
+	if len(response.RuleTree) == 0 {
+		return nil, fmt.Errorf("filter rule tree response is missing or empty")
+	}
 	return &response, nil
 }
 

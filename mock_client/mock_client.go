@@ -733,6 +733,21 @@ func (mr *MockAPIMockRecorder) GetFilterBreakdown(payload interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFilterBreakdown", reflect.TypeOf((*MockAPI)(nil).GetFilterBreakdown), payload)
 }
 
+// GetFilterRuleTree mocks base method.
+func (m *MockAPI) GetFilterRuleTree(workspaceID string) (*client.FilterRuleTreeResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFilterRuleTree", workspaceID)
+	ret0, _ := ret[0].(*client.FilterRuleTreeResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFilterRuleTree indicates an expected call of GetFilterRuleTree.
+func (mr *MockAPIMockRecorder) GetFilterRuleTree(workspaceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFilterRuleTree", reflect.TypeOf((*MockAPI)(nil).GetFilterRuleTree), workspaceID)
+}
+
 // GetFilterSet mocks base method.
 func (m *MockAPI) GetFilterSet(ID string) (*model.FilterSet, error) {
 	m.ctrl.T.Helper()

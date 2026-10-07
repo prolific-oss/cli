@@ -1,6 +1,7 @@
 package client
 
 import (
+	"encoding/json"
 	"net/url"
 
 	"github.com/prolific-oss/cli/model"
@@ -83,6 +84,11 @@ type ListFiltersResponse struct {
 	Results []model.Filter `json:"results"`
 	*JSONAPILinks
 	*JSONAPIMeta
+}
+
+// FilterRuleTreeResponse preserves the server-defined constraint schema.
+type FilterRuleTreeResponse struct {
+	RuleTree map[string]json.RawMessage `json:"rule_tree"`
 }
 
 // SearchFiltersResponse is the response for searching filters by keyword

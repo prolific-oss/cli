@@ -23,5 +23,5 @@ func TestNewFiltersCommand(t *testing.T) {
 	for _, sub := range cmd.Commands() {
 		names = append(names, sub.Name())
 	}
-	assert.ElementsMatch(t, []string{"list", "search"}, names)
+	assert.ElementsMatch(t, []string{"list", "search", "rule-tree"}, names)
 }

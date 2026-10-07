@@ -24,6 +24,8 @@
 
 ### Filters
 
+- Add `filters rule-tree` to retrieve workspace-specific composite filter rules, with `--json` for compact output.
+
 - **Breaking change:** `prolific filters` is now a parent command. The previous
   behaviour has moved to `prolific filters list`; update any scripts or skills
   that call `prolific filters` or `prolific filters -n`.
