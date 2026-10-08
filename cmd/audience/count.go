@@ -96,33 +96,32 @@ func renderCount(count int, in filterInput, w io.Writer) error {
 	fields := uiaudience.CountFields.Resolve(in.Fields, format)
 
 	switch format {
+	case ui.FormatJSON:
+		rendered, err := RenderCountJSON(count)
+		if err != nil {
+			return err
+		}
+		_, err = fmt.Fprintln(w, rendered)
+		return err
 	case ui.FormatCSV:
 		return ui.CsvRenderer[uiaudience.CountItem]{}.Render(countItems(count), fields, w)
 	case ui.FormatTable:
 		return ui.TableRenderer[uiaudience.CountItem]{}.Render(countItems(count), fields, w)
-	}
-
-	rendered, err := RenderCount(count, format == ui.FormatJSON)
-	if err != nil {
+	default:
+		_, err := fmt.Fprintf(w, "Eligible participants: %d\n", count)
 		return err
 	}
-	_, err = fmt.Fprintln(w, rendered)
-	return err
 }
 
-// RenderCount produces output for an eligibility count. --json emits the
-// CLI-owned countOutput rather than the API's response.
-func RenderCount(count int, asJSON bool) (string, error) {
-	if asJSON {
-		payload, err := json.Marshal(countOutput{Count: count})
-		if err != nil {
-			return "", err
-		}
-
-		return string(payload), nil
+// RenderCountJSON emits the count as the CLI-owned countOutput rather than the
+// API's response, so a change to the API never reaches our output.
+func RenderCountJSON(count int) (string, error) {
+	payload, err := json.Marshal(countOutput{Count: count})
+	if err != nil {
+		return "", err
 	}
 
-	return fmt.Sprintf("Eligible participants: %d", count), nil
+	return string(payload), nil
 }
 
 func countItems(count int) []uiaudience.CountItem {

@@ -355,40 +355,27 @@ func TestCountCommandHandlesAPIError(t *testing.T) {
 	}
 }
 
-func TestRenderCount(t *testing.T) {
+func TestRenderCountJSON(t *testing.T) {
 	tests := []struct {
 		name     string
 		count    int
-		asJSON   bool
 		expected string
 	}{
 		{
 			name:     "exact count",
 			count:    1234,
-			expected: "Eligible participants: 1234",
+			expected: `{"count":1234}`,
 		},
 		{
 			name:     "zero count",
 			count:    0,
-			expected: "Eligible participants: 0",
-		},
-		{
-			name:     "json exact count",
-			count:    1234,
-			asJSON:   true,
-			expected: `{"count":1234}`,
-		},
-		{
-			name:     "json zero count",
-			count:    0,
-			asJSON:   true,
 			expected: `{"count":0}`,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			actual, err := audience.RenderCount(tt.count, tt.asJSON)
+			actual, err := audience.RenderCountJSON(tt.count)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err)
 			}
