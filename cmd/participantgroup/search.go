@@ -10,7 +10,6 @@ import (
 	"github.com/prolific-oss/cli/model"
 	"github.com/prolific-oss/cli/ui"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 type SearchOptions struct {
@@ -20,6 +19,10 @@ type SearchOptions struct {
 	Fields      string
 	Output      shared.OutputOptions
 }
+
+// searchFields is the default column set. A group is identified by its ID and
+// name whichever format asked for it.
+var searchFields = ui.FieldSet{CSV: "ID,Name", Table: "ID,Name"}
 
 // NewSearchCommand searches participant group names on the server.
 func NewSearchCommand(c client.API, w io.Writer) *cobra.Command {
@@ -35,8 +38,8 @@ func NewSearchCommand(c client.API, w io.Writer) *cobra.Command {
 			if query == "" {
 				return fmt.Errorf("error: search query must not be empty")
 			}
-			if strings.TrimSpace(opts.WorkspaceID) == "" {
-				return fmt.Errorf("error: please provide a workspace ID")
+			if err := shared.RequireWorkspace(opts.WorkspaceID); err != nil {
+				return fmt.Errorf("error: %s", err)
 			}
 			if opts.Limit < 1 || opts.Offset < 0 {
 				return fmt.Errorf("error: limit must be positive and offset nonnegative")
@@ -52,7 +55,10 @@ func NewSearchCommand(c client.API, w io.Writer) *cobra.Command {
 			// footer cannot disagree about the same response.
 			total := client.ReportedTotal(response.JSONAPIMeta, len(response.Results))
 
-			switch shared.ResolveFormat(opts.Output) {
+			format := shared.ResolveFormat(opts.Output)
+			fields := searchFields.Resolve(opts.Fields, format)
+
+			switch format {
 			case ui.FormatJSON:
 				envelope := ui.NewEnvelope(response.Results, total, opts.Limit, opts.Offset)
 				if err := (ui.JSONEnvelopeRenderer[model.ParticipantGroup]{}).Render(envelope, w); err != nil {
@@ -60,12 +66,12 @@ func NewSearchCommand(c client.API, w io.Writer) *cobra.Command {
 				}
 				return nil
 			case ui.FormatCSV:
-				if err := (ui.CsvRenderer[model.ParticipantGroup]{}).Render(response.Results, opts.Fields, w); err != nil {
+				if err := (ui.CsvRenderer[model.ParticipantGroup]{}).Render(response.Results, fields, w); err != nil {
 					return fmt.Errorf("error: %s", err)
 				}
 				return nil
 			}
-			if err := (ui.TableRenderer[model.ParticipantGroup]{}).Render(response.Results, opts.Fields, w); err != nil {
+			if err := (ui.TableRenderer[model.ParticipantGroup]{}).Render(response.Results, fields, w); err != nil {
 				return fmt.Errorf("error: %s", err)
 			}
 			if _, err := fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(response.Results), total)); err != nil {
@@ -74,10 +80,10 @@ func NewSearchCommand(c client.API, w io.Writer) *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&opts.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "Workspace to search (required).")
+	shared.AddRequiredWorkspaceFlag(cmd, &opts.WorkspaceID)
 	cmd.Flags().IntVarP(&opts.Limit, "limit", "l", client.DefaultRecordLimit, "Maximum groups per page.")
 	cmd.Flags().IntVarP(&opts.Offset, "offset", "o", client.DefaultRecordOffset, "Number of matching groups to skip.")
-	cmd.Flags().StringVarP(&opts.Fields, "fields", "f", "ID,Name", "Comma separated fields to display in table or CSV output.")
+	shared.AddFieldsFlag(cmd, &opts.Fields)
 	shared.AddOutputFlags(cmd, &opts.Output)
 	return cmd
 }

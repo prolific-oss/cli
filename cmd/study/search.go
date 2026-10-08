@@ -10,7 +10,6 @@ import (
 	"github.com/prolific-oss/cli/model"
 	"github.com/prolific-oss/cli/ui"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 type SearchOptions struct {
@@ -18,6 +17,13 @@ type SearchOptions struct {
 	Page        int
 	Fields      string
 	Output      shared.OutputOptions
+}
+
+// searchFields is the default column set. A search result is a study, and the
+// same columns identify one whichever format asked for it.
+var searchFields = ui.FieldSet{
+	CSV:   "ID,Name,InternalName,Status",
+	Table: "ID,Name,InternalName,Status",
 }
 
 // NewSearchCommand searches studies without opening the interactive list.
@@ -48,7 +54,10 @@ func NewSearchCommand(c client.API, w io.Writer) *cobra.Command {
 			// footer cannot disagree about the same response.
 			total := client.ReportedTotal(response.JSONAPIMeta, len(response.Results))
 
-			switch shared.ResolveFormat(opts.Output) {
+			format := shared.ResolveFormat(opts.Output)
+			fields := searchFields.Resolve(opts.Fields, format)
+
+			switch format {
 			case ui.FormatJSON:
 				// Studies paginate by page number, so the window a page
 				// covers comes from the page size the client sends.
@@ -59,12 +68,12 @@ func NewSearchCommand(c client.API, w io.Writer) *cobra.Command {
 				}
 				return nil
 			case ui.FormatCSV:
-				if err := (ui.CsvRenderer[model.Study]{}).Render(response.Results, opts.Fields, w); err != nil {
+				if err := (ui.CsvRenderer[model.Study]{}).Render(response.Results, fields, w); err != nil {
 					return fmt.Errorf("error: %s", err)
 				}
 				return nil
 			}
-			if err := (ui.TableRenderer[model.Study]{}).Render(response.Results, opts.Fields, w); err != nil {
+			if err := (ui.TableRenderer[model.Study]{}).Render(response.Results, fields, w); err != nil {
 				return fmt.Errorf("error: %s", err)
 			}
 			if _, err := fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(response.Results), total)); err != nil {
@@ -73,9 +82,9 @@ func NewSearchCommand(c client.API, w io.Writer) *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVarP(&opts.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "Scope search to a workspace.")
+	shared.AddWorkspaceFlag(cmd, &opts.WorkspaceID)
 	cmd.Flags().IntVar(&opts.Page, "page", 1, "Result page (starting at 1).")
-	cmd.Flags().StringVarP(&opts.Fields, "fields", "f", "ID,Name,InternalName,Status", "Comma separated fields to display in table or CSV output.")
+	shared.AddFieldsFlag(cmd, &opts.Fields)
 	shared.AddOutputFlags(cmd, &opts.Output)
 	return cmd
 }
