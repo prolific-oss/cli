@@ -91,9 +91,10 @@ func renderList(c client.API, opts ListOptions, w io.Writer) error {
 
 	switch shared.ResolveFormatForWriter(opts.Output, w) {
 	case shared.FormatJSON:
-		// The catalogue arrives whole, so it is reported as a single window
-		// covering every filter.
-		envelope := ui.NewEnvelope(records, len(records), len(records), 0)
+		// The catalogue endpoint does not paginate, so no window was asked
+		// for and none could be applied: a limit of zero says these are all
+		// of them.
+		envelope := ui.NewEnvelope(records, len(records), 0, 0)
 		return ui.JSONEnvelopeRenderer[model.Filter]{}.Render(envelope, w)
 	case shared.FormatCSV:
 		renderer := ui.CsvRenderer[uifilters.ListItem]{}

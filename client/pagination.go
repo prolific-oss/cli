@@ -15,6 +15,17 @@ const FilterChoicesPageSize = 100
 // that keeps returning full pages without a count cannot loop forever.
 const maxPages = 1000
 
+// ReportedTotal returns the total the API reported in its meta block, falling
+// back to the number of records in hand when the response carried no meta, or
+// a meta block whose count is missing or smaller than the records returned. A
+// total below the records already held would be a count no caller can act on.
+func ReportedTotal(meta *JSONAPIMeta, records int) int {
+	if meta != nil && meta.Meta.Count > records {
+		return meta.Meta.Count
+	}
+	return records
+}
+
 // Page is a single page of results returned by a paginated fetch.
 type Page[T any] struct {
 	// Results is the items on this page.

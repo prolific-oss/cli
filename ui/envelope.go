@@ -12,9 +12,14 @@ import (
 // not yet the shape of every command's output.
 //
 // Count is the total number of matching records the API reports, which can be
-// larger than the records returned. Limit and Offset describe the window those
-// records came from; an endpoint that does not paginate reports the whole
-// collection as a single window.
+// larger than the records returned.
+//
+// Limit and Offset describe the window the caller asked for, not the records
+// that came back: a limit of 200 over a count of 90 returns 90 records and
+// still reports a limit of 200. A Limit of zero means no limit was asked for
+// or could be applied — through --all, through --limit 0, or because the
+// endpoint does not paginate — and Results therefore holds everything that
+// matched.
 type Envelope[T any] struct {
 	Results []T `json:"results"`
 	Count   int `json:"count"`

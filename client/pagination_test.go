@@ -216,3 +216,33 @@ func TestEachPageYieldsEmptyFirstPage(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, 1, yields)
 }
+
+func TestReportedTotal(t *testing.T) {
+	withCount := func(count int) *client.JSONAPIMeta {
+		meta := &client.JSONAPIMeta{}
+		meta.Meta.Count = count
+		return meta
+	}
+
+	tests := map[string]struct {
+		meta    *client.JSONAPIMeta
+		records int
+		want    int
+	}{
+		"no meta block falls back to the records in hand": {meta: nil, records: 10, want: 10},
+		"meta count is the total":                         {meta: withCount(90), records: 20, want: 90},
+		// A meta block can arrive without a usable count. Reporting a total
+		// below the records already held would be a count no caller can act
+		// on, so it clamps up, as FetchPages does.
+		"empty meta block clamps up to the records":    {meta: withCount(0), records: 10, want: 10},
+		"count smaller than the records clamps up":     {meta: withCount(3), records: 10, want: 10},
+		"no records and no count is zero":              {meta: nil, records: 0, want: 0},
+		"count with no records is still the API total": {meta: withCount(90), records: 0, want: 90},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, tt.want, client.ReportedTotal(tt.meta, tt.records))
+		})
+	}
+}

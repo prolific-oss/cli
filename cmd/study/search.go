@@ -1,7 +1,6 @@
 package study
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
@@ -27,7 +26,7 @@ func NewSearchCommand(c client.API, w io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "search <query>",
 		Short:   "Search accessible studies by name, internal name, or ID",
-		Long:    "Search studies on the server. Results are scoped to your access and optionally a workspace. Use --page for another page; the studies endpoint ignores limit/offset. JSON emits an object with results, meta, and _links for pagination.",
+		Long:    "Search studies on the server. Results are scoped to your access and optionally a workspace. Studies paginate by page number rather than limit/offset, so use --page for another page. JSON emits the CLI envelope: results, plus the count, limit and offset describing the window they came from.",
 		Example: "prolific study search 'memory task' --workspace WORKSPACE_ID --json",
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -45,15 +44,21 @@ func NewSearchCommand(c client.API, w io.Writer) *cobra.Command {
 			if response.Results == nil {
 				response.Results = []model.Study{}
 			}
+			// One total for every format, so the JSON count and the table
+			// footer cannot disagree about the same response.
+			total := client.ReportedTotal(response.JSONAPIMeta, len(response.Results))
+
 			switch shared.ResolveFormat(opts.Output) {
-			case "json":
-				encoder := json.NewEncoder(w)
-				encoder.SetIndent("", "  ")
-				if err := encoder.Encode(response); err != nil {
+			case shared.FormatJSON:
+				// Studies paginate by page number, so the window a page
+				// covers comes from the page size the client sends.
+				offset := (opts.Page - 1) * client.StudyPageSize
+				envelope := ui.NewEnvelope(response.Results, total, client.StudyPageSize, offset)
+				if err := (ui.JSONEnvelopeRenderer[model.Study]{}).Render(envelope, w); err != nil {
 					return fmt.Errorf("error: %s", err)
 				}
 				return nil
-			case "csv":
+			case shared.FormatCSV:
 				if err := (ui.CsvRenderer[model.Study]{}).Render(response.Results, opts.Fields, w); err != nil {
 					return fmt.Errorf("error: %s", err)
 				}
@@ -62,10 +67,8 @@ func NewSearchCommand(c client.API, w io.Writer) *cobra.Command {
 			if err := (ui.TableRenderer[model.Study]{}).Render(response.Results, opts.Fields, w); err != nil {
 				return fmt.Errorf("error: %s", err)
 			}
-			if response.JSONAPIMeta != nil {
-				if _, err := fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(response.Results), response.Meta.Count)); err != nil {
-					return fmt.Errorf("error: %s", err)
-				}
+			if _, err := fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(response.Results), total)); err != nil {
+				return fmt.Errorf("error: %s", err)
 			}
 			return nil
 		},

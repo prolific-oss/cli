@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-// filterInput holds the raw -t/--template-path, --filters, --breakdown, and
+// filterInput holds the raw -p/--template-path, --filters, --breakdown, and
 // -w/--workspace flag values shared by every `audience` command that counts
 // against a set of filters.
 type filterInput struct {
@@ -21,7 +21,7 @@ type filterInput struct {
 	JSON          bool
 }
 
-// filterSpec is the shape every -t/--template-path file (and the
+// filterSpec is the shape every -p/--template-path file (and the
 // --filters/--breakdown flags) resolve to: base filters (including nested groups), the
 // same format `study create` accepts, plus an optional single breakdown
 // filter to split results by.
@@ -30,7 +30,7 @@ type filterSpec struct {
 	BreakdownFilter model.Filter   `mapstructure:"breakdown_filter"`
 }
 
-// addCountFlags registers -t/--template-path, --filters, -w/--workspace, and
+// addCountFlags registers -p/--template-path, --filters, -w/--workspace, and
 // -j/--json on cmd, bound to in.
 func addCountFlags(cmd *cobra.Command, in *filterInput) {
 	addFilterFlags(cmd, in, false)
@@ -48,20 +48,22 @@ func addFilterFlags(cmd *cobra.Command, in *filterInput, withBreakdown bool) {
 	flags := cmd.Flags()
 
 	templateHelp := "Path to a YAML/JSON file containing the filters to count against. Alternative to --filters."
-	filtersHelp := `JSON array of filters to count against, e.g. '[{"filter_id":"age","selected_range":{"lower":18,"upper":65}}]'. Alternative to -t/--template-path.`
+	filtersHelp := `JSON array of filters to count against, e.g. '[{"filter_id":"age","selected_range":{"lower":18,"upper":65}}]'. Alternative to -p/--template-path.`
 	if withBreakdown {
 		templateHelp = "Path to a YAML/JSON file containing the base filters and breakdown_filter to count against. Alternative to --filters/--breakdown."
-		filtersHelp = `JSON array of base filters to count against, e.g. '[{"filter_id":"age","selected_range":{"lower":18,"upper":65}}]'. Optional; alternative to -t/--template-path.`
+		filtersHelp = `JSON array of base filters to count against, e.g. '[{"filter_id":"age","selected_range":{"lower":18,"upper":65}}]'. Optional; alternative to -p/--template-path.`
 	}
 
-	flags.StringVarP(&in.TemplatePath, "template-path", "t", "", templateHelp)
+	flags.StringVarP(&in.TemplatePath, "template-path", "p", "", templateHelp)
 	flags.StringVar(&in.FiltersJSON, "filters", "", filtersHelp)
 	if withBreakdown {
-		flags.StringVar(&in.BreakdownJSON, "breakdown", "", `JSON object for the single filter to break results down by, e.g. '{"filter_id":"handedness","selected_values":["0","1"]}' for a choice filter (selected_values is required) or '{"filter_id":"age","selected_range":{"lower":18,"upper":65}}' for a range filter. Required with --filters; alternative to -t/--template-path.`)
+		flags.StringVar(&in.BreakdownJSON, "breakdown", "", `JSON object for the single filter to break results down by, e.g. '{"filter_id":"handedness","selected_values":["0","1"]}' for a choice filter (selected_values is required) or '{"filter_id":"age","selected_range":{"lower":18,"upper":65}}' for a range filter. Required with --filters; alternative to -p/--template-path.`)
 	}
 	flags.StringVarP(&in.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "The workspace ID to count eligible participants for (required).")
-	// -j is bound by hand rather than through shared.AddOutputFlags, which
-	// would claim -t for --table and collide with --template-path.
+	// -j is bound by hand rather than through shared.AddOutputFlags: these
+	// commands do not emit a table or CSV yet. -t is deliberately left
+	// unbound so that work can claim it for --table, which is why
+	// --template-path uses -p.
 	flags.BoolVarP(&in.JSON, "json", "j", false, "Output as JSON")
 }
 
@@ -87,9 +89,9 @@ func (in filterInput) validate(requireBreakdown bool) error {
 
 	switch {
 	case usingTemplate && usingFlags:
-		return fmt.Errorf("error: use either -t/--template-path or %s, not both", flagsLabel)
+		return fmt.Errorf("error: use either -p/--template-path or %s, not both", flagsLabel)
 	case !usingTemplate && !usingFlags:
-		return fmt.Errorf("error: provide filters via -t/--template-path or %s", flagsLabel)
+		return fmt.Errorf("error: provide filters via -p/--template-path or %s", flagsLabel)
 	case requireBreakdown && usingFlags && in.BreakdownJSON == "":
 		return fmt.Errorf("error: --breakdown is required when using --filters")
 	}
@@ -101,7 +103,7 @@ func (in filterInput) validate(requireBreakdown bool) error {
 	return nil
 }
 
-// resolve loads a filterSpec from either the -t/--template-path file or the
+// resolve loads a filterSpec from either the -p/--template-path file or the
 // --filters/--breakdown flags, defaulting Filters to an empty (non-nil)
 // slice, since the API rejects a null filters field.
 func (in filterInput) resolve() (filterSpec, error) {

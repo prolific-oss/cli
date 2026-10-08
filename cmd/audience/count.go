@@ -22,22 +22,22 @@ func NewCountCommand(client client.API, w io.Writer) *cobra.Command {
 		Long: `Count how many participants would be eligible for a study defined by a
 set of filters, without creating the study or saving a filter set.
 
-Count a set of filters given via -t/--template-path or --filters.
+Count a set of filters given via -p/--template-path or --filters.
 
 Top-level filters are combined with AND. To express nested AND/OR groups,
 use filter_id "and" or "or" with a selected_filters array of child filters.
-Both -t/--template-path and --filters preserve this structure; the API
+Both -p/--template-path and --filters preserve this structure; the API
 validates which combinations are allowed.`,
 		Example: `
 Count participants matching the filters in a JSON/YAML file (see
 "prolific study create --help" for the filter format)
-$ prolific audience count -t /path/to/filters.json -w <workspace-id>
+$ prolific audience count -p /path/to/filters.json -w <workspace-id>
 
 Count participants matching filters given directly as a flag
 $ prolific audience count --filters '[{"filter_id":"age","selected_range":{"lower":18,"upper":65}}]' -w <workspace-id>
 
 Emit machine-readable output for scripting
-$ prolific audience count -t /path/to/filters.json -w <workspace-id> --json`,
+$ prolific audience count -p /path/to/filters.json -w <workspace-id> --json`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := in.validateCount(); err != nil {
 				return err
@@ -81,11 +81,17 @@ func getCount(c client.API, in filterInput) (int, error) {
 	return response.Count, nil
 }
 
-// RenderCount produces output for an eligibility count. --json emits
-// client.EligibilityCountResponse, the API payload.
+// countOutput is the CLI's own shape for a count, so a change to the API's
+// response never reaches our output.
+type countOutput struct {
+	Count int `json:"count"`
+}
+
+// RenderCount produces output for an eligibility count. --json emits the
+// CLI-owned countOutput rather than the API's response.
 func RenderCount(count int, asJSON bool) (string, error) {
 	if asJSON {
-		payload, err := json.Marshal(client.EligibilityCountResponse{Count: count})
+		payload, err := json.Marshal(countOutput{Count: count})
 		if err != nil {
 			return "", err
 		}

@@ -1,7 +1,6 @@
 package participantgroup
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
@@ -28,7 +27,7 @@ func NewSearchCommand(c client.API, w io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "search <query>",
 		Short:   "Search participant groups by name within a workspace",
-		Long:    "Search participant group names on the server. JSON emits an object with results, meta, and _links for pagination; use --limit and --offset to retrieve further matches.",
+		Long:    "Search participant group names on the server. JSON emits the CLI envelope: results, plus the count, limit and offset describing the window they came from. Use --limit and --offset to retrieve further matches.",
 		Example: "prolific participant-group search 'pilot cohort' --workspace WORKSPACE_ID --json",
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -49,15 +48,18 @@ func NewSearchCommand(c client.API, w io.Writer) *cobra.Command {
 			if response.Results == nil {
 				response.Results = []model.ParticipantGroup{}
 			}
+			// One total for every format, so the JSON count and the table
+			// footer cannot disagree about the same response.
+			total := client.ReportedTotal(response.JSONAPIMeta, len(response.Results))
+
 			switch shared.ResolveFormat(opts.Output) {
-			case "json":
-				encoder := json.NewEncoder(w)
-				encoder.SetIndent("", "  ")
-				if err := encoder.Encode(response); err != nil {
+			case shared.FormatJSON:
+				envelope := ui.NewEnvelope(response.Results, total, opts.Limit, opts.Offset)
+				if err := (ui.JSONEnvelopeRenderer[model.ParticipantGroup]{}).Render(envelope, w); err != nil {
 					return fmt.Errorf("error: %s", err)
 				}
 				return nil
-			case "csv":
+			case shared.FormatCSV:
 				if err := (ui.CsvRenderer[model.ParticipantGroup]{}).Render(response.Results, opts.Fields, w); err != nil {
 					return fmt.Errorf("error: %s", err)
 				}
@@ -66,10 +68,8 @@ func NewSearchCommand(c client.API, w io.Writer) *cobra.Command {
 			if err := (ui.TableRenderer[model.ParticipantGroup]{}).Render(response.Results, opts.Fields, w); err != nil {
 				return fmt.Errorf("error: %s", err)
 			}
-			if response.JSONAPIMeta != nil {
-				if _, err := fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(response.Results), response.Meta.Count)); err != nil {
-					return fmt.Errorf("error: %s", err)
-				}
+			if _, err := fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(response.Results), total)); err != nil {
+				return fmt.Errorf("error: %s", err)
 			}
 			return nil
 		},

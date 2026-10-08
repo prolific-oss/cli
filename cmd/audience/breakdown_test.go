@@ -279,7 +279,7 @@ func TestBreakdownCommandSendsEmptyFiltersNotNil(t *testing.T) {
 func TestBreakdownCommandValidatesInput(t *testing.T) {
 	tests := []struct {
 		name          string
-		templateJSON  string // empty means -t/--template-path is left unset
+		templateJSON  string // empty means -p/--template-path is left unset
 		filtersJSON   string
 		breakdownJSON string
 		workspaceID   string
@@ -288,14 +288,14 @@ func TestBreakdownCommandValidatesInput(t *testing.T) {
 		{
 			name:          "neither template nor flags",
 			workspaceID:   "ws-id",
-			expectedError: "error: provide filters via -t/--template-path or --filters/--breakdown",
+			expectedError: "error: provide filters via -p/--template-path or --filters/--breakdown",
 		},
 		{
 			name:          "template and flags both given",
 			templateJSON:  `{"breakdown_filter": {"filter_id": "handedness"}}`,
 			breakdownJSON: `{"filter_id": "handedness"}`,
 			workspaceID:   "ws-id",
-			expectedError: "error: use either -t/--template-path or --filters/--breakdown, not both",
+			expectedError: "error: use either -p/--template-path or --filters/--breakdown, not both",
 		},
 		{
 			name:          "filters given without breakdown",

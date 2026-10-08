@@ -170,7 +170,8 @@ func TestListFiltersRendersTheCLIJSONEnvelope(t *testing.T) {
 	assert.Len(t, envelope.Results, 2)
 	assert.Equal(t, "age", envelope.Results[0].FilterID)
 	assert.Equal(t, 2, envelope.Count)
-	assert.Equal(t, 2, envelope.Limit)
+	// The catalogue cannot be windowed, so no limit was applied.
+	assert.Equal(t, 0, envelope.Limit)
 	assert.Equal(t, 0, envelope.Offset)
 
 	// The API's own envelope must not reach our output.

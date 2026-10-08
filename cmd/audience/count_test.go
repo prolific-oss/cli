@@ -244,7 +244,7 @@ func TestCountCommandSendsEmptyFiltersNotNil(t *testing.T) {
 func TestCountCommandValidatesInput(t *testing.T) {
 	tests := []struct {
 		name          string
-		templateJSON  string // empty means -t/--template-path is left unset
+		templateJSON  string // empty means -p/--template-path is left unset
 		filtersJSON   string
 		workspaceID   string
 		expectedError string
@@ -252,14 +252,14 @@ func TestCountCommandValidatesInput(t *testing.T) {
 		{
 			name:          "no template or filters",
 			workspaceID:   "ws-id",
-			expectedError: "error: provide filters via -t/--template-path or --filters",
+			expectedError: "error: provide filters via -p/--template-path or --filters",
 		},
 		{
 			name:          "both template and filters",
 			templateJSON:  `{"filters": []}`,
 			filtersJSON:   `[]`,
 			workspaceID:   "ws-id",
-			expectedError: "error: use either -t/--template-path or --filters, not both",
+			expectedError: "error: use either -p/--template-path or --filters, not both",
 		},
 		{
 			name:          "missing workspace with template",

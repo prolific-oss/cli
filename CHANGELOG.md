@@ -8,27 +8,40 @@
 
 - Rename `participant` to `participant-group`, retaining `participant` as a compatibility alias.
 
-- Add `participant-group search <query>` and `study search <query>` using server-side name search, with workspace scoping, table/CSV output with field selection, and `--json` preserving pagination metadata. Group search supports `--limit`/`--offset`; study search supports `--page`.
+- Add `participant-group search <query>` and `study search <query>` using server-side name search, with workspace scoping, table/CSV output with field selection, and `--json` emitting the CLI-owned envelope (`results`, `count`, `limit`, `offset`). The API's `meta` block and `_links` relations, including live API URLs, no longer appear in CLI output. Group search supports `--limit`/`--offset`; study search supports `--page`.
 
 ### Audience
 
 - Preserve nested AND/OR `selected_filters` in JSON flags and JSON/YAML templates for audience counts and breakdowns.
 
+- `--template-path` uses `-p` rather than `-t` on the audience commands, freeing
+  `-t` for `--table` when those commands gain the standard output flags. The long
+  form is unchanged. Other commands that take a template, such as `study create`
+  and `filtersets create`, still use `-t` for now.
+
+- `--json` output is now defined by the CLI rather than mirrored from the API
+  response, so a server-side change cannot alter it. The shapes themselves are
+  unchanged.
+
 - **Breaking changes:**
   - Removed `eligibility-count`, replaced by `audience count`. The template
     format and `-w/--workspace` flag are unchanged, so `prolific
     eligibility-count -t filters.json -w <id>` becomes `prolific audience count
-    -t filters.json -w <id>`. The new command also accepts `--filters` (a raw
+    -p filters.json -w <id>`. The new command also accepts `--filters` (a raw
     JSON array, for scripting without a temp file), and `-j/--json` for
     machine-readable output.
 
 ### Filters
 
-- Add `filters rule-tree` to retrieve workspace-specific composite filter rules, with `--json` for compact output.
+- Add `filters rule-tree` to retrieve workspace-specific composite filter rules.
 
 - **Breaking change:** `prolific filters` is now a parent command. The previous
   behaviour has moved to `prolific filters list`; update any scripts or skills
-  that call `prolific filters` or `prolific filters -n`.
+  that call `prolific filters` or `prolific filters -n`. The output moved too:
+  where `prolific filters -n` printed a detailed block per filter, the
+  replacement `prolific filters list -n` prints a table, since `-n` is the
+  hidden alias for `--table` everywhere in the CLI. Anything parsing the old
+  block output needs updating; `--json` is the stable alternative.
 - Add `prolific filters search <query>` to search the filter catalogue by
   keyword, with matched text highlighted and a preview of matching choices.
   `--json`, `--table` and `--csv` output are available, with `--fields` to
@@ -57,15 +70,20 @@
   Output is flat, with raw parent and child-count columns; the endpoints expose
   no way to fetch one node's children, so no tree is reconstructed. Neither
   endpoint supports ordering, so there are no sort flags.
-- **Breaking changes:**
-  - `filters list -n` now prints a table, like `-n` everywhere else in the CLI,
-    instead of a detailed block per filter. `-n` remains a hidden alias for
-    `--table`. Scripts and skills parsing the old block output need updating;
-    `--json` is the stable alternative.
-  - Piping `filters list` or `filters search` without a format flag now produces
-    a table. Run in a terminal both are unchanged — `filters list` still opens
-    the interactive browser and `filters search` still renders the reading view
-    through your pager.
+- Piping `filters list` or `filters search` without a format flag produces a
+  table. Run in a terminal both are unchanged — `filters list` opens the
+  interactive browser and `filters search` renders the reading view through your
+  pager.
+- `filters search` defaults to 200 results, the CLI-wide default, rather than the
+  API's page size of 25.
+- `filters search --json` emits the CLI-owned envelope (`results`, `count`,
+  `limit`, `offset`) rather than a bare array, matching every other filters
+  command.
+- `filters rule-tree` always emits indented JSON. `--json` is accepted for
+  consistency with other commands but has nothing to select, since a tree has no
+  table or CSV form; it no longer means "compact".
+- `filters rule-tree` emits the rules themselves rather than wrapping them in a
+  `rule_tree` key, so callers read `.and` instead of `.rule_tree.and`.
 
 ### AI Task Builder
 

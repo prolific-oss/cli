@@ -18,10 +18,6 @@ import (
 // accepted by the API after trimming.
 const maxSearchQueryLength = 200
 
-// DefaultSearchLimit is the default number of results returned by filter
-// search. It matches the API's default page size.
-const DefaultSearchLimit = 25
-
 // SearchOptions is the options for the filter search command.
 type SearchOptions struct {
 	Query       string
@@ -48,7 +44,7 @@ Results are returned in ranked order. The parts of each filter that matched
 your query are highlighted, and up to three matching choices are previewed for
 filters with a fixed set of choices.
 
-By default the top 25 results are shown. Use --limit to ask for more, or
+By default the top 200 results are shown. Use --limit to ask for fewer, or
 --all (equivalently --limit 0) to fetch every match. Pages are fetched from
 the API automatically, so --offset is only needed to skip past results you
 have already seen.
@@ -100,7 +96,7 @@ $ prolific filters search developer --json`,
 
 	shared.AddWorkspaceFlag(cmd, &opts.WorkspaceID)
 	shared.AddFieldsFlag(cmd, &opts.Fields, uifilters.SearchListFields)
-	shared.AddPaginationFlags(cmd, &opts.Pagination, DefaultSearchLimit)
+	shared.AddPaginationFlags(cmd, &opts.Pagination, client.DefaultRecordLimit)
 	shared.AddOutputFlags(cmd, &opts.Output)
 
 	return cmd
@@ -135,11 +131,12 @@ func renderSearch(cmd *cobra.Command, c client.API, opts SearchOptions, w io.Wri
 
 	switch shared.ResolveFormatForWriter(opts.Output, w) {
 	case shared.FormatJSON:
-		records, _, err := client.FetchPages(want, client.FilterSearchPageSize, fetch)
+		records, total, err := client.FetchPages(want, client.FilterSearchPageSize, fetch)
 		if err != nil {
 			return err
 		}
-		return ui.JSONRenderer[model.FilterSearchResult]{}.Render(records, w)
+		envelope := ui.NewEnvelope(records, total, want, opts.Pagination.Offset)
+		return ui.JSONEnvelopeRenderer[model.FilterSearchResult]{}.Render(envelope, w)
 	case shared.FormatCSV:
 		records, _, err := client.FetchPages(want, client.FilterSearchPageSize, fetch)
 		if err != nil {

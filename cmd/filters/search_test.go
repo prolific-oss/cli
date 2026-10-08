@@ -34,6 +34,25 @@ func atTerminal(t *testing.T, w io.Writer) io.Writer {
 	return terminalWriter{w}
 }
 
+// decodeSearchEnvelope reads the CLI envelope --json emits and returns the
+// records inside it.
+func decodeSearchEnvelope(t *testing.T, raw []byte) []model.FilterSearchResult {
+	t.Helper()
+
+	var envelope struct {
+		Results []model.FilterSearchResult `json:"results"`
+		Count   int                        `json:"count"`
+		Limit   int                        `json:"limit"`
+		Offset  int                        `json:"offset"`
+	}
+	require.NoError(t, json.Unmarshal(raw, &envelope))
+
+	// The API's own envelope must never reach our output.
+	require.NotContains(t, string(raw), "_links")
+
+	return envelope.Results
+}
+
 func ptr[T any](v T) *T { return &v }
 
 func searchResponse() *client.SearchFiltersResponse {
@@ -110,7 +129,7 @@ func TestSearchFilters(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	c.EXPECT().
-		SearchFilters("software developers", "ws-1", filters.DefaultSearchLimit, client.DefaultRecordOffset).
+		SearchFilters("software developers", "ws-1", client.FilterSearchPageSize, client.DefaultRecordOffset).
 		Return(searchResponse(), nil)
 
 	var b bytes.Buffer
@@ -162,8 +181,7 @@ func TestSearchFiltersJSON(t *testing.T) {
 
 	require.NoError(t, err)
 
-	var decoded []model.FilterSearchResult
-	require.NoError(t, json.Unmarshal(b.Bytes(), &decoded))
+	decoded := decodeSearchEnvelope(t, b.Bytes())
 	require.Len(t, decoded, 2)
 	assert.Equal(t, "job-title", decoded[0].FilterID)
 	assert.Equal(t, 4, decoded[0].Choices.Matched)
@@ -177,7 +195,7 @@ func TestSearchFiltersNoResults(t *testing.T) {
 
 	response := &client.SearchFiltersResponse{Results: []model.FilterSearchResult{}, JSONAPIMeta: &client.JSONAPIMeta{}}
 	c.EXPECT().
-		SearchFilters("zzz", "", filters.DefaultSearchLimit, client.DefaultRecordOffset).
+		SearchFilters("zzz", "", client.FilterSearchPageSize, client.DefaultRecordOffset).
 		Return(response, nil)
 
 	var b bytes.Buffer
@@ -199,7 +217,7 @@ func TestSearchFiltersNoResultsJSON(t *testing.T) {
 
 	response := &client.SearchFiltersResponse{Results: nil}
 	c.EXPECT().
-		SearchFilters("zzz", "", filters.DefaultSearchLimit, client.DefaultRecordOffset).
+		SearchFilters("zzz", "", client.FilterSearchPageSize, client.DefaultRecordOffset).
 		Return(response, nil)
 
 	var b bytes.Buffer
@@ -211,7 +229,7 @@ func TestSearchFiltersNoResultsJSON(t *testing.T) {
 	w.Flush()
 
 	require.NoError(t, err)
-	assert.JSONEq(t, "[]", b.String())
+	assert.Contains(t, b.String(), `"results": []`)
 }
 
 func TestSearchFiltersAPIError(t *testing.T) {
@@ -220,7 +238,7 @@ func TestSearchFiltersAPIError(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	c.EXPECT().
-		SearchFilters("developers", "", filters.DefaultSearchLimit, client.DefaultRecordOffset).
+		SearchFilters("developers", "", client.FilterSearchPageSize, client.DefaultRecordOffset).
 		Return(nil, assert.AnError)
 
 	var b bytes.Buffer
@@ -330,8 +348,7 @@ func TestSearchFiltersAllFetchesUntilExhausted(t *testing.T) {
 
 	require.NoError(t, err)
 
-	var decoded []model.FilterSearchResult
-	require.NoError(t, json.Unmarshal(b.Bytes(), &decoded))
+	decoded := decodeSearchEnvelope(t, b.Bytes())
 	require.Len(t, decoded, 230)
 	assert.Equal(t, "filter-0", decoded[0].FilterID)
 	assert.Equal(t, "filter-229", decoded[229].FilterID)
@@ -369,7 +386,7 @@ func TestSearchFiltersTable(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	c.EXPECT().
-		SearchFilters("developers", "", filters.DefaultSearchLimit, client.DefaultRecordOffset).
+		SearchFilters("developers", "", client.FilterSearchPageSize, client.DefaultRecordOffset).
 		Return(searchResponse(), nil)
 
 	var b bytes.Buffer
@@ -396,7 +413,7 @@ func TestSearchFiltersCSVWithFields(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	c.EXPECT().
-		SearchFilters("developers", "", filters.DefaultSearchLimit, client.DefaultRecordOffset).
+		SearchFilters("developers", "", client.FilterSearchPageSize, client.DefaultRecordOffset).
 		Return(searchResponse(), nil)
 
 	var b bytes.Buffer
@@ -444,7 +461,7 @@ func TestSearchFiltersFooterCountsWhatWasRendered(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	// The API claims 50 matches but hands back only 7 and then a short page.
-	c.EXPECT().SearchFilters("dev", "", 25, 0).Return(pageOf(0, 7, 50), nil)
+	c.EXPECT().SearchFilters("dev", "", client.FilterSearchPageSize, 0).Return(pageOf(0, 7, 50), nil)
 
 	var b bytes.Buffer
 	w := bufio.NewWriter(&b)
@@ -456,7 +473,10 @@ func TestSearchFiltersFooterCountsWhatWasRendered(t *testing.T) {
 
 	require.NoError(t, err)
 	output := stripansi.Strip(b.String())
-	assert.Contains(t, output, "50 matching filters. Use --limit or --all to see more\n")
+	// 50 matches sit inside the default limit of 200, so nothing was cut off
+	// and the header must not offer --limit or --all.
+	assert.Contains(t, output, "50 matching filters\n")
+	assert.NotContains(t, output, "to see more")
 	assert.True(t, strings.HasSuffix(output, "\nShowing 7 records of 50\n"))
 }
 
@@ -480,8 +500,7 @@ func TestSearchFiltersLimitZeroFetchesAll(t *testing.T) {
 
 	require.NoError(t, err)
 
-	var decoded []model.FilterSearchResult
-	require.NoError(t, json.Unmarshal(b.Bytes(), &decoded))
+	decoded := decodeSearchEnvelope(t, b.Bytes())
 	assert.Len(t, decoded, 130)
 }
 
@@ -519,7 +538,7 @@ func TestSearchFiltersOffsetAppliesToTableRanks(t *testing.T) {
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	c.EXPECT().SearchFilters("dev", "", 25, 50).Return(pageOf(50, 2, 300), nil)
+	c.EXPECT().SearchFilters("dev", "", client.FilterSearchPageSize, 50).Return(pageOf(50, 2, 300), nil)
 
 	var b bytes.Buffer
 	w := bufio.NewWriter(&b)
@@ -541,7 +560,7 @@ func TestSearchFiltersRendersATableWhenNotATerminal(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	c.EXPECT().
-		SearchFilters("developers", "", filters.DefaultSearchLimit, client.DefaultRecordOffset).
+		SearchFilters("developers", "", client.FilterSearchPageSize, client.DefaultRecordOffset).
 		Return(searchResponse(), nil)
 
 	var b bytes.Buffer
@@ -568,7 +587,7 @@ func TestSearchFiltersNamesTheChoicesCommand(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	c.EXPECT().
-		SearchFilters("software developers", "", filters.DefaultSearchLimit, client.DefaultRecordOffset).
+		SearchFilters("software developers", "", client.FilterSearchPageSize, client.DefaultRecordOffset).
 		Return(searchResponse(), nil)
 
 	var b bytes.Buffer
@@ -581,4 +600,63 @@ func TestSearchFiltersNamesTheChoicesCommand(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Contains(t, stripansi.Strip(b.String()), `See them all: prolific filters choices search job-title "software developers"`)
+}
+
+// The envelope's window is the one thing no other test pins: --all is the
+// only path where limit must be 0, and an offset search must report where
+// its window started.
+func TestSearchFiltersEnvelopeReportsTheRequestedWindow(t *testing.T) {
+	decode := func(t *testing.T, raw []byte) (count, limit, offset int) {
+		t.Helper()
+		var envelope struct {
+			Count  int `json:"count"`
+			Limit  int `json:"limit"`
+			Offset int `json:"offset"`
+		}
+		require.NoError(t, json.Unmarshal(raw, &envelope))
+		return envelope.Count, envelope.Limit, envelope.Offset
+	}
+
+	t.Run("--all is an unbounded window", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		c := mock_client.NewMockAPI(ctrl)
+
+		gomock.InOrder(
+			c.EXPECT().SearchFilters("dev", "", client.FilterSearchPageSize, 0).Return(pageOf(0, 100, 130), nil),
+			c.EXPECT().SearchFilters("dev", "", client.FilterSearchPageSize, 100).Return(pageOf(100, 30, 130), nil),
+		)
+
+		var b bytes.Buffer
+		w := bufio.NewWriter(&b)
+		cmd := filters.NewSearchCommand(c, w)
+		cmd.SetArgs([]string{"dev", "--all", "--json"})
+		require.NoError(t, cmd.Execute())
+		require.NoError(t, w.Flush())
+
+		count, limit, offset := decode(t, b.Bytes())
+		assert.Equal(t, 130, count)
+		assert.Equal(t, 0, limit, "--all asks for no limit, so the envelope must not claim one")
+		assert.Equal(t, 0, offset)
+	})
+
+	t.Run("a limited, offset window is reported as asked for", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		c := mock_client.NewMockAPI(ctrl)
+
+		c.EXPECT().SearchFilters("dev", "", 10, 50).Return(pageOf(50, 10, 300), nil)
+
+		var b bytes.Buffer
+		w := bufio.NewWriter(&b)
+		cmd := filters.NewSearchCommand(c, w)
+		cmd.SetArgs([]string{"dev", "--limit", "10", "--offset", "50", "--json"})
+		require.NoError(t, cmd.Execute())
+		require.NoError(t, w.Flush())
+
+		count, limit, offset := decode(t, b.Bytes())
+		assert.Equal(t, 300, count)
+		assert.Equal(t, 10, limit)
+		assert.Equal(t, 50, offset)
+	})
 }

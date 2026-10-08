@@ -26,7 +26,7 @@ func NewBreakdownCommand(client client.API, w io.Writer) *cobra.Command {
 set of base filters, split by the values (or bucketed ranges, for numeric
 filters) of a single breakdown filter.
 
-Provide the filters either as a -t/--template-path file, or directly via
+Provide the filters either as a -p/--template-path file, or directly via
 --filters and --breakdown — not both.
 
 Base filters can contain nested AND/OR groups: use filter_id "and" or "or"
@@ -42,7 +42,7 @@ question, or their answer falls outside what you specified.`,
 		Example: `
 Count participants matching the base filters and breakdown_filter in a
 JSON/YAML file (see "prolific study create --help" for the filter format):
-$ prolific audience breakdown -t /path/to/filters.json -w <workspace-id>
+$ prolific audience breakdown -p /path/to/filters.json -w <workspace-id>
 
 Or provide the filters directly as flags. A choice-type breakdown filter
 needs selected_values listing which choices to split by — the API rejects
@@ -53,7 +53,7 @@ $ prolific audience breakdown \
     -w <workspace-id>
 
 Emit machine-readable output for scripting
-$ prolific audience breakdown -t /path/to/filters.json -w <workspace-id> --json`,
+$ prolific audience breakdown -p /path/to/filters.json -w <workspace-id> --json`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := in.validateBreakdown(); err != nil {
 				return err
@@ -102,12 +102,18 @@ func getBreakdown(c client.API, in filterInput) (map[string]int, error) {
 	return response.Breakdown, nil
 }
 
+// breakdownOutput is the CLI's own shape for a breakdown, so a change to the
+// API's response never reaches our output.
+type breakdownOutput struct {
+	Breakdown map[string]int `json:"breakdown"`
+}
+
 // RenderBreakdown produces output for a filter breakdown. The table form is
 // sorted alphabetically with client.FilterBreakdownNAKey always shown last;
-// --json instead emits the raw API response shape.
+// --json emits the CLI's own object keyed by breakdown value.
 func RenderBreakdown(breakdown map[string]int, asJSON bool) (string, error) {
 	if asJSON {
-		payload, err := json.Marshal(client.FilterBreakdownResponse{Breakdown: breakdown})
+		payload, err := json.Marshal(breakdownOutput{Breakdown: breakdown})
 		if err != nil {
 			return "", err
 		}
