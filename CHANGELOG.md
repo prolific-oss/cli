@@ -36,6 +36,26 @@
   (or `--limit 0`) fetches every match; pages are requested from the API
   automatically and streamed as they arrive. In a terminal, long output opens
   in your pager (`PROLIFIC_PAGER`, `PAGER`, or `less`).
+- `filters list` gains the standard output flags: `--json`, `--table`, `--csv`
+  and `--fields`/`-f` to choose columns, plus `--workspace`/`-w` to ask the API
+  for a workspace's catalogue, which is smaller and cheaper to fetch than the
+  unscoped one. The catalogue endpoint does not paginate, so there are no
+  `--limit`/`--offset` flags. Its `--json` output uses the CLI-owned envelope
+  (`results`, `count`, `limit`, `offset`) rather than the API's own.
+- `filters search` gains `--offset`/`-o` to skip matches you have already seen,
+  and `-f` as the shorthand for `--fields`. Ranks are reported against the whole
+  result set, so an offset search starts at the rank the filter actually holds.
+- When `filters search` cannot preview all of a filter's choices, the result now
+  names the command that lists the rest.
+- **Breaking changes:**
+  - `filters list -n` now prints a table, like `-n` everywhere else in the CLI,
+    instead of a detailed block per filter. `-n` remains a hidden alias for
+    `--table`. Scripts and skills parsing the old block output need updating;
+    `--json` is the stable alternative.
+  - Piping `filters list` or `filters search` without a format flag now produces
+    a table. Run in a terminal both are unchanged — `filters list` still opens
+    the interactive browser and `filters search` still renders the reading view
+    through your pager.
 
 ### AI Task Builder
 

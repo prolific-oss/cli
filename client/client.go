@@ -96,7 +96,7 @@ type API interface {
 
 	CreateTestParticipant(email string) (*CreateTestParticipantResponse, error)
 
-	GetFilters() (*ListFiltersResponse, error)
+	GetFilters(workspaceID string) (*ListFiltersResponse, error)
 	GetFilterRuleTree(workspaceID string) (*FilterRuleTreeResponse, error)
 	SearchFilters(query, workspaceID string, limit, offset int) (*SearchFiltersResponse, error)
 	GetEligibilityCount(payload EligibilityCountPayload) (*EligibilityCountResponse, error)
@@ -1071,11 +1071,19 @@ func (c *Client) CreateTestParticipant(email string) (*CreateTestParticipantResp
 	return &response, nil
 }
 
-func (c *Client) GetFilters() (*ListFiltersResponse, error) {
+// GetFilters retrieves the filter catalogue. workspaceID is optional and
+// scopes the catalogue to the filters available in that workspace, which also
+// trims the payload the API returns. The endpoint does not paginate, so the
+// whole catalogue comes back in one response.
+func (c *Client) GetFilters(workspaceID string) (*ListFiltersResponse, error) {
 	var response ListFiltersResponse
 
-	url := "/api/v1/filters/"
-	if _, err := c.ExecuteBuilder().Get(url, &response); err != nil {
+	requestURL := "/api/v1/filters/"
+	if workspaceID != "" {
+		params := url.Values{"workspace_id": {workspaceID}}
+		requestURL += "?" + params.Encode()
+	}
+	if _, err := c.ExecuteBuilder().Get(requestURL, &response); err != nil {
 		return nil, err
 	}
 

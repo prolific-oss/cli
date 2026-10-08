@@ -779,18 +779,18 @@ func (mr *MockAPIMockRecorder) GetFilterSets(workspaceID, limit, offset interfac
 }
 
 // GetFilters mocks base method.
-func (m *MockAPI) GetFilters() (*client.ListFiltersResponse, error) {
+func (m *MockAPI) GetFilters(workspaceID string) (*client.ListFiltersResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetFilters")
+	ret := m.ctrl.Call(m, "GetFilters", workspaceID)
 	ret0, _ := ret[0].(*client.ListFiltersResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetFilters indicates an expected call of GetFilters.
-func (mr *MockAPIMockRecorder) GetFilters() *gomock.Call {
+func (mr *MockAPIMockRecorder) GetFilters(workspaceID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFilters", reflect.TypeOf((*MockAPI)(nil).GetFilters))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFilters", reflect.TypeOf((*MockAPI)(nil).GetFilters), workspaceID)
 }
 
 // GetHookEventTypes mocks base method.

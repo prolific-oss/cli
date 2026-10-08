@@ -564,6 +564,51 @@ func TestExecuteSetsAgentInUserAgent(t *testing.T) {
 	}
 }
 
+func TestGetFiltersScopesTheCatalogueToAWorkspace(t *testing.T) {
+	var gotPath string
+	var gotQuery url.Values
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotPath = r.URL.Path
+		gotQuery = r.URL.Query()
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(ListFiltersResponse{})
+	}))
+	defer server.Close()
+
+	c := Client{Client: server.Client(), BaseURL: server.URL, Token: "test-token"}
+
+	if _, err := c.GetFilters("ws-id"); err != nil {
+		t.Fatalf("GetFilters returned error: %v", err)
+	}
+	if want := "/api/v1/filters/"; gotPath != want {
+		t.Errorf("path = %q, want %q", gotPath, want)
+	}
+	if got := gotQuery.Get("workspace_id"); got != "ws-id" {
+		t.Errorf("workspace_id = %q, want %q", got, "ws-id")
+	}
+}
+
+func TestGetFiltersOmitsWorkspaceIDWhenEmpty(t *testing.T) {
+	var gotQuery url.Values
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotQuery = r.URL.Query()
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(ListFiltersResponse{})
+	}))
+	defer server.Close()
+
+	c := Client{Client: server.Client(), BaseURL: server.URL, Token: "test-token"}
+
+	if _, err := c.GetFilters(""); err != nil {
+		t.Fatalf("GetFilters returned error: %v", err)
+	}
+	if gotQuery.Has("workspace_id") {
+		t.Errorf("workspace_id should not be sent when empty, got %q", gotQuery.Get("workspace_id"))
+	}
+}
+
 // TestSearchFiltersSendsExpectedRequest guards the request shape directly,
 // since the operation is not yet in the published spec and so is not covered
 // by contract_test.

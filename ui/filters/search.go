@@ -3,6 +3,7 @@ package filters
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/prolific-oss/cli/model"
@@ -88,8 +89,9 @@ func RenderNoSearchResults(query string) string {
 
 // RenderSearchResult renders a single filter search result at the given rank,
 // highlighting the parts of the filter that matched the query and previewing
-// matching choices.
-func RenderSearchResult(rank int, r model.FilterSearchResult) string {
+// matching choices. The query is repeated back in the command suggested for
+// filters whose choices the preview does not cover.
+func RenderSearchResult(rank int, query string, r model.FilterSearchResult) string {
 	var b strings.Builder
 	h := newHighlights(r.Matches)
 
@@ -124,9 +126,7 @@ func RenderSearchResult(rank int, r model.FilterSearchResult) string {
 	}
 	if r.Choices != nil {
 		field("Choices", fmt.Sprintf("%d total, %d matching", r.Choices.Total, r.Choices.Matched))
-		if len(r.Choices.Results) > 0 {
-			b.WriteString(renderMatchedChoices(*r.Choices))
-		}
+		b.WriteString(renderMatchedChoices(r.FilterID, query, *r.Choices))
 	}
 
 	if fields := matchedFields(r); len(fields) > 0 {
@@ -169,15 +169,24 @@ func newHighlights(highlights []model.FilterSearchHighlight) ui.FieldHighlights 
 // renderMatchedChoices renders the preview of matching choices as a small
 // indented table. It sits under the metadata block, with its ID column the
 // same width as the field labels so the label column lines up with the field
-// values above it.
-func renderMatchedChoices(mc model.FilterSearchChoices) string {
+// values above it. When the preview does not cover every choice it closes
+// with the command that lists the rest, which is otherwise the end of the
+// road for a filter with thousands of choices.
+func renderMatchedChoices(filterID, query string, mc model.FilterSearchChoices) string {
+	hint := choicesCommand(filterID, query, mc)
+	if len(mc.Results) == 0 && hint == "" {
+		return ""
+	}
+
 	var b strings.Builder
 	choiceIndent := indent + strings.Repeat(" ", fieldWidth)
 
 	b.WriteString("\n")
-	b.WriteString(choiceIndent)
-	b.WriteString(ui.RenderDimmed(fmt.Sprintf("%-*s%s", fieldWidth, "Choice ID", "Label")))
-	b.WriteString("\n")
+	if len(mc.Results) > 0 {
+		b.WriteString(choiceIndent)
+		b.WriteString(ui.RenderDimmed(fmt.Sprintf("%-*s%s", fieldWidth, "Choice ID", "Label")))
+		b.WriteString("\n")
+	}
 
 	for _, choice := range mc.Results {
 		label := newHighlights(choice.Matches).Render("label", choice.Label)
@@ -195,8 +204,37 @@ func renderMatchedChoices(mc model.FilterSearchChoices) string {
 		b.WriteString(ui.RenderDimmed(fmt.Sprintf("…and %d more matching %s", remaining, ui.Pluralise(remaining, "choice", "choices"))))
 		b.WriteString("\n")
 	}
+	if hint != "" {
+		b.WriteString(choiceIndent)
+		b.WriteString(ui.RenderDimmed(hint))
+		b.WriteString("\n")
+	}
 	b.WriteString("\n")
 	return b.String()
+}
+
+// choicesCommand names the command that lists the choices this preview does
+// not show: the matching ones when the preview was truncated, and the whole
+// set when the filter has choices beyond those previewed. It returns an empty
+// string when the preview already covers every choice.
+func choicesCommand(filterID, query string, mc model.FilterSearchChoices) string {
+	switch {
+	case mc.Matched > len(mc.Results):
+		return fmt.Sprintf("See them all: prolific filters choices search %s %s", filterID, quoteQuery(query))
+	case mc.Total > len(mc.Results):
+		return fmt.Sprintf("See all %d choices: prolific filters choices %s", mc.Total, filterID)
+	default:
+		return ""
+	}
+}
+
+// quoteQuery quotes a multi-word query so the suggested command can be pasted
+// into a shell as it stands.
+func quoteQuery(query string) string {
+	if strings.ContainsAny(query, " \t") {
+		return strconv.Quote(query)
+	}
+	return query
 }
 
 func renderRange(minValue, maxValue any) string {

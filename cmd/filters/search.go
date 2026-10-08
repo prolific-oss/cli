@@ -12,7 +12,6 @@ import (
 	"github.com/prolific-oss/cli/ui"
 	uifilters "github.com/prolific-oss/cli/ui/filters"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // maxSearchQueryLength is the maximum length of a search query, in characters,
@@ -28,6 +27,7 @@ type SearchOptions struct {
 	Query       string
 	WorkspaceID string
 	Limit       int
+	Offset      int
 	All         bool
 	Output      shared.OutputOptions
 	Fields      string
@@ -52,12 +52,14 @@ filters with a fixed set of choices.
 
 By default the top 25 results are shown. Use --limit to ask for more, or
 --all (equivalently --limit 0) to fetch every match. Pages are fetched from
-the API automatically, so there is no --offset.
+the API automatically, so --offset is only needed to skip past results you
+have already seen.
 
 When run in a terminal, output longer than one screen is shown in your pager
 (PROLIFIC_PAGER, then PAGER, defaulting to less) so the top result stays in
 view and you can scroll through the rest. Use the global --no-pager flag to
-print everything directly.`,
+print everything directly. Piped into another program without a format flag,
+results are rendered as a table instead.`,
 		Example: `
 Search for filters matching a keyword
 $ prolific filters search developer
@@ -74,12 +76,15 @@ $ prolific filters search developer --limit 50
 Fetch every matching filter
 $ prolific filters search developer --all
 
+Skip the first 50 matches
+$ prolific filters search developer --offset 50
+
 Print everything without a pager
 $ prolific filters search developer --all --no-pager
 
 Output as a table or CSV, optionally choosing the columns
 $ prolific filters search developer --table
-$ prolific filters search developer --csv --fields Rank,FilterID,Title
+$ prolific filters search developer --csv -f Rank,FilterID,Title
 
 Output as JSON for scripting or AI agents
 $ prolific filters search developer --json`,
@@ -96,10 +101,11 @@ $ prolific filters search developer --json`,
 	}
 
 	flags := cmd.Flags()
-	flags.StringVarP(&opts.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "Scope the search to filters available in this workspace.")
 	flags.IntVarP(&opts.Limit, "limit", "l", DefaultSearchLimit, "Maximum number of filters to return. Use 0 to fetch every match.")
+	flags.IntVarP(&opts.Offset, "offset", "o", client.DefaultRecordOffset, "Number of matching filters to skip before returning results")
 	flags.BoolVarP(&opts.All, "all", "a", false, "Return every matching filter (same as --limit 0)")
-	flags.StringVar(&opts.Fields, "fields", uifilters.SearchListFields, "Comma-separated list of columns for table or CSV output")
+	shared.AddWorkspaceFlag(cmd, &opts.WorkspaceID)
+	shared.AddFieldsFlag(cmd, &opts.Fields, uifilters.SearchListFields)
 	shared.AddOutputFlags(cmd, &opts.Output)
 
 	cmd.MarkFlagsMutuallyExclusive("all", "limit")
@@ -118,13 +124,18 @@ func renderSearch(cmd *cobra.Command, c client.API, opts SearchOptions, w io.Wri
 	if opts.Limit < 0 {
 		return errors.New("limit must be greater than or equal to 0")
 	}
+	if opts.Offset < 0 {
+		return errors.New("offset must be greater than or equal to 0")
+	}
 	want := opts.Limit
 	if opts.All {
 		want = 0
 	}
 
+	// Paging starts from the caller's offset, so the offsets the fetcher is
+	// given are relative to it.
 	fetch := func(limit, offset int) (client.Page[model.FilterSearchResult], error) {
-		response, err := c.SearchFilters(opts.Query, opts.WorkspaceID, limit, offset)
+		response, err := c.SearchFilters(opts.Query, opts.WorkspaceID, limit, opts.Offset+offset)
 		if err != nil {
 			return client.Page[model.FilterSearchResult]{}, err
 		}
@@ -135,27 +146,27 @@ func renderSearch(cmd *cobra.Command, c client.API, opts SearchOptions, w io.Wri
 		return page, nil
 	}
 
-	switch shared.ResolveFormat(opts.Output) {
-	case "json":
+	switch shared.ResolveFormatForWriter(opts.Output, w) {
+	case shared.FormatJSON:
 		records, _, err := client.FetchPages(want, client.FilterSearchPageSize, fetch)
 		if err != nil {
 			return err
 		}
 		return ui.JSONRenderer[model.FilterSearchResult]{}.Render(records, w)
-	case "csv":
+	case shared.FormatCSV:
 		records, _, err := client.FetchPages(want, client.FilterSearchPageSize, fetch)
 		if err != nil {
 			return err
 		}
 		renderer := ui.CsvRenderer[uifilters.SearchListItem]{}
-		return renderer.Render(uifilters.NewSearchListItems(records, 1), opts.Fields, w)
-	case "table":
+		return renderer.Render(uifilters.NewSearchListItems(records, opts.Offset+1), opts.Fields, w)
+	case shared.FormatTable:
 		records, total, err := client.FetchPages(want, client.FilterSearchPageSize, fetch)
 		if err != nil {
 			return err
 		}
 		renderer := ui.TableRenderer[uifilters.SearchListItem]{}
-		if err := renderer.Render(uifilters.NewSearchListItems(records, 1), opts.Fields, w); err != nil {
+		if err := renderer.Render(uifilters.NewSearchListItems(records, opts.Offset+1), opts.Fields, w); err != nil {
 			return err
 		}
 		_, err = fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(records), total))
@@ -169,7 +180,7 @@ func renderSearch(cmd *cobra.Command, c client.API, opts SearchOptions, w io.Wri
 	defer clearStatus()
 
 	render := func(out io.Writer) error {
-		return streamSearchResults(out, opts.Query, want, fetch, clearStatus)
+		return streamSearchResults(out, opts.Query, want, opts.Offset+1, fetch, clearStatus)
 	}
 	if shared.NoPager(cmd) {
 		return render(w)
@@ -179,14 +190,16 @@ func renderSearch(cmd *cobra.Command, c client.API, opts SearchOptions, w io.Wri
 
 // streamSearchResults writes formatted results to out page by page as they
 // arrive from the API, so the first screen appears before every page has been
-// fetched. beforeOutput is called once the first page has arrived, before
-// anything is written, so any progress indicator can be cleared.
-func streamSearchResults(out io.Writer, query string, want int, fetch client.PageFetcher[model.FilterSearchResult], beforeOutput func()) error {
-	rank := 0
+// fetched. Results are numbered from firstRank, so an offset search reports
+// each filter's rank in the whole result set rather than in this slice of it.
+// beforeOutput is called once the first page has arrived, before anything is
+// written, so any progress indicator can be cleared.
+func streamSearchResults(out io.Writer, query string, want, firstRank int, fetch client.PageFetcher[model.FilterSearchResult], beforeOutput func()) error {
+	shown := 0
 	total := 0
 
 	err := client.EachPage(want, client.FilterSearchPageSize, fetch, func(page client.Page[model.FilterSearchResult]) error {
-		if rank == 0 {
+		if shown == 0 {
 			beforeOutput()
 			if page.Total == 0 && len(page.Results) == 0 {
 				_, err := fmt.Fprint(out, uifilters.RenderNoSearchResults(query))
@@ -200,24 +213,24 @@ func streamSearchResults(out io.Writer, query string, want int, fetch client.Pag
 		}
 
 		for _, record := range page.Results {
-			rank++
-			if rank > 1 {
+			if shown > 0 {
 				if _, err := fmt.Fprint(out, uifilters.RenderSearchRule()); err != nil {
 					return err
 				}
 			}
-			if _, err := fmt.Fprint(out, uifilters.RenderSearchResult(rank, record)); err != nil {
+			shown++
+			if _, err := fmt.Fprint(out, uifilters.RenderSearchResult(firstRank+shown-1, query, record)); err != nil {
 				return err
 			}
 		}
 		return nil
 	})
-	if err != nil || rank == 0 {
+	if err != nil || shown == 0 {
 		return err
 	}
 
 	// The footer counts what was actually rendered, which can be fewer than
 	// the header's estimate if the API returned less than its own count.
-	_, err = fmt.Fprint(out, uifilters.RenderSearchFooter(rank, max(total, rank)))
+	_, err = fmt.Fprint(out, uifilters.RenderSearchFooter(shown, max(total, shown)))
 	return err
 }

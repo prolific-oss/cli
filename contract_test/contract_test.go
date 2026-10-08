@@ -123,7 +123,7 @@ var operations = []operation{
 	{operationID: "filters_GetRuleTree", skip: "NOTINSPEC: rule-tree is implemented in the backend but not published in the spec; confirm operationId on publication", call: func(c *client.Client) {
 		c.GetFilterRuleTree("ws-id")
 	}},
-	{operationID: "filters_GetFilters", call: func(c *client.Client) { c.GetFilters() }},
+	{operationID: "filters_GetFilters", call: func(c *client.Client) { c.GetFilters("ws-id") }},
 	// operationId assumed from Fern's tag_operation convention (source operationId is SearchFilters).
 	{operationID: "filters_SearchFilters", skip: "NOTINSPEC: live but unpublished, see prolific-oss/prolific#16270", call: func(c *client.Client) {
 		c.SearchFilters("developer", "ws-id", 25, 0)
