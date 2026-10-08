@@ -17,8 +17,8 @@
 - `audience count` and `audience breakdown` gain `--table`/`-t` and `--csv`/`-c`
   alongside the existing `--json`, with `--fields`/`-f` to choose columns. A
   breakdown is now one row per value, so its CSV opens in a spreadsheet as it
-  stands. `count` still prints a sentence at a terminal, and a one-row table when
-  piped.
+  stands, with numeric buckets in numeric order and `N/A` last. `count` still
+  prints a sentence at a terminal, and a one-row table when piped.
 
 - `audience breakdown --json` emits the counts keyed by value rather than
   wrapping them in a `breakdown` key, so callers read `."0"` instead of
@@ -30,8 +30,7 @@
   `-t` for now.
 
 - `--json` output is now defined by the CLI rather than mirrored from the API
-  response, so a server-side change cannot alter it. The shapes themselves are
-  unchanged.
+  response, so a server-side change cannot alter it.
 
 - **Breaking changes:**
   - Removed `eligibility-count`, replaced by `audience count`. The template

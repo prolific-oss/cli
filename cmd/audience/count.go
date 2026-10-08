@@ -8,6 +8,7 @@ import (
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/ui"
+	uiaudience "github.com/prolific-oss/cli/ui/audience"
 
 	"github.com/spf13/cobra"
 )
@@ -91,13 +92,12 @@ type countOutput struct {
 // without a format flag it stays a sentence.
 func renderCount(count int, in filterInput, w io.Writer) error {
 	format := shared.ResolveFormatForWriter(in.Output, w)
-	items := []CountItem{{Count: count}}
 
 	switch format {
 	case shared.FormatCSV:
-		return ui.CsvRenderer[CountItem]{}.Render(items, in.Fields, w)
+		return ui.CsvRenderer[uiaudience.CountItem]{}.Render(countItems(count), in.Fields, w)
 	case shared.FormatTable:
-		return ui.TableRenderer[CountItem]{}.Render(items, in.Fields, w)
+		return ui.TableRenderer[uiaudience.CountItem]{}.Render(countItems(count), in.Fields, w)
 	}
 
 	rendered, err := RenderCount(count, format == shared.FormatJSON)
@@ -121,4 +121,8 @@ func RenderCount(count int, asJSON bool) (string, error) {
 	}
 
 	return fmt.Sprintf("Eligible participants: %d", count), nil
+}
+
+func countItems(count int) []uiaudience.CountItem {
+	return []uiaudience.CountItem{{Count: count}}
 }

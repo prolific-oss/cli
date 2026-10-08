@@ -237,7 +237,7 @@ func TestBreakdownCommandRendersJSON(t *testing.T) {
 
 	writer.Flush()
 
-	expected := `{"0":4,"1":3}`
+	expected := "{\"0\":4,\"1\":3}\n"
 	if b.String() != expected {
 		t.Fatalf("expected %q, got %q", expected, b.String())
 	}

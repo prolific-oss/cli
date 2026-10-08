@@ -6,6 +6,7 @@ import (
 
 	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/model"
+	uiaudience "github.com/prolific-oss/cli/ui/audience"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -35,18 +36,18 @@ type filterSpec struct {
 // addCountFlags registers -p/--template-path, --filters, -w/--workspace and
 // the standard output flags on cmd, bound to in.
 func addCountFlags(cmd *cobra.Command, in *filterInput) {
-	addFilterFlags(cmd, in, false, CountFields)
+	addFilterFlags(cmd, in, false)
 }
 
 // addBreakdownFlags registers the count flags plus --breakdown on cmd, bound
 // to in.
 func addBreakdownFlags(cmd *cobra.Command, in *filterInput) {
-	addFilterFlags(cmd, in, true, BreakdownFields)
+	addFilterFlags(cmd, in, true)
 }
 
 // addFilterFlags is the shared registrar. Call addCountFlags or
 // addBreakdownFlags from command constructors.
-func addFilterFlags(cmd *cobra.Command, in *filterInput, withBreakdown bool, defaultFields string) {
+func addFilterFlags(cmd *cobra.Command, in *filterInput, withBreakdown bool) {
 	flags := cmd.Flags()
 
 	templateHelp := "Path to a YAML/JSON file containing the filters to count against. Alternative to --filters."
@@ -61,7 +62,13 @@ func addFilterFlags(cmd *cobra.Command, in *filterInput, withBreakdown bool, def
 	if withBreakdown {
 		flags.StringVar(&in.BreakdownJSON, "breakdown", "", `JSON object for the single filter to break results down by, e.g. '{"filter_id":"handedness","selected_values":["0","1"]}' for a choice filter (selected_values is required) or '{"filter_id":"age","selected_range":{"lower":18,"upper":65}}' for a range filter. Required with --filters; alternative to -p/--template-path.`)
 	}
-	shared.AddWorkspaceFlag(cmd, &in.WorkspaceID)
+	defaultFields := uiaudience.CountFields
+	if withBreakdown {
+		defaultFields = uiaudience.BreakdownFields
+	}
+
+	// These two commands cannot run without a workspace, so the flag says so.
+	shared.AddRequiredWorkspaceFlag(cmd, &in.WorkspaceID)
 	shared.AddFieldsFlag(cmd, &in.Fields, defaultFields)
 	shared.AddOutputFlags(cmd, &in.Output)
 }

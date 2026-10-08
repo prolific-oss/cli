@@ -3,7 +3,6 @@ package audience_test
 import (
 	"bytes"
 	"io"
-	"strings"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -14,40 +13,19 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewBreakdownItemsSortsAlphabeticallyWithNALast(t *testing.T) {
-	items := audience.NewBreakdownItems(map[string]int{
-		"1":                         3,
-		"0":                         4,
-		client.FilterBreakdownNAKey: 5,
-		"2":                         1,
-	})
-
-	require.Len(t, items, 4)
-	assert.Equal(t, []audience.BreakdownItem{
-		{Value: "0", Count: 4},
-		{Value: "1", Count: 3},
-		{Value: "2", Count: 1},
-		{Value: client.FilterBreakdownNAKey, Count: 5},
-	}, items)
-}
-
-// A breakdown with no N/A bucket must not invent one.
-func TestNewBreakdownItemsWithoutNA(t *testing.T) {
-	items := audience.NewBreakdownItems(map[string]int{"1": 2})
-
-	assert.Equal(t, []audience.BreakdownItem{{Value: "1", Count: 2}}, items)
-}
-
-func TestNewBreakdownItemsEmpty(t *testing.T) {
-	assert.Empty(t, audience.NewBreakdownItems(nil))
-	assert.NotNil(t, audience.NewBreakdownItems(nil))
-}
-
 // terminalWriter stands in for a terminal, so the human-facing output can be
 // exercised without attaching the test process to a pty.
 type terminalWriter struct{ io.Writer }
 
 func (terminalWriter) IsTerminal() bool { return true }
+
+// atTerminal presents w as a terminal and disables the pager, so the output a
+// user would see lands in the buffer rather than in less.
+func atTerminal(t *testing.T, w io.Writer) io.Writer {
+	t.Helper()
+	t.Setenv("PROLIFIC_PAGER", "")
+	return terminalWriter{w}
+}
 
 func countFilters() string {
 	return `[{"filter_id":"age","selected_range":{"lower":18,"upper":65}}]`
@@ -55,7 +33,7 @@ func countFilters() string {
 
 // runCount executes `audience count` with the given extra arguments and
 // returns what it wrote.
-func runCount(t *testing.T, atTerminal bool, args ...string) string {
+func runCount(t *testing.T, isTerminal bool, args ...string) string {
 	t.Helper()
 
 	ctrl := gomock.NewController(t)
@@ -65,8 +43,8 @@ func runCount(t *testing.T, atTerminal bool, args ...string) string {
 
 	var b bytes.Buffer
 	var w io.Writer = &b
-	if atTerminal {
-		w = terminalWriter{&b}
+	if isTerminal {
+		w = atTerminal(t, &b)
 	}
 
 	cmd := audience.NewCountCommand(c, w)
@@ -160,7 +138,6 @@ func TestBreakdownOutputFormats(t *testing.T) {
 	})
 
 	t.Run("table keeps N/A last", func(t *testing.T) {
-		out := runBreakdown(t, "--table")
-		assert.Less(t, strings.Index(out, "0"), strings.Index(out, "N/A"))
+		assert.Equal(t, "Value Count \n0     4     \n1     3     \nN/A   5     \n", runBreakdown(t, "--table"))
 	})
 }
