@@ -23,15 +23,9 @@ func NewRuleTreeCommand(c client.API, w io.Writer) *cobra.Command {
 		Use:   "rule-tree",
 		Short: "Get the rules for combining audience filters",
 		Long: `Fetch the server's audience filter rules as JSON. Uses the configured workspace
-when --workspace is omitted, or default rules if no workspace is configured.
-
-The rules are a nested tree rather than a list, so JSON is the only format
-this command emits. --json is accepted for consistency but has nothing to
-select, and there are no --table or --csv flags, because a tree has no rows.`,
-		Example: `
-Fetch the rules for a workspace
-$ prolific filters rule-tree --workspace <workspace-id>`,
-		Args: cobra.NoArgs,
+when --workspace is omitted, or default rules if no workspace is configured.`,
+		Example: `prolific filters rule-tree --workspace <workspace-id>`,
+		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			result, err := c.GetFilterRuleTree(opts.WorkspaceID)
 			if err != nil {

@@ -43,10 +43,7 @@ hierarchy through their parent and child counts, but the endpoint offers no
 way to fetch one node's children, so no tree is reconstructed and the IDs are
 left raw.
 
-The endpoint does not support ordering, so there are no sort flags.
-
-A filter that does not exist, and one that exists but is absent from the
-workspace you asked for, both return the API's 404.`,
+The endpoint does not support ordering, so there are no sort flags.`,
 		Example: `
 List a filter's choices
 $ prolific filters choices job-title
@@ -107,10 +104,7 @@ which has thousands of choices, this is the quickest way to the handful of
 choice IDs you actually want.
 
 The endpoint does not support ordering — results are always ranked by
-relevance — so there are no sort flags.
-
-A filter that does not exist, and one that exists but is absent from the
-workspace you asked for, both return the API's 404.`,
+relevance — so there are no sort flags.`,
 		Example: `
 Search a filter's choices
 $ prolific filters choices search job-title nurse
