@@ -47,6 +47,16 @@
   result set, so an offset search starts at the rank the filter actually holds.
 - When `filters search` cannot preview all of a filter's choices, the result now
   names the command that lists the rest.
+- Add `filters choices <filter-id>` and `filters choices search <filter-id>
+  <query>` to list and search the choices belonging to a filter. Choice IDs are
+  what a filter selection is built from, and previously anything past the three
+  choices `filters search` previews was unreachable — for a filter like job
+  title, that left over four thousand choices with no route to them. Both
+  commands take `--limit`/`--offset`/`--all`, `--workspace`/`-w`,
+  `--fields`/`-f` and `--json`/`--table`/`--csv`, and default to 200 records.
+  Output is flat, with raw parent and child-count columns; the endpoints expose
+  no way to fetch one node's children, so no tree is reconstructed. Neither
+  endpoint supports ordering, so there are no sort flags.
 - **Breaking changes:**
   - `filters list -n` now prints a table, like `-n` everywhere else in the CLI,
     instead of a detailed block per filter. `-n` remains a hidden alias for

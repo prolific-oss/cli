@@ -277,9 +277,9 @@ func TestRenderSearchHeader(t *testing.T) {
 	}
 }
 
-func TestRenderSearchFooter(t *testing.T) {
-	assert.Equal(t, "\nShowing 25 records of 340\n", stripansi.Strip(RenderSearchFooter(25, 340)))
-	assert.Equal(t, "\nShowing 1 record of 1\n", stripansi.Strip(RenderSearchFooter(1, 1)))
+func TestRenderResultsFooter(t *testing.T) {
+	assert.Equal(t, "\nShowing 25 records of 340\n", stripansi.Strip(RenderResultsFooter(25, 340)))
+	assert.Equal(t, "\nShowing 1 record of 1\n", stripansi.Strip(RenderResultsFooter(1, 1)))
 }
 
 func TestRenderSearchRule(t *testing.T) {

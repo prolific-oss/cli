@@ -26,11 +26,9 @@ const DefaultSearchLimit = 25
 type SearchOptions struct {
 	Query       string
 	WorkspaceID string
-	Limit       int
-	Offset      int
-	All         bool
 	Output      shared.OutputOptions
 	Fields      string
+	Pagination  shared.PaginationOptions
 }
 
 // NewSearchCommand creates the `filters search` command.
@@ -100,15 +98,10 @@ $ prolific filters search developer --json`,
 		},
 	}
 
-	flags := cmd.Flags()
-	flags.IntVarP(&opts.Limit, "limit", "l", DefaultSearchLimit, "Maximum number of filters to return. Use 0 to fetch every match.")
-	flags.IntVarP(&opts.Offset, "offset", "o", client.DefaultRecordOffset, "Number of matching filters to skip before returning results")
-	flags.BoolVarP(&opts.All, "all", "a", false, "Return every matching filter (same as --limit 0)")
 	shared.AddWorkspaceFlag(cmd, &opts.WorkspaceID)
 	shared.AddFieldsFlag(cmd, &opts.Fields, uifilters.SearchListFields)
+	shared.AddPaginationFlags(cmd, &opts.Pagination, DefaultSearchLimit)
 	shared.AddOutputFlags(cmd, &opts.Output)
-
-	cmd.MarkFlagsMutuallyExclusive("all", "limit")
 
 	return cmd
 }
@@ -121,21 +114,15 @@ func renderSearch(cmd *cobra.Command, c client.API, opts SearchOptions, w io.Wri
 		return fmt.Errorf("search query must be at most %d characters", maxSearchQueryLength)
 	}
 
-	if opts.Limit < 0 {
-		return errors.New("limit must be greater than or equal to 0")
+	if err := opts.Pagination.Validate(); err != nil {
+		return err
 	}
-	if opts.Offset < 0 {
-		return errors.New("offset must be greater than or equal to 0")
-	}
-	want := opts.Limit
-	if opts.All {
-		want = 0
-	}
+	want := opts.Pagination.Want()
 
 	// Paging starts from the caller's offset, so the offsets the fetcher is
 	// given are relative to it.
 	fetch := func(limit, offset int) (client.Page[model.FilterSearchResult], error) {
-		response, err := c.SearchFilters(opts.Query, opts.WorkspaceID, limit, opts.Offset+offset)
+		response, err := c.SearchFilters(opts.Query, opts.WorkspaceID, limit, opts.Pagination.Offset+offset)
 		if err != nil {
 			return client.Page[model.FilterSearchResult]{}, err
 		}
@@ -159,14 +146,14 @@ func renderSearch(cmd *cobra.Command, c client.API, opts SearchOptions, w io.Wri
 			return err
 		}
 		renderer := ui.CsvRenderer[uifilters.SearchListItem]{}
-		return renderer.Render(uifilters.NewSearchListItems(records, opts.Offset+1), opts.Fields, w)
+		return renderer.Render(uifilters.NewSearchListItems(records, opts.Pagination.Offset+1), opts.Fields, w)
 	case shared.FormatTable:
 		records, total, err := client.FetchPages(want, client.FilterSearchPageSize, fetch)
 		if err != nil {
 			return err
 		}
 		renderer := ui.TableRenderer[uifilters.SearchListItem]{}
-		if err := renderer.Render(uifilters.NewSearchListItems(records, opts.Offset+1), opts.Fields, w); err != nil {
+		if err := renderer.Render(uifilters.NewSearchListItems(records, opts.Pagination.Offset+1), opts.Fields, w); err != nil {
 			return err
 		}
 		_, err = fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(records), total))
@@ -180,7 +167,7 @@ func renderSearch(cmd *cobra.Command, c client.API, opts SearchOptions, w io.Wri
 	defer clearStatus()
 
 	render := func(out io.Writer) error {
-		return streamSearchResults(out, opts.Query, want, opts.Offset+1, fetch, clearStatus)
+		return streamSearchResults(out, opts.Query, want, opts.Pagination.Offset+1, fetch, clearStatus)
 	}
 	if shared.NoPager(cmd) {
 		return render(w)
@@ -231,6 +218,6 @@ func streamSearchResults(out io.Writer, query string, want, firstRank int, fetch
 
 	// The footer counts what was actually rendered, which can be fewer than
 	// the header's estimate if the API returned less than its own count.
-	_, err = fmt.Fprint(out, uifilters.RenderSearchFooter(shown, max(total, shown)))
+	_, err = fmt.Fprint(out, uifilters.RenderResultsFooter(shown, max(total, shown)))
 	return err
 }

@@ -55,7 +55,7 @@ func NewSearchListItems(results []model.FilterSearchResult, firstRank int) []Sea
 // the query and the API's match count are visible on the first screen without
 // scrolling. It is written before results stream in, so it reports only what
 // the API has said: the total, and whether the caller asked for fewer than
-// that. The exact number rendered is reported by RenderSearchFooter.
+// that. The exact number rendered is reported by RenderResultsFooter.
 func RenderSearchHeader(query string, total int, truncated bool) string {
 	var b strings.Builder
 	b.WriteString(ui.RenderHeading(fmt.Sprintf("Filters matching %q", query)))
@@ -71,9 +71,9 @@ func RenderSearchHeader(query string, total int, truncated bool) string {
 	return b.String()
 }
 
-// RenderSearchFooter renders the closing line stating how many results were
+// RenderResultsFooter renders the closing line stating how many records were
 // actually rendered out of the total.
-func RenderSearchFooter(shown, total int) string {
+func RenderResultsFooter(shown, total int) string {
 	return "\n" + ui.RenderDimmed(ui.RenderRecordCounter(shown, total)) + "\n"
 }
 
@@ -189,13 +189,9 @@ func renderMatchedChoices(filterID, query string, mc model.FilterSearchChoices) 
 	}
 
 	for _, choice := range mc.Results {
-		label := newHighlights(choice.Matches).Render("label", choice.Label)
 		b.WriteString(choiceIndent)
 		fmt.Fprintf(&b, "%-*s", fieldWidth, choice.ID)
-		b.WriteString(label)
-		if choice.NumDescendants > 0 {
-			b.WriteString(ui.RenderDimmed(fmt.Sprintf("  (+%d nested)", choice.NumDescendants)))
-		}
+		b.WriteString(renderChoiceLabel(choice))
 		b.WriteString("\n")
 	}
 	if mc.Truncated {

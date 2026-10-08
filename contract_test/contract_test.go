@@ -128,6 +128,13 @@ var operations = []operation{
 	{operationID: "filters_SearchFilters", skip: "NOTINSPEC: live but unpublished, see prolific-oss/prolific#16270", call: func(c *client.Client) {
 		c.SearchFilters("developer", "ws-id", 25, 0)
 	}},
+	// operationIds assumed from Fern's tag_operation convention, as for filters_SearchFilters above.
+	{operationID: "filters_GetFilterChoices", skip: "NOTINSPEC: live but unpublished; confirm operationId on publication", call: func(c *client.Client) {
+		c.GetFilterChoices("job-title", "ws-id", client.FilterChoicesPageSize, client.DefaultRecordOffset)
+	}},
+	{operationID: "filters_SearchFilterChoices", skip: "NOTINSPEC: live but unpublished; confirm operationId on publication", call: func(c *client.Client) {
+		c.SearchFilterChoices("job-title", "nurse", "ws-id", client.FilterChoicesPageSize, client.DefaultRecordOffset)
+	}},
 	{operationID: "filters_GetEligibleCount", call: func(c *client.Client) {
 		c.GetEligibilityCount(client.EligibilityCountPayload{Filters: []model.Filter{}, WorkspaceID: "ws-id"})
 	}},

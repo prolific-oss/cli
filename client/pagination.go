@@ -6,6 +6,11 @@ import "fmt"
 // endpoint. Larger requests are satisfied by fetching several pages.
 const FilterSearchPageSize = 100
 
+// FilterChoicesPageSize is the maximum page size accepted by the filter
+// choices endpoints. The CLI-wide default of 200 records therefore spans two
+// requests.
+const FilterChoicesPageSize = 100
+
 // maxPages bounds how many pages a single fetch-all may request, so an API
 // that keeps returning full pages without a count cannot loop forever.
 const maxPages = 1000

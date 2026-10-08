@@ -30,12 +30,19 @@ List all filters
 $ prolific filters list
 
 Search for filters by keyword
-$ prolific filters search "software developer"`,
+$ prolific filters search "software developer"
+
+List the choices belonging to a filter, to get the choice IDs to select
+$ prolific filters choices job-title
+
+Search within a filter's choices
+$ prolific filters choices search job-title nurse`,
 	}
 
 	cmd.AddCommand(
 		NewListCommand(client, w),
 		NewSearchCommand(client, w),
+		NewChoicesCommand(client, w),
 		NewRuleTreeCommand(client, w),
 	)
 
