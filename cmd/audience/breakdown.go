@@ -119,16 +119,22 @@ func renderBreakdown(breakdown map[string]int, in filterInput, w io.Writer) erro
 	}
 }
 
-// RenderBreakdownJSON emits the counts keyed by breakdown value. The counts
-// are the whole payload, so they are not wrapped in a key that repeats the
-// name of the command. A breakdown with no buckets is an empty object rather
-// than null, so consumers can index it either way.
+// breakdownOutput is the CLI's own shape for a breakdown. The counts sit
+// under a top-level key so there is somewhere to put anything that has to
+// accompany them later; a bare object would have to be reshaped to gain one.
+type breakdownOutput struct {
+	Breakdown map[string]int `json:"breakdown"`
+}
+
+// RenderBreakdownJSON emits the counts keyed by breakdown value. A breakdown
+// with no buckets is an empty object rather than null, so consumers can index
+// it either way.
 func RenderBreakdownJSON(breakdown map[string]int) (string, error) {
 	if breakdown == nil {
 		breakdown = map[string]int{}
 	}
 
-	payload, err := json.Marshal(breakdown)
+	payload, err := json.Marshal(breakdownOutput{Breakdown: breakdown})
 	if err != nil {
 		return "", err
 	}

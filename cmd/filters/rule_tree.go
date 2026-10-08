@@ -32,11 +32,12 @@ when --workspace is omitted, or default rules if no workspace is configured.`,
 				return fmt.Errorf("error: %s", err)
 			}
 
-			// The rules themselves are the payload; the API's wrapper key
-			// adds nothing a caller has to reach through.
+			// The rules sit under a top-level key so there is somewhere to
+			// put anything that has to accompany them later. A bare object
+			// would have to be reshaped to gain one.
 			encoder := json.NewEncoder(w)
 			encoder.SetIndent("", "  ")
-			if err := encoder.Encode(result.RuleTree); err != nil {
+			if err := encoder.Encode(result); err != nil {
 				return fmt.Errorf("error: %s", err)
 			}
 

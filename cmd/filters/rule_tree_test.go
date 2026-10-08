@@ -47,7 +47,7 @@ func TestRuleTreeCommand(t *testing.T) {
 				return
 			}
 			require.NoError(t, err)
-			require.JSONEq(t, `{"and":{"max_children":null,"children":{"leaf":true}}}`, output.String())
+			require.JSONEq(t, `{"rule_tree":{"and":{"max_children":null,"children":{"leaf":true}}}}`, output.String())
 		})
 	}
 }
@@ -84,9 +84,11 @@ func TestRuleTreeJSONSelectsFormatAndIsAlwaysIndented(t *testing.T) {
 		assert.Equal(t, run(t), run(t, "--json"))
 	})
 
-	t.Run("the rules are the payload", func(t *testing.T) {
+	t.Run("the rules sit under a top-level key", func(t *testing.T) {
 		out := run(t)
-		assert.NotContains(t, out, "rule_tree", "the API's wrapper key must not be re-emitted")
+		// A bare object would have nowhere to put anything that has to
+		// accompany the rules later.
+		assert.Contains(t, out, `"rule_tree"`)
 		assert.Contains(t, out, `"and"`)
 	})
 }

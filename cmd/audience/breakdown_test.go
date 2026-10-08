@@ -237,7 +237,7 @@ func TestBreakdownCommandRendersJSON(t *testing.T) {
 
 	writer.Flush()
 
-	expected := "{\"0\":4,\"1\":3}\n"
+	expected := "{\"breakdown\":{\"0\":4,\"1\":3}}\n"
 	if b.String() != expected {
 		t.Fatalf("expected %q, got %q", expected, b.String())
 	}
@@ -403,7 +403,7 @@ func TestBreakdownCommandHandlesAPIError(t *testing.T) {
 func TestRenderBreakdownJSON(t *testing.T) {
 	breakdown := map[string]int{"1": 3, "0": 4, client.FilterBreakdownNAKey: 5}
 
-	expected := `{"0":4,"1":3,"N/A":5}`
+	expected := `{"breakdown":{"0":4,"1":3,"N/A":5}}`
 	actual, err := audience.RenderBreakdownJSON(breakdown)
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)

@@ -20,10 +20,6 @@
   stands, with numeric buckets in numeric order and `N/A` last. `count` still
   prints a sentence at a terminal, and a one-row table when piped.
 
-- `audience breakdown --json` emits the counts keyed by value rather than
-  wrapping them in a `breakdown` key, so callers read `."0"` instead of
-  `.breakdown["0"]`. `audience count --json` is unchanged.
-
 - `--template-path` uses `-p` rather than `-t` on the audience commands, so `-t`
   means `--table` as it does CLI-wide. The long form is unchanged. Other commands
   that take a template, such as `study create` and `filtersets create`, still use
@@ -91,8 +87,6 @@
 - `filters rule-tree` always emits indented JSON. `--json` is accepted for
   consistency with other commands but has nothing to select, since a tree has no
   table or CSV form; it no longer means "compact".
-- `filters rule-tree` emits the rules themselves rather than wrapping them in a
-  `rule_tree` key, so callers read `.and` instead of `.rule_tree.and`.
 
 ### AI Task Builder
 

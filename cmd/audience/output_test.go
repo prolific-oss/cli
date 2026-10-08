@@ -123,8 +123,8 @@ func runBreakdown(t *testing.T, args ...string) string {
 }
 
 func TestBreakdownOutputFormats(t *testing.T) {
-	t.Run("json is the counts keyed by value", func(t *testing.T) {
-		assert.JSONEq(t, `{"0":4,"1":3,"N/A":5}`, runBreakdown(t, "--json"))
+	t.Run("json keeps the counts under a top-level key", func(t *testing.T) {
+		assert.JSONEq(t, `{"breakdown":{"0":4,"1":3,"N/A":5}}`, runBreakdown(t, "--json"))
 	})
 
 	// A spreadsheet has to read this without reshaping: one row per value,
