@@ -6,6 +6,8 @@ import (
 	"io"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/cmd/shared"
+	"github.com/prolific-oss/cli/ui"
 
 	"github.com/spf13/cobra"
 )
@@ -48,12 +50,9 @@ $ prolific audience count -p /path/to/filters.json -w <workspace-id> --json`,
 				return fmt.Errorf("error: %s", err)
 			}
 
-			rendered, err := RenderCount(count, in.JSON)
-			if err != nil {
+			if err := renderCount(count, in, w); err != nil {
 				return fmt.Errorf("error: %s", err)
 			}
-
-			fmt.Fprintln(w, rendered)
 
 			return nil
 		},
@@ -85,6 +84,28 @@ func getCount(c client.API, in filterInput) (int, error) {
 // response never reaches our output.
 type countOutput struct {
 	Count int `json:"count"`
+}
+
+// renderCount writes a count in the format the caller asked for. A count is a
+// single value, so the table and CSV forms are a one-row record; at a terminal
+// without a format flag it stays a sentence.
+func renderCount(count int, in filterInput, w io.Writer) error {
+	format := shared.ResolveFormatForWriter(in.Output, w)
+	items := []CountItem{{Count: count}}
+
+	switch format {
+	case shared.FormatCSV:
+		return ui.CsvRenderer[CountItem]{}.Render(items, in.Fields, w)
+	case shared.FormatTable:
+		return ui.TableRenderer[CountItem]{}.Render(items, in.Fields, w)
+	}
+
+	rendered, err := RenderCount(count, format == shared.FormatJSON)
+	if err != nil {
+		return err
+	}
+	_, err = fmt.Fprintln(w, rendered)
+	return err
 }
 
 // RenderCount produces output for an eligibility count. --json emits the

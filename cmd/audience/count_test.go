@@ -97,7 +97,7 @@ func TestCountCommandRendersCountFromTemplate(t *testing.T) {
 		t.Fatalf("expected payload %s, got %s", expectedPayload, sentPayload)
 	}
 
-	expected := "Eligible participants: 1234\n"
+	expected := "Count \n1234  \n"
 	if b.String() != expected {
 		t.Fatalf("expected %q, got %q", expected, b.String())
 	}
@@ -132,7 +132,7 @@ func TestCountCommandRendersCountFromFlags(t *testing.T) {
 
 	writer.Flush()
 
-	expected := "Eligible participants: 1234\n"
+	expected := "Count \n1234  \n"
 	if b.String() != expected {
 		t.Fatalf("expected %q, got %q", expected, b.String())
 	}
@@ -264,12 +264,12 @@ func TestCountCommandValidatesInput(t *testing.T) {
 		{
 			name:          "missing workspace with template",
 			templateJSON:  `{"filters": []}`,
-			expectedError: "error: workspace ID is required",
+			expectedError: "error: please provide a workspace ID",
 		},
 		{
 			name:          "missing workspace with filters",
 			filtersJSON:   `[]`,
-			expectedError: "error: workspace ID is required",
+			expectedError: "error: please provide a workspace ID",
 		},
 	}
 

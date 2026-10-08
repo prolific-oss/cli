@@ -1,14 +1,13 @@
 package audience
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
-	"sort"
-	"text/tabwriter"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/cmd/shared"
+	"github.com/prolific-oss/cli/ui"
 
 	"github.com/spf13/cobra"
 )
@@ -64,12 +63,9 @@ $ prolific audience breakdown -p /path/to/filters.json -w <workspace-id> --json`
 				return fmt.Errorf("error: %s", err)
 			}
 
-			rendered, err := RenderBreakdown(breakdown, in.JSON)
-			if err != nil {
+			if err := renderBreakdown(breakdown, in, w); err != nil {
 				return fmt.Errorf("error: %s", err)
 			}
-
-			fmt.Fprint(w, rendered)
 
 			return nil
 		},
@@ -102,43 +98,40 @@ func getBreakdown(c client.API, in filterInput) (map[string]int, error) {
 	return response.Breakdown, nil
 }
 
-// breakdownOutput is the CLI's own shape for a breakdown, so a change to the
-// API's response never reaches our output.
-type breakdownOutput struct {
-	Breakdown map[string]int `json:"breakdown"`
+// renderBreakdown writes a breakdown in the format the caller asked for. A
+// breakdown is one row per value participants gave, so the table and CSV
+// forms carry the same rows and a spreadsheet can read the CSV as it stands.
+func renderBreakdown(breakdown map[string]int, in filterInput, w io.Writer) error {
+	items := NewBreakdownItems(breakdown)
+
+	switch shared.ResolveFormatForWriter(in.Output, w) {
+	case shared.FormatJSON:
+		rendered, err := RenderBreakdownJSON(breakdown)
+		if err != nil {
+			return err
+		}
+		_, err = fmt.Fprint(w, rendered)
+		return err
+	case shared.FormatCSV:
+		return ui.CsvRenderer[BreakdownItem]{}.Render(items, in.Fields, w)
+	default:
+		return ui.TableRenderer[BreakdownItem]{}.Render(items, in.Fields, w)
+	}
 }
 
-// RenderBreakdown produces output for a filter breakdown. The table form is
-// sorted alphabetically with client.FilterBreakdownNAKey always shown last;
-// --json emits the CLI's own object keyed by breakdown value.
-func RenderBreakdown(breakdown map[string]int, asJSON bool) (string, error) {
-	if asJSON {
-		payload, err := json.Marshal(breakdownOutput{Breakdown: breakdown})
-		if err != nil {
-			return "", err
-		}
-
-		return string(payload), nil
+// RenderBreakdownJSON emits the counts keyed by breakdown value. The counts
+// are the whole payload, so they are not wrapped in a key that repeats the
+// name of the command. A breakdown with no buckets is an empty object rather
+// than null, so consumers can index it either way.
+func RenderBreakdownJSON(breakdown map[string]int) (string, error) {
+	if breakdown == nil {
+		breakdown = map[string]int{}
 	}
 
-	keys := make([]string, 0, len(breakdown))
-	for key := range breakdown {
-		if key != client.FilterBreakdownNAKey {
-			keys = append(keys, key)
-		}
-	}
-	sort.Strings(keys)
-	if _, ok := breakdown[client.FilterBreakdownNAKey]; ok {
-		keys = append(keys, client.FilterBreakdownNAKey)
+	payload, err := json.Marshal(breakdown)
+	if err != nil {
+		return "", err
 	}
 
-	var buf bytes.Buffer
-	tw := tabwriter.NewWriter(&buf, 0, 0, 3, ' ', 0)
-	fmt.Fprintln(tw, "VALUE\tCOUNT")
-	for _, key := range keys {
-		fmt.Fprintf(tw, "%s\t%d\n", key, breakdown[key])
-	}
-	tw.Flush()
-
-	return buf.String(), nil
+	return string(payload), nil
 }

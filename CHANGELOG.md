@@ -14,10 +14,20 @@
 
 - Preserve nested AND/OR `selected_filters` in JSON flags and JSON/YAML templates for audience counts and breakdowns.
 
-- `--template-path` uses `-p` rather than `-t` on the audience commands, freeing
-  `-t` for `--table` when those commands gain the standard output flags. The long
-  form is unchanged. Other commands that take a template, such as `study create`
-  and `filtersets create`, still use `-t` for now.
+- `audience count` and `audience breakdown` gain `--table`/`-t` and `--csv`/`-c`
+  alongside the existing `--json`, with `--fields`/`-f` to choose columns. A
+  breakdown is now one row per value, so its CSV opens in a spreadsheet as it
+  stands. `count` still prints a sentence at a terminal, and a one-row table when
+  piped.
+
+- `audience breakdown --json` emits the counts keyed by value rather than
+  wrapping them in a `breakdown` key, so callers read `."0"` instead of
+  `.breakdown["0"]`. `audience count --json` is unchanged.
+
+- `--template-path` uses `-p` rather than `-t` on the audience commands, so `-t`
+  means `--table` as it does CLI-wide. The long form is unchanged. Other commands
+  that take a template, such as `study create` and `filtersets create`, still use
+  `-t` for now.
 
 - `--json` output is now defined by the CLI rather than mirrored from the API
   response, so a server-side change cannot alter it. The shapes themselves are

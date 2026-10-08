@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/model"
 
 	"github.com/spf13/cobra"
@@ -18,7 +19,8 @@ type filterInput struct {
 	FiltersJSON   string
 	BreakdownJSON string
 	WorkspaceID   string
-	JSON          bool
+	Fields        string
+	Output        shared.OutputOptions
 }
 
 // filterSpec is the shape every -p/--template-path file (and the
@@ -30,21 +32,21 @@ type filterSpec struct {
 	BreakdownFilter model.Filter   `mapstructure:"breakdown_filter"`
 }
 
-// addCountFlags registers -p/--template-path, --filters, -w/--workspace, and
-// -j/--json on cmd, bound to in.
+// addCountFlags registers -p/--template-path, --filters, -w/--workspace and
+// the standard output flags on cmd, bound to in.
 func addCountFlags(cmd *cobra.Command, in *filterInput) {
-	addFilterFlags(cmd, in, false)
+	addFilterFlags(cmd, in, false, CountFields)
 }
 
 // addBreakdownFlags registers the count flags plus --breakdown on cmd, bound
 // to in.
 func addBreakdownFlags(cmd *cobra.Command, in *filterInput) {
-	addFilterFlags(cmd, in, true)
+	addFilterFlags(cmd, in, true, BreakdownFields)
 }
 
 // addFilterFlags is the shared registrar. Call addCountFlags or
 // addBreakdownFlags from command constructors.
-func addFilterFlags(cmd *cobra.Command, in *filterInput, withBreakdown bool) {
+func addFilterFlags(cmd *cobra.Command, in *filterInput, withBreakdown bool, defaultFields string) {
 	flags := cmd.Flags()
 
 	templateHelp := "Path to a YAML/JSON file containing the filters to count against. Alternative to --filters."
@@ -59,12 +61,9 @@ func addFilterFlags(cmd *cobra.Command, in *filterInput, withBreakdown bool) {
 	if withBreakdown {
 		flags.StringVar(&in.BreakdownJSON, "breakdown", "", `JSON object for the single filter to break results down by, e.g. '{"filter_id":"handedness","selected_values":["0","1"]}' for a choice filter (selected_values is required) or '{"filter_id":"age","selected_range":{"lower":18,"upper":65}}' for a range filter. Required with --filters; alternative to -p/--template-path.`)
 	}
-	flags.StringVarP(&in.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "The workspace ID to count eligible participants for (required).")
-	// -j is bound by hand rather than through shared.AddOutputFlags: these
-	// commands do not emit a table or CSV yet. -t is deliberately left
-	// unbound so that work can claim it for --table, which is why
-	// --template-path uses -p.
-	flags.BoolVarP(&in.JSON, "json", "j", false, "Output as JSON")
+	shared.AddWorkspaceFlag(cmd, &in.WorkspaceID)
+	shared.AddFieldsFlag(cmd, &in.Fields, defaultFields)
+	shared.AddOutputFlags(cmd, &in.Output)
 }
 
 func (in filterInput) validateCount() error {
@@ -96,8 +95,8 @@ func (in filterInput) validate(requireBreakdown bool) error {
 		return fmt.Errorf("error: --breakdown is required when using --filters")
 	}
 
-	if in.WorkspaceID == "" {
-		return fmt.Errorf("error: workspace ID is required")
+	if err := shared.RequireWorkspace(in.WorkspaceID); err != nil {
+		return fmt.Errorf("error: %s", err)
 	}
 
 	return nil
