@@ -78,7 +78,7 @@ $ prolific filters search developer --all --no-pager
 
 Output as a table or CSV, optionally choosing the columns
 $ prolific filters search developer --table
-$ prolific filters search developer --csv -f Rank,FilterID,Title
+$ prolific filters search developer --csv -f FilterID,Title,Question
 
 Output as JSON for scripting or AI agents
 $ prolific filters search developer --json`,

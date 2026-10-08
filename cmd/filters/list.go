@@ -51,7 +51,7 @@ $ prolific filters list -w <workspace-id>
 
 Output as a table or CSV, optionally choosing the columns
 $ prolific filters list --table
-$ prolific filters list --csv -f FilterID,Title,Choices
+$ prolific filters list --csv -f FilterID,Title,ChoicesTotal
 
 Output as JSON for scripting or AI agents
 $ prolific filters list --json
