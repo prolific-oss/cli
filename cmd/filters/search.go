@@ -95,7 +95,7 @@ $ prolific filters search developer --json`,
 	}
 
 	shared.AddWorkspaceFlag(cmd, &opts.WorkspaceID)
-	shared.AddFieldsFlag(cmd, &opts.Fields, uifilters.SearchListFields)
+	shared.AddFieldsFlag(cmd, &opts.Fields)
 	shared.AddPaginationFlags(cmd, &opts.Pagination, client.DefaultRecordLimit)
 	shared.AddOutputFlags(cmd, &opts.Output)
 
@@ -129,7 +129,10 @@ func renderSearch(cmd *cobra.Command, c client.API, opts SearchOptions, w io.Wri
 		return page, nil
 	}
 
-	switch shared.ResolveFormatForWriter(opts.Output, w) {
+	format := shared.ResolveFormatForWriter(opts.Output, w)
+	fields := uifilters.SearchListFields.Resolve(opts.Fields, format)
+
+	switch format {
 	case shared.FormatJSON:
 		records, total, err := client.FetchPages(want, client.FilterSearchPageSize, fetch)
 		if err != nil {
@@ -143,14 +146,14 @@ func renderSearch(cmd *cobra.Command, c client.API, opts SearchOptions, w io.Wri
 			return err
 		}
 		renderer := ui.CsvRenderer[uifilters.SearchListItem]{}
-		return renderer.Render(uifilters.NewSearchListItems(records, opts.Pagination.Offset+1), opts.Fields, w)
+		return renderer.Render(uifilters.NewSearchListItems(records), fields, w)
 	case shared.FormatTable:
 		records, total, err := client.FetchPages(want, client.FilterSearchPageSize, fetch)
 		if err != nil {
 			return err
 		}
 		renderer := ui.TableRenderer[uifilters.SearchListItem]{}
-		if err := renderer.Render(uifilters.NewSearchListItems(records, opts.Pagination.Offset+1), opts.Fields, w); err != nil {
+		if err := renderer.Render(uifilters.NewSearchListItems(records), fields, w); err != nil {
 			return err
 		}
 		_, err = fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(records), total))

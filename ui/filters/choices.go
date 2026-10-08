@@ -4,22 +4,23 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/model"
 	"github.com/prolific-oss/cli/ui"
 )
 
-// ChoiceListFields is the default column set for listing a filter's choices.
-const ChoiceListFields = "ID,Label,ParentID,NumChildren,NumDescendants"
-
-// ChoiceSearchFields is the default column set for searched choices, which
-// arrive in relevance order and so carry their rank.
-const ChoiceSearchFields = "Rank,ID,Label,ParentID,NumChildren,NumDescendants"
+// ChoiceFields is the default column set for each format. Listing a filter's
+// choices and searching them return the same records, so they render the same
+// columns.
+var ChoiceFields = shared.FieldSet{
+	CSV:   "ID,Label,ParentID,NumChildren,NumDescendants",
+	Table: "ID,Label",
+}
 
 // ChoiceListItem is a flattened choice for table and CSV output. The IDs are
 // left raw, including the parent's: a caller selecting choices needs the IDs
 // a filter selection is built from, not resolved labels.
 type ChoiceListItem struct {
-	Rank           int
 	ID             string
 	Label          string
 	ParentID       string
@@ -27,13 +28,12 @@ type ChoiceListItem struct {
 	NumDescendants int
 }
 
-// NewChoiceListItems flattens choices for table and CSV output, numbering
-// them from firstRank in the order the API returned them.
-func NewChoiceListItems(choices []model.FilterChoiceSearchResult, firstRank int) []ChoiceListItem {
+// NewChoiceListItems flattens choices for table and CSV output, in the order
+// the API returned them.
+func NewChoiceListItems(choices []model.FilterChoiceSearchResult) []ChoiceListItem {
 	items := make([]ChoiceListItem, 0, len(choices))
-	for i, c := range choices {
+	for _, c := range choices {
 		items = append(items, ChoiceListItem{
-			Rank:           firstRank + i,
 			ID:             c.ID,
 			Label:          c.Label,
 			ParentID:       deref(c.ParentID),

@@ -65,7 +65,7 @@ The fields you can use are
 - DataType
 - Min
 - Max
-- Choices`,
+- ChoicesTotal`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := renderList(c, opts, w); err != nil {
 				return fmt.Errorf("error: %s", err)
@@ -76,7 +76,7 @@ The fields you can use are
 	}
 
 	shared.AddWorkspaceFlag(cmd, &opts.WorkspaceID)
-	shared.AddFieldsFlag(cmd, &opts.Fields, uifilters.ListFields)
+	shared.AddFieldsFlag(cmd, &opts.Fields)
 	shared.AddOutputFlags(cmd, &opts.Output)
 
 	return cmd
@@ -89,7 +89,10 @@ func renderList(c client.API, opts ListOptions, w io.Writer) error {
 	}
 	records := filters.Results
 
-	switch shared.ResolveFormatForWriter(opts.Output, w) {
+	format := shared.ResolveFormatForWriter(opts.Output, w)
+	fields := uifilters.ListFields.Resolve(opts.Fields, format)
+
+	switch format {
 	case shared.FormatJSON:
 		// The catalogue endpoint does not paginate, so no window was asked
 		// for and none could be applied: a limit of zero says these are all
@@ -98,10 +101,10 @@ func renderList(c client.API, opts ListOptions, w io.Writer) error {
 		return ui.JSONEnvelopeRenderer[model.Filter]{}.Render(envelope, w)
 	case shared.FormatCSV:
 		renderer := ui.CsvRenderer[uifilters.ListItem]{}
-		return renderer.Render(uifilters.NewListItems(records), opts.Fields, w)
+		return renderer.Render(uifilters.NewListItems(records), fields, w)
 	case shared.FormatTable:
 		renderer := ui.TableRenderer[uifilters.ListItem]{}
-		if err := renderer.Render(uifilters.NewListItems(records), opts.Fields, w); err != nil {
+		if err := renderer.Render(uifilters.NewListItems(records), fields, w); err != nil {
 			return err
 		}
 		_, err := fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(records), len(records)))

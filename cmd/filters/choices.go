@@ -65,7 +65,6 @@ Search within a filter's choices
 $ prolific filters choices search job-title nurse
 
 The fields you can use are
-- Rank
 - ID
 - Label
 - ParentID
@@ -83,7 +82,7 @@ The fields you can use are
 		},
 	}
 
-	addChoicesFlags(cmd, &opts, uifilters.ChoiceListFields)
+	addChoicesFlags(cmd, &opts)
 	cmd.AddCommand(NewChoicesSearchCommand(c, w))
 
 	return cmd
@@ -137,15 +136,15 @@ $ prolific filters choices search job-title nurse --json`,
 		},
 	}
 
-	addChoicesFlags(cmd, &opts, uifilters.ChoiceSearchFields)
+	addChoicesFlags(cmd, &opts)
 
 	return cmd
 }
 
 // addChoicesFlags registers the flags both choices commands share.
-func addChoicesFlags(cmd *cobra.Command, opts *ChoicesOptions, defaultFields string) {
+func addChoicesFlags(cmd *cobra.Command, opts *ChoicesOptions) {
 	shared.AddWorkspaceFlag(cmd, &opts.WorkspaceID)
-	shared.AddFieldsFlag(cmd, &opts.Fields, defaultFields)
+	shared.AddFieldsFlag(cmd, &opts.Fields)
 	shared.AddPaginationFlags(cmd, &opts.Pagination, client.DefaultRecordLimit)
 	shared.AddOutputFlags(cmd, &opts.Output)
 }
@@ -204,7 +203,6 @@ func renderChoices(cmd *cobra.Command, opts ChoicesOptions, fetchPage client.Pag
 	}
 
 	want := opts.Pagination.Want()
-	firstRank := opts.Pagination.Offset + 1
 
 	// Paging starts from the caller's offset, so the offsets the fetcher is
 	// given are relative to it.
@@ -216,7 +214,10 @@ func renderChoices(cmd *cobra.Command, opts ChoicesOptions, fetchPage client.Pag
 		return client.FetchPages(want, client.FilterChoicesPageSize, fetch)
 	}
 
-	switch shared.ResolveFormatForWriter(opts.Output, w) {
+	format := shared.ResolveFormatForWriter(opts.Output, w)
+	fields := uifilters.ChoiceFields.Resolve(opts.Fields, format)
+
+	switch format {
 	case shared.FormatJSON:
 		found, total, err := records()
 		if err != nil {
@@ -232,14 +233,14 @@ func renderChoices(cmd *cobra.Command, opts ChoicesOptions, fetchPage client.Pag
 			return err
 		}
 		renderer := ui.CsvRenderer[uifilters.ChoiceListItem]{}
-		return renderer.Render(uifilters.NewChoiceListItems(found, firstRank), opts.Fields, w)
+		return renderer.Render(uifilters.NewChoiceListItems(found), fields, w)
 	case shared.FormatTable:
 		found, total, err := records()
 		if err != nil {
 			return err
 		}
 		renderer := ui.TableRenderer[uifilters.ChoiceListItem]{}
-		if err := renderer.Render(uifilters.NewChoiceListItems(found, firstRank), opts.Fields, w); err != nil {
+		if err := renderer.Render(uifilters.NewChoiceListItems(found), fields, w); err != nil {
 			return err
 		}
 		_, err = fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(found), total))

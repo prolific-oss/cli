@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/model"
 	"github.com/prolific-oss/cli/ui"
 )
@@ -19,34 +20,51 @@ const fieldWidth = 13
 // indent is the indentation applied to every line of a result below its title.
 const indent = "   "
 
-// SearchListFields is the default column set for table and CSV output.
-const SearchListFields = "Rank,FilterID,Title,Type,DataType,Category,MatchedOn"
-
-// SearchListItem is a flattened search result for table and CSV output.
-type SearchListItem struct {
-	Rank      int
-	FilterID  string
-	Title     string
-	Type      string
-	DataType  string
-	Category  string
-	MatchedOn string
+// SearchListFields is the default column set for each format.
+var SearchListFields = shared.FieldSet{
+	CSV:   "FilterID,Title,Question,Category,Subcategory,Type,ChoicesTotal,ChoicesMatched,ChoicesTruncated",
+	Table: "FilterID,Title,Type",
 }
 
-// NewSearchListItems flattens search results for table and CSV output,
-// numbering them from firstRank in the order received.
-func NewSearchListItems(results []model.FilterSearchResult, firstRank int) []SearchListItem {
+// SearchListItem is a flattened search result for table and CSV output. Every
+// column is one field of the result: the category and subcategory stay apart,
+// and the choice counts come straight from the choices block, which a filter
+// without enumerable choices does not carry at all.
+type SearchListItem struct {
+	FilterID         string
+	Title            string
+	Question         string
+	Description      string
+	Category         string
+	Subcategory      string
+	Type             string
+	DataType         string
+	ChoicesTotal     int
+	ChoicesMatched   int
+	ChoicesTruncated bool
+}
+
+// NewSearchListItems flattens search results for table and CSV output, in the
+// order received.
+func NewSearchListItems(results []model.FilterSearchResult) []SearchListItem {
 	items := make([]SearchListItem, 0, len(results))
-	for i, r := range results {
-		items = append(items, SearchListItem{
-			Rank:      firstRank + i,
-			FilterID:  r.FilterID,
-			Title:     r.Title,
-			Type:      r.Type,
-			DataType:  r.DataType,
-			Category:  joinCategory(deref(r.Category), deref(r.Subcategory)),
-			MatchedOn: strings.Join(matchedFields(r), ", "),
-		})
+	for _, r := range results {
+		item := SearchListItem{
+			FilterID:    r.FilterID,
+			Title:       r.Title,
+			Question:    deref(r.Question),
+			Description: r.Description,
+			Category:    deref(r.Category),
+			Subcategory: deref(r.Subcategory),
+			Type:        r.Type,
+			DataType:    r.DataType,
+		}
+		if r.Choices != nil {
+			item.ChoicesTotal = r.Choices.Total
+			item.ChoicesMatched = r.Choices.Matched
+			item.ChoicesTruncated = r.Choices.Truncated
+		}
+		items = append(items, item)
 	}
 	return items
 }

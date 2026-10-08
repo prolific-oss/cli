@@ -9,6 +9,7 @@ import (
 	"github.com/prolific-oss/cli/model"
 	"github.com/prolific-oss/cli/ui"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // withColour forces a colour profile for the duration of a test so that
@@ -293,29 +294,56 @@ func TestNewSearchListItems(t *testing.T) {
 		{
 			FilterID:    "job-title",
 			Title:       "Job title",
+			Description: "Select participants by occupation.",
+			Question:    ptr("What is your job title?"),
 			Type:        "select",
 			DataType:    "ChoiceID",
 			Category:    ptr("Employment"),
 			Subcategory: ptr("Occupation"),
-			Matches: []model.FilterSearchHighlight{
-				{Field: "title", Start: 0, End: 3},
-				{Field: "title", Start: 4, End: 9},
-				{Field: "question", Start: 0, End: 3},
-			},
-			Choices: &model.FilterSearchChoices{Total: 5, Matched: 2},
+			Choices:     &model.FilterSearchChoices{Total: 5, Matched: 2, Truncated: true},
 		},
 		{FilterID: "age", Title: "Age", Type: "range", DataType: "integer"},
 	}
 
-	items := NewSearchListItems(results, 5)
+	items := NewSearchListItems(results)
 
+	// Every column is one field of the result: the category and subcategory
+	// stay apart rather than being joined into one cell.
 	assert.Equal(t, []SearchListItem{
-		{Rank: 5, FilterID: "job-title", Title: "Job title", Type: "select", DataType: "ChoiceID", Category: "Employment / Occupation", MatchedOn: "title, question, choices"},
-		{Rank: 6, FilterID: "age", Title: "Age", Type: "range", DataType: "integer"},
+		{
+			FilterID: "job-title", Title: "Job title", Question: "What is your job title?",
+			Description: "Select participants by occupation.",
+			Category:    "Employment", Subcategory: "Occupation",
+			Type: "select", DataType: "ChoiceID",
+			ChoicesTotal: 5, ChoicesMatched: 2, ChoicesTruncated: true,
+		},
+		{FilterID: "age", Title: "Age", Type: "range", DataType: "integer"},
 	}, items)
 }
 
+// A filter without enumerable choices carries no choices block at all, so its
+// counts are zero rather than borrowed from somewhere else.
+func TestNewSearchListItemsWithoutChoices(t *testing.T) {
+	items := NewSearchListItems([]model.FilterSearchResult{{FilterID: "age", Type: "range"}})
+
+	require.Len(t, items, 1)
+	assert.Equal(t, 0, items[0].ChoicesTotal)
+	assert.Equal(t, 0, items[0].ChoicesMatched)
+	assert.False(t, items[0].ChoicesTruncated)
+}
+
+// Description and DataType are available through --fields but kept out of the
+// default CSV, which is already wide.
+func TestSearchListFieldsDifferByFormat(t *testing.T) {
+	assert.Equal(t, "FilterID,Title,Type", SearchListFields.Table)
+	assert.Equal(t, "FilterID,Title,Question,Category,Subcategory,Type,ChoicesTotal,ChoicesMatched,ChoicesTruncated", SearchListFields.CSV)
+	assert.NotContains(t, SearchListFields.CSV, "Description")
+	assert.NotContains(t, SearchListFields.CSV, "DataType")
+	assert.NotContains(t, SearchListFields.CSV, "Rank")
+	assert.NotContains(t, SearchListFields.CSV, "MatchedOn")
+}
+
 func TestNewSearchListItemsEmpty(t *testing.T) {
-	assert.Empty(t, NewSearchListItems(nil, 1))
-	assert.NotNil(t, NewSearchListItems(nil, 1))
+	assert.Empty(t, NewSearchListItems(nil))
+	assert.NotNil(t, NewSearchListItems(nil))
 }

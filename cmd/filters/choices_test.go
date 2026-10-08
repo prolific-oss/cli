@@ -131,11 +131,10 @@ func TestChoicesListRendersATable(t *testing.T) {
 
 	require.NoError(t, err)
 	output := b.String()
-	assert.Contains(t, output, "ID")
-	assert.Contains(t, output, "ParentID")
-	assert.Contains(t, output, "NumDescendants")
-	assert.Regexp(t, `0\s+Management Occupations\s+4\s+476`, output)
-	assert.Regexp(t, `1016\s+Registered Nurses\s+0\s+12\s+12`, output)
+	assert.Regexp(t, `ID\s+Label`, output)
+	assert.Regexp(t, `0\s+Management Occupations`, output)
+	assert.Regexp(t, `1016\s+Registered Nurses`, output)
+	assert.NotContains(t, output, "NumDescendants", "the hierarchy columns belong to the CSV")
 	assert.Contains(t, output, "Showing 2 records of 2")
 }
 
@@ -265,12 +264,12 @@ func TestChoicesListScopesToAWorkspaceAndOffsets(t *testing.T) {
 	w := bufio.NewWriter(&b)
 
 	cmd := filters.NewChoicesCommand(c, w)
-	cmd.SetArgs([]string{"job-title", "-w", "ws-1", "-o", "50", "--csv", "-f", "Rank,ID"})
+	cmd.SetArgs([]string{"job-title", "-w", "ws-1", "-o", "50", "--csv", "-f", "ID"})
 	err := cmd.Execute()
 	require.NoError(t, w.Flush())
 
 	require.NoError(t, err)
-	assert.Equal(t, "Rank,ID\n51,50\n52,51\n", b.String())
+	assert.Equal(t, "ID\n50\n51\n", b.String())
 }
 
 // A 404 covers both an unknown filter and one absent from the workspace; the
@@ -405,9 +404,9 @@ func TestChoicesSearchRendersATableWhenNotATerminal(t *testing.T) {
 
 	require.NoError(t, err)
 	output := b.String()
-	assert.Contains(t, output, "Rank")
-	assert.Contains(t, output, "NumDescendants")
-	assert.Regexp(t, `1\s+18873\s+Obstetrics Nurse\s+1016`, output)
+	assert.Regexp(t, `ID\s+Label`, output)
+	assert.Regexp(t, `18873\s+Obstetrics Nurse`, output)
+	assert.NotContains(t, output, "Rank")
 	assert.NotContains(t, output, "Choices in")
 }
 

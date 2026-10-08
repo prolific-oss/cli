@@ -37,11 +37,32 @@ func AddOutputFlags(cmd *cobra.Command, opts *OutputOptions) {
 	_ = cmd.Flags().MarkHidden("non-interactive")
 }
 
+// FieldSet holds a command's default columns for each format. A CSV is read
+// by a program, so it carries every column worth having; a table is read on a
+// screen, so it carries the few that identify a record.
+type FieldSet struct {
+	CSV   string
+	Table string
+}
+
+// Resolve returns the columns to render: whatever --fields asked for, or this
+// format's default when it was not given.
+func (f FieldSet) Resolve(requested, format string) string {
+	switch {
+	case requested != "":
+		return requested
+	case format == FormatCSV:
+		return f.CSV
+	default:
+		return f.Table
+	}
+}
+
 // AddFieldsFlag registers --fields / -f on the given command, with one help
-// wording across the CLI. defaultFields is the column set used when the flag
-// is not given.
-func AddFieldsFlag(cmd *cobra.Command, fields *string, defaultFields string) {
-	cmd.Flags().StringVarP(fields, "fields", "f", defaultFields, FieldsFlagUsage)
+// wording across the CLI. It carries no default, because the default depends
+// on the format; FieldSet.Resolve supplies it.
+func AddFieldsFlag(cmd *cobra.Command, fields *string) {
+	cmd.Flags().StringVarP(fields, "fields", "f", "", FieldsFlagUsage)
 }
 
 // ResolveFormat returns the resolved format string based on the flags set.

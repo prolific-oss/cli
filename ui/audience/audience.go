@@ -6,14 +6,16 @@ import (
 	"strconv"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/cmd/shared"
 )
 
 // CountFields is the default column set for a count, which is a single value
-// and so a single row.
-const CountFields = "Count"
+// and so a single row whichever format asked for it.
+var CountFields = shared.FieldSet{CSV: "Count", Table: "Count"}
 
-// BreakdownFields is the default column set for a breakdown.
-const BreakdownFields = "Value,Count"
+// BreakdownFields is the default column set for a breakdown. A breakdown is
+// two columns, so a table has no reason to show fewer than the CSV.
+var BreakdownFields = shared.FieldSet{CSV: "Value,Count", Table: "Value,Count"}
 
 // CountItem is a count as a row, so the shared table and CSV renderers can
 // emit it like any other record.

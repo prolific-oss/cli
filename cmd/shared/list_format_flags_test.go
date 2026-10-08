@@ -35,11 +35,29 @@ func TestAddFieldsFlagRegistersTheStandardFlag(t *testing.T) {
 	var fields string
 	cmd := &cobra.Command{Use: "list"}
 
-	shared.AddFieldsFlag(cmd, &fields, "ID,Name")
+	shared.AddFieldsFlag(cmd, &fields)
 
 	flag := cmd.Flags().Lookup("fields")
 	require.NotNil(t, flag)
 	assert.Equal(t, "f", flag.Shorthand)
-	assert.Equal(t, "ID,Name", flag.DefValue)
 	assert.Equal(t, shared.FieldsFlagUsage, flag.Usage)
+	// The default depends on the format, so the flag carries none.
+	assert.Empty(t, flag.DefValue)
+}
+
+func TestFieldSetResolve(t *testing.T) {
+	fields := shared.FieldSet{CSV: "ID,Name,Extra", Table: "ID,Name"}
+
+	t.Run("a CSV takes every column worth having", func(t *testing.T) {
+		assert.Equal(t, "ID,Name,Extra", fields.Resolve("", shared.FormatCSV))
+	})
+
+	t.Run("a table takes the few that identify a record", func(t *testing.T) {
+		assert.Equal(t, "ID,Name", fields.Resolve("", shared.FormatTable))
+	})
+
+	t.Run("--fields wins over both", func(t *testing.T) {
+		assert.Equal(t, "Name", fields.Resolve("Name", shared.FormatCSV))
+		assert.Equal(t, "Name", fields.Resolve("Name", shared.FormatTable))
+	})
 }

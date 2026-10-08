@@ -103,7 +103,10 @@ func getBreakdown(c client.API, in filterInput) (map[string]int, error) {
 // breakdown is one row per value participants gave, so the table and CSV
 // forms carry the same rows and a spreadsheet can read the CSV as it stands.
 func renderBreakdown(breakdown map[string]int, in filterInput, w io.Writer) error {
-	switch shared.ResolveFormatForWriter(in.Output, w) {
+	format := shared.ResolveFormatForWriter(in.Output, w)
+	fields := uiaudience.BreakdownFields.Resolve(in.Fields, format)
+
+	switch format {
 	case shared.FormatJSON:
 		rendered, err := RenderBreakdownJSON(breakdown)
 		if err != nil {
@@ -113,9 +116,9 @@ func renderBreakdown(breakdown map[string]int, in filterInput, w io.Writer) erro
 		_, err = fmt.Fprintln(w, rendered)
 		return err
 	case shared.FormatCSV:
-		return ui.CsvRenderer[uiaudience.BreakdownItem]{}.Render(uiaudience.NewBreakdownItems(breakdown), in.Fields, w)
+		return ui.CsvRenderer[uiaudience.BreakdownItem]{}.Render(uiaudience.NewBreakdownItems(breakdown), fields, w)
 	default:
-		return ui.TableRenderer[uiaudience.BreakdownItem]{}.Render(uiaudience.NewBreakdownItems(breakdown), in.Fields, w)
+		return ui.TableRenderer[uiaudience.BreakdownItem]{}.Render(uiaudience.NewBreakdownItems(breakdown), fields, w)
 	}
 }
 

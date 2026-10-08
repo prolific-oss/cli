@@ -399,11 +399,11 @@ func TestSearchFiltersTable(t *testing.T) {
 
 	require.NoError(t, err)
 	output := b.String()
-	assert.Contains(t, output, "Rank")
-	assert.Contains(t, output, "FilterID")
-	assert.Contains(t, output, "MatchedOn")
-	assert.Regexp(t, `1\s+job-title\s+Job title\s+select\s+ChoiceID\s+Employment\s+choices`, output)
-	assert.Regexp(t, `2\s+age\s+Age\s+range\s+integer\s+title`, output)
+	assert.Regexp(t, `FilterID\s+Title\s+Type`, output)
+	assert.Regexp(t, `job-title\s+Job title\s+select`, output)
+	assert.Regexp(t, `age\s+Age\s+range`, output)
+	assert.NotContains(t, output, "Rank")
+	assert.NotContains(t, output, "MatchedOn")
 	assert.Contains(t, output, "Showing 2 records of 2")
 }
 
@@ -420,12 +420,12 @@ func TestSearchFiltersCSVWithFields(t *testing.T) {
 	w := bufio.NewWriter(&b)
 
 	cmd := filters.NewSearchCommand(c, w)
-	cmd.SetArgs([]string{"developers", "--csv", "--fields", "Rank,FilterID,Title"})
+	cmd.SetArgs([]string{"developers", "--csv", "--fields", "FilterID,Title"})
 	err := cmd.Execute()
 	w.Flush()
 
 	require.NoError(t, err)
-	assert.Equal(t, "Rank,FilterID,Title\n1,job-title,Job title\n2,age,Age\n", b.String())
+	assert.Equal(t, "FilterID,Title\njob-title,Job title\nage,Age\n", b.String())
 }
 
 func TestSearchFiltersHeaderUsesFirstPageTotal(t *testing.T) {
@@ -533,7 +533,7 @@ func TestSearchFiltersOffsetSkipsEarlierMatches(t *testing.T) {
 	assert.NotContains(t, output, "1. Filter 0\n")
 }
 
-func TestSearchFiltersOffsetAppliesToTableRanks(t *testing.T) {
+func TestSearchFiltersOffsetReachesTheAPI(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
@@ -544,12 +544,12 @@ func TestSearchFiltersOffsetAppliesToTableRanks(t *testing.T) {
 	w := bufio.NewWriter(&b)
 
 	cmd := filters.NewSearchCommand(c, w)
-	cmd.SetArgs([]string{"dev", "-o", "50", "--csv", "-f", "Rank,FilterID"})
+	cmd.SetArgs([]string{"dev", "-o", "50", "--csv", "-f", "FilterID"})
 	err := cmd.Execute()
 	require.NoError(t, w.Flush())
 
 	require.NoError(t, err)
-	assert.Equal(t, "Rank,FilterID\n51,filter-50\n52,filter-51\n", b.String())
+	assert.Equal(t, "FilterID\nfilter-50\nfilter-51\n", b.String())
 }
 
 // Piped into another program with no format flag, results have to arrive as a
@@ -573,9 +573,9 @@ func TestSearchFiltersRendersATableWhenNotATerminal(t *testing.T) {
 
 	require.NoError(t, err)
 	output := b.String()
-	assert.Contains(t, output, "Rank")
-	assert.Contains(t, output, "MatchedOn")
-	assert.Regexp(t, `1\s+job-title\s+Job title`, output)
+	assert.Regexp(t, `FilterID\s+Title\s+Type`, output)
+	assert.Regexp(t, `job-title\s+Job title`, output)
+	assert.NotContains(t, output, "Rank")
 	assert.NotContains(t, output, "Filters matching")
 }
 

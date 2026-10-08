@@ -40,9 +40,9 @@ func TestNewListItemsFlattensFilters(t *testing.T) {
 	assert.Equal(t, "integer", items[0].DataType)
 	assert.Equal(t, "18", items[0].Min)
 	assert.Equal(t, "100", items[0].Max)
-	assert.Equal(t, 0, items[0].Choices)
+	assert.Equal(t, 0, items[0].ChoicesTotal)
 
-	assert.Equal(t, 2, items[1].Choices)
+	assert.Equal(t, 2, items[1].ChoicesTotal)
 }
 
 // A range filter with no bounds, and a select filter with no range, must not
@@ -57,4 +57,11 @@ func TestNewListItemsRendersMissingBoundsAsEmpty(t *testing.T) {
 
 func TestNewListItemsHandlesNoFilters(t *testing.T) {
 	assert.Empty(t, uifilters.NewListItems(nil))
+}
+
+// A table shows what identifies a filter; a CSV adds the data type and how
+// many choices it has.
+func TestListFieldsDifferByFormat(t *testing.T) {
+	assert.Equal(t, "FilterID,Title,Type", uifilters.ListFields.Table)
+	assert.Equal(t, "FilterID,Title,Type,DataType,ChoicesTotal", uifilters.ListFields.CSV)
 }

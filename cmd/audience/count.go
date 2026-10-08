@@ -93,11 +93,13 @@ type countOutput struct {
 func renderCount(count int, in filterInput, w io.Writer) error {
 	format := shared.ResolveFormatForWriter(in.Output, w)
 
+	fields := uiaudience.CountFields.Resolve(in.Fields, format)
+
 	switch format {
 	case shared.FormatCSV:
-		return ui.CsvRenderer[uiaudience.CountItem]{}.Render(countItems(count), in.Fields, w)
+		return ui.CsvRenderer[uiaudience.CountItem]{}.Render(countItems(count), fields, w)
 	case shared.FormatTable:
-		return ui.TableRenderer[uiaudience.CountItem]{}.Render(countItems(count), in.Fields, w)
+		return ui.TableRenderer[uiaudience.CountItem]{}.Render(countItems(count), fields, w)
 	}
 
 	rendered, err := RenderCount(count, format == shared.FormatJSON)

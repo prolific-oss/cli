@@ -24,30 +24,28 @@ func TestNewChoiceListItemsFlattensChoices(t *testing.T) {
 	items := NewChoiceListItems([]model.FilterChoiceSearchResult{
 		choice("0", "Management Occupations", nil, 4, 476),
 		choice("1016", "Registered Nurses", ptr("0"), 12, 12),
-	}, 1)
+	})
 
 	require.Len(t, items, 2)
 
 	assert.Equal(t, ChoiceListItem{
-		Rank: 1, ID: "0", Label: "Management Occupations", ParentID: "", NumChildren: 4, NumDescendants: 476,
+		ID: "0", Label: "Management Occupations", ParentID: "", NumChildren: 4, NumDescendants: 476,
 	}, items[0])
 	assert.Equal(t, ChoiceListItem{
-		Rank: 2, ID: "1016", Label: "Registered Nurses", ParentID: "0", NumChildren: 12, NumDescendants: 12,
+		ID: "1016", Label: "Registered Nurses", ParentID: "0", NumChildren: 12, NumDescendants: 12,
 	}, items[1])
 }
 
-// Ranks continue across pages, so an offset listing reports the position each
-// choice actually holds.
-func TestNewChoiceListItemsNumbersFromFirstRank(t *testing.T) {
-	items := NewChoiceListItems([]model.FilterChoiceSearchResult{choice("7", "Nurse", nil, 0, 0)}, 51)
-
-	require.Len(t, items, 1)
-	assert.Equal(t, 51, items[0].Rank)
+func TestNewChoiceListItemsEmpty(t *testing.T) {
+	assert.Empty(t, NewChoiceListItems(nil))
+	assert.NotNil(t, NewChoiceListItems(nil))
 }
 
-func TestNewChoiceListItemsEmpty(t *testing.T) {
-	assert.Empty(t, NewChoiceListItems(nil, 1))
-	assert.NotNil(t, NewChoiceListItems(nil, 1))
+// A table shows the two columns that identify a choice; a CSV carries the
+// hierarchy columns a spreadsheet can work with.
+func TestChoiceFieldsDifferByFormat(t *testing.T) {
+	assert.Equal(t, "ID,Label", ChoiceFields.Table)
+	assert.Equal(t, "ID,Label,ParentID,NumChildren,NumDescendants", ChoiceFields.CSV)
 }
 
 func TestRenderChoicesHeader(t *testing.T) {

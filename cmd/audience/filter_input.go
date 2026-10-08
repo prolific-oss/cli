@@ -6,7 +6,6 @@ import (
 
 	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/model"
-	uiaudience "github.com/prolific-oss/cli/ui/audience"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -62,14 +61,9 @@ func addFilterFlags(cmd *cobra.Command, in *filterInput, withBreakdown bool) {
 	if withBreakdown {
 		flags.StringVar(&in.BreakdownJSON, "breakdown", "", `JSON object for the single filter to break results down by, e.g. '{"filter_id":"handedness","selected_values":["0","1"]}' for a choice filter (selected_values is required) or '{"filter_id":"age","selected_range":{"lower":18,"upper":65}}' for a range filter. Required with --filters; alternative to -p/--template-path.`)
 	}
-	defaultFields := uiaudience.CountFields
-	if withBreakdown {
-		defaultFields = uiaudience.BreakdownFields
-	}
-
 	// These two commands cannot run without a workspace, so the flag says so.
 	shared.AddRequiredWorkspaceFlag(cmd, &in.WorkspaceID)
-	shared.AddFieldsFlag(cmd, &in.Fields, defaultFields)
+	shared.AddFieldsFlag(cmd, &in.Fields)
 	shared.AddOutputFlags(cmd, &in.Output)
 }
 

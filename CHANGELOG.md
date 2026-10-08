@@ -61,10 +61,19 @@
   `--limit`/`--offset` flags. Its `--json` output uses the CLI-owned envelope
   (`results`, `count`, `limit`, `offset`) rather than the API's own.
 - `filters search` gains `--offset`/`-o` to skip matches you have already seen,
-  and `-f` as the shorthand for `--fields`. Ranks are reported against the whole
-  result set, so an offset search starts at the rank the filter actually holds.
+  and `-f` as the shorthand for `--fields`.
 - When `filters search` cannot preview all of a filter's choices, the result now
   names the command that lists the rest.
+- Every table and CSV column is one field of the JSON, so nothing is joined or
+  derived: `filters search` reports `Category` and `Subcategory` separately and
+  the choices block as `ChoicesTotal`, `ChoicesMatched` and `ChoicesTruncated`,
+  and the `Rank` and `MatchedOn` columns are gone. `filters list` renames
+  `Choices` to `ChoicesTotal`.
+- Tables and CSVs have separate default columns: a table shows what identifies a
+  record, a CSV carries every column worth having. `--fields` overrides both.
+  `Description` and `DataType` remain available on `filters search` through
+  `--fields`.
+- Filter search results no longer carry an `_links` block.
 - Add `filters choices <filter-id>` and `filters choices search <filter-id>
   <query>` to list and search the choices belonging to a filter. Choice IDs are
   what a filter selection is built from, and previously anything past the three

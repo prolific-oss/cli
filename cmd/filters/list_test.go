@@ -141,7 +141,7 @@ func TestListFiltersRendersCsv(t *testing.T) {
 	output, err := runList(t, "", "--csv")
 
 	assert.NoError(t, err)
-	assert.Contains(t, output, "FilterID,Title,Type,DataType,Choices\n")
+	assert.Contains(t, output, "FilterID,Title,Type,DataType,ChoicesTotal\n")
 	assert.Contains(t, output, "age,Age,range,integer,0\n")
 	assert.Contains(t, output, "handedness,Handedness,select,string,3\n")
 	assert.NotContains(t, output, "Showing")
