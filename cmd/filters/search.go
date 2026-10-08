@@ -44,10 +44,10 @@ Results are returned in ranked order. The parts of each filter that matched
 your query are highlighted, and up to three matching choices are previewed for
 filters with a fixed set of choices.
 
-By default the top 200 results are shown. Use --limit to ask for fewer, or
---all (equivalently --limit 0) to fetch every match. Pages are fetched from
-the API automatically, so --offset is only needed to skip past results you
-have already seen.
+By default the top 200 results are shown. Use --limit to ask for a different
+number, or --all (equivalently --limit 0) to fetch every match. Pages are
+fetched from the API automatically, so --offset is only needed to skip past
+results you have already seen.
 
 When run in a terminal, output longer than one screen is shown in your pager
 (PROLIFIC_PAGER, then PAGER, defaulting to less) so the top result stays in

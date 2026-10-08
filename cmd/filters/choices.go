@@ -46,7 +46,7 @@ left raw.
 The endpoint does not support ordering, so there are no sort flags.
 
 A filter that does not exist, and one that exists but is absent from the
-workspace you asked for, both return "not found".`,
+workspace you asked for, both return the API's 404.`,
 		Example: `
 List a filter's choices
 $ prolific filters choices job-title
@@ -102,15 +102,15 @@ func NewChoicesSearchCommand(c client.API, w io.Writer) *cobra.Command {
 		Long: `Search the choices belonging to a select filter.
 
 Results come back in relevance order, with the parts of each label that
-matched your query highlighted. For a filter like job title, which has
-thousands of choices, this is the quickest way to the handful of choice IDs
-you actually want.
+matched your query highlighted in a terminal. For a filter like job title,
+which has thousands of choices, this is the quickest way to the handful of
+choice IDs you actually want.
 
 The endpoint does not support ordering — results are always ranked by
 relevance — so there are no sort flags.
 
 A filter that does not exist, and one that exists but is absent from the
-workspace you asked for, both return "not found".`,
+workspace you asked for, both return the API's 404.`,
 		Example: `
 Search a filter's choices
 $ prolific filters choices search job-title nurse

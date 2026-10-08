@@ -26,8 +26,8 @@ func NewRuleTreeCommand(c client.API, w io.Writer) *cobra.Command {
 when --workspace is omitted, or default rules if no workspace is configured.
 
 The rules are a nested tree rather than a list, so JSON is the only format
-this command can emit; --json selects it, as on every other command, and is
-the default. There are no --table or --csv flags, because a tree has no rows.`,
+this command emits. --json is accepted for consistency but has nothing to
+select, and there are no --table or --csv flags, because a tree has no rows.`,
 		Example: `
 Fetch the rules for a workspace
 $ prolific filters rule-tree --workspace <workspace-id>`,
