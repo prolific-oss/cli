@@ -25,6 +25,25 @@ type ChoicesOptions struct {
 	Pagination  shared.PaginationOptions
 }
 
+// validate rejects the options neither choices endpoint can act on, so
+// renderChoices is only ever handed a filter and a window worth sending.
+func (o ChoicesOptions) validate() error {
+	if strings.TrimSpace(o.FilterID) == "" {
+		return errors.New("please provide a filter ID")
+	}
+	return o.Pagination.Validate()
+}
+
+// validateSearch adds the query rule to the shared checks. It is separate
+// because a blank query means "list everything" to the listing command and
+// "nothing to search for" here.
+func (o ChoicesOptions) validateSearch() error {
+	if err := validateSearchQuery(o.Query); err != nil {
+		return err
+	}
+	return o.validate()
+}
+
 // NewChoicesCommand creates the `filters choices` command, which lists a
 // filter's choices and parents the `search` sub-command.
 func NewChoicesCommand(c client.API, w io.Writer) *cobra.Command {
@@ -74,6 +93,9 @@ The fields you can use are
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.FilterID = args[0]
 
+			if err := opts.validate(); err != nil {
+				return fmt.Errorf("error: %s", err)
+			}
 			if err := renderChoices(cmd, opts, listChoices(c, opts), w); err != nil {
 				return fmt.Errorf("error: %s", err)
 			}
@@ -125,7 +147,7 @@ $ prolific filters choices search job-title nurse --json`,
 			opts.FilterID = args[0]
 			opts.Query = strings.TrimSpace(strings.Join(args[1:], " "))
 
-			if err := validateSearchQuery(opts.Query); err != nil {
+			if err := opts.validateSearch(); err != nil {
 				return fmt.Errorf("error: %s", err)
 			}
 			if err := renderChoices(cmd, opts, searchChoices(c, opts), w); err != nil {
@@ -147,19 +169,6 @@ func addChoicesFlags(cmd *cobra.Command, opts *ChoicesOptions) {
 	shared.AddFieldsFlag(cmd, &opts.Fields)
 	shared.AddPaginationFlags(cmd, &opts.Pagination, client.DefaultRecordLimit)
 	shared.AddOutputFlags(cmd, &opts.Output)
-}
-
-// validateSearchQuery rejects a query the search endpoint cannot act on.
-// cobra's argument count cannot catch a blank or whitespace query, and
-// without this the search command would quietly list the whole filter.
-func validateSearchQuery(query string) error {
-	if query == "" {
-		return errors.New("please provide a search query")
-	}
-	if len([]rune(query)) > maxSearchQueryLength {
-		return fmt.Errorf("search query must be at most %d characters", maxSearchQueryLength)
-	}
-	return nil
 }
 
 // listChoices fetches pages from the plain listing endpoint.
@@ -195,13 +204,6 @@ func choicesPage(results []model.FilterChoiceSearchResult, meta *client.JSONAPIM
 // renderChoices renders whatever fetchPage returns, so the two commands share
 // a presentation without sharing a decision about which endpoint to call.
 func renderChoices(cmd *cobra.Command, opts ChoicesOptions, fetchPage client.PageFetcher[model.FilterChoiceSearchResult], w io.Writer) error {
-	if strings.TrimSpace(opts.FilterID) == "" {
-		return errors.New("please provide a filter ID")
-	}
-	if err := opts.Pagination.Validate(); err != nil {
-		return err
-	}
-
 	want := opts.Pagination.Want()
 
 	// Paging starts from the caller's offset, so the offsets the fetcher is

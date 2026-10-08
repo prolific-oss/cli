@@ -18,6 +18,19 @@ import (
 // accepted by the API after trimming.
 const maxSearchQueryLength = 200
 
+// validateSearchQuery rejects a query a search endpoint cannot act on. cobra's
+// argument count cannot catch a blank or whitespace query, and without this
+// `filters choices search` would quietly list the whole filter.
+func validateSearchQuery(query string) error {
+	if query == "" {
+		return errors.New("please provide a search query")
+	}
+	if len([]rune(query)) > maxSearchQueryLength {
+		return fmt.Errorf("search query must be at most %d characters", maxSearchQueryLength)
+	}
+	return nil
+}
+
 // SearchOptions is the options for the filter search command.
 type SearchOptions struct {
 	Query       string
@@ -25,6 +38,15 @@ type SearchOptions struct {
 	Output      shared.OutputOptions
 	Fields      string
 	Pagination  shared.PaginationOptions
+}
+
+// validate rejects the options the search endpoint cannot act on, so
+// renderSearch is only ever handed a query and a window worth sending.
+func (o SearchOptions) validate() error {
+	if err := validateSearchQuery(o.Query); err != nil {
+		return err
+	}
+	return o.Pagination.Validate()
 }
 
 // NewSearchCommand creates the `filters search` command.
@@ -86,6 +108,9 @@ $ prolific filters search developer --json`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Query = strings.TrimSpace(strings.Join(args, " "))
 
+			if err := opts.validate(); err != nil {
+				return fmt.Errorf("error: %s", err)
+			}
 			if err := renderSearch(cmd, c, opts, w); err != nil {
 				return fmt.Errorf("error: %s", err)
 			}
@@ -103,16 +128,6 @@ $ prolific filters search developer --json`,
 }
 
 func renderSearch(cmd *cobra.Command, c client.API, opts SearchOptions, w io.Writer) error {
-	if opts.Query == "" {
-		return errors.New("please provide a search query")
-	}
-	if len([]rune(opts.Query)) > maxSearchQueryLength {
-		return fmt.Errorf("search query must be at most %d characters", maxSearchQueryLength)
-	}
-
-	if err := opts.Pagination.Validate(); err != nil {
-		return err
-	}
 	want := opts.Pagination.Want()
 
 	// Paging starts from the caller's offset, so the offsets the fetcher is
