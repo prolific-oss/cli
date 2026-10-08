@@ -53,13 +53,13 @@ func NewSearchCommand(c client.API, w io.Writer) *cobra.Command {
 			total := client.ReportedTotal(response.JSONAPIMeta, len(response.Results))
 
 			switch shared.ResolveFormat(opts.Output) {
-			case shared.FormatJSON:
+			case ui.FormatJSON:
 				envelope := ui.NewEnvelope(response.Results, total, opts.Limit, opts.Offset)
 				if err := (ui.JSONEnvelopeRenderer[model.ParticipantGroup]{}).Render(envelope, w); err != nil {
 					return fmt.Errorf("error: %s", err)
 				}
 				return nil
-			case shared.FormatCSV:
+			case ui.FormatCSV:
 				if err := (ui.CsvRenderer[model.ParticipantGroup]{}).Render(response.Results, opts.Fields, w); err != nil {
 					return fmt.Errorf("error: %s", err)
 				}

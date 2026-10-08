@@ -107,7 +107,7 @@ func renderBreakdown(breakdown map[string]int, in filterInput, w io.Writer) erro
 	fields := uiaudience.BreakdownFields.Resolve(in.Fields, format)
 
 	switch format {
-	case shared.FormatJSON:
+	case ui.FormatJSON:
 		rendered, err := RenderBreakdownJSON(breakdown)
 		if err != nil {
 			return err
@@ -115,7 +115,7 @@ func renderBreakdown(breakdown map[string]int, in filterInput, w io.Writer) erro
 		// Every other --json path in the CLI terminates its output.
 		_, err = fmt.Fprintln(w, rendered)
 		return err
-	case shared.FormatCSV:
+	case ui.FormatCSV:
 		return ui.CsvRenderer[uiaudience.BreakdownItem]{}.Render(uiaudience.NewBreakdownItems(breakdown), fields, w)
 	default:
 		return ui.TableRenderer[uiaudience.BreakdownItem]{}.Render(uiaudience.NewBreakdownItems(breakdown), fields, w)

@@ -3,12 +3,12 @@ package filters
 import (
 	"fmt"
 
-	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/model"
+	"github.com/prolific-oss/cli/ui"
 )
 
 // ListFields is the default column set for each format.
-var ListFields = shared.FieldSet{
+var ListFields = ui.FieldSet{
 	CSV:   "FilterID,Title,Type,DataType,ChoicesTotal",
 	Table: "FilterID,Title,Type",
 }

@@ -49,7 +49,7 @@ func NewSearchCommand(c client.API, w io.Writer) *cobra.Command {
 			total := client.ReportedTotal(response.JSONAPIMeta, len(response.Results))
 
 			switch shared.ResolveFormat(opts.Output) {
-			case shared.FormatJSON:
+			case ui.FormatJSON:
 				// Studies paginate by page number, so the window a page
 				// covers comes from the page size the client sends.
 				offset := (opts.Page - 1) * client.StudyPageSize
@@ -58,7 +58,7 @@ func NewSearchCommand(c client.API, w io.Writer) *cobra.Command {
 					return fmt.Errorf("error: %s", err)
 				}
 				return nil
-			case shared.FormatCSV:
+			case ui.FormatCSV:
 				if err := (ui.CsvRenderer[model.Study]{}).Render(response.Results, opts.Fields, w); err != nil {
 					return fmt.Errorf("error: %s", err)
 				}

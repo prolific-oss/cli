@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/model"
 	"github.com/prolific-oss/cli/ui"
 )
@@ -21,7 +20,7 @@ const fieldWidth = 13
 const indent = "   "
 
 // SearchListFields is the default column set for each format.
-var SearchListFields = shared.FieldSet{
+var SearchListFields = ui.FieldSet{
 	CSV:   "FilterID,Title,Question,Category,Subcategory,Type,ChoicesTotal,ChoicesMatched,ChoicesTruncated",
 	Table: "FilterID,Title,Type",
 }

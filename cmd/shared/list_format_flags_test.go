@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/prolific-oss/cli/cmd/shared"
+	"github.com/prolific-oss/cli/ui"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -15,9 +16,9 @@ func TestResolveFormatForWriterPrefersAnExplicitFlag(t *testing.T) {
 		opts shared.OutputOptions
 		want string
 	}{
-		"json":  {opts: shared.OutputOptions{Json: true}, want: shared.FormatJSON},
-		"csv":   {opts: shared.OutputOptions{Csv: true}, want: shared.FormatCSV},
-		"table": {opts: shared.OutputOptions{Table: true}, want: shared.FormatTable},
+		"json":  {opts: shared.OutputOptions{Json: true}, want: ui.FormatJSON},
+		"csv":   {opts: shared.OutputOptions{Csv: true}, want: ui.FormatCSV},
+		"table": {opts: shared.OutputOptions{Table: true}, want: ui.FormatTable},
 	}
 
 	for name, tc := range cases {
@@ -28,7 +29,7 @@ func TestResolveFormatForWriterPrefersAnExplicitFlag(t *testing.T) {
 }
 
 func TestResolveFormatForWriterFallsBackToATableWhenNotATerminal(t *testing.T) {
-	assert.Equal(t, shared.FormatTable, shared.ResolveFormatForWriter(shared.OutputOptions{}, &bytes.Buffer{}))
+	assert.Equal(t, ui.FormatTable, shared.ResolveFormatForWriter(shared.OutputOptions{}, &bytes.Buffer{}))
 }
 
 func TestAddFieldsFlagRegistersTheStandardFlag(t *testing.T) {
@@ -46,18 +47,18 @@ func TestAddFieldsFlagRegistersTheStandardFlag(t *testing.T) {
 }
 
 func TestFieldSetResolve(t *testing.T) {
-	fields := shared.FieldSet{CSV: "ID,Name,Extra", Table: "ID,Name"}
+	fields := ui.FieldSet{CSV: "ID,Name,Extra", Table: "ID,Name"}
 
 	t.Run("a CSV takes every column worth having", func(t *testing.T) {
-		assert.Equal(t, "ID,Name,Extra", fields.Resolve("", shared.FormatCSV))
+		assert.Equal(t, "ID,Name,Extra", fields.Resolve("", ui.FormatCSV))
 	})
 
 	t.Run("a table takes the few that identify a record", func(t *testing.T) {
-		assert.Equal(t, "ID,Name", fields.Resolve("", shared.FormatTable))
+		assert.Equal(t, "ID,Name", fields.Resolve("", ui.FormatTable))
 	})
 
 	t.Run("--fields wins over both", func(t *testing.T) {
-		assert.Equal(t, "Name", fields.Resolve("Name", shared.FormatCSV))
-		assert.Equal(t, "Name", fields.Resolve("Name", shared.FormatTable))
+		assert.Equal(t, "Name", fields.Resolve("Name", ui.FormatCSV))
+		assert.Equal(t, "Name", fields.Resolve("Name", ui.FormatTable))
 	})
 }

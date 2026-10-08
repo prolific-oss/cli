@@ -218,7 +218,7 @@ func renderChoices(cmd *cobra.Command, opts ChoicesOptions, fetchPage client.Pag
 	fields := uifilters.ChoiceFields.Resolve(opts.Fields, format)
 
 	switch format {
-	case shared.FormatJSON:
+	case ui.FormatJSON:
 		found, total, err := records()
 		if err != nil {
 			return err
@@ -227,14 +227,14 @@ func renderChoices(cmd *cobra.Command, opts ChoicesOptions, fetchPage client.Pag
 		// --all resolves to 0, meaning unbounded.
 		envelope := ui.NewEnvelope(found, total, want, opts.Pagination.Offset)
 		return ui.JSONEnvelopeRenderer[model.FilterChoiceSearchResult]{}.Render(envelope, w)
-	case shared.FormatCSV:
+	case ui.FormatCSV:
 		found, _, err := records()
 		if err != nil {
 			return err
 		}
 		renderer := ui.CsvRenderer[uifilters.ChoiceListItem]{}
 		return renderer.Render(uifilters.NewChoiceListItems(found), fields, w)
-	case shared.FormatTable:
+	case ui.FormatTable:
 		found, total, err := records()
 		if err != nil {
 			return err

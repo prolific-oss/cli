@@ -133,21 +133,21 @@ func renderSearch(cmd *cobra.Command, c client.API, opts SearchOptions, w io.Wri
 	fields := uifilters.SearchListFields.Resolve(opts.Fields, format)
 
 	switch format {
-	case shared.FormatJSON:
+	case ui.FormatJSON:
 		records, total, err := client.FetchPages(want, client.FilterSearchPageSize, fetch)
 		if err != nil {
 			return err
 		}
 		envelope := ui.NewEnvelope(records, total, want, opts.Pagination.Offset)
 		return ui.JSONEnvelopeRenderer[model.FilterSearchResult]{}.Render(envelope, w)
-	case shared.FormatCSV:
+	case ui.FormatCSV:
 		records, _, err := client.FetchPages(want, client.FilterSearchPageSize, fetch)
 		if err != nil {
 			return err
 		}
 		renderer := ui.CsvRenderer[uifilters.SearchListItem]{}
 		return renderer.Render(uifilters.NewSearchListItems(records), fields, w)
-	case shared.FormatTable:
+	case ui.FormatTable:
 		records, total, err := client.FetchPages(want, client.FilterSearchPageSize, fetch)
 		if err != nil {
 			return err

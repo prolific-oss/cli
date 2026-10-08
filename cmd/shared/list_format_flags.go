@@ -7,15 +7,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// The formats a list command can resolve to. FormatInteractive is only ever
-// resolved for a terminal, so output in a pipe is always machine readable.
-const (
-	FormatJSON        = "json"
-	FormatCSV         = "csv"
-	FormatTable       = "table"
-	FormatInteractive = "interactive"
-)
-
 // FieldsFlagUsage is the single help wording for --fields.
 const FieldsFlagUsage = "Comma-separated list of columns for table or CSV output"
 
@@ -37,53 +28,32 @@ func AddOutputFlags(cmd *cobra.Command, opts *OutputOptions) {
 	_ = cmd.Flags().MarkHidden("non-interactive")
 }
 
-// FieldSet holds a command's default columns for each format. A CSV is read
-// by a program, so it carries every column worth having; a table is read on a
-// screen, so it carries the few that identify a record.
-type FieldSet struct {
-	CSV   string
-	Table string
-}
-
-// Resolve returns the columns to render: whatever --fields asked for, or this
-// format's default when it was not given.
-func (f FieldSet) Resolve(requested, format string) string {
-	switch {
-	case requested != "":
-		return requested
-	case format == FormatCSV:
-		return f.CSV
-	default:
-		return f.Table
-	}
-}
-
 // AddFieldsFlag registers --fields / -f on the given command, with one help
 // wording across the CLI. It carries no default, because the default depends
-// on the format; FieldSet.Resolve supplies it.
+// on the format; ui.FieldSet.Resolve supplies it.
 func AddFieldsFlag(cmd *cobra.Command, fields *string) {
 	cmd.Flags().StringVarP(fields, "fields", "f", "", FieldsFlagUsage)
 }
 
-// ResolveFormat returns the resolved format string based on the flags set.
+// ResolveFormat returns the resolved format based on the flags set.
 // Priority: json > csv > table. Returns "" to indicate auto (TUI if TTY, else table).
 func ResolveFormat(opts OutputOptions) string {
 	switch {
 	case opts.Json:
-		return FormatJSON
+		return ui.FormatJSON
 	case opts.Csv:
-		return FormatCSV
+		return ui.FormatCSV
 	case opts.Table:
-		return FormatTable
+		return ui.FormatTable
 	default:
 		return ""
 	}
 }
 
-// ResolveFormatForWriter resolves the output format for w. An explicit flag always
-// wins. Without one it returns FormatInteractive when w is a terminal, and
-// FormatTable otherwise, so piping a command never lands the caller in an
-// interactive UI that cannot work in a pipe.
+// ResolveFormatForWriter resolves the output format for w. An explicit flag
+// always wins. Without one it returns ui.FormatInteractive when w is a
+// terminal, and ui.FormatTable otherwise, so piping a command never lands the
+// caller in an interactive UI that cannot work in a pipe.
 func ResolveFormatForWriter(opts OutputOptions, w io.Writer) string {
 	return resolveFormat(opts, ui.IsTerminal(w))
 }
@@ -93,7 +63,7 @@ func resolveFormat(opts OutputOptions, isTerminal bool) string {
 		return format
 	}
 	if isTerminal {
-		return FormatInteractive
+		return ui.FormatInteractive
 	}
-	return FormatTable
+	return ui.FormatTable
 }

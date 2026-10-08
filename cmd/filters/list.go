@@ -93,23 +93,23 @@ func renderList(c client.API, opts ListOptions, w io.Writer) error {
 	fields := uifilters.ListFields.Resolve(opts.Fields, format)
 
 	switch format {
-	case shared.FormatJSON:
+	case ui.FormatJSON:
 		// The catalogue endpoint does not paginate, so no window was asked
 		// for and none could be applied: a limit of zero says these are all
 		// of them.
 		envelope := ui.NewEnvelope(records, len(records), 0, 0)
 		return ui.JSONEnvelopeRenderer[model.Filter]{}.Render(envelope, w)
-	case shared.FormatCSV:
+	case ui.FormatCSV:
 		renderer := ui.CsvRenderer[uifilters.ListItem]{}
 		return renderer.Render(uifilters.NewListItems(records), fields, w)
-	case shared.FormatTable:
+	case ui.FormatTable:
 		renderer := ui.TableRenderer[uifilters.ListItem]{}
 		if err := renderer.Render(uifilters.NewListItems(records), fields, w); err != nil {
 			return err
 		}
 		_, err := fmt.Fprintf(w, "\n%s\n", ui.RenderRecordCounter(len(records), len(records)))
 		return err
-	default: // shared.FormatInteractive
+	default: // ui.FormatInteractive
 		return renderInteractiveList(c, records)
 	}
 }

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/model"
 	"github.com/prolific-oss/cli/ui"
 )
@@ -12,7 +11,7 @@ import (
 // ChoiceFields is the default column set for each format. Listing a filter's
 // choices and searching them return the same records, so they render the same
 // columns.
-var ChoiceFields = shared.FieldSet{
+var ChoiceFields = ui.FieldSet{
 	CSV:   "ID,Label,ParentID,NumChildren,NumDescendants",
 	Table: "ID,Label",
 }
