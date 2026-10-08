@@ -17,8 +17,8 @@
 - `audience count` and `audience breakdown` gain `--table`/`-t` and `--csv`/`-c`
   alongside the existing `--json`, with `--fields`/`-f` to choose columns. A
   breakdown is now one row per value, so its CSV opens in a spreadsheet as it
-  stands, with numeric buckets in numeric order and `N/A` last. `count` still
-  prints a sentence at a terminal, and a one-row table when piped.
+  stands, with numeric buckets in numeric order and `N/A` last. `count` is a
+  one-row table, the same whether it is read on screen or piped.
 
 - `--template-path` uses `-p` rather than `-t` on the audience commands, so `-t`
   means `--table` as it does CLI-wide. The long form is unchanged. Other commands

@@ -88,11 +88,9 @@ type countOutput struct {
 }
 
 // renderCount writes a count in the format the caller asked for. A count is a
-// single value, so the table and CSV forms are a one-row record; at a terminal
-// without a format flag it stays a sentence.
+// single value, so every format is a one-row record.
 func renderCount(count int, in filterInput, w io.Writer) error {
 	format := shared.ResolveFormatForWriter(in.Output, w)
-
 	fields := uiaudience.CountFields.Resolve(in.Fields, format)
 
 	switch format {
@@ -101,15 +99,13 @@ func renderCount(count int, in filterInput, w io.Writer) error {
 		if err != nil {
 			return err
 		}
+		// Every other --json path in the CLI terminates its output.
 		_, err = fmt.Fprintln(w, rendered)
 		return err
 	case ui.FormatCSV:
 		return ui.CsvRenderer[uiaudience.CountItem]{}.Render(countItems(count), fields, w)
-	case ui.FormatTable:
-		return ui.TableRenderer[uiaudience.CountItem]{}.Render(countItems(count), fields, w)
 	default:
-		_, err := fmt.Fprintf(w, "Eligible participants: %d\n", count)
-		return err
+		return ui.TableRenderer[uiaudience.CountItem]{}.Render(countItems(count), fields, w)
 	}
 }
 

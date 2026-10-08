@@ -69,9 +69,11 @@ func TestCountOutputFormats(t *testing.T) {
 		assert.Contains(t, runCount(t, false, "--table"), "1234")
 	})
 
-	// At a terminal a count is a single number, so it stays a sentence.
-	t.Run("terminal default is the sentence", func(t *testing.T) {
-		assert.Equal(t, "Eligible participants: 1234\n", runCount(t, true))
+	// A count is a one-row record everywhere, so a terminal gets the same
+	// table a pipe does rather than a sentence only a human can read.
+	t.Run("terminal default is a table", func(t *testing.T) {
+		assert.Contains(t, runCount(t, true), "Count")
+		assert.Contains(t, runCount(t, true), "1234")
 	})
 
 	// Piped, it has to be machine-readable like every other command.
