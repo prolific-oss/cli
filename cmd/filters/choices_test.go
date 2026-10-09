@@ -196,8 +196,8 @@ func TestChoicesListRendersTheCLIJSONEnvelope(t *testing.T) {
 	assert.NotContains(t, b.String(), "_links")
 }
 
-// The endpoint caps a page at 100, but the CLI-wide default is 200, so the
-// default ask spans two requests.
+// The endpoint accepts 200, which is the CLI-wide default, so the default ask
+// is a single request.
 func TestChoicesListDefaultLimitIsOnePage(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -621,6 +621,6 @@ func TestChoicesListRowShowsParentAndChildCounts(t *testing.T) {
 	require.NoError(t, err)
 
 	output := stripansi.Strip(b.String())
-	assert.Contains(t, output, "0            Management Occupations  (4 children, +476 nested)")
+	assert.Contains(t, output, "0            Management Occupations  (4 children, +472 nested)")
 	assert.Contains(t, output, "1016         Registered Nurses  (parent 0, 12 children)")
 }

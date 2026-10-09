@@ -93,8 +93,10 @@ func TestRenderChoiceRowShowsIDLabelParentAndCounts(t *testing.T) {
 	row := stripansi.Strip(RenderChoiceRow(choice("18873", "Obstetrics Nurse", ptr("1016"), 0, 0)))
 	assert.Equal(t, "18873        Obstetrics Nurse  (parent 1016)\n", row)
 
+	// num_descendants includes the direct children, so the nested count is
+	// what is left below them: 476 descendants under 4 children is 472 deeper.
 	root := stripansi.Strip(RenderChoiceRow(choice("0", "Management Occupations", nil, 4, 476)))
-	assert.Equal(t, "0            Management Occupations  (4 children, +476 nested)\n", root)
+	assert.Equal(t, "0            Management Occupations  (4 children, +472 nested)\n", root)
 
 	// A parent of leaves has as many descendants as children, so repeating the
 	// count as "+12 nested" would say nothing.

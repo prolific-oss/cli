@@ -106,8 +106,10 @@ func describeChoicePlace(c model.FilterChoiceSearchResult) string {
 	if c.NumChildren > 0 {
 		parts = append(parts, fmt.Sprintf("%d %s", c.NumChildren, ui.Pluralise(c.NumChildren, "child", "children")))
 	}
-	if c.NumDescendants > c.NumChildren {
-		parts = append(parts, fmt.Sprintf("+%d nested", c.NumDescendants))
+	// num_descendants counts the whole subtree, children included, so the
+	// children already named above are subtracted to leave what is deeper.
+	if deeper := c.NumDescendants - c.NumChildren; deeper > 0 {
+		parts = append(parts, fmt.Sprintf("+%d nested", deeper))
 	}
 
 	return strings.Join(parts, ", ")
