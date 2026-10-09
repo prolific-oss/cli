@@ -28,25 +28,29 @@
 - `--json` output is now defined by the CLI rather than mirrored from the API
   response, so a server-side change cannot alter it.
 
-- **Breaking changes:**
-  - Removed `eligibility-count`, replaced by `audience count`. The template
-    format and `-w/--workspace` flag are unchanged, so `prolific
-    eligibility-count -t filters.json -w <id>` becomes `prolific audience count
-    -p filters.json -w <id>`. The new command also accepts `--filters` (a raw
-    JSON array, for scripting without a temp file), and `-j/--json` for
-    machine-readable output.
+- `eligibility-count` is deprecated in favour of `audience count`, and keeps
+  working: the same `-t/--template-path` and `-w/--workspace` flags, the same
+  messages, and the same line on stdout. It runs on the audience
+  implementation now, so nested and/or filter groups work there too. Migrate
+  with `prolific eligibility-count -t filters.json -w <id>` → `prolific
+  audience count -p filters.json -w <id>`, which also accepts `--filters` (a
+  raw JSON array, for scripting without a temp file) and `--json`, `--csv` and
+  `--table` output. Note `-t` means `--table` on `audience count`; the
+  template path is `-p` there.
 
 ### Filters
 
 - Add `filters rule-tree` to retrieve workspace-specific composite filter rules.
 
-- **Breaking change:** `prolific filters` is now a parent command. The previous
-  behaviour has moved to `prolific filters list`; update any scripts or skills
-  that call `prolific filters` or `prolific filters -n`. The output moved too:
-  where `prolific filters -n` printed a detailed block per filter, the
-  replacement `prolific filters list -n` prints a table, since `-n` is the
-  hidden alias for `--table` everywhere in the CLI. Anything parsing the old
-  block output needs updating; `--json` is the stable alternative.
+- `prolific filters` is now a parent command, and still lists the catalogue
+  when called without a subcommand. `prolific filters -n` still prints a
+  detailed block per filter; the flag is hidden so the help points at
+  `prolific filters list` instead. Piping `prolific filters` used to fail
+  because it could not open a TTY, and now prints a table.
+
+  New work should use `prolific filters list`, where `-n` is the hidden alias
+  for `--table` as it is everywhere else in the CLI, and `--json` is the
+  stable output for anything parsing it.
 - Add `prolific filters search <query>` to search the filter catalogue by
   keyword, with matched text highlighted and a preview of matching choices.
   `--json`, `--table` and `--csv` output are available, with `--fields` to
