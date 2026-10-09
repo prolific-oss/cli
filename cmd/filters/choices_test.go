@@ -198,15 +198,12 @@ func TestChoicesListRendersTheCLIJSONEnvelope(t *testing.T) {
 
 // The endpoint caps a page at 100, but the CLI-wide default is 200, so the
 // default ask spans two requests.
-func TestChoicesListDefaultLimitSpansTwoPages(t *testing.T) {
+func TestChoicesListDefaultLimitIsOnePage(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	gomock.InOrder(
-		c.EXPECT().GetFilterChoices("job-title", "", client.FilterChoicesPageSize, client.DefaultRecordOffset).Return(choicesPage(0, 100, 4123), nil),
-		c.EXPECT().GetFilterChoices("job-title", "", client.FilterChoicesPageSize, 100).Return(choicesPage(100, 100, 4123), nil),
-	)
+	c.EXPECT().GetFilterChoices("job-title", "", client.FilterChoicesPageSize, client.DefaultRecordOffset).Return(choicesPage(0, 200, 4123), nil)
 
 	var b bytes.Buffer
 	w := bufio.NewWriter(&b)
@@ -227,8 +224,7 @@ func TestChoicesListAllFetchesEveryPage(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	gomock.InOrder(
-		c.EXPECT().GetFilterChoices("job-title", "", client.FilterChoicesPageSize, client.DefaultRecordOffset).Return(choicesPage(0, 100, 230), nil),
-		c.EXPECT().GetFilterChoices("job-title", "", client.FilterChoicesPageSize, 100).Return(choicesPage(100, 100, 230), nil),
+		c.EXPECT().GetFilterChoices("job-title", "", client.FilterChoicesPageSize, client.DefaultRecordOffset).Return(choicesPage(0, 200, 230), nil),
 		c.EXPECT().GetFilterChoices("job-title", "", client.FilterChoicesPageSize, 200).Return(choicesPage(200, 30, 230), nil),
 	)
 
@@ -579,8 +575,7 @@ func TestChoicesListEnvelopeReportsTheRequestedWindow(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	gomock.InOrder(
-		c.EXPECT().GetFilterChoices("job-title", "", client.FilterChoicesPageSize, 0).Return(choicesPage(0, 100, 230), nil),
-		c.EXPECT().GetFilterChoices("job-title", "", client.FilterChoicesPageSize, 100).Return(choicesPage(100, 100, 230), nil),
+		c.EXPECT().GetFilterChoices("job-title", "", client.FilterChoicesPageSize, 0).Return(choicesPage(0, 200, 230), nil),
 		c.EXPECT().GetFilterChoices("job-title", "", client.FilterChoicesPageSize, 200).Return(choicesPage(200, 30, 230), nil),
 	)
 

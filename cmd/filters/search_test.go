@@ -306,25 +306,25 @@ func TestSearchFiltersLimitAbovePageSizeFetchesMultiplePages(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	gomock.InOrder(
-		c.EXPECT().SearchFilters("dev", "", 100, 0).Return(pageOf(0, 100, 300), nil),
-		c.EXPECT().SearchFilters("dev", "", 50, 100).Return(pageOf(100, 50, 300), nil),
+		c.EXPECT().SearchFilters("dev", "", 200, 0).Return(pageOf(0, 200, 300), nil),
+		c.EXPECT().SearchFilters("dev", "", 50, 200).Return(pageOf(200, 50, 300), nil),
 	)
 
 	var b bytes.Buffer
 	w := bufio.NewWriter(&b)
 
 	cmd := filters.NewSearchCommand(c, atTerminal(t, w))
-	cmd.SetArgs([]string{"dev", "--limit", "150"})
+	cmd.SetArgs([]string{"dev", "--limit", "250"})
 	err := cmd.Execute()
 	w.Flush()
 
 	require.NoError(t, err)
 	output := stripansi.Strip(b.String())
 	assert.Contains(t, output, "300 matching filters. Use --limit or --all to see more\n")
-	assert.True(t, strings.HasSuffix(output, "\nShowing 150 records of 300\n"))
+	assert.True(t, strings.HasSuffix(output, "\nShowing 250 records of 300\n"))
 	assert.Contains(t, output, "1. Filter 0\n")
-	assert.Contains(t, output, "150. Filter 149\n")
-	assert.NotContains(t, output, "filter-150")
+	assert.Contains(t, output, "250. Filter 249\n")
+	assert.NotContains(t, output, "filter-250")
 }
 
 func TestSearchFiltersAllFetchesUntilExhausted(t *testing.T) {
@@ -333,9 +333,8 @@ func TestSearchFiltersAllFetchesUntilExhausted(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	gomock.InOrder(
-		c.EXPECT().SearchFilters("dev", "ws-1", 100, 0).Return(pageOf(0, 100, 230), nil),
-		c.EXPECT().SearchFilters("dev", "ws-1", 100, 100).Return(pageOf(100, 100, 230), nil),
-		c.EXPECT().SearchFilters("dev", "ws-1", 100, 200).Return(pageOf(200, 30, 230), nil),
+		c.EXPECT().SearchFilters("dev", "ws-1", 200, 0).Return(pageOf(0, 200, 230), nil),
+		c.EXPECT().SearchFilters("dev", "ws-1", 200, 200).Return(pageOf(200, 30, 230), nil),
 	)
 
 	var b bytes.Buffer
@@ -360,8 +359,8 @@ func TestSearchFiltersErrorOnLaterPage(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	gomock.InOrder(
-		c.EXPECT().SearchFilters("dev", "", 100, 0).Return(pageOf(0, 100, 300), nil),
-		c.EXPECT().SearchFilters("dev", "", 100, 100).Return(nil, assert.AnError),
+		c.EXPECT().SearchFilters("dev", "", 200, 0).Return(pageOf(0, 200, 300), nil),
+		c.EXPECT().SearchFilters("dev", "", 200, 200).Return(nil, assert.AnError),
 	)
 
 	var b bytes.Buffer
@@ -376,8 +375,8 @@ func TestSearchFiltersErrorOnLaterPage(t *testing.T) {
 	// when the second fails; the error must still be reported.
 	require.Error(t, err)
 	output := stripansi.Strip(b.String())
-	assert.Contains(t, output, "100. Filter 99\n")
-	assert.NotContains(t, output, "Filter 100")
+	assert.Contains(t, output, "200. Filter 199\n")
+	assert.NotContains(t, output, "Filter 200")
 }
 
 func TestSearchFiltersTable(t *testing.T) {
@@ -436,23 +435,23 @@ func TestSearchFiltersHeaderUsesFirstPageTotal(t *testing.T) {
 	// The header must be written from the first page, before later pages
 	// arrive, and reflect how many will be shown out of the total.
 	gomock.InOrder(
-		c.EXPECT().SearchFilters("dev", "", 100, 0).Return(pageOf(0, 100, 1000), nil),
-		c.EXPECT().SearchFilters("dev", "", 20, 100).Return(pageOf(100, 20, 1000), nil),
+		c.EXPECT().SearchFilters("dev", "", 200, 0).Return(pageOf(0, 200, 1000), nil),
+		c.EXPECT().SearchFilters("dev", "", 20, 200).Return(pageOf(200, 20, 1000), nil),
 	)
 
 	var b bytes.Buffer
 	w := bufio.NewWriter(&b)
 
 	cmd := filters.NewSearchCommand(c, atTerminal(t, w))
-	cmd.SetArgs([]string{"dev", "--limit", "120"})
+	cmd.SetArgs([]string{"dev", "--limit", "220"})
 	err := cmd.Execute()
 	w.Flush()
 
 	require.NoError(t, err)
 	output := stripansi.Strip(b.String())
 	assert.True(t, strings.HasPrefix(output, "Filters matching \"dev\"\n1000 matching filters. Use --limit or --all to see more\n\n1. Filter 0\n"))
-	assert.Contains(t, output, "120. Filter 119\n")
-	assert.True(t, strings.HasSuffix(output, "\nShowing 120 records of 1000\n"))
+	assert.Contains(t, output, "220. Filter 219\n")
+	assert.True(t, strings.HasSuffix(output, "\nShowing 220 records of 1000\n"))
 }
 
 func TestSearchFiltersFooterCountsWhatWasRendered(t *testing.T) {
@@ -486,8 +485,7 @@ func TestSearchFiltersLimitZeroFetchesAll(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	gomock.InOrder(
-		c.EXPECT().SearchFilters("dev", "", 100, 0).Return(pageOf(0, 100, 130), nil),
-		c.EXPECT().SearchFilters("dev", "", 100, 100).Return(pageOf(100, 30, 130), nil),
+		c.EXPECT().SearchFilters("dev", "", 200, 0).Return(pageOf(0, 130, 130), nil),
 	)
 
 	var b bytes.Buffer
@@ -511,10 +509,7 @@ func TestSearchFiltersOffsetSkipsEarlierMatches(t *testing.T) {
 	defer ctrl.Finish()
 	c := mock_client.NewMockAPI(ctrl)
 
-	gomock.InOrder(
-		c.EXPECT().SearchFilters("dev", "", 100, 50).Return(pageOf(50, 100, 300), nil),
-		c.EXPECT().SearchFilters("dev", "", 20, 150).Return(pageOf(150, 20, 300), nil),
-	)
+	c.EXPECT().SearchFilters("dev", "", 120, 50).Return(pageOf(50, 120, 300), nil)
 
 	var b bytes.Buffer
 	w := bufio.NewWriter(&b)
@@ -623,8 +618,7 @@ func TestSearchFiltersEnvelopeReportsTheRequestedWindow(t *testing.T) {
 		c := mock_client.NewMockAPI(ctrl)
 
 		gomock.InOrder(
-			c.EXPECT().SearchFilters("dev", "", client.FilterSearchPageSize, 0).Return(pageOf(0, 100, 130), nil),
-			c.EXPECT().SearchFilters("dev", "", client.FilterSearchPageSize, 100).Return(pageOf(100, 30, 130), nil),
+			c.EXPECT().SearchFilters("dev", "", client.FilterSearchPageSize, 0).Return(pageOf(0, 130, 130), nil),
 		)
 
 		var b bytes.Buffer

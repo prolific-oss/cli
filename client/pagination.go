@@ -2,14 +2,13 @@ package client
 
 import "fmt"
 
-// FilterSearchPageSize is the maximum page size accepted by the filter search
+// FilterSearchPageSize is the page size requested from the filter search
 // endpoint. Larger requests are satisfied by fetching several pages.
-const FilterSearchPageSize = 100
+const FilterSearchPageSize = DefaultRecordLimit
 
-// FilterChoicesPageSize is the maximum page size accepted by the filter
-// choices endpoints. The CLI-wide default of 200 records therefore spans two
-// requests.
-const FilterChoicesPageSize = 100
+// FilterChoicesPageSize is the page size requested from the filter choices
+// endpoints.
+const FilterChoicesPageSize = DefaultRecordLimit
 
 // maxPages bounds how many pages a single fetch-all may request, so an API
 // that keeps returning full pages without a count cannot loop forever.
