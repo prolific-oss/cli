@@ -594,7 +594,7 @@ func TestSearchFiltersNamesTheChoicesCommand(t *testing.T) {
 	require.NoError(t, w.Flush())
 
 	require.NoError(t, err)
-	assert.Contains(t, stripansi.Strip(b.String()), `See them all: prolific filters choices search job-title "software developers"`)
+	assert.Contains(t, stripansi.Strip(b.String()), `See them all: prolific filters choices search job-title 'software developers'`)
 }
 
 // The envelope's window is the one thing no other test pins: --all is the

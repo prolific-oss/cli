@@ -121,7 +121,29 @@ func TestRenderSearchResultNamesTheCommandForTheRemainingChoices(t *testing.T) {
 			name:    "multi-word query is quoted for the shell",
 			query:   "senior nurse",
 			choices: &model.FilterSearchChoices{Total: 4000, Matched: 12, Truncated: true, Results: previewed},
-			want:    `See them all: prolific filters choices search job-title "senior nurse"`,
+			want:    `See them all: prolific filters choices search job-title 'senior nurse'`,
+		},
+		{
+			// An apostrophe has no whitespace to trigger quoting, and would
+			// have left the suggested command with an unbalanced quote.
+			name:    "apostrophe is escaped, not left bare",
+			query:   "nurse's",
+			choices: &model.FilterSearchChoices{Total: 4000, Matched: 12, Truncated: true, Results: previewed},
+			want:    `See them all: prolific filters choices search job-title 'nurse'\''s'`,
+		},
+		{
+			// Pasted into a shell, these would have run rather than searched.
+			name:    "shell metacharacters stay literal",
+			query:   "a;b$(whoami)",
+			choices: &model.FilterSearchChoices{Total: 4000, Matched: 12, Truncated: true, Results: previewed},
+			want:    `See them all: prolific filters choices search job-title 'a;b$(whoami)'`,
+		},
+		{
+			// Double quotes would have let the shell expand this.
+			name:    "a variable is not expanded",
+			query:   "$HOME report",
+			choices: &model.FilterSearchChoices{Total: 4000, Matched: 12, Truncated: true, Results: previewed},
+			want:    `See them all: prolific filters choices search job-title '$HOME report'`,
 		},
 		{
 			name:    "every match previewed, but the filter has more choices",

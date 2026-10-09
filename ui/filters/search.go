@@ -3,7 +3,6 @@ package filters
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/prolific-oss/cli/model"
@@ -233,21 +232,39 @@ func renderMatchedChoices(filterID, query string, mc model.FilterSearchChoices) 
 func choicesCommand(filterID, query string, mc model.FilterSearchChoices) string {
 	switch {
 	case mc.Matched > len(mc.Results):
-		return fmt.Sprintf("See them all: prolific filters choices search %s %s", filterID, quoteQuery(query))
+		return fmt.Sprintf("See them all: prolific filters choices search %s %s", shellQuote(filterID), shellQuote(query))
 	case mc.Total > len(mc.Results):
-		return fmt.Sprintf("See all %d choices: prolific filters choices %s", mc.Total, filterID)
+		return fmt.Sprintf("See all %d choices: prolific filters choices %s", mc.Total, shellQuote(filterID))
 	default:
 		return ""
 	}
 }
 
-// quoteQuery quotes a multi-word query so the suggested command can be pasted
-// into a shell as it stands.
-func quoteQuery(query string) string {
-	if strings.ContainsAny(query, " \t") {
-		return strconv.Quote(query)
+// shellQuote renders s as a single literal argument, so a suggested command
+// can be pasted into a shell and search for what the caller actually typed.
+// Anything outside the unreserved set is single quoted, which a shell takes
+// literally; an embedded single quote is closed, escaped and reopened.
+// strconv.Quote is not usable here: its double quotes still leave $, backticks
+// and backslashes live to the shell.
+func shellQuote(s string) string {
+	if s == "" {
+		return "''"
 	}
-	return query
+	if strings.IndexFunc(s, needsQuoting) < 0 {
+		return s
+	}
+	return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'"
+}
+
+func needsQuoting(r rune) bool {
+	switch {
+	case r >= 'a' && r <= 'z', r >= 'A' && r <= 'Z', r >= '0' && r <= '9':
+		return false
+	case strings.ContainsRune("-_./:=", r):
+		return false
+	default:
+		return true
+	}
 }
 
 func renderRange(minValue, maxValue any) string {
