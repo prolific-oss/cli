@@ -128,9 +128,8 @@ $ prolific filters search developer --json`,
 func renderSearch(cmd *cobra.Command, c client.API, opts SearchOptions, w io.Writer) error {
 	want := opts.Pagination.Want()
 
-	// Offsets given to the fetcher are relative to the caller's own.
 	fetch := func(limit, offset int) (client.Page[model.FilterSearchResult], error) {
-		response, err := c.SearchFilters(opts.Query, opts.WorkspaceID, limit, opts.Pagination.Offset+offset)
+		response, err := c.SearchFilters(opts.Query, opts.WorkspaceID, limit, offset)
 		if err != nil {
 			return client.Page[model.FilterSearchResult]{}, err
 		}
@@ -146,21 +145,21 @@ func renderSearch(cmd *cobra.Command, c client.API, opts SearchOptions, w io.Wri
 
 	switch format {
 	case ui.FormatJSON:
-		records, total, err := client.FetchPages(want, client.FilterSearchPageSize, fetch)
+		records, total, err := client.FetchPages(want, client.FilterSearchPageSize, opts.Pagination.Offset, fetch)
 		if err != nil {
 			return err
 		}
 		envelope := ui.NewEnvelope(records, total, want, opts.Pagination.Offset)
 		return ui.JSONEnvelopeRenderer[model.FilterSearchResult]{}.Render(envelope, w)
 	case ui.FormatCSV:
-		records, _, err := client.FetchPages(want, client.FilterSearchPageSize, fetch)
+		records, _, err := client.FetchPages(want, client.FilterSearchPageSize, opts.Pagination.Offset, fetch)
 		if err != nil {
 			return err
 		}
 		renderer := ui.CsvRenderer[uifilters.SearchListItem]{}
 		return renderer.Render(uifilters.NewSearchListItems(records), fields, w)
 	case ui.FormatTable:
-		records, total, err := client.FetchPages(want, client.FilterSearchPageSize, fetch)
+		records, total, err := client.FetchPages(want, client.FilterSearchPageSize, opts.Pagination.Offset, fetch)
 		if err != nil {
 			return err
 		}
@@ -177,7 +176,7 @@ func renderSearch(cmd *cobra.Command, c client.API, opts SearchOptions, w io.Wri
 	defer clearStatus()
 
 	render := func(out io.Writer) error {
-		return streamSearchResults(out, opts.Query, want, opts.Pagination.Offset+1, fetch, clearStatus)
+		return streamSearchResults(out, opts.Query, want, opts.Pagination.Offset, fetch, clearStatus)
 	}
 	if shared.NoPager(cmd) {
 		return render(w)
@@ -186,14 +185,14 @@ func renderSearch(cmd *cobra.Command, c client.API, opts SearchOptions, w io.Wri
 }
 
 // streamSearchResults writes results page by page as they arrive, so the
-// first screen appears before every page is fetched. Numbering starts at
-// firstRank so an offset search reports each filter's rank in the whole set.
+// first screen appears before every page is fetched. Ranks are numbered from
+// offset, so an offset search reports each filter's rank in the whole set.
 // beforeOutput runs once the first page arrives, before anything is written.
-func streamSearchResults(out io.Writer, query string, want, firstRank int, fetch client.PageFetcher[model.FilterSearchResult], beforeOutput func()) error {
+func streamSearchResults(out io.Writer, query string, want, offset int, fetch client.PageFetcher[model.FilterSearchResult], beforeOutput func()) error {
 	shown := 0
 	total := 0
 
-	err := client.EachPage(want, client.FilterSearchPageSize, fetch, func(page client.Page[model.FilterSearchResult]) error {
+	err := client.EachPage(want, client.FilterSearchPageSize, offset, fetch, func(page client.Page[model.FilterSearchResult]) error {
 		if shown == 0 {
 			beforeOutput()
 			if page.Total == 0 && len(page.Results) == 0 {
@@ -214,7 +213,7 @@ func streamSearchResults(out io.Writer, query string, want, firstRank int, fetch
 				}
 			}
 			shown++
-			if _, err := fmt.Fprint(out, uifilters.RenderSearchResult(firstRank+shown-1, query, record)); err != nil {
+			if _, err := fmt.Fprint(out, uifilters.RenderSearchResult(offset+shown, query, record)); err != nil {
 				return err
 			}
 		}

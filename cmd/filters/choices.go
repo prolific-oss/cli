@@ -204,13 +204,8 @@ func choicesPage(results []model.FilterChoiceSearchResult, meta *client.JSONAPIM
 func renderChoices(cmd *cobra.Command, opts ChoicesOptions, fetchPage client.PageFetcher[model.FilterChoiceSearchResult], w io.Writer) error {
 	want := opts.Pagination.Want()
 
-	// Offsets given to the fetcher are relative to the caller's own.
-	fetch := func(limit, offset int) (client.Page[model.FilterChoiceSearchResult], error) {
-		return fetchPage(limit, opts.Pagination.Offset+offset)
-	}
-
 	records := func() ([]model.FilterChoiceSearchResult, int, error) {
-		return client.FetchPages(want, client.FilterChoicesPageSize, fetch)
+		return client.FetchPages(want, client.FilterChoicesPageSize, opts.Pagination.Offset, fetchPage)
 	}
 
 	format := shared.ResolveFormatForWriter(opts.Output, w)
@@ -246,7 +241,7 @@ func renderChoices(cmd *cobra.Command, opts ChoicesOptions, fetchPage client.Pag
 	}
 
 	render := func(out io.Writer) error {
-		return streamChoices(out, opts, want, fetch)
+		return streamChoices(out, opts, want, fetchPage)
 	}
 	if shared.NoPager(cmd) {
 		return render(w)
@@ -260,7 +255,7 @@ func streamChoices(out io.Writer, opts ChoicesOptions, want int, fetch client.Pa
 	shown := 0
 	total := 0
 
-	err := client.EachPage(want, client.FilterChoicesPageSize, fetch, func(page client.Page[model.FilterChoiceSearchResult]) error {
+	err := client.EachPage(want, client.FilterChoicesPageSize, opts.Pagination.Offset, fetch, func(page client.Page[model.FilterChoiceSearchResult]) error {
 		if shown == 0 {
 			if page.Total == 0 && len(page.Results) == 0 {
 				_, err := fmt.Fprint(out, uifilters.RenderNoChoices(opts.FilterID, opts.Query))
