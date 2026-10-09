@@ -77,3 +77,37 @@ func TestFiltersNonInteractiveRendersDetailBlocks(t *testing.T) {
 	require.NotNil(t, flag)
 	assert.True(t, flag.Hidden)
 }
+
+// The legacy paths are kept so old invocations still work, so their
+// deprecation notices must not land in the output those invocations parse.
+func TestFiltersDeprecationNoticesGoToStderrOnly(t *testing.T) {
+	tests := []struct {
+		name string
+		args []string
+		want string
+	}{
+		{name: "no subcommand", args: []string{}, want: `Running "prolific filters" without a subcommand is deprecated`},
+		{name: "non-interactive", args: []string{"-n"}, want: "Flag -n/--non-interactive is deprecated"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			c := mock_client.NewMockAPI(ctrl)
+			c.EXPECT().GetFilters("").Return(&client.ListFiltersResponse{
+				Results: []model.Filter{{FilterID: "age", Type: "range"}},
+			}, nil)
+
+			var out, errOut bytes.Buffer
+			cmd := filters.NewFiltersCommand(c, &out)
+			cmd.SetArgs(tt.args)
+			cmd.SetOut(&bytes.Buffer{})
+			cmd.SetErr(&errOut)
+			require.NoError(t, cmd.Execute())
+
+			assert.Contains(t, errOut.String(), tt.want)
+			assert.NotContains(t, out.String(), "deprecated")
+		})
+	}
+}

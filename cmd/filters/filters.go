@@ -48,6 +48,7 @@ $ prolific filters choices search current-job-role nurse`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if detail {
+				deprecated(cmd, `Flag -n/--non-interactive is deprecated, use "prolific filters list --json" instead.`)
 				if err := renderFilterDetails(client, w); err != nil {
 					return fmt.Errorf("error: %s", err)
 				}
@@ -55,6 +56,7 @@ $ prolific filters choices search current-job-role nurse`,
 				return nil
 			}
 
+			deprecated(cmd, `Running "prolific filters" without a subcommand is deprecated, use "prolific filters list" instead.`)
 			if err := renderList(client, ListOptions{}, w); err != nil {
 				return fmt.Errorf("error: %s", err)
 			}
@@ -77,6 +79,18 @@ $ prolific filters choices search current-job-role nurse`,
 	_ = cmd.Flags().MarkHidden("non-interactive")
 
 	return cmd
+}
+
+// deprecated writes a notice to stderr, never to w, so the output these
+// legacy paths are kept for stays byte for byte what it always was. cobra's
+// own Deprecated field is not used here: it would mark the whole parent
+// deprecated and hide the subcommands that replace it.
+//
+// A terminal running the interactive list will not show this, because the UI
+// takes the screen straight after. It is for the piped and -n callers, who
+// are the ones with something to migrate.
+func deprecated(cmd *cobra.Command, message string) {
+	fmt.Fprintln(cmd.ErrOrStderr(), message)
 }
 
 // renderFilterDetails writes a detail block per filter, which is the output
