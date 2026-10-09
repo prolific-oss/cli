@@ -81,14 +81,9 @@ $ prolific filters choices search current-job-role nurse`,
 	return cmd
 }
 
-// deprecated writes a notice to stderr, never to w, so the output these
-// legacy paths are kept for stays byte for byte what it always was. cobra's
-// own Deprecated field is not used here: it would mark the whole parent
-// deprecated and hide the subcommands that replace it.
-//
-// A terminal running the interactive list will not show this, because the UI
-// takes the screen straight after. It is for the piped and -n callers, who
-// are the ones with something to migrate.
+// deprecated writes a notice to stderr, never to w, so the output these legacy
+// paths exist for is unchanged. cobra's Deprecated field would mark the whole
+// parent and hide the subcommands that replace it.
 func deprecated(cmd *cobra.Command, message string) {
 	fmt.Fprintln(cmd.ErrOrStderr(), message)
 }

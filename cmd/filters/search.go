@@ -19,8 +19,7 @@ import (
 const maxSearchQueryLength = 200
 
 // validateSearchQuery rejects a query a search endpoint cannot act on. cobra's
-// argument count cannot catch a blank or whitespace query, and without this
-// `filters choices search` would quietly list the whole filter.
+// argument count cannot catch a blank or whitespace one.
 func validateSearchQuery(query string) error {
 	if query == "" {
 		return errors.New("please provide a search query")
@@ -40,8 +39,7 @@ type SearchOptions struct {
 	Pagination  shared.PaginationOptions
 }
 
-// validate rejects the options the search endpoint cannot act on, so
-// renderSearch is only ever handed a query and a window worth sending.
+// validate rejects the options the search endpoint cannot act on.
 func (o SearchOptions) validate() error {
 	if err := validateSearchQuery(o.Query); err != nil {
 		return err
@@ -130,8 +128,7 @@ $ prolific filters search developer --json`,
 func renderSearch(cmd *cobra.Command, c client.API, opts SearchOptions, w io.Writer) error {
 	want := opts.Pagination.Want()
 
-	// Paging starts from the caller's offset, so the offsets the fetcher is
-	// given are relative to it.
+	// Offsets given to the fetcher are relative to the caller's own.
 	fetch := func(limit, offset int) (client.Page[model.FilterSearchResult], error) {
 		response, err := c.SearchFilters(opts.Query, opts.WorkspaceID, limit, opts.Pagination.Offset+offset)
 		if err != nil {
@@ -175,9 +172,7 @@ func renderSearch(cmd *cobra.Command, c client.API, opts SearchOptions, w io.Wri
 		return err
 	}
 
-	// Show progress on stderr while the first page loads. It is cleared as
-	// soon as output begins, or before an error is returned, and is a no-op
-	// when stderr is not a terminal.
+	// Cleared as soon as output begins; a no-op when stderr is not a terminal.
 	clearStatus := ui.Status(fmt.Sprintf("Searching filters for %q…", opts.Query))
 	defer clearStatus()
 
@@ -190,12 +185,10 @@ func renderSearch(cmd *cobra.Command, c client.API, opts SearchOptions, w io.Wri
 	return ui.Page(cmd.Context(), w, render)
 }
 
-// streamSearchResults writes formatted results to out page by page as they
-// arrive from the API, so the first screen appears before every page has been
-// fetched. Results are numbered from firstRank, so an offset search reports
-// each filter's rank in the whole result set rather than in this slice of it.
-// beforeOutput is called once the first page has arrived, before anything is
-// written, so any progress indicator can be cleared.
+// streamSearchResults writes results page by page as they arrive, so the
+// first screen appears before every page is fetched. Numbering starts at
+// firstRank so an offset search reports each filter's rank in the whole set.
+// beforeOutput runs once the first page arrives, before anything is written.
 func streamSearchResults(out io.Writer, query string, want, firstRank int, fetch client.PageFetcher[model.FilterSearchResult], beforeOutput func()) error {
 	shown := 0
 	total := 0
@@ -231,8 +224,7 @@ func streamSearchResults(out io.Writer, query string, want, firstRank int, fetch
 		return err
 	}
 
-	// The footer counts what was actually rendered, which can be fewer than
-	// the header's estimate if the API returned less than its own count.
+	// Fewer than the header's estimate if the API returned less than it counted.
 	_, err = fmt.Fprint(out, uifilters.RenderResultsFooter(shown, max(total, shown)))
 	return err
 }

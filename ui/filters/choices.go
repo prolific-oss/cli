@@ -8,17 +8,15 @@ import (
 	"github.com/prolific-oss/cli/ui"
 )
 
-// ChoiceFields is the default column set for each format. Listing a filter's
-// choices and searching them return the same records, so they render the same
-// columns.
+// ChoiceFields is the default column set for each format. Listing and
+// searching return the same records, so they render the same columns.
 var ChoiceFields = ui.FieldSet{
 	CSV:   "ID,Label,ParentID,NumChildren,NumDescendants",
 	Table: "ID,Label",
 }
 
-// ChoiceListItem is a flattened choice for table and CSV output. The IDs are
-// left raw, including the parent's: a caller selecting choices needs the IDs
-// a filter selection is built from, not resolved labels.
+// ChoiceListItem is a flattened choice for table and CSV output. IDs are left
+// raw, including the parent's: a filter selection is built from IDs.
 type ChoiceListItem struct {
 	ID             string
 	Label          string
@@ -81,9 +79,7 @@ func RenderChoicesTableHeader() string {
 }
 
 // RenderChoiceRow renders one choice: its raw ID, its label with any query
-// matches highlighted, and where it sits in the hierarchy. It carries the same
-// facts as the parent and child-count columns of the table output, so the
-// reading view does not know less than the columns do.
+// matches highlighted, and where it sits in the hierarchy.
 func RenderChoiceRow(c model.FilterChoiceSearchResult) string {
 	var b strings.Builder
 

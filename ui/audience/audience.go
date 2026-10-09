@@ -9,16 +9,15 @@ import (
 	"github.com/prolific-oss/cli/ui"
 )
 
-// CountFields is the default column set for a count, which is a single value
-// and so a single row whichever format asked for it.
+// CountFields is the default column set for a count, which is a single row
+// whichever format asked for it.
 var CountFields = ui.FieldSet{CSV: "Count", Table: "Count"}
 
-// BreakdownFields is the default column set for a breakdown. A breakdown is
-// two columns, so a table has no reason to show fewer than the CSV.
+// BreakdownFields is the default column set for a breakdown, two columns in
+// every format.
 var BreakdownFields = ui.FieldSet{CSV: "Value,Count", Table: "Value,Count"}
 
-// CountItem is a count as a row, so the shared table and CSV renderers can
-// emit it like any other record.
+// CountItem is a count as a row, for the shared table and CSV renderers.
 type CountItem struct {
 	Count int
 }
@@ -30,9 +29,8 @@ type BreakdownItem struct {
 	Count int
 }
 
-// NewBreakdownItems turns the API's value-keyed object into rows. The API
-// returns an object, whose key order is meaningless, so the ordering is
-// imposed here: buckets in order, with the N/A bucket last.
+// NewBreakdownItems turns the API's value-keyed object into rows. Object key
+// order is meaningless, so the order is imposed here, with N/A last.
 func NewBreakdownItems(breakdown map[string]int) []BreakdownItem {
 	keys := make([]string, 0, len(breakdown))
 	for key := range breakdown {
@@ -53,11 +51,9 @@ func NewBreakdownItems(breakdown map[string]int) []BreakdownItem {
 	return items
 }
 
-// lessBucket orders two bucket keys. Choice IDs are numeric strings, so
-// sorting them as text would put 10 between 1 and 2 and scramble the axis of
-// any chart or spreadsheet built from the output. Numbers therefore sort
-// numerically, and anything else — a range filter's bucket label, say —
-// falls back to text, after the numbers.
+// lessBucket orders two bucket keys. Choice IDs are numeric strings, which as
+// text would put 10 between 1 and 2, so numbers sort numerically and anything
+// else falls back to text, after them.
 func lessBucket(a, b string) bool {
 	numA, errA := strconv.Atoi(a)
 	numB, errB := strconv.Atoi(b)

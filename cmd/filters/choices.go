@@ -25,8 +25,7 @@ type ChoicesOptions struct {
 	Pagination  shared.PaginationOptions
 }
 
-// validate rejects the options neither choices endpoint can act on, so
-// renderChoices is only ever handed a filter and a window worth sending.
+// validate rejects the options neither choices endpoint can act on.
 func (o ChoicesOptions) validate() error {
 	if strings.TrimSpace(o.FilterID) == "" {
 		return errors.New("please provide a filter ID")
@@ -34,9 +33,8 @@ func (o ChoicesOptions) validate() error {
 	return o.Pagination.Validate()
 }
 
-// validateSearch adds the query rule to the shared checks. It is separate
-// because a blank query means "list everything" to the listing command and
-// "nothing to search for" here.
+// validateSearch adds the query rule, which only this command wants: a blank
+// query means "list everything" to the listing command.
 func (o ChoicesOptions) validateSearch() error {
 	if err := validateSearchQuery(o.Query); err != nil {
 		return err
@@ -201,13 +199,12 @@ func choicesPage(results []model.FilterChoiceSearchResult, meta *client.JSONAPIM
 	return page
 }
 
-// renderChoices renders whatever fetchPage returns, so the two commands share
-// a presentation without sharing a decision about which endpoint to call.
+// renderChoices renders whatever fetchPage returns, so both commands share a
+// presentation without sharing the choice of endpoint.
 func renderChoices(cmd *cobra.Command, opts ChoicesOptions, fetchPage client.PageFetcher[model.FilterChoiceSearchResult], w io.Writer) error {
 	want := opts.Pagination.Want()
 
-	// Paging starts from the caller's offset, so the offsets the fetcher is
-	// given are relative to it.
+	// Offsets given to the fetcher are relative to the caller's own.
 	fetch := func(limit, offset int) (client.Page[model.FilterChoiceSearchResult], error) {
 		return fetchPage(limit, opts.Pagination.Offset+offset)
 	}
@@ -225,8 +222,7 @@ func renderChoices(cmd *cobra.Command, opts ChoicesOptions, fetchPage client.Pag
 		if err != nil {
 			return err
 		}
-		// want, not the --limit default, is the window actually asked for:
-		// --all resolves to 0, meaning unbounded.
+		// want, not the --limit default: --all resolves to 0, meaning unbounded.
 		envelope := ui.NewEnvelope(found, total, want, opts.Pagination.Offset)
 		return ui.JSONEnvelopeRenderer[model.FilterChoiceSearchResult]{}.Render(envelope, w)
 	case ui.FormatCSV:
@@ -258,8 +254,8 @@ func renderChoices(cmd *cobra.Command, opts ChoicesOptions, fetchPage client.Pag
 	return ui.Page(cmd.Context(), w, render)
 }
 
-// streamChoices writes choices to out page by page as they arrive, so the
-// first screen appears before every page has been fetched.
+// streamChoices writes choices page by page as they arrive, so the first
+// screen appears before every page is fetched.
 func streamChoices(out io.Writer, opts ChoicesOptions, want int, fetch client.PageFetcher[model.FilterChoiceSearchResult]) error {
 	shown := 0
 	total := 0

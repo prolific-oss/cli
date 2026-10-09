@@ -7,8 +7,8 @@ import (
 )
 
 // PaginationOptions holds the pagination flags for list commands. Pages are
-// fetched from the API as needed, so Limit is how many records the caller
-// wants rather than the size of a single request.
+// fetched as needed, so Limit is how many records the caller wants, not the
+// size of one request.
 type PaginationOptions struct {
 	Limit  int
 	Offset int
@@ -35,11 +35,9 @@ func (o PaginationOptions) Validate() error {
 	return nil
 }
 
-// AddPaginationFlags registers --limit / -l, --offset / -o and --all / -a on
-// the given command, with one help wording across the CLI. defaultLimit is
-// the number of records returned when --limit is not given; it is usually
-// client.DefaultRecordLimit, but an endpoint whose own default the CLI still
-// mirrors can pass its own.
+// AddPaginationFlags registers --limit / -l, --offset / -o and --all / -a.
+// defaultLimit applies when --limit is not given, usually
+// client.DefaultRecordLimit.
 func AddPaginationFlags(cmd *cobra.Command, opts *PaginationOptions, defaultLimit int) {
 	flags := cmd.Flags()
 	flags.IntVarP(&opts.Limit, "limit", "l", defaultLimit, "Maximum number of records to return. Use 0 to fetch every record.")

@@ -28,9 +28,8 @@ func AddOutputFlags(cmd *cobra.Command, opts *OutputOptions) {
 	_ = cmd.Flags().MarkHidden("non-interactive")
 }
 
-// AddFieldsFlag registers --fields / -f on the given command, with one help
-// wording across the CLI. It carries no default, because the default depends
-// on the format; ui.FieldSet.Resolve supplies it.
+// AddFieldsFlag registers --fields / -f. It carries no default: the default
+// depends on the format, so ui.FieldSet.Resolve supplies it.
 func AddFieldsFlag(cmd *cobra.Command, fields *string) {
 	cmd.Flags().StringVarP(fields, "fields", "f", "", FieldsFlagUsage)
 }
@@ -50,10 +49,9 @@ func ResolveFormat(opts OutputOptions) string {
 	}
 }
 
-// ResolveFormatForWriter resolves the output format for w. An explicit flag
-// always wins. Without one it returns ui.FormatInteractive when w is a
-// terminal, and ui.FormatTable otherwise, so piping a command never lands the
-// caller in an interactive UI that cannot work in a pipe.
+// ResolveFormatForWriter resolves the format for w. An explicit flag wins;
+// without one, a terminal gets ui.FormatInteractive and a pipe gets
+// ui.FormatTable, so piping never lands the caller in an interactive UI.
 func ResolveFormatForWriter(opts OutputOptions, w io.Writer) string {
 	return resolveFormat(opts, ui.IsTerminal(w))
 }

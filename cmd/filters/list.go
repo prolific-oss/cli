@@ -94,9 +94,7 @@ func renderList(c client.API, opts ListOptions, w io.Writer) error {
 
 	switch format {
 	case ui.FormatJSON:
-		// The catalogue endpoint does not paginate, so no window was asked
-		// for and none could be applied: a limit of zero says these are all
-		// of them.
+		// The catalogue does not paginate: a limit of zero says these are all.
 		envelope := ui.NewEnvelope(records, len(records), 0, 0)
 		return ui.JSONEnvelopeRenderer[model.Filter]{}.Render(envelope, w)
 	case ui.FormatCSV:

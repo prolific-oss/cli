@@ -5,21 +5,12 @@ import (
 	"io"
 )
 
-// Envelope is the JSON shape `--json` output is being standardised on. It is
-// owned by the CLI rather than mirrored from the API, so a server-side change
-// to the response envelope never reaches our output. Commands that already
-// emit something else keep doing so until the next major version, so this is
-// not yet the shape of every command's output.
+// Envelope is the JSON shape --json output is standardising on, owned by the
+// CLI rather than mirrored from the API.
 //
-// Count is the total number of matching records the API reports, which can be
-// larger than the records returned.
-//
-// Limit and Offset describe the window the caller asked for, not the records
-// that came back: a limit of 200 over a count of 90 returns 90 records and
-// still reports a limit of 200. A Limit of zero means no limit was asked for
-// or could be applied — through --all, through --limit 0, or because the
-// endpoint does not paginate — and Results therefore holds everything that
-// matched.
+// Limit and Offset are the window that was asked for, not what came back: a
+// limit of 200 over a count of 90 still reports 200. A Limit of zero means no
+// limit applied, so Results holds everything that matched.
 type Envelope[T any] struct {
 	Results []T `json:"results"`
 	Count   int `json:"count"`

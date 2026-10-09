@@ -10,14 +10,9 @@ import (
 	"github.com/spf13/viper"
 )
 
-// NewEligibilityCountCommand keeps the `eligibility-count` command working
-// after it was replaced by `audience count`. It is the old surface — the same
-// two flags, the same messages, the same line on stdout — in front of the
-// audience implementation, so the old invocation keeps working without a
-// second copy of the logic behind it.
-//
-// Nested and/or filter groups, which the old implementation could not read,
-// work here because the resolving is now shared.
+// NewEligibilityCountCommand keeps `eligibility-count` working after it was
+// replaced by `audience count`: the old flags, messages and stdout, in front
+// of the audience implementation rather than a second copy of it.
 func NewEligibilityCountCommand(c client.API, w io.Writer) *cobra.Command {
 	var in filterInput
 
@@ -56,9 +51,8 @@ $ prolific eligibility-count -t /path/to/filters.json -w <workspace-id>`,
 	}
 
 	flags := cmd.Flags()
-	// -t means --template-path here, as it always did. It means --table on
-	// the audience commands, which is why this command keeps its own flags
-	// rather than sharing the registrars.
+	// -t is --template-path here and --table on audience count, so this
+	// command keeps its own flags rather than sharing the registrars.
 	flags.StringVarP(&in.TemplatePath, "template-path", "t", "", "Path to a YAML/JSON file containing the filters to count against (required).")
 	flags.StringVarP(&in.WorkspaceID, "workspace", "w", viper.GetString("workspace"), "The workspace ID to count eligible participants for (required).")
 

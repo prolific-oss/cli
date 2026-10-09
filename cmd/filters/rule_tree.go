@@ -32,9 +32,8 @@ when --workspace is omitted, or default rules if no workspace is configured.`,
 				return fmt.Errorf("error: %s", err)
 			}
 
-			// The rules sit under a top-level key so there is somewhere to
-			// put anything that has to accompany them later. A bare object
-			// would have to be reshaped to gain one.
+			// The rules sit under a top-level key so anything accompanying
+			// them later has a home.
 			encoder := json.NewEncoder(w)
 			encoder.SetIndent("", "  ")
 			if err := encoder.Encode(result); err != nil {
@@ -46,12 +45,9 @@ when --workspace is omitted, or default rules if no workspace is configured.`,
 	}
 
 	shared.AddWorkspaceFlag(cmd, &opts.WorkspaceID)
-	// --json is accepted so a caller can pass it uniformly across commands,
-	// but there is nothing for it to select: a tree has no table or CSV form,
-	// so JSON is both the only format and the default. Nothing reads the
-	// value, which is why it is not kept on the options struct.
-	var acceptJSON bool
-	cmd.Flags().BoolVarP(&acceptJSON, "json", "j", false, "Output as JSON (the only format this command emits)")
+	// Accepted so --json can be passed uniformly, but nothing reads it: a tree
+	// has no table or CSV form, so JSON is the only format and the default.
+	cmd.Flags().BoolP("json", "j", false, "Output as JSON (the only format this command emits)")
 
 	return cmd
 }

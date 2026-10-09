@@ -99,9 +99,8 @@ func getBreakdown(c client.API, in filterInput) (map[string]int, error) {
 	return response.Breakdown, nil
 }
 
-// renderBreakdown writes a breakdown in the format the caller asked for. A
-// breakdown is one row per value participants gave, so the table and CSV
-// forms carry the same rows and a spreadsheet can read the CSV as it stands.
+// renderBreakdown writes a breakdown in the format the caller asked for, one
+// row per value participants gave.
 func renderBreakdown(breakdown map[string]int, in filterInput, w io.Writer) error {
 	format := shared.ResolveFormatForWriter(in.Output, w)
 	fields := uiaudience.BreakdownFields.Resolve(in.Fields, format)
@@ -123,8 +122,7 @@ func renderBreakdown(breakdown map[string]int, in filterInput, w io.Writer) erro
 }
 
 // breakdownOutput is the CLI's own shape for a breakdown. The counts sit
-// under a top-level key so there is somewhere to put anything that has to
-// accompany them later; a bare object would have to be reshaped to gain one.
+// under a top-level key so anything accompanying them later has a home.
 type breakdownOutput struct {
 	Breakdown map[string]int `json:"breakdown"`
 }
