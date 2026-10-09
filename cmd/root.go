@@ -92,6 +92,7 @@ func NewRootCommand() *cobra.Command {
 		campaign.NewListCommand("campaign", &client, w),
 		collection.NewCollectionCommand(&client, w),
 		credentials.NewCredentialsCommand(&client, w),
+		audience.NewEligibilityCountCommand(&client, w),
 		feedback.NewFeedbackCommand(&client, w),
 		filters.NewFiltersCommand(&client, w),
 		filtersets.NewFilterSetCommand(&client, w),

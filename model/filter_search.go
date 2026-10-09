@@ -1,11 +1,5 @@
 package model
 
-// FilterSearchLink is a link returned alongside filter search results.
-type FilterSearchLink struct {
-	Href  *string `json:"href"`
-	Title string  `json:"title"`
-}
-
 // FilterSearchHighlight describes a matched span within a searchable field.
 // Start and End are zero-based Unicode code-point positions (End exclusive).
 // Filter-level matches use the filter's own text fields; choice matches
@@ -43,25 +37,18 @@ type FilterSearchChoices struct {
 	Results []FilterChoiceSearchResult `json:"results"`
 }
 
-// FilterSearchResultLinks holds the follow-up links for a filter search result.
-type FilterSearchResultLinks struct {
-	Choices         *FilterSearchLink `json:"choices,omitempty"`
-	MatchingChoices *FilterSearchLink `json:"matching_choices,omitempty"`
-}
-
 // FilterSearchResult is a filter returned by the filter search endpoint.
 type FilterSearchResult struct {
-	FilterID    string                   `json:"filter_id"`
-	Title       string                   `json:"title"`
-	Description string                   `json:"description"`
-	Question    *string                  `json:"question"`
-	Category    *string                  `json:"category"`
-	Subcategory *string                  `json:"subcategory"`
-	Type        string                   `json:"type"`
-	DataType    string                   `json:"data_type"`
-	Matches     []FilterSearchHighlight  `json:"matches"`
-	Choices     *FilterSearchChoices     `json:"choices,omitempty"`
-	Min         any                      `json:"min,omitempty"`
-	Max         any                      `json:"max,omitempty"`
-	Links       *FilterSearchResultLinks `json:"_links,omitempty"`
+	FilterID    string                  `json:"filter_id"`
+	Title       string                  `json:"title"`
+	Description string                  `json:"description"`
+	Question    *string                 `json:"question"`
+	Category    *string                 `json:"category"`
+	Subcategory *string                 `json:"subcategory"`
+	Type        string                  `json:"type"`
+	DataType    string                  `json:"data_type"`
+	Matches     []FilterSearchHighlight `json:"matches"`
+	Choices     *FilterSearchChoices    `json:"choices,omitempty"`
+	Min         any                     `json:"min,omitempty"`
+	Max         any                     `json:"max,omitempty"`
 }

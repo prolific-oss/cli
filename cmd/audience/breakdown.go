@@ -1,14 +1,14 @@
 package audience
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
-	"sort"
-	"text/tabwriter"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/cmd/shared"
+	"github.com/prolific-oss/cli/ui"
+	uiaudience "github.com/prolific-oss/cli/ui/audience"
 
 	"github.com/spf13/cobra"
 )
@@ -26,7 +26,7 @@ func NewBreakdownCommand(client client.API, w io.Writer) *cobra.Command {
 set of base filters, split by the values (or bucketed ranges, for numeric
 filters) of a single breakdown filter.
 
-Provide the filters either as a -t/--template-path file, or directly via
+Provide the filters either as a -p/--template-path file, or directly via
 --filters and --breakdown — not both.
 
 Base filters can contain nested AND/OR groups: use filter_id "and" or "or"
@@ -42,7 +42,7 @@ question, or their answer falls outside what you specified.`,
 		Example: `
 Count participants matching the base filters and breakdown_filter in a
 JSON/YAML file (see "prolific study create --help" for the filter format):
-$ prolific audience breakdown -t /path/to/filters.json -w <workspace-id>
+$ prolific audience breakdown -p /path/to/filters.json -w <workspace-id>
 
 Or provide the filters directly as flags. A choice-type breakdown filter
 needs selected_values listing which choices to split by — the API rejects
@@ -53,7 +53,7 @@ $ prolific audience breakdown \
     -w <workspace-id>
 
 Emit machine-readable output for scripting
-$ prolific audience breakdown -t /path/to/filters.json -w <workspace-id> --json`,
+$ prolific audience breakdown -p /path/to/filters.json -w <workspace-id> --json`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := in.validateBreakdown(); err != nil {
 				return err
@@ -64,12 +64,9 @@ $ prolific audience breakdown -t /path/to/filters.json -w <workspace-id> --json`
 				return fmt.Errorf("error: %s", err)
 			}
 
-			rendered, err := RenderBreakdown(breakdown, in.JSON)
-			if err != nil {
+			if err := renderBreakdown(breakdown, in, w); err != nil {
 				return fmt.Errorf("error: %s", err)
 			}
-
-			fmt.Fprint(w, rendered)
 
 			return nil
 		},
@@ -102,37 +99,46 @@ func getBreakdown(c client.API, in filterInput) (map[string]int, error) {
 	return response.Breakdown, nil
 }
 
-// RenderBreakdown produces output for a filter breakdown. The table form is
-// sorted alphabetically with client.FilterBreakdownNAKey always shown last;
-// --json instead emits the raw API response shape.
-func RenderBreakdown(breakdown map[string]int, asJSON bool) (string, error) {
-	if asJSON {
-		payload, err := json.Marshal(client.FilterBreakdownResponse{Breakdown: breakdown})
+// renderBreakdown writes a breakdown in the format the caller asked for, one
+// row per value participants gave.
+func renderBreakdown(breakdown map[string]int, in filterInput, w io.Writer) error {
+	format := shared.ResolveFormatForWriter(in.Output, w)
+	fields := uiaudience.BreakdownFields.Resolve(in.Fields, format)
+
+	switch format {
+	case ui.FormatJSON:
+		rendered, err := RenderBreakdownJSON(breakdown)
 		if err != nil {
-			return "", err
+			return err
 		}
+		// Every other --json path in the CLI terminates its output.
+		_, err = fmt.Fprintln(w, rendered)
+		return err
+	case ui.FormatCSV:
+		return ui.CsvRenderer[uiaudience.BreakdownItem]{}.Render(uiaudience.NewBreakdownItems(breakdown), fields, w)
+	default:
+		return ui.TableRenderer[uiaudience.BreakdownItem]{}.Render(uiaudience.NewBreakdownItems(breakdown), fields, w)
+	}
+}
 
-		return string(payload), nil
+// breakdownOutput is the CLI's own shape for a breakdown. The counts sit
+// under a top-level key so anything accompanying them later has a home.
+type breakdownOutput struct {
+	Breakdown map[string]int `json:"breakdown"`
+}
+
+// RenderBreakdownJSON emits the counts keyed by breakdown value. A breakdown
+// with no buckets is an empty object rather than null, so consumers can index
+// it either way.
+func RenderBreakdownJSON(breakdown map[string]int) (string, error) {
+	if breakdown == nil {
+		breakdown = map[string]int{}
 	}
 
-	keys := make([]string, 0, len(breakdown))
-	for key := range breakdown {
-		if key != client.FilterBreakdownNAKey {
-			keys = append(keys, key)
-		}
-	}
-	sort.Strings(keys)
-	if _, ok := breakdown[client.FilterBreakdownNAKey]; ok {
-		keys = append(keys, client.FilterBreakdownNAKey)
+	payload, err := json.Marshal(breakdownOutput{Breakdown: breakdown})
+	if err != nil {
+		return "", err
 	}
 
-	var buf bytes.Buffer
-	tw := tabwriter.NewWriter(&buf, 0, 0, 3, ' ', 0)
-	fmt.Fprintln(tw, "VALUE\tCOUNT")
-	for _, key := range keys {
-		fmt.Fprintf(tw, "%s\t%d\n", key, breakdown[key])
-	}
-	tw.Flush()
-
-	return buf.String(), nil
+	return string(payload), nil
 }

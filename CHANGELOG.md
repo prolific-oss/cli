@@ -8,27 +8,49 @@
 
 - Rename `participant` to `participant-group`, retaining `participant` as a compatibility alias.
 
-- Add `participant-group search <query>` and `study search <query>` using server-side name search, with workspace scoping, table/CSV output with field selection, and `--json` preserving pagination metadata. Group search supports `--limit`/`--offset`; study search supports `--page`.
+- Add `participant-group search <query>` and `study search <query>` using server-side name search, with workspace scoping, table/CSV output with field selection, and `--json` emitting the CLI-owned envelope (`results`, `count`, `limit`, `offset`). The API's `meta` block and `_links` relations, including live API URLs, no longer appear in CLI output. Group search supports `--limit`/`--offset`; study search supports `--page`.
 
 ### Audience
 
 - Preserve nested AND/OR `selected_filters` in JSON flags and JSON/YAML templates for audience counts and breakdowns.
 
-- **Breaking changes:**
-  - Removed `eligibility-count`, replaced by `audience count`. The template
-    format and `-w/--workspace` flag are unchanged, so `prolific
-    eligibility-count -t filters.json -w <id>` becomes `prolific audience count
-    -t filters.json -w <id>`. The new command also accepts `--filters` (a raw
-    JSON array, for scripting without a temp file), and `-j/--json` for
-    machine-readable output.
+- `audience count` and `audience breakdown` gain `--table`/`-t` and `--csv`/`-c`
+  alongside the existing `--json`, with `--fields`/`-f` to choose columns. A
+  breakdown is now one row per value, so its CSV opens in a spreadsheet as it
+  stands, with numeric buckets in numeric order and `N/A` last. `count` is a
+  one-row table, the same whether it is read on screen or piped.
+
+- `--template-path` uses `-p` rather than `-t` on the audience commands, so `-t`
+  means `--table` as it does CLI-wide. The long form is unchanged. Other commands
+  that take a template, such as `study create` and `filtersets create`, still use
+  `-t` for now.
+
+- `--json` output is now defined by the CLI rather than mirrored from the API
+  response, so a server-side change cannot alter it.
+
+- `eligibility-count` is deprecated in favour of `audience count`, and keeps
+  working: the same `-t/--template-path` and `-w/--workspace` flags, the same
+  messages, and the same line on stdout. It runs on the audience
+  implementation now, so nested and/or filter groups work there too. Migrate
+  with `prolific eligibility-count -t filters.json -w <id>` → `prolific
+  audience count -p filters.json -w <id>`, which also accepts `--filters` (a
+  raw JSON array, for scripting without a temp file) and `--json`, `--csv` and
+  `--table` output. Note `-t` means `--table` on `audience count`; the
+  template path is `-p` there.
 
 ### Filters
 
-- Add `filters rule-tree` to retrieve workspace-specific composite filter rules, with `--json` for compact output.
+- Add `filters rule-tree` to retrieve workspace-specific composite filter rules.
 
-- **Breaking change:** `prolific filters` is now a parent command. The previous
-  behaviour has moved to `prolific filters list`; update any scripts or skills
-  that call `prolific filters` or `prolific filters -n`.
+- `prolific filters` is now a parent command, and still lists the catalogue
+  when called without a subcommand. `prolific filters -n` still prints a
+  detailed block per filter; the flag is hidden so the help points at
+  `prolific filters list` instead. Piping `prolific filters` used to fail
+  because it could not open a TTY, and now prints a table.
+
+  New work should use `prolific filters list`, where `-n` is the hidden alias
+  for `--table` as it is everywhere else in the CLI, and `--json` is the
+  stable output for anything parsing it.
 - Add `prolific filters search <query>` to search the filter catalogue by
   keyword, with matched text highlighted and a preview of matching choices.
   `--json`, `--table` and `--csv` output are available, with `--fields` to
@@ -36,6 +58,48 @@
   (or `--limit 0`) fetches every match; pages are requested from the API
   automatically and streamed as they arrive. In a terminal, long output opens
   in your pager (`PROLIFIC_PAGER`, `PAGER`, or `less`).
+- `filters list` gains the standard output flags: `--json`, `--table`, `--csv`
+  and `--fields`/`-f` to choose columns, plus `--workspace`/`-w` to ask the API
+  for a workspace's catalogue, which is smaller and cheaper to fetch than the
+  unscoped one. The catalogue endpoint does not paginate, so there are no
+  `--limit`/`--offset` flags. Its `--json` output uses the CLI-owned envelope
+  (`results`, `count`, `limit`, `offset`) rather than the API's own.
+- `filters search` gains `--offset`/`-o` to skip matches you have already seen,
+  and `-f` as the shorthand for `--fields`.
+- When `filters search` cannot preview all of a filter's choices, the result now
+  names the command that lists the rest.
+- Every table and CSV column is one field of the JSON, so nothing is joined or
+  derived: `filters search` reports `Category` and `Subcategory` separately and
+  the choices block as `ChoicesTotal`, `ChoicesMatched` and `ChoicesTruncated`,
+  and the `Rank` and `MatchedOn` columns are gone. `filters list` renames
+  `Choices` to `ChoicesTotal`.
+- Tables and CSVs have separate default columns: a table shows what identifies a
+  record, a CSV carries every column worth having. `--fields` overrides both.
+  `Description` and `DataType` remain available on `filters search` through
+  `--fields`.
+- Filter search results no longer carry an `_links` block.
+- Add `filters choices <filter-id>` and `filters choices search <filter-id>
+  <query>` to list and search the choices belonging to a filter. Choice IDs are
+  what a filter selection is built from, and previously anything past the three
+  choices `filters search` previews was unreachable — for a filter like job
+  title, that left over four thousand choices with no route to them. Both
+  commands take `--limit`/`--offset`/`--all`, `--workspace`/`-w`,
+  `--fields`/`-f` and `--json`/`--table`/`--csv`, and default to 200 records.
+  Output is flat, with raw parent and child-count columns; the endpoints expose
+  no way to fetch one node's children, so no tree is reconstructed. Neither
+  endpoint supports ordering, so there are no sort flags.
+- Piping `filters list` or `filters search` without a format flag produces a
+  table. Run in a terminal both are unchanged — `filters list` opens the
+  interactive browser and `filters search` renders the reading view through your
+  pager.
+- `filters search` defaults to 200 results, the CLI-wide default, rather than the
+  API's page size of 25.
+- `filters search --json` emits the CLI-owned envelope (`results`, `count`,
+  `limit`, `offset`) rather than a bare array, matching every other filters
+  command.
+- `filters rule-tree` always emits indented JSON. `--json` is accepted for
+  consistency with other commands but has nothing to select, since a tree has no
+  table or CSV form; it no longer means "compact".
 
 ### AI Task Builder
 

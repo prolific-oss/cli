@@ -17,13 +17,13 @@ creating the study or saving a filter set.
 
 "count" totals how many participants match a set of filters. "breakdown"
 does the same but splits the result by the values of one additional
-filter. Both take filters either as a -t/--template-path file or directly
+filter. Both take filters either as a -p/--template-path file or directly
 via --filters (see "prolific study create --help" for the filter format).`,
 		Example: `  # Count participants matching a set of filters
-  prolific audience count -t /path/to/filters.json -w <workspace-id>
+  prolific audience count -p /path/to/filters.json -w <workspace-id>
 
   # Count, split by the values of one filter
-  prolific audience breakdown -t /path/to/filters.json -w <workspace-id>`,
+  prolific audience breakdown -p /path/to/filters.json -w <workspace-id>`,
 	}
 
 	cmd.AddCommand(
