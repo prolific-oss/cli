@@ -33,3 +33,15 @@ func TestNewRootCommandRegistersSkillFlag(t *testing.T) {
 		t.Fatalf("expected --skill default value to be empty, got %q", flag.DefValue)
 	}
 }
+
+func TestNewRootCommandRegistersNoPagerFlag(t *testing.T) {
+	root := cmd.NewRootCommand()
+
+	flag := root.PersistentFlags().Lookup("no-pager")
+	if flag == nil {
+		t.Fatal("expected --no-pager persistent flag to be registered")
+	}
+	if flag.DefValue != "false" {
+		t.Fatalf("expected --no-pager default value to be false, got %q", flag.DefValue)
+	}
+}

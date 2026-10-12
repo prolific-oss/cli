@@ -34,13 +34,13 @@ directly within the Prolific ecosystem. You can then use these groups as
 eligibility requirements for studies.`,
 		Example: `
 To create a participant group in a workspace
-$ prolific participant create -N "My Group" -w <workspace_id>
+$ prolific participant-group create -N "My Group" -w <workspace_id>
 
 To create a participant group with a description
-$ prolific participant create -N "My Group" -w <workspace_id> -d "A group for repeat participants"
+$ prolific participant-group create -N "My Group" -w <workspace_id> -d "A group for repeat participants"
 
 To create a participant group with initial participants
-$ prolific participant create -N "My Group" -w <workspace_id> -p <participant_id> -p <participant_id>
+$ prolific participant-group create -N "My Group" -w <workspace_id> -p <participant_id> -p <participant_id>
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args

@@ -31,7 +31,10 @@ Define your filter set as a JSON or YAML template file, specifying the filters
 you want to apply. You can override the name and workspace ID using flags.
 
 Filter sets allow you to save and reuse preset filter configurations across
-multiple studies.`,
+multiple studies. The filters array preserves nested AND/OR groups expressed
+with filter_id "and" or "or" and selected_filters containing child filters.
+The API validates allowed combinations for your workspace. See
+"prolific study create --help" for the filter format.`,
 		Example: `
 To create a filter set from a template
 $ prolific filter-sets create -t /path/to/filter-set.json

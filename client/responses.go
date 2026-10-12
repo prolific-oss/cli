@@ -1,6 +1,7 @@
 package client
 
 import (
+	"encoding/json"
 	"net/url"
 
 	"github.com/prolific-oss/cli/model"
@@ -81,6 +82,36 @@ type ListSubmissionsResponse struct {
 
 type ListFiltersResponse struct {
 	Results []model.Filter `json:"results"`
+	*JSONAPILinks
+	*JSONAPIMeta
+}
+
+// FilterRuleTreeResponse preserves the server-defined constraint schema.
+type FilterRuleTreeResponse struct {
+	RuleTree map[string]json.RawMessage `json:"rule_tree"`
+}
+
+// SearchFiltersResponse is the response for searching filters by keyword
+type SearchFiltersResponse struct {
+	Results []model.FilterSearchResult `json:"results"`
+	*JSONAPILinks
+	*JSONAPIMeta
+}
+
+// ListFilterChoicesResponse is the response for listing a filter's choices.
+// The results are flat: they describe a hierarchy through ParentID and the
+// child counts, but the endpoint has no way to fetch one node's children.
+type ListFilterChoicesResponse struct {
+	Results []model.FilterChoiceSearchResult `json:"results"`
+	*JSONAPILinks
+	*JSONAPIMeta
+}
+
+// SearchFilterChoicesResponse is the response for searching a filter's
+// choices. It carries the same records as a plain listing, plus the match
+// highlights the filter catalogue search already returns.
+type SearchFilterChoicesResponse struct {
+	Results []model.FilterChoiceSearchResult `json:"results"`
 	*JSONAPILinks
 	*JSONAPIMeta
 }

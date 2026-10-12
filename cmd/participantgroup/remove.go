@@ -34,10 +34,10 @@ You can specify participants in two ways:
 The two methods are mutually exclusive.`,
 		Example: `
   # Remove participants by ID
-  prolific participant remove <group_id> -p <participant_id> -p <participant_id>
+  prolific participant-group remove <group_id> -p <participant_id> -p <participant_id>
 
   # Remove participants from a file (one ID per line)
-  prolific participant remove <group_id> -f participants.csv`,
+  prolific participant-group remove <group_id> -f participants.csv`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
 

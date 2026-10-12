@@ -34,7 +34,7 @@ Participant groups are assigned to a workspace.
 		Example: `
 List the participant groups you have defined in a given workspace
 
-$ prolific participant list -w 6261321e223a605c7a4f7623
+$ prolific participant-group list -w 6261321e223a605c7a4f7623
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args

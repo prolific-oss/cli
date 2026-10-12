@@ -1,0 +1,371 @@
+package filters
+
+import (
+	"testing"
+
+	"github.com/acarl005/stripansi"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/muesli/termenv"
+	"github.com/prolific-oss/cli/model"
+	"github.com/prolific-oss/cli/ui"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+// withColour forces a colour profile for the duration of a test so that
+// highlight styling is emitted even though tests have no TTY.
+func withColour(t *testing.T) {
+	previous := lipgloss.ColorProfile()
+	lipgloss.SetColorProfile(termenv.TrueColor)
+	t.Cleanup(func() { lipgloss.SetColorProfile(previous) })
+}
+
+func ptr[T any](v T) *T { return &v }
+
+func TestRenderSearchResultMinimal(t *testing.T) {
+	r := model.FilterSearchResult{
+		FilterID: "handedness",
+		Title:    "Handedness",
+		Type:     "select",
+		DataType: "ChoiceID",
+	}
+
+	out := stripansi.Strip(RenderSearchResult(3, "dev", r))
+
+	assert.Equal(t, "3. Handedness\n   select · ChoiceID\n   Filter ID    handedness\n", out)
+}
+
+func TestRenderSearchResultCategoryAndSubcategory(t *testing.T) {
+	r := model.FilterSearchResult{
+		FilterID:    "job-title",
+		Title:       "Job title",
+		Type:        "select",
+		DataType:    "ChoiceID",
+		Category:    ptr("Employment"),
+		Subcategory: ptr("Occupation"),
+	}
+
+	out := stripansi.Strip(RenderSearchResult(1, "dev", r))
+	assert.Contains(t, out, "   select · ChoiceID · Employment / Occupation\n")
+}
+
+func TestRenderSearchResultRangeWithMissingBound(t *testing.T) {
+	r := model.FilterSearchResult{
+		FilterID: "age",
+		Title:    "Age",
+		Type:     "range",
+		DataType: "integer",
+		Min:      18,
+	}
+
+	out := stripansi.Strip(RenderSearchResult(1, "dev", r))
+	assert.Contains(t, out, "   Range        18 to -\n")
+}
+
+func TestRenderSearchResultMatchedChoices(t *testing.T) {
+	r := model.FilterSearchResult{
+		FilterID: "job-title",
+		Title:    "Job title",
+		Type:     "select",
+		DataType: "ChoiceID",
+		Choices: &model.FilterSearchChoices{
+			Total:     5,
+			Matched:   4,
+			Truncated: true,
+			Results: []model.FilterChoiceSearchResult{
+				{ID: "100", Label: "Software developers", NumDescendants: 3},
+			},
+		},
+	}
+
+	out := stripansi.Strip(RenderSearchResult(1, "dev", r))
+	assert.Contains(t, out, "   Choices      5 total, 4 matching\n")
+	assert.Contains(t, out, "   Matched on   choices\n")
+	want := "\n" +
+		"                Choice ID    Label\n" +
+		"                100          Software developers  (+3 nested)\n" +
+		"                …and 3 more matching choices\n" +
+		"                See them all: prolific filters choices search job-title dev\n" +
+		"\n"
+	assert.Contains(t, out, want)
+}
+
+// The preview is the only sight of a filter's choices, so whenever it leaves
+// some out the result has to name the command that lists them.
+func TestRenderSearchResultNamesTheCommandForTheRemainingChoices(t *testing.T) {
+	result := func(choices *model.FilterSearchChoices) model.FilterSearchResult {
+		return model.FilterSearchResult{
+			FilterID: "job-title",
+			Title:    "Job title",
+			Type:     "select",
+			DataType: "ChoiceID",
+			Choices:  choices,
+		}
+	}
+	previewed := []model.FilterChoiceSearchResult{{ID: "7", Label: "Nurse"}}
+
+	tests := []struct {
+		name    string
+		query   string
+		choices *model.FilterSearchChoices
+		want    string
+		absent  string
+	}{
+		{
+			name:    "more matching choices than previewed",
+			query:   "nurse",
+			choices: &model.FilterSearchChoices{Total: 4000, Matched: 12, Truncated: true, Results: previewed},
+			want:    "See them all: prolific filters choices search job-title nurse",
+		},
+		{
+			name:    "multi-word query is quoted for the shell",
+			query:   "senior nurse",
+			choices: &model.FilterSearchChoices{Total: 4000, Matched: 12, Truncated: true, Results: previewed},
+			want:    `See them all: prolific filters choices search job-title 'senior nurse'`,
+		},
+		{
+			// An apostrophe has no whitespace to trigger quoting, and would
+			// have left the suggested command with an unbalanced quote.
+			name:    "apostrophe is escaped, not left bare",
+			query:   "nurse's",
+			choices: &model.FilterSearchChoices{Total: 4000, Matched: 12, Truncated: true, Results: previewed},
+			want:    `See them all: prolific filters choices search job-title 'nurse'\''s'`,
+		},
+		{
+			// Pasted into a shell, these would have run rather than searched.
+			name:    "shell metacharacters stay literal",
+			query:   "a;b$(whoami)",
+			choices: &model.FilterSearchChoices{Total: 4000, Matched: 12, Truncated: true, Results: previewed},
+			want:    `See them all: prolific filters choices search job-title 'a;b$(whoami)'`,
+		},
+		{
+			// Double quotes would have let the shell expand this.
+			name:    "a variable is not expanded",
+			query:   "$HOME report",
+			choices: &model.FilterSearchChoices{Total: 4000, Matched: 12, Truncated: true, Results: previewed},
+			want:    `See them all: prolific filters choices search job-title '$HOME report'`,
+		},
+		{
+			name:    "every match previewed, but the filter has more choices",
+			query:   "nurse",
+			choices: &model.FilterSearchChoices{Total: 4000, Matched: 1, Results: previewed},
+			want:    "See all 4000 choices: prolific filters choices job-title",
+		},
+		{
+			name:    "no choices matched at all",
+			query:   "nurse",
+			choices: &model.FilterSearchChoices{Total: 4000, Results: []model.FilterChoiceSearchResult{}},
+			want:    "See all 4000 choices: prolific filters choices job-title",
+		},
+		{
+			name:    "preview covers every choice",
+			query:   "nurse",
+			choices: &model.FilterSearchChoices{Total: 1, Matched: 1, Results: previewed},
+			absent:  "prolific filters choices",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			out := stripansi.Strip(RenderSearchResult(1, tt.query, result(tt.choices)))
+			if tt.want != "" {
+				assert.Contains(t, out, tt.want)
+			}
+			if tt.absent != "" {
+				assert.NotContains(t, out, tt.absent)
+			}
+		})
+	}
+}
+
+// A range filter has no choices block at all, so there is nothing to point at.
+func TestRenderSearchResultWithoutChoicesNamesNoCommand(t *testing.T) {
+	out := stripansi.Strip(RenderSearchResult(1, "age", model.FilterSearchResult{
+		FilterID: "age",
+		Title:    "Age",
+		Type:     "range",
+		DataType: "integer",
+	}))
+
+	assert.NotContains(t, out, "prolific filters choices")
+}
+
+func TestRenderSearchResultMatchedChoicesNotTruncated(t *testing.T) {
+	r := model.FilterSearchResult{
+		FilterID: "job-title",
+		Title:    "Job title",
+		Type:     "select",
+		DataType: "ChoiceID",
+		Choices: &model.FilterSearchChoices{
+			Total:   40,
+			Matched: 1,
+			Results: []model.FilterChoiceSearchResult{{ID: "7", Label: "Nurse"}},
+		},
+	}
+
+	out := stripansi.Strip(RenderSearchResult(1, "dev", r))
+	assert.Contains(t, out, "   Choices      40 total, 1 matching\n")
+	assert.Contains(t, out, "                Choice ID    Label\n                7            Nurse\n")
+	assert.NotContains(t, out, "more matching")
+	assert.NotContains(t, out, "nested")
+}
+
+func TestRenderSearchResultMetadataOnlyMatchOnEnumerableFilter(t *testing.T) {
+	// A metadata-only match still reports the total choices, but with nothing
+	// matched there is no preview table and "choices" is not a matched field.
+	r := model.FilterSearchResult{
+		FilterID: "job-title",
+		Title:    "Job title",
+		Type:     "select",
+		DataType: "ChoiceID",
+		Matches: []model.FilterSearchHighlight{
+			{Field: "title", QueryTerm: "job", MatchedText: "Job", Start: 0, End: 3},
+		},
+		Choices: &model.FilterSearchChoices{Total: 40, Results: []model.FilterChoiceSearchResult{}},
+	}
+
+	out := stripansi.Strip(RenderSearchResult(1, "dev", r))
+	assert.Contains(t, out, "   Choices      40 total, 0 matching\n")
+	assert.NotContains(t, out, "Choice ID")
+	assert.Contains(t, out, "   Matched on   title\n")
+}
+
+func TestRenderSearchResultAppliesHighlights(t *testing.T) {
+	withColour(t)
+
+	r := model.FilterSearchResult{
+		FilterID: "job-title",
+		Title:    "Job title",
+		Question: ptr("What is your job title?"),
+		Type:     "select",
+		DataType: "ChoiceID",
+		Matches: []model.FilterSearchHighlight{
+			{Field: "question", QueryTerm: "job", MatchedText: "job", Start: 13, End: 16},
+		},
+		Choices: &model.FilterSearchChoices{
+			Total:   5,
+			Matched: 1,
+			Results: []model.FilterChoiceSearchResult{
+				{ID: "100", Label: "Software developers", Matches: []model.FilterSearchHighlight{
+					{Field: "label", QueryTerm: "developers", MatchedText: "developers", Start: 9, End: 19},
+				}},
+			},
+		},
+	}
+
+	out := RenderSearchResult(1, "dev", r)
+
+	assert.Contains(t, out, "Question     What is your "+ui.RenderHighlightedText("job")+" title?")
+	assert.Contains(t, out, "100          Software "+ui.RenderHighlightedText("developers"))
+	// Title has no highlight for this match, so it must be rendered as a plain heading.
+	assert.Contains(t, out, ui.RenderHeading("Job title")+"\n")
+	assert.NotContains(t, out, ui.RenderHighlightedText("Job"))
+}
+
+func TestRenderSearchResultHighlightedTitleKeepsHeadingStyle(t *testing.T) {
+	withColour(t)
+
+	r := model.FilterSearchResult{
+		FilterID: "software-development-experience",
+		Title:    "Software development experience",
+		Type:     "range",
+		DataType: "integer",
+		Matches: []model.FilterSearchHighlight{
+			{Field: "title", QueryTerm: "developers", MatchedText: "development", Start: 9, End: 20},
+		},
+	}
+
+	out := RenderSearchResult(1, "dev", r)
+
+	want := ui.RenderHeading("Software ") + ui.RenderHighlightedText("development") + ui.RenderHeading(" experience") + "\n"
+	assert.Contains(t, out, want)
+}
+
+func TestRenderSearchHeader(t *testing.T) {
+	tests := []struct {
+		name      string
+		total     int
+		truncated bool
+		want      string
+	}{
+		{name: "all requested", total: 2, want: "Filters matching \"dev\"\n2 matching filters\n\n"},
+		{name: "single result", total: 1, want: "Filters matching \"dev\"\n1 matching filter\n\n"},
+		{name: "truncated", total: 340, truncated: true, want: "Filters matching \"dev\"\n340 matching filters. Use --limit or --all to see more\n\n"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, stripansi.Strip(RenderSearchHeader("dev", tt.total, tt.truncated)))
+		})
+	}
+}
+
+func TestRenderResultsFooter(t *testing.T) {
+	assert.Equal(t, "\nShowing 25 records of 340\n", stripansi.Strip(RenderResultsFooter(25, 340)))
+	assert.Equal(t, "\nShowing 1 record of 1\n", stripansi.Strip(RenderResultsFooter(1, 1)))
+}
+
+func TestRenderSearchRule(t *testing.T) {
+	out := stripansi.Strip(RenderSearchRule())
+	assert.Equal(t, 60, len([]rune(out))-1)
+	assert.True(t, out[len(out)-1] == '\n')
+}
+
+func TestNewSearchListItems(t *testing.T) {
+	results := []model.FilterSearchResult{
+		{
+			FilterID:    "job-title",
+			Title:       "Job title",
+			Description: "Select participants by occupation.",
+			Question:    ptr("What is your job title?"),
+			Type:        "select",
+			DataType:    "ChoiceID",
+			Category:    ptr("Employment"),
+			Subcategory: ptr("Occupation"),
+			Choices:     &model.FilterSearchChoices{Total: 5, Matched: 2, Truncated: true},
+		},
+		{FilterID: "age", Title: "Age", Type: "range", DataType: "integer"},
+	}
+
+	items := NewSearchListItems(results)
+
+	// Every column is one field of the result: the category and subcategory
+	// stay apart rather than being joined into one cell.
+	assert.Equal(t, []SearchListItem{
+		{
+			FilterID: "job-title", Title: "Job title", Question: "What is your job title?",
+			Description: "Select participants by occupation.",
+			Category:    "Employment", Subcategory: "Occupation",
+			Type: "select", DataType: "ChoiceID",
+			ChoicesTotal: 5, ChoicesMatched: 2, ChoicesTruncated: true,
+		},
+		{FilterID: "age", Title: "Age", Type: "range", DataType: "integer"},
+	}, items)
+}
+
+// A filter without enumerable choices carries no choices block at all, so its
+// counts are zero rather than borrowed from somewhere else.
+func TestNewSearchListItemsWithoutChoices(t *testing.T) {
+	items := NewSearchListItems([]model.FilterSearchResult{{FilterID: "age", Type: "range"}})
+
+	require.Len(t, items, 1)
+	assert.Equal(t, 0, items[0].ChoicesTotal)
+	assert.Equal(t, 0, items[0].ChoicesMatched)
+	assert.False(t, items[0].ChoicesTruncated)
+}
+
+// Description and DataType are available through --fields but kept out of the
+// default CSV, which is already wide.
+func TestSearchListFieldsDifferByFormat(t *testing.T) {
+	assert.Equal(t, "FilterID,Title,Type", SearchListFields.Table)
+	assert.Equal(t, "FilterID,Title,Question,Category,Subcategory,Type,ChoicesTotal,ChoicesMatched,ChoicesTruncated", SearchListFields.CSV)
+	assert.NotContains(t, SearchListFields.CSV, "Description")
+	assert.NotContains(t, SearchListFields.CSV, "DataType")
+	assert.NotContains(t, SearchListFields.CSV, "Rank")
+	assert.NotContains(t, SearchListFields.CSV, "MatchedOn")
+}
+
+func TestNewSearchListItemsEmpty(t *testing.T) {
+	assert.Empty(t, NewSearchListItems(nil))
+	assert.NotNil(t, NewSearchListItems(nil))
+}

@@ -158,3 +158,17 @@ func TestTableRendererRendersCredentialPoolID(t *testing.T) {
 		t.Fatalf("expected study data in output, got '%v'", output)
 	}
 }
+
+func TestJSONRendererRendersNilSliceAsEmptyArray(t *testing.T) {
+	var b bytes.Buffer
+	var items []string
+
+	err := ui.JSONRenderer[string]{}.Render(items, &b)
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if got := strings.TrimSpace(b.String()); got != "[]" {
+		t.Fatalf("expected '[]', got %q", got)
+	}
+}

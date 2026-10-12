@@ -72,8 +72,12 @@ func (r CsvRenderer[T]) Render(items []T, fields string, w io.Writer) error {
 // JSONRenderer renders a slice of items as indented JSON.
 type JSONRenderer[T any] struct{}
 
-// Render writes items as indented JSON to w.
+// Render writes items as indented JSON to w. A nil slice is rendered as an
+// empty array rather than null, so consumers always receive a list.
 func (r JSONRenderer[T]) Render(items []T, w io.Writer) error {
+	if items == nil {
+		items = []T{}
+	}
 	encoder := json.NewEncoder(w)
 	encoder.SetIndent("", "  ")
 	return encoder.Encode(items)

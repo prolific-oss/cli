@@ -59,6 +59,12 @@ func TestRenderRecordCounter(t *testing.T) {
 			expected: "Showing 1 record of 1",
 		},
 		{
+			name:     "Zero record count is plural",
+			count:    0,
+			total:    0,
+			expected: "Showing 0 records of 0",
+		},
+		{
 			name:     "Showing more than one record",
 			count:    2,
 			total:    10,

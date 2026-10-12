@@ -10,6 +10,11 @@
 //   - OUTOFSCOPE   — no CLI command exists or is planned for this endpoint
 //   - SPECMISMATCH — client request diverges from the spec; needs a fix
 //   - HARNESSGAP   — client behaviour is correct; kin-openapi can't validate this shape
+//   - NOTINSPEC    — endpoint is implemented and reachable but not yet in the published spec.
+//     This does not mean it is generally released: it may be dark-launched, behind a flag,
+//     or awaiting docs, so it is not guaranteed to work for every account.
+//     The entry keeps its call so validation starts the moment the spec publishes:
+//     TestAPICoverage fails once the operationId appears, prompting removal of the skip.
 
 package contracttest
 
@@ -92,8 +97,8 @@ func findRoute(router routers.Router, r *http.Request) (*routers.Route, map[stri
 
 type operation struct {
 	operationID string
-	call        func(*client.Client) // nil when skipped
-	skip        string               // required reason when call is nil; prefix with OUTOFSCOPE or SPECMIS/MATCH
+	call        func(*client.Client) // nil when skipped, except NOTINSPEC entries which keep their call
+	skip        string               // required reason when call is nil; prefix with a tag from the package doc
 }
 
 // operations maps every operationId in openapi.yaml to either a client method call
@@ -115,7 +120,19 @@ var operations = []operation{
 	{operationID: "studies_DeleteProjectStudy", skip: "OUTOFSCOPE: no CLI command for removing a study from a project"},
 
 	// Filters
-	{operationID: "filters_GetFilters", call: func(c *client.Client) { c.GetFilters() }},
+	{operationID: "filters_GetRuleTree", skip: "NOTINSPEC: rule-tree is implemented in the backend but not published in the spec; confirm operationId on publication", call: func(c *client.Client) {
+		c.GetFilterRuleTree("ws-id")
+	}},
+	{operationID: "filters_GetFilters", call: func(c *client.Client) { c.GetFilters("ws-id") }},
+	{operationID: "filters_SearchFilters", call: func(c *client.Client) {
+		c.SearchFilters("developer", "ws-id", 25, 0)
+	}},
+	{operationID: "filters_GetFilterChoices", call: func(c *client.Client) {
+		c.GetFilterChoices("job-title", "ws-id", client.FilterChoicesPageSize, client.DefaultRecordOffset)
+	}},
+	{operationID: "filters_SearchFilterChoices", call: func(c *client.Client) {
+		c.SearchFilterChoices("job-title", "nurse", "ws-id", client.FilterChoicesPageSize, client.DefaultRecordOffset)
+	}},
 	{operationID: "filters_GetEligibleCount", call: func(c *client.Client) {
 		c.GetEligibilityCount(client.EligibilityCountPayload{Filters: []model.Filter{}, WorkspaceID: "ws-id"})
 	}},
@@ -288,7 +305,7 @@ var operations = []operation{
 	{operationID: "messages_GetConversationMessages", skip: "OUTOFSCOPE: no CLI command for retrieving conversation messages"},
 
 	// Studies
-	{operationID: "studies_GetStudies", call: func(c *client.Client) { c.GetStudies("", "") }},
+	{operationID: "studies_GetStudies", call: func(c *client.Client) { c.GetStudies("", "") }}, // SearchStudies parameters: client/search_test.go.
 	{operationID: "studies_CreateStudy", call: func(c *client.Client) {
 		c.CreateStudy(model.CreateStudy{
 			Name:                    "t",
@@ -371,7 +388,7 @@ var operations = []operation{
 	}},
 
 	// Participant Groups
-	{operationID: "participantGroups_GetParticipantGroups", skip: "HARNESSGAP: kin-openapi v0.146.0 mis-decodes a top-level oneOf-of-objects query param under the default form/explode=true style — it always resolves to the last oneOf branch (project_id), discarding an earlier correct match (workspace_id), so oneOf validation fails regardless of how the client sends it. Client's flat workspace_id=X is correct per spec defaults and per the real API (see commit 8c7aae6 / DCP-2272)."},
+	{operationID: "participantGroups_GetParticipantGroups", skip: "HARNESSGAP: kin-openapi v0.146.0 mis-decodes a top-level oneOf-of-objects query param under the default form/explode=true style — it always resolves to the last oneOf branch (project_id), discarding an earlier correct match (workspace_id), so oneOf validation fails regardless of how the client sends it. Client's flat workspace_id=X is correct per spec defaults and per the real API (see commit 8c7aae6 / DCP-2272). SearchParticipantGroups parameters are covered in client/search_test.go."},
 	{operationID: "participantGroups_CreateParticipantGroup", call: func(c *client.Client) {
 		c.CreateParticipantGroup(model.CreateParticipantGroup{Name: "t", WorkspaceID: "ws-id"})
 	}},
@@ -429,7 +446,13 @@ func TestAPICoverage(t *testing.T) {
 	}
 
 	for _, op := range operations {
-		if !specOps[op.operationID] {
+		notInSpec := strings.HasPrefix(op.skip, "NOTINSPEC")
+		switch {
+		case notInSpec && specOps[op.operationID]:
+			t.Errorf("operationId %q is now in openapi.yaml — remove its NOTINSPEC skip so the call is validated", op.operationID)
+		case notInSpec && op.call == nil:
+			t.Errorf("operationId %q is NOTINSPEC but has no call — add one so validation is ready when the spec publishes", op.operationID)
+		case !notInSpec && !specOps[op.operationID]:
 			t.Errorf("operationId %q is in the coverage table but not in openapi.yaml — stale entry", op.operationID)
 		}
 	}

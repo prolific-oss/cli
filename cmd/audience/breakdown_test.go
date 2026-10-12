@@ -104,7 +104,7 @@ func TestBreakdownCommandRendersBreakdown(t *testing.T) {
 
 	writer.Flush()
 
-	expected := "VALUE   COUNT\n0       4\n1       3\nN/A     5\n"
+	expected := "Value Count \n0     4     \n1     3     \nN/A   5     \n"
 	if b.String() != expected {
 		t.Fatalf("expected %q, got %q", expected, b.String())
 	}
@@ -143,7 +143,7 @@ func TestBreakdownCommandRendersBreakdownFromFlags(t *testing.T) {
 
 	writer.Flush()
 
-	expected := "VALUE   COUNT\n1       2\n"
+	expected := "Value Count \n1     2     \n"
 	if b.String() != expected {
 		t.Fatalf("expected %q, got %q", expected, b.String())
 	}
@@ -237,7 +237,7 @@ func TestBreakdownCommandRendersJSON(t *testing.T) {
 
 	writer.Flush()
 
-	expected := `{"breakdown":{"0":4,"1":3}}`
+	expected := "{\"breakdown\":{\"0\":4,\"1\":3}}\n"
 	if b.String() != expected {
 		t.Fatalf("expected %q, got %q", expected, b.String())
 	}
@@ -279,7 +279,7 @@ func TestBreakdownCommandSendsEmptyFiltersNotNil(t *testing.T) {
 func TestBreakdownCommandValidatesInput(t *testing.T) {
 	tests := []struct {
 		name          string
-		templateJSON  string // empty means -t/--template-path is left unset
+		templateJSON  string // empty means -p/--template-path is left unset
 		filtersJSON   string
 		breakdownJSON string
 		workspaceID   string
@@ -288,14 +288,14 @@ func TestBreakdownCommandValidatesInput(t *testing.T) {
 		{
 			name:          "neither template nor flags",
 			workspaceID:   "ws-id",
-			expectedError: "error: provide filters via -t/--template-path or --filters/--breakdown",
+			expectedError: "error: provide filters via -p/--template-path or --filters/--breakdown",
 		},
 		{
 			name:          "template and flags both given",
 			templateJSON:  `{"breakdown_filter": {"filter_id": "handedness"}}`,
 			breakdownJSON: `{"filter_id": "handedness"}`,
 			workspaceID:   "ws-id",
-			expectedError: "error: use either -t/--template-path or --filters/--breakdown, not both",
+			expectedError: "error: use either -p/--template-path or --filters/--breakdown, not both",
 		},
 		{
 			name:          "filters given without breakdown",
@@ -306,7 +306,7 @@ func TestBreakdownCommandValidatesInput(t *testing.T) {
 		{
 			name:          "missing workspace",
 			templateJSON:  `{"breakdown_filter": {"filter_id": "handedness"}}`,
-			expectedError: "error: workspace ID is required",
+			expectedError: "error: please provide a workspace ID",
 		},
 		{
 			name:          "missing breakdown filter in template",
@@ -400,25 +400,11 @@ func TestBreakdownCommandHandlesAPIError(t *testing.T) {
 	}
 }
 
-func TestRenderBreakdown(t *testing.T) {
-	breakdown := map[string]int{"1": 3, "0": 4, client.FilterBreakdownNAKey: 5}
-
-	expected := "VALUE   COUNT\n0       4\n1       3\nN/A     5\n"
-	actual, err := audience.RenderBreakdown(breakdown, false)
-	if err != nil {
-		t.Fatalf("unexpected error: %s", err)
-	}
-
-	if actual != expected {
-		t.Fatalf("expected %q, got %q", expected, actual)
-	}
-}
-
 func TestRenderBreakdownJSON(t *testing.T) {
 	breakdown := map[string]int{"1": 3, "0": 4, client.FilterBreakdownNAKey: 5}
 
 	expected := `{"breakdown":{"0":4,"1":3,"N/A":5}}`
-	actual, err := audience.RenderBreakdown(breakdown, true)
+	actual, err := audience.RenderBreakdownJSON(breakdown)
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}

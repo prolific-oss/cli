@@ -1,4 +1,3 @@
-//nolint:dupl // Similar patterns are expected for CLI commands
 package audience
 
 import (
@@ -7,21 +6,18 @@ import (
 	"io"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/cmd/shared"
+	"github.com/prolific-oss/cli/ui"
+	uiaudience "github.com/prolific-oss/cli/ui/audience"
 
 	"github.com/spf13/cobra"
 )
-
-// CountResult is the machine-readable shape emitted by --json.
-type CountResult struct {
-	Count int `json:"count"`
-}
 
 // NewCountCommand creates a new `audience count` command to count how many
 // participants match a set of filters, without creating a study or saving a
 // filter set.
 func NewCountCommand(client client.API, w io.Writer) *cobra.Command {
 	var in filterInput
-	var asJSON bool
 
 	cmd := &cobra.Command{
 		Use:   "count",
@@ -29,23 +25,24 @@ func NewCountCommand(client client.API, w io.Writer) *cobra.Command {
 		Long: `Count how many participants would be eligible for a study defined by a
 set of filters, without creating the study or saving a filter set.
 
-Count a set of filters given via -t/--template-path or --filters.
+Count a set of filters given via -p/--template-path or --filters.
 
-Filters are a flat list, which the API combines with AND. The API also
-supports nested and/or filter groups, but those cannot yet be expressed
-via -t/--template-path or --filters.`,
+Top-level filters are combined with AND. To express nested AND/OR groups,
+use filter_id "and" or "or" with a selected_filters array of child filters.
+Both -p/--template-path and --filters preserve this structure; the API
+validates which combinations are allowed.`,
 		Example: `
 Count participants matching the filters in a JSON/YAML file (see
 "prolific study create --help" for the filter format)
-$ prolific audience count -t /path/to/filters.json -w <workspace-id>
+$ prolific audience count -p /path/to/filters.json -w <workspace-id>
 
 Count participants matching filters given directly as a flag
 $ prolific audience count --filters '[{"filter_id":"age","selected_range":{"lower":18,"upper":65}}]' -w <workspace-id>
 
 Emit machine-readable output for scripting
-$ prolific audience count -t /path/to/filters.json -w <workspace-id> --json`,
+$ prolific audience count -p /path/to/filters.json -w <workspace-id> --json`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := in.validate(false); err != nil {
+			if err := in.validateCount(); err != nil {
 				return err
 			}
 
@@ -54,21 +51,15 @@ $ prolific audience count -t /path/to/filters.json -w <workspace-id> --json`,
 				return fmt.Errorf("error: %s", err)
 			}
 
-			rendered, err := RenderCount(count, asJSON)
-			if err != nil {
+			if err := renderCount(count, in, w); err != nil {
 				return fmt.Errorf("error: %s", err)
 			}
-
-			fmt.Fprintln(w, rendered)
 
 			return nil
 		},
 	}
 
-	addFilterFlags(cmd, &in, false)
-	// -j is bound by hand rather than through shared.AddOutputFlags, which
-	// would claim -t for --table and collide with --template-path.
-	cmd.Flags().BoolVarP(&asJSON, "json", "j", false, "Output as JSON")
+	addCountFlags(cmd, &in)
 
 	return cmd
 }
@@ -90,17 +81,45 @@ func getCount(c client.API, in filterInput) (int, error) {
 	return response.Count, nil
 }
 
-// RenderCount produces output for an eligibility count. A zero is printed as
-// 0, matching the API and audience breakdown.
-func RenderCount(count int, asJSON bool) (string, error) {
-	if asJSON {
-		payload, err := json.Marshal(CountResult{Count: count})
-		if err != nil {
-			return "", err
-		}
+// countOutput is the CLI's own shape for a count, so a change to the API's
+// response never reaches our output.
+type countOutput struct {
+	Count int `json:"count"`
+}
 
-		return string(payload), nil
+// renderCount writes a count in the format the caller asked for. A count is a
+// single value, so every format is a one-row record.
+func renderCount(count int, in filterInput, w io.Writer) error {
+	format := shared.ResolveFormatForWriter(in.Output, w)
+	fields := uiaudience.CountFields.Resolve(in.Fields, format)
+
+	switch format {
+	case ui.FormatJSON:
+		rendered, err := RenderCountJSON(count)
+		if err != nil {
+			return err
+		}
+		// Every other --json path in the CLI terminates its output.
+		_, err = fmt.Fprintln(w, rendered)
+		return err
+	case ui.FormatCSV:
+		return ui.CsvRenderer[uiaudience.CountItem]{}.Render(countItems(count), fields, w)
+	default:
+		return ui.TableRenderer[uiaudience.CountItem]{}.Render(countItems(count), fields, w)
+	}
+}
+
+// RenderCountJSON emits the count as the CLI-owned countOutput rather than the
+// API's response, so a change to the API never reaches our output.
+func RenderCountJSON(count int) (string, error) {
+	payload, err := json.Marshal(countOutput{Count: count})
+	if err != nil {
+		return "", err
 	}
 
-	return fmt.Sprintf("Eligible participants: %d", count), nil
+	return string(payload), nil
+}
+
+func countItems(count int) []uiaudience.CountItem {
+	return []uiaudience.CountItem{{Count: count}}
 }

@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"unicode/utf8"
@@ -39,6 +40,7 @@ type API interface {
 	CreateStudy(model.CreateStudy) (*model.Study, error)
 	DuplicateStudy(ID string) (*model.Study, error)
 	GetStudies(status, projectID string) (*ListStudiesResponse, error)
+	SearchStudies(query, workspaceID string, page int) (*ListStudiesResponse, error)
 	GetStudy(ID string) (*model.Study, error)
 	GetSubmissions(ID string, limit, offset int) (*ListSubmissionsResponse, error)
 	GetStudyFeedback(studyID string, hasWrittenFeedback bool, limit, offset int) (*ListStudyFeedbackResponse, error)
@@ -87,13 +89,18 @@ type API interface {
 	GetProject(ID string) (*model.Project, error)
 
 	GetParticipantGroups(workspaceID string, limit, offset int) (*ListParticipantGroupsResponse, error)
+	SearchParticipantGroups(query, workspaceID string, limit, offset int) (*ListParticipantGroupsResponse, error)
 	GetParticipantGroup(groupID string) (*ViewParticipantGroupResponse, error)
 	CreateParticipantGroup(group model.CreateParticipantGroup) (*CreateParticipantGroupResponse, error)
 	RemoveParticipantGroupMembers(groupID string, participantIDs []string) (*ViewParticipantGroupResponse, error)
 
 	CreateTestParticipant(email string) (*CreateTestParticipantResponse, error)
 
-	GetFilters() (*ListFiltersResponse, error)
+	GetFilters(workspaceID string) (*ListFiltersResponse, error)
+	GetFilterRuleTree(workspaceID string) (*FilterRuleTreeResponse, error)
+	SearchFilters(query, workspaceID string, limit, offset int) (*SearchFiltersResponse, error)
+	GetFilterChoices(filterID, workspaceID string, limit, offset int) (*ListFilterChoicesResponse, error)
+	SearchFilterChoices(filterID, query, workspaceID string, limit, offset int) (*SearchFilterChoicesResponse, error)
 	GetEligibilityCount(payload EligibilityCountPayload) (*EligibilityCountResponse, error)
 	GetFilterBreakdown(payload FilterBreakdownPayload) (*FilterBreakdownResponse, error)
 
@@ -965,8 +972,8 @@ func (c *Client) CreateProject(workspaceID string, project model.Project) (*Crea
 func (c *Client) GetParticipantGroups(workspaceID string, limit, offset int) (*ListParticipantGroupsResponse, error) {
 	var response ListParticipantGroupsResponse
 
-	url := fmt.Sprintf("/api/v1/participant-groups/?workspace_id=%s&limit=%v&offset=%v", workspaceID, limit, offset)
-	_, err := c.ExecuteBuilder().GetInto(url, &response)
+	params := url.Values{"workspace_id": {workspaceID}, "limit": {strconv.Itoa(limit)}, "offset": {strconv.Itoa(offset)}}
+	_, err := c.ExecuteBuilder().GetInto("/api/v1/participant-groups/?"+params.Encode(), &response)
 	if err != nil {
 		return nil, err
 	}
@@ -1066,11 +1073,111 @@ func (c *Client) CreateTestParticipant(email string) (*CreateTestParticipantResp
 	return &response, nil
 }
 
-func (c *Client) GetFilters() (*ListFiltersResponse, error) {
+// GetFilters retrieves the filter catalogue. workspaceID is optional and
+// scopes the catalogue to the filters available in that workspace, which also
+// trims the payload the API returns. The endpoint does not paginate, so the
+// whole catalogue comes back in one response.
+func (c *Client) GetFilters(workspaceID string) (*ListFiltersResponse, error) {
 	var response ListFiltersResponse
 
-	url := "/api/v1/filters/"
-	if _, err := c.ExecuteBuilder().Get(url, &response); err != nil {
+	requestURL := "/api/v1/filters/"
+	if workspaceID != "" {
+		params := url.Values{"workspace_id": {workspaceID}}
+		requestURL += "?" + params.Encode()
+	}
+	if _, err := c.ExecuteBuilder().Get(requestURL, &response); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// GetFilterRuleTree retrieves the server's composite filter constraints.
+// An empty workspaceID requests the default rules rather than workspace-specific rules.
+func (c *Client) GetFilterRuleTree(workspaceID string) (*FilterRuleTreeResponse, error) {
+	var response FilterRuleTreeResponse
+	requestURL := "/api/v1/filters/rule-tree/"
+	if workspaceID != "" {
+		params := url.Values{"workspace_id": {workspaceID}}
+		requestURL += "?" + params.Encode()
+	}
+	if _, err := c.ExecuteBuilder().Get(requestURL, &response); err != nil {
+		return nil, err
+	}
+	if len(response.RuleTree) == 0 {
+		return nil, fmt.Errorf("filter rule tree response is missing or empty")
+	}
+	return &response, nil
+}
+
+// SearchFilters searches the filter catalogue by keyword. Results are returned
+// in ranked order with highlight offsets and a preview of matching choices.
+// workspaceID is optional and scopes the catalogue to filters accessible in
+// that workspace.
+func (c *Client) SearchFilters(query, workspaceID string, limit, offset int) (*SearchFiltersResponse, error) {
+	var response SearchFiltersResponse
+
+	params := url.Values{}
+	params.Set("q", query)
+	params.Set("limit", strconv.Itoa(limit))
+	params.Set("offset", strconv.Itoa(offset))
+	if workspaceID != "" {
+		params.Set("workspace_id", workspaceID)
+	}
+
+	requestURL := "/api/v1/filters/search/?" + params.Encode()
+	if _, err := c.ExecuteBuilder().Get(requestURL, &response); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// filterChoicesURL builds the path for a filter's choices endpoints. The
+// filter ID comes from the user, so it is escaped rather than interpolated.
+func filterChoicesURL(filterID, suffix string, params url.Values) string {
+	requestURL := "/api/v1/filters/" + url.PathEscape(filterID) + "/choices/" + suffix
+	if encoded := params.Encode(); encoded != "" {
+		requestURL += "?" + encoded
+	}
+	return requestURL
+}
+
+// GetFilterChoices retrieves a filter's choices, in the order the API returns
+// them. workspaceID is optional and scopes the lookup to that workspace; a
+// filter absent from the workspace's catalogue returns a 404, as does one
+// that does not exist at all.
+func (c *Client) GetFilterChoices(filterID, workspaceID string, limit, offset int) (*ListFilterChoicesResponse, error) {
+	var response ListFilterChoicesResponse
+
+	params := url.Values{}
+	params.Set("limit", strconv.Itoa(limit))
+	params.Set("offset", strconv.Itoa(offset))
+	if workspaceID != "" {
+		params.Set("workspace_id", workspaceID)
+	}
+
+	if _, err := c.ExecuteBuilder().Get(filterChoicesURL(filterID, "", params), &response); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// SearchFilterChoices searches a filter's choices by keyword, returning them
+// in relevance order with highlight offsets.
+func (c *Client) SearchFilterChoices(filterID, query, workspaceID string, limit, offset int) (*SearchFilterChoicesResponse, error) {
+	var response SearchFilterChoicesResponse
+
+	params := url.Values{}
+	params.Set("q", query)
+	params.Set("limit", strconv.Itoa(limit))
+	params.Set("offset", strconv.Itoa(offset))
+	if workspaceID != "" {
+		params.Set("workspace_id", workspaceID)
+	}
+
+	if _, err := c.ExecuteBuilder().Get(filterChoicesURL(filterID, "search/", params), &response); err != nil {
 		return nil, err
 	}
 
