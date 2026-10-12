@@ -258,9 +258,6 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 |---|---|---|---|
 | `filters_GetRuleTree` | — | — | 🕒 `GetFilterRuleTree` — live endpoint, awaiting publication in the spec |
 | `filters_GetFilters` | GET | `/api/v1/filters/` | ✅ `GetFilters` |
-| `filters_SearchFilters` | GET | `/api/v1/filters/search/` | ✅ `SearchFilters` |
-| `filters_GetFilterChoices` | GET | `/api/v1/filters/{filter_id}/choices/` | ✅ `GetFilterChoices` |
-| `filters_SearchFilterChoices` | GET | `/api/v1/filters/{filter_id}/choices/search/` | ✅ `SearchFilterChoices` |
 | `filters_GetEligibleCount` | POST | `/api/v1/eligibility-count/` | ✅ `GetEligibilityCount` |
 
 </details>
