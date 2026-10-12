@@ -35,7 +35,7 @@ type entry struct {
 	section      string
 	operationID  string
 	clientMethod string // empty if skipped
-	skipTag      string // OUTOFSCOPE, SPECMISMATCH, HARNESSGAP, NOTINSPEC, or "" if covered
+	skipTag      string // OUTOFSCOPE, SPECMISMATCH, HARNESSGAP, NOTINSPEC, UNADVERTISED, or "" if covered
 	skipReason   string
 }
 
@@ -150,7 +150,7 @@ func parseOperations(path string) ([]entry, error) {
 				e.skipReason = reason
 			}
 		}
-		// NOTINSPEC entries carry both a skip and a call, so look for the
+		// NOTINSPEC and UNADVERTISED entries carry both a skip and a call, so look for the
 		// client method whenever one is present.
 		if callMatch := reClientCall.FindStringSubmatch(chunk); callMatch != nil {
 			e.clientMethod = callMatch[1]
@@ -231,6 +231,15 @@ func renderTable(entries []entry, specOps map[string]specOp) (string, error) {
 			"%d operationId(s) in contract_test.go's table are not in the live spec (stale entries? see DCT-261): %s",
 			len(missing), strings.Join(missing, ", "))
 	}
+
+	// UNADVERTISED operations are validated by the contract test but deliberately left out of the README.
+	listed := make([]entry, 0, len(entries))
+	for _, e := range entries {
+		if e.skipTag != "UNADVERTISED" {
+			listed = append(listed, e)
+		}
+	}
+	entries = listed
 
 	var b strings.Builder
 	b.WriteString("Operations are grouped as they appear in [`contract_test/contract_test.go`](contract_test/contract_test.go), ")

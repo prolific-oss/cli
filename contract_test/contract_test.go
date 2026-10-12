@@ -15,6 +15,10 @@
 //     or awaiting docs, so it is not guaranteed to work for every account.
 //     The entry keeps its call so validation starts the moment the spec publishes:
 //     TestAPICoverage fails once the operationId appears, prompting removal of the skip.
+//   - UNADVERTISED — endpoint is in the published spec, but is deliberately kept out of the
+//     README coverage table while it is rolled out gradually. Like NOTINSPEC, the entry keeps its
+//     call, and the call is validated against the spec. Remove the skip once the rollout is
+//     announced, and the endpoint is listed like any other.
 
 package contracttest
 
@@ -97,8 +101,14 @@ func findRoute(router routers.Router, r *http.Request) (*routers.Route, map[stri
 
 type operation struct {
 	operationID string
-	call        func(*client.Client) // nil when skipped, except NOTINSPEC entries which keep their call
+	call        func(*client.Client) // nil when skipped, except NOTINSPEC and UNADVERTISED entries which keep their call
 	skip        string               // required reason when call is nil; prefix with a tag from the package doc
+}
+
+// isUnadvertised reports whether the operation is in the spec but deliberately held back
+// from the README coverage table. Unlike other skips, its call is still validated.
+func isUnadvertised(op operation) bool {
+	return strings.HasPrefix(op.skip, "UNADVERTISED")
 }
 
 // operations maps every operationId in openapi.yaml to either a client method call
@@ -124,13 +134,13 @@ var operations = []operation{
 		c.GetFilterRuleTree("ws-id")
 	}},
 	{operationID: "filters_GetFilters", call: func(c *client.Client) { c.GetFilters("ws-id") }},
-	{operationID: "filters_SearchFilters", call: func(c *client.Client) {
+	{operationID: "filters_SearchFilters", skip: "UNADVERTISED: gradual rollout, in the spec but not advertised yet", call: func(c *client.Client) {
 		c.SearchFilters("developer", "ws-id", 25, 0)
 	}},
-	{operationID: "filters_GetFilterChoices", call: func(c *client.Client) {
+	{operationID: "filters_GetFilterChoices", skip: "UNADVERTISED: gradual rollout, in the spec but not advertised yet", call: func(c *client.Client) {
 		c.GetFilterChoices("job-title", "ws-id", client.FilterChoicesPageSize, client.DefaultRecordOffset)
 	}},
-	{operationID: "filters_SearchFilterChoices", call: func(c *client.Client) {
+	{operationID: "filters_SearchFilterChoices", skip: "UNADVERTISED: gradual rollout, in the spec but not advertised yet", call: func(c *client.Client) {
 		c.SearchFilterChoices("job-title", "nurse", "ws-id", client.FilterChoicesPageSize, client.DefaultRecordOffset)
 	}},
 	{operationID: "filters_GetEligibleCount", call: func(c *client.Client) {
@@ -452,6 +462,8 @@ func TestAPICoverage(t *testing.T) {
 			t.Errorf("operationId %q is now in openapi.yaml — remove its NOTINSPEC skip so the call is validated", op.operationID)
 		case notInSpec && op.call == nil:
 			t.Errorf("operationId %q is NOTINSPEC but has no call — add one so validation is ready when the spec publishes", op.operationID)
+		case isUnadvertised(op) && op.call == nil:
+			t.Errorf("operationId %q is UNADVERTISED but has no call — add one so it is still validated against the spec", op.operationID)
 		case !notInSpec && !specOps[op.operationID]:
 			t.Errorf("operationId %q is in the coverage table but not in openapi.yaml — stale entry", op.operationID)
 		}
@@ -508,7 +520,7 @@ func TestClientMatchesAPISpec(t *testing.T) {
 	}
 
 	for _, tt := range operations {
-		if tt.skip != "" {
+		if tt.skip != "" && !isUnadvertised(tt) {
 			continue
 		}
 		t.Run(tt.operationID, func(t *testing.T) {
