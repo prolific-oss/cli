@@ -274,6 +274,22 @@ func TestNewListCommand(t *testing.T) {
 
 See `cmd/workspace/list_test.go:37-88` for a complete example.
 
+### Contract Tests and Skip Tags
+
+`contract_test/contract_test.go` checks the client against the live Prolific OpenAPI spec. Every operationId in the spec needs an entry in its `operations` table: either a client call, which is validated against the spec, or a `skip` reason that starts with one of these tags:
+
+| Tag            | Use when                                                                 | Call kept and validated? |
+| -------------- | ------------------------------------------------------------------------ | ------------------------ |
+| `OUTOFSCOPE`   | No CLI command exists or is planned for the endpoint                     | No                       |
+| `SPECMISMATCH` | The client request diverges from the spec and needs a fix                | No                       |
+| `HARNESSGAP`   | The client is correct, but the test harness cannot validate the shape    | No                       |
+| `NOTINSPEC`    | The endpoint works but is not in the published spec yet                  | Kept, validated once it is in the spec |
+| `UNADVERTISED` | The endpoint is in the published spec, but is held back from the README while it is rolled out gradually | Yes |
+
+When the spec publishes an endpoint you marked `NOTINSPEC`, `TestAPICoverage` fails until you act on it. If it is ready to go out, remove the skip so the call is validated and the endpoint is listed in the README. If it is part of a gradual rollout, change the tag to `UNADVERTISED`. The call stays validated, but `make readme-coverage` leaves the operation out of the README table. Remove the tag when the rollout is announced.
+
+After changing the table, run `make readme-coverage` to regenerate the API coverage table in `README.md`.
+
 ### Generating Mocks
 
 ```bash
