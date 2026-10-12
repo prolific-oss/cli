@@ -124,13 +124,15 @@ var operations = []operation{
 		c.GetFilterRuleTree("ws-id")
 	}},
 	{operationID: "filters_GetFilters", call: func(c *client.Client) { c.GetFilters("ws-id") }},
-	{operationID: "filters_SearchFilters", call: func(c *client.Client) {
+	// operationId assumed from Fern's tag_operation convention (source operationId is SearchFilters).
+	{operationID: "filters_SearchFilters", skip: "NOTINSPEC: live but unpublished, see prolific-oss/prolific#16270", call: func(c *client.Client) {
 		c.SearchFilters("developer", "ws-id", 25, 0)
 	}},
-	{operationID: "filters_GetFilterChoices", call: func(c *client.Client) {
+	// operationIds assumed from Fern's tag_operation convention, as for filters_SearchFilters above.
+	{operationID: "filters_GetFilterChoices", skip: "NOTINSPEC: live but unpublished; confirm operationId on publication", call: func(c *client.Client) {
 		c.GetFilterChoices("job-title", "ws-id", client.FilterChoicesPageSize, client.DefaultRecordOffset)
 	}},
-	{operationID: "filters_SearchFilterChoices", call: func(c *client.Client) {
+	{operationID: "filters_SearchFilterChoices", skip: "NOTINSPEC: live but unpublished; confirm operationId on publication", call: func(c *client.Client) {
 		c.SearchFilterChoices("job-title", "nurse", "ws-id", client.FilterChoicesPageSize, client.DefaultRecordOffset)
 	}},
 	{operationID: "filters_GetEligibleCount", call: func(c *client.Client) {
