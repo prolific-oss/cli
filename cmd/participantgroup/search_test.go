@@ -56,10 +56,17 @@ func TestSearch(t *testing.T) {
 			if tc.asJSON {
 				var got map[string]json.RawMessage
 				require.NoError(t, json.Unmarshal(output.Bytes(), &got))
-				require.JSONEq(t, `{"count":42}`, string(got["meta"]))
-				var links client.JSONAPILinks
-				require.NoError(t, json.Unmarshal(output.Bytes(), &links))
-				require.Equal(t, response.Links.Next.Href, links.Links.Next.Href)
+
+				// The CLI owns the envelope: the API's meta block and link
+				// relations must not reach our output.
+				require.NotContains(t, got, "meta")
+				require.NotContains(t, got, "_links")
+				require.NotContains(t, output.String(), "api.prolific.com")
+
+				require.JSONEq(t, "42", string(got["count"]))
+				require.JSONEq(t, "10", string(got["limit"]))
+				require.JSONEq(t, "20", string(got["offset"]))
+
 				if tc.empty {
 					require.JSONEq(t, "[]", string(got["results"]))
 				} else {
@@ -71,7 +78,10 @@ func TestSearch(t *testing.T) {
 				}
 				switch {
 				case tc.noMeta:
-					require.NotContains(t, output.String(), "Showing")
+					// Without a meta block the counter falls back to the
+					// records in hand rather than disappearing, so the table
+					// always reports how much it is showing.
+					require.Contains(t, output.String(), "Showing 1 record of 1")
 				case tc.empty:
 					require.Contains(t, output.String(), "Showing 0 records of 42")
 				default:

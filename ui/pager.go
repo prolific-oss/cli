@@ -42,8 +42,22 @@ func ResolvePager() string {
 	return defaultPager
 }
 
+// TerminalWriter is a writer that declares for itself whether its destination
+// is a terminal, which IsTerminal takes at its word. Writers that wrap a
+// terminal rather than being one — the test doubles that stand in for a
+// terminal, since tests have none — implement this so the terminal-only
+// rendering paths can be reached. A plain *os.File does not need it, and
+// wrappers that do not implement it, such as bufio.Writer, are treated as not
+// being a terminal.
+type TerminalWriter interface {
+	IsTerminal() bool
+}
+
 // IsTerminal reports whether w is attached to an interactive terminal.
 func IsTerminal(w io.Writer) bool {
+	if tw, ok := w.(TerminalWriter); ok {
+		return tw.IsTerminal()
+	}
 	f, ok := w.(*os.File)
 	if !ok {
 		return false

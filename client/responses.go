@@ -98,6 +98,24 @@ type SearchFiltersResponse struct {
 	*JSONAPIMeta
 }
 
+// ListFilterChoicesResponse is the response for listing a filter's choices.
+// The results are flat: they describe a hierarchy through ParentID and the
+// child counts, but the endpoint has no way to fetch one node's children.
+type ListFilterChoicesResponse struct {
+	Results []model.FilterChoiceSearchResult `json:"results"`
+	*JSONAPILinks
+	*JSONAPIMeta
+}
+
+// SearchFilterChoicesResponse is the response for searching a filter's
+// choices. It carries the same records as a plain listing, plus the match
+// highlights the filter catalogue search already returns.
+type SearchFilterChoicesResponse struct {
+	Results []model.FilterChoiceSearchResult `json:"results"`
+	*JSONAPILinks
+	*JSONAPIMeta
+}
+
 // EligibilityCountResponse is the response for the eligibility count
 // endpoint. Small counts are floored to 0 by the API to protect participant
 // privacy, so a Count of 0 does not necessarily mean zero eligible

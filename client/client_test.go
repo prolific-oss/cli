@@ -15,6 +15,9 @@ import (
 	"github.com/prolific-oss/cli/version"
 )
 
+// testWorkspaceID is the workspace ID the request-shape tests send.
+const testWorkspaceID = "ws-id"
+
 func TestFormatBatchErrorBody(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -564,6 +567,51 @@ func TestExecuteSetsAgentInUserAgent(t *testing.T) {
 	}
 }
 
+func TestGetFiltersScopesTheCatalogueToAWorkspace(t *testing.T) {
+	var gotPath string
+	var gotQuery url.Values
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotPath = r.URL.Path
+		gotQuery = r.URL.Query()
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(ListFiltersResponse{})
+	}))
+	defer server.Close()
+
+	c := Client{Client: server.Client(), BaseURL: server.URL, Token: "test-token"}
+
+	if _, err := c.GetFilters(testWorkspaceID); err != nil {
+		t.Fatalf("GetFilters returned error: %v", err)
+	}
+	if want := "/api/v1/filters/"; gotPath != want {
+		t.Errorf("path = %q, want %q", gotPath, want)
+	}
+	if got := gotQuery.Get("workspace_id"); got != testWorkspaceID {
+		t.Errorf("workspace_id = %q, want %q", got, testWorkspaceID)
+	}
+}
+
+func TestGetFiltersOmitsWorkspaceIDWhenEmpty(t *testing.T) {
+	var gotQuery url.Values
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotQuery = r.URL.Query()
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(ListFiltersResponse{})
+	}))
+	defer server.Close()
+
+	c := Client{Client: server.Client(), BaseURL: server.URL, Token: "test-token"}
+
+	if _, err := c.GetFilters(""); err != nil {
+		t.Fatalf("GetFilters returned error: %v", err)
+	}
+	if gotQuery.Has("workspace_id") {
+		t.Errorf("workspace_id should not be sent when empty, got %q", gotQuery.Get("workspace_id"))
+	}
+}
+
 // TestSearchFiltersSendsExpectedRequest guards the request shape directly,
 // since the operation is not yet in the published spec and so is not covered
 // by contract_test.
@@ -588,7 +636,7 @@ func TestSearchFiltersSendsExpectedRequest(t *testing.T) {
 		Token:   "test-token",
 	}
 
-	_, err := c.SearchFilters("software developer", "ws-id", 25, 50)
+	_, err := c.SearchFilters("software developer", testWorkspaceID, 25, 50)
 	if err != nil {
 		t.Fatalf("SearchFilters returned error: %v", err)
 	}
@@ -602,8 +650,8 @@ func TestSearchFiltersSendsExpectedRequest(t *testing.T) {
 	if got := gotQuery.Get("q"); got != "software developer" {
 		t.Errorf("q = %q, want %q", got, "software developer")
 	}
-	if got := gotQuery.Get("workspace_id"); got != "ws-id" {
-		t.Errorf("workspace_id = %q, want %q", got, "ws-id")
+	if got := gotQuery.Get("workspace_id"); got != testWorkspaceID {
+		t.Errorf("workspace_id = %q, want %q", got, testWorkspaceID)
 	}
 	if got := gotQuery.Get("limit"); got != "25" {
 		t.Errorf("limit = %q, want %q", got, "25")
@@ -666,7 +714,7 @@ func TestGetFilterBreakdownSendsRequestAndDecodesResponse(t *testing.T) {
 			{FilterID: "age", SelectedRange: &model.FilterRange{Lower: float64(18), Upper: float64(65)}},
 		},
 		BreakdownFilter: model.Filter{FilterID: "handedness", SelectedValues: []string{"0", "1"}},
-		WorkspaceID:     "ws-id",
+		WorkspaceID:     testWorkspaceID,
 	}
 
 	response, err := c.GetFilterBreakdown(payload)
@@ -706,5 +754,216 @@ func TestGetFilterBreakdownSendsRequestAndDecodesResponse(t *testing.T) {
 		if got := response.Breakdown[key]; got != want {
 			t.Errorf("Breakdown[%q] = %d, want %d", key, got, want)
 		}
+	}
+}
+
+// The filter choices endpoints are live but not published in the OpenAPI
+// spec, so contract_test cannot validate them; these guard the request shape
+// directly.
+func TestGetFilterChoicesSendsExpectedRequest(t *testing.T) {
+	var gotMethod, gotPath string
+	var gotQuery url.Values
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotMethod = r.Method
+		gotPath = r.URL.Path
+		gotQuery = r.URL.Query()
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(ListFilterChoicesResponse{})
+	}))
+	defer server.Close()
+
+	c := Client{Client: server.Client(), BaseURL: server.URL, Token: "test-token"}
+
+	if _, err := c.GetFilterChoices("job-title", testWorkspaceID, 100, 50); err != nil {
+		t.Fatalf("GetFilterChoices returned error: %v", err)
+	}
+
+	if gotMethod != http.MethodGet {
+		t.Errorf("method = %q, want %q", gotMethod, http.MethodGet)
+	}
+	if want := "/api/v1/filters/job-title/choices/"; gotPath != want {
+		t.Errorf("path = %q, want %q", gotPath, want)
+	}
+	if got := gotQuery.Get("limit"); got != "100" {
+		t.Errorf("limit = %q, want %q", got, "100")
+	}
+	if got := gotQuery.Get("offset"); got != "50" {
+		t.Errorf("offset = %q, want %q", got, "50")
+	}
+	if got := gotQuery.Get("workspace_id"); got != testWorkspaceID {
+		t.Errorf("workspace_id = %q, want %q", got, testWorkspaceID)
+	}
+}
+
+// A filter ID is user-supplied and goes into the path, so it has to be
+// escaped rather than concatenated.
+func TestGetFilterChoicesEscapesTheFilterID(t *testing.T) {
+	// The raw request URI is what shows the escaping; r.URL.Path has already
+	// been decoded by the time the handler sees it.
+	var gotURI string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotURI = r.RequestURI
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(ListFilterChoicesResponse{})
+	}))
+	defer server.Close()
+
+	c := Client{Client: server.Client(), BaseURL: server.URL, Token: "test-token"}
+
+	if _, err := c.GetFilterChoices("job title/../x", "", 10, 0); err != nil {
+		t.Fatalf("GetFilterChoices returned error: %v", err)
+	}
+	if !strings.HasPrefix(gotURI, "/api/v1/filters/job%20title%2F..%2Fx/choices/") {
+		t.Errorf("request URI = %q, want the filter ID percent-escaped in the path", gotURI)
+	}
+}
+
+func TestGetFilterChoicesOmitsWorkspaceIDWhenEmpty(t *testing.T) {
+	var gotQuery url.Values
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotQuery = r.URL.Query()
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(ListFilterChoicesResponse{})
+	}))
+	defer server.Close()
+
+	c := Client{Client: server.Client(), BaseURL: server.URL, Token: "test-token"}
+
+	if _, err := c.GetFilterChoices("job-title", "", 10, 0); err != nil {
+		t.Fatalf("GetFilterChoices returned error: %v", err)
+	}
+	if gotQuery.Has("workspace_id") {
+		t.Errorf("workspace_id should not be sent when empty, got %q", gotQuery.Get("workspace_id"))
+	}
+}
+
+func TestGetFilterChoicesDecodesResultsAndCount(t *testing.T) {
+	body := `{
+	  "results": [
+	    {"id": "0", "label": "Management Occupations", "parent_id": null, "num_children": 4, "num_descendants": 476},
+	    {"id": "1016", "label": "Registered Nurses", "parent_id": "0", "num_children": 12, "num_descendants": 12}
+	  ],
+	  "_links": {"self": {"href": "x", "title": "Current"}},
+	  "meta": {"count": 4123}
+	}`
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(body))
+	}))
+	defer server.Close()
+
+	c := Client{Client: server.Client(), BaseURL: server.URL, Token: "test-token"}
+
+	response, err := c.GetFilterChoices("job-title", "", 100, 0)
+	if err != nil {
+		t.Fatalf("GetFilterChoices returned error: %v", err)
+	}
+	if len(response.Results) != 2 {
+		t.Fatalf("got %d results, want 2", len(response.Results))
+	}
+	if response.Results[0].Label != "Management Occupations" {
+		t.Errorf("label = %q", response.Results[0].Label)
+	}
+	if response.Results[0].ParentID != nil {
+		t.Errorf("parent_id = %v, want nil for a root choice", *response.Results[0].ParentID)
+	}
+	if response.Results[1].ParentID == nil || *response.Results[1].ParentID != "0" {
+		t.Errorf("parent_id = %v, want 0", response.Results[1].ParentID)
+	}
+	if response.Results[0].NumDescendants != 476 {
+		t.Errorf("num_descendants = %d, want 476", response.Results[0].NumDescendants)
+	}
+	if response.Meta.Count != 4123 {
+		t.Errorf("meta.count = %d, want 4123", response.Meta.Count)
+	}
+}
+
+// The API 404s both for an unknown filter and for one absent from the
+// requested workspace; the error has to reach the caller unchanged.
+func TestGetFilterChoicesSurfacesNotFound(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusNotFound)
+		_, _ = w.Write([]byte(`{"error":{"status":404,"title":"The resource requested was not found.","error_code":140401}}`))
+	}))
+	defer server.Close()
+
+	c := Client{Client: server.Client(), BaseURL: server.URL, Token: "test-token"}
+
+	_, err := c.GetFilterChoices("nope", "", 10, 0)
+	if err == nil {
+		t.Fatal("expected an error for a 404 response")
+	}
+	if !strings.Contains(err.Error(), "not found") {
+		t.Errorf("error = %q, want it to carry the API's message", err)
+	}
+}
+
+func TestSearchFilterChoicesSendsExpectedRequest(t *testing.T) {
+	var gotPath string
+	var gotQuery url.Values
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotPath = r.URL.Path
+		gotQuery = r.URL.Query()
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(SearchFilterChoicesResponse{})
+	}))
+	defer server.Close()
+
+	c := Client{Client: server.Client(), BaseURL: server.URL, Token: "test-token"}
+
+	if _, err := c.SearchFilterChoices("job-title", "nurse", testWorkspaceID, 100, 0); err != nil {
+		t.Fatalf("SearchFilterChoices returned error: %v", err)
+	}
+
+	if want := "/api/v1/filters/job-title/choices/search/"; gotPath != want {
+		t.Errorf("path = %q, want %q", gotPath, want)
+	}
+	if got := gotQuery.Get("q"); got != "nurse" {
+		t.Errorf("q = %q, want %q", got, "nurse")
+	}
+	if got := gotQuery.Get("limit"); got != "100" {
+		t.Errorf("limit = %q, want %q", got, "100")
+	}
+	if got := gotQuery.Get("workspace_id"); got != testWorkspaceID {
+		t.Errorf("workspace_id = %q, want %q", got, testWorkspaceID)
+	}
+}
+
+func TestSearchFilterChoicesDecodesHighlights(t *testing.T) {
+	body := `{
+	  "results": [
+	    {"id": "18873", "label": "Obstetrics Nurse (OB Nurse)", "parent_id": "1016", "num_children": 0, "num_descendants": 0,
+	     "matches": [{"field": "label", "query_term": "nurse", "matched_text": "Nurse", "start": 11, "end": 16}]}
+	  ],
+	  "meta": {"count": 128}
+	}`
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(body))
+	}))
+	defer server.Close()
+
+	c := Client{Client: server.Client(), BaseURL: server.URL, Token: "test-token"}
+
+	response, err := c.SearchFilterChoices("job-title", "nurse", "", 100, 0)
+	if err != nil {
+		t.Fatalf("SearchFilterChoices returned error: %v", err)
+	}
+	if len(response.Results) != 1 {
+		t.Fatalf("got %d results, want 1", len(response.Results))
+	}
+	match := response.Results[0].Matches
+	if len(match) != 1 || match[0].Field != "label" || match[0].Start != 11 || match[0].End != 16 {
+		t.Errorf("matches = %+v, want one label highlight spanning 11-16", match)
+	}
+	if response.Meta.Count != 128 {
+		t.Errorf("meta.count = %d, want 128", response.Meta.Count)
 	}
 }

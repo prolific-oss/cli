@@ -47,7 +47,7 @@ scripts/             Git hooks and changelog tooling
 
 ## Code Patterns
 
-### Two-Level Command Structure
+### Command Structure
 
 Resources follow a two-level hierarchy. The parent command groups sub-commands:
 
@@ -68,6 +68,26 @@ func New{Resource}Command(client client.API, w io.Writer) *cobra.Command {
 ```
 
 The parent command is registered in `cmd/root.go`.
+
+A sub-resource may be grouped at the second level, taking its own actions below
+it, in one case only: it has its own endpoints, and those endpoints can only be
+reached through a parent resource's ID. Filter choices are the worked example —
+a choice belongs to one filter and is only ever fetched through it:
+
+```
+prolific filters choices <filter-id>
+prolific filters choices search <filter-id> <query>
+```
+
+Once a sub-resource qualifies, it takes the same action verbs any resource
+takes, so `search` means the same thing under `choices` as it does under
+`filters`: it searches the thing named to its left.
+
+This is not permission for arbitrary nesting. The test is the sub-resource, not
+the action: if the thing you are adding is a flag, a filter on an existing
+listing, or another way to run an action that already exists, it belongs beside
+that action at the second level. Only a distinct sub-resource reached by its
+parent's ID earns a group of its own.
 
 ### Action Command Signature
 

@@ -96,9 +96,11 @@ type API interface {
 
 	CreateTestParticipant(email string) (*CreateTestParticipantResponse, error)
 
-	GetFilters() (*ListFiltersResponse, error)
+	GetFilters(workspaceID string) (*ListFiltersResponse, error)
 	GetFilterRuleTree(workspaceID string) (*FilterRuleTreeResponse, error)
 	SearchFilters(query, workspaceID string, limit, offset int) (*SearchFiltersResponse, error)
+	GetFilterChoices(filterID, workspaceID string, limit, offset int) (*ListFilterChoicesResponse, error)
+	SearchFilterChoices(filterID, query, workspaceID string, limit, offset int) (*SearchFilterChoicesResponse, error)
 	GetEligibilityCount(payload EligibilityCountPayload) (*EligibilityCountResponse, error)
 	GetFilterBreakdown(payload FilterBreakdownPayload) (*FilterBreakdownResponse, error)
 
@@ -1071,11 +1073,19 @@ func (c *Client) CreateTestParticipant(email string) (*CreateTestParticipantResp
 	return &response, nil
 }
 
-func (c *Client) GetFilters() (*ListFiltersResponse, error) {
+// GetFilters retrieves the filter catalogue. workspaceID is optional and
+// scopes the catalogue to the filters available in that workspace, which also
+// trims the payload the API returns. The endpoint does not paginate, so the
+// whole catalogue comes back in one response.
+func (c *Client) GetFilters(workspaceID string) (*ListFiltersResponse, error) {
 	var response ListFiltersResponse
 
-	url := "/api/v1/filters/"
-	if _, err := c.ExecuteBuilder().Get(url, &response); err != nil {
+	requestURL := "/api/v1/filters/"
+	if workspaceID != "" {
+		params := url.Values{"workspace_id": {workspaceID}}
+		requestURL += "?" + params.Encode()
+	}
+	if _, err := c.ExecuteBuilder().Get(requestURL, &response); err != nil {
 		return nil, err
 	}
 
@@ -1117,6 +1127,57 @@ func (c *Client) SearchFilters(query, workspaceID string, limit, offset int) (*S
 
 	requestURL := "/api/v1/filters/search/?" + params.Encode()
 	if _, err := c.ExecuteBuilder().Get(requestURL, &response); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// filterChoicesURL builds the path for a filter's choices endpoints. The
+// filter ID comes from the user, so it is escaped rather than interpolated.
+func filterChoicesURL(filterID, suffix string, params url.Values) string {
+	requestURL := "/api/v1/filters/" + url.PathEscape(filterID) + "/choices/" + suffix
+	if encoded := params.Encode(); encoded != "" {
+		requestURL += "?" + encoded
+	}
+	return requestURL
+}
+
+// GetFilterChoices retrieves a filter's choices, in the order the API returns
+// them. workspaceID is optional and scopes the lookup to that workspace; a
+// filter absent from the workspace's catalogue returns a 404, as does one
+// that does not exist at all.
+func (c *Client) GetFilterChoices(filterID, workspaceID string, limit, offset int) (*ListFilterChoicesResponse, error) {
+	var response ListFilterChoicesResponse
+
+	params := url.Values{}
+	params.Set("limit", strconv.Itoa(limit))
+	params.Set("offset", strconv.Itoa(offset))
+	if workspaceID != "" {
+		params.Set("workspace_id", workspaceID)
+	}
+
+	if _, err := c.ExecuteBuilder().Get(filterChoicesURL(filterID, "", params), &response); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// SearchFilterChoices searches a filter's choices by keyword, returning them
+// in relevance order with highlight offsets.
+func (c *Client) SearchFilterChoices(filterID, query, workspaceID string, limit, offset int) (*SearchFilterChoicesResponse, error) {
+	var response SearchFilterChoicesResponse
+
+	params := url.Values{}
+	params.Set("q", query)
+	params.Set("limit", strconv.Itoa(limit))
+	params.Set("offset", strconv.Itoa(offset))
+	if workspaceID != "" {
+		params.Set("workspace_id", workspaceID)
+	}
+
+	if _, err := c.ExecuteBuilder().Get(filterChoicesURL(filterID, "search/", params), &response); err != nil {
 		return nil, err
 	}
 

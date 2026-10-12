@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"strings"
 	"testing"
 
@@ -17,6 +18,40 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+// terminalWriter stands in for a terminal destination, so the tests can
+// exercise the output a user at a terminal sees without attaching the test
+// process to a pty.
+type terminalWriter struct{ io.Writer }
+
+func (terminalWriter) IsTerminal() bool { return true }
+
+// atTerminal presents w as a terminal and disables the pager, so the output a
+// user would see lands in the buffer rather than in less.
+func atTerminal(t *testing.T, w io.Writer) io.Writer {
+	t.Helper()
+	t.Setenv("PROLIFIC_PAGER", "")
+	return terminalWriter{w}
+}
+
+// decodeSearchEnvelope reads the CLI envelope --json emits and returns the
+// records inside it.
+func decodeSearchEnvelope(t *testing.T, raw []byte) []model.FilterSearchResult {
+	t.Helper()
+
+	var envelope struct {
+		Results []model.FilterSearchResult `json:"results"`
+		Count   int                        `json:"count"`
+		Limit   int                        `json:"limit"`
+		Offset  int                        `json:"offset"`
+	}
+	require.NoError(t, json.Unmarshal(raw, &envelope))
+
+	// The API's own envelope must never reach our output.
+	require.NotContains(t, string(raw), "_links")
+
+	return envelope.Results
+}
 
 func ptr[T any](v T) *T { return &v }
 
@@ -78,13 +113,12 @@ func TestNewSearchCommand(t *testing.T) {
 	assert.Equal(t, "search <query>", cmd.Use)
 	assert.NotEmpty(t, cmd.Short)
 
-	for name, shorthand := range map[string]string{"workspace": "w", "limit": "l", "all": "a", "json": "j", "csv": "c", "table": "t"} {
+	for name, shorthand := range map[string]string{"workspace": "w", "limit": "l", "offset": "o", "all": "a", "fields": "f", "json": "j", "csv": "c", "table": "t"} {
 		flag := cmd.Flags().Lookup(name)
 		require.NotNil(t, flag, name)
 		assert.Equal(t, shorthand, flag.Shorthand)
 	}
 
-	require.NotNil(t, cmd.Flags().Lookup("fields"))
 	// --no-pager is a persistent root flag, not a per-command one.
 	assert.Nil(t, cmd.Flags().Lookup("no-pager"))
 }
@@ -95,13 +129,13 @@ func TestSearchFilters(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	c.EXPECT().
-		SearchFilters("software developers", "ws-1", filters.DefaultSearchLimit, client.DefaultRecordOffset).
+		SearchFilters("software developers", "ws-1", client.FilterSearchPageSize, client.DefaultRecordOffset).
 		Return(searchResponse(), nil)
 
 	var b bytes.Buffer
 	w := bufio.NewWriter(&b)
 
-	cmd := filters.NewSearchCommand(c, w)
+	cmd := filters.NewSearchCommand(c, atTerminal(t, w))
 	cmd.SetArgs([]string{"software", "developers", "-w", "ws-1"})
 	err := cmd.Execute()
 	w.Flush()
@@ -147,8 +181,7 @@ func TestSearchFiltersJSON(t *testing.T) {
 
 	require.NoError(t, err)
 
-	var decoded []model.FilterSearchResult
-	require.NoError(t, json.Unmarshal(b.Bytes(), &decoded))
+	decoded := decodeSearchEnvelope(t, b.Bytes())
 	require.Len(t, decoded, 2)
 	assert.Equal(t, "job-title", decoded[0].FilterID)
 	assert.Equal(t, 4, decoded[0].Choices.Matched)
@@ -162,13 +195,13 @@ func TestSearchFiltersNoResults(t *testing.T) {
 
 	response := &client.SearchFiltersResponse{Results: []model.FilterSearchResult{}, JSONAPIMeta: &client.JSONAPIMeta{}}
 	c.EXPECT().
-		SearchFilters("zzz", "", filters.DefaultSearchLimit, client.DefaultRecordOffset).
+		SearchFilters("zzz", "", client.FilterSearchPageSize, client.DefaultRecordOffset).
 		Return(response, nil)
 
 	var b bytes.Buffer
 	w := bufio.NewWriter(&b)
 
-	cmd := filters.NewSearchCommand(c, w)
+	cmd := filters.NewSearchCommand(c, atTerminal(t, w))
 	cmd.SetArgs([]string{"zzz"})
 	err := cmd.Execute()
 	w.Flush()
@@ -184,7 +217,7 @@ func TestSearchFiltersNoResultsJSON(t *testing.T) {
 
 	response := &client.SearchFiltersResponse{Results: nil}
 	c.EXPECT().
-		SearchFilters("zzz", "", filters.DefaultSearchLimit, client.DefaultRecordOffset).
+		SearchFilters("zzz", "", client.FilterSearchPageSize, client.DefaultRecordOffset).
 		Return(response, nil)
 
 	var b bytes.Buffer
@@ -196,7 +229,7 @@ func TestSearchFiltersNoResultsJSON(t *testing.T) {
 	w.Flush()
 
 	require.NoError(t, err)
-	assert.JSONEq(t, "[]", b.String())
+	assert.Contains(t, b.String(), `"results": []`)
 }
 
 func TestSearchFiltersAPIError(t *testing.T) {
@@ -205,7 +238,7 @@ func TestSearchFiltersAPIError(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	c.EXPECT().
-		SearchFilters("developers", "", filters.DefaultSearchLimit, client.DefaultRecordOffset).
+		SearchFilters("developers", "", client.FilterSearchPageSize, client.DefaultRecordOffset).
 		Return(nil, assert.AnError)
 
 	var b bytes.Buffer
@@ -228,6 +261,7 @@ func TestSearchFiltersValidation(t *testing.T) {
 		{name: "blank query", args: []string{"   "}, want: "please provide a search query"},
 		{name: "query too long", args: []string{string(make([]rune, 201))}, want: "search query must be at most 200 characters"},
 		{name: "negative limit", args: []string{"dev", "--limit", "-1"}, want: "limit must be greater than or equal to 0"},
+		{name: "negative offset", args: []string{"dev", "--offset", "-1"}, want: "offset must be greater than or equal to 0"},
 		{name: "all with limit", args: []string{"dev", "--all", "--limit", "10"}, want: "[all limit] were all set"},
 	}
 
@@ -272,25 +306,25 @@ func TestSearchFiltersLimitAbovePageSizeFetchesMultiplePages(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	gomock.InOrder(
-		c.EXPECT().SearchFilters("dev", "", 100, 0).Return(pageOf(0, 100, 300), nil),
-		c.EXPECT().SearchFilters("dev", "", 50, 100).Return(pageOf(100, 50, 300), nil),
+		c.EXPECT().SearchFilters("dev", "", 200, 0).Return(pageOf(0, 200, 300), nil),
+		c.EXPECT().SearchFilters("dev", "", 50, 200).Return(pageOf(200, 50, 300), nil),
 	)
 
 	var b bytes.Buffer
 	w := bufio.NewWriter(&b)
 
-	cmd := filters.NewSearchCommand(c, w)
-	cmd.SetArgs([]string{"dev", "--limit", "150"})
+	cmd := filters.NewSearchCommand(c, atTerminal(t, w))
+	cmd.SetArgs([]string{"dev", "--limit", "250"})
 	err := cmd.Execute()
 	w.Flush()
 
 	require.NoError(t, err)
 	output := stripansi.Strip(b.String())
 	assert.Contains(t, output, "300 matching filters. Use --limit or --all to see more\n")
-	assert.True(t, strings.HasSuffix(output, "\nShowing 150 records of 300\n"))
+	assert.True(t, strings.HasSuffix(output, "\nShowing 250 records of 300\n"))
 	assert.Contains(t, output, "1. Filter 0\n")
-	assert.Contains(t, output, "150. Filter 149\n")
-	assert.NotContains(t, output, "filter-150")
+	assert.Contains(t, output, "250. Filter 249\n")
+	assert.NotContains(t, output, "filter-250")
 }
 
 func TestSearchFiltersAllFetchesUntilExhausted(t *testing.T) {
@@ -299,9 +333,8 @@ func TestSearchFiltersAllFetchesUntilExhausted(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	gomock.InOrder(
-		c.EXPECT().SearchFilters("dev", "ws-1", 100, 0).Return(pageOf(0, 100, 230), nil),
-		c.EXPECT().SearchFilters("dev", "ws-1", 100, 100).Return(pageOf(100, 100, 230), nil),
-		c.EXPECT().SearchFilters("dev", "ws-1", 100, 200).Return(pageOf(200, 30, 230), nil),
+		c.EXPECT().SearchFilters("dev", "ws-1", 200, 0).Return(pageOf(0, 200, 230), nil),
+		c.EXPECT().SearchFilters("dev", "ws-1", 200, 200).Return(pageOf(200, 30, 230), nil),
 	)
 
 	var b bytes.Buffer
@@ -314,8 +347,7 @@ func TestSearchFiltersAllFetchesUntilExhausted(t *testing.T) {
 
 	require.NoError(t, err)
 
-	var decoded []model.FilterSearchResult
-	require.NoError(t, json.Unmarshal(b.Bytes(), &decoded))
+	decoded := decodeSearchEnvelope(t, b.Bytes())
 	require.Len(t, decoded, 230)
 	assert.Equal(t, "filter-0", decoded[0].FilterID)
 	assert.Equal(t, "filter-229", decoded[229].FilterID)
@@ -327,14 +359,14 @@ func TestSearchFiltersErrorOnLaterPage(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	gomock.InOrder(
-		c.EXPECT().SearchFilters("dev", "", 100, 0).Return(pageOf(0, 100, 300), nil),
-		c.EXPECT().SearchFilters("dev", "", 100, 100).Return(nil, assert.AnError),
+		c.EXPECT().SearchFilters("dev", "", 200, 0).Return(pageOf(0, 200, 300), nil),
+		c.EXPECT().SearchFilters("dev", "", 200, 200).Return(nil, assert.AnError),
 	)
 
 	var b bytes.Buffer
 	w := bufio.NewWriter(&b)
 
-	cmd := filters.NewSearchCommand(c, w)
+	cmd := filters.NewSearchCommand(c, atTerminal(t, w))
 	cmd.SetArgs([]string{"dev", "--all"})
 	err := cmd.Execute()
 	w.Flush()
@@ -343,8 +375,8 @@ func TestSearchFiltersErrorOnLaterPage(t *testing.T) {
 	// when the second fails; the error must still be reported.
 	require.Error(t, err)
 	output := stripansi.Strip(b.String())
-	assert.Contains(t, output, "100. Filter 99\n")
-	assert.NotContains(t, output, "Filter 100")
+	assert.Contains(t, output, "200. Filter 199\n")
+	assert.NotContains(t, output, "Filter 200")
 }
 
 func TestSearchFiltersTable(t *testing.T) {
@@ -353,7 +385,7 @@ func TestSearchFiltersTable(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	c.EXPECT().
-		SearchFilters("developers", "", filters.DefaultSearchLimit, client.DefaultRecordOffset).
+		SearchFilters("developers", "", client.FilterSearchPageSize, client.DefaultRecordOffset).
 		Return(searchResponse(), nil)
 
 	var b bytes.Buffer
@@ -366,11 +398,11 @@ func TestSearchFiltersTable(t *testing.T) {
 
 	require.NoError(t, err)
 	output := b.String()
-	assert.Contains(t, output, "Rank")
-	assert.Contains(t, output, "FilterID")
-	assert.Contains(t, output, "MatchedOn")
-	assert.Regexp(t, `1\s+job-title\s+Job title\s+select\s+ChoiceID\s+Employment\s+choices`, output)
-	assert.Regexp(t, `2\s+age\s+Age\s+range\s+integer\s+title`, output)
+	assert.Regexp(t, `FilterID\s+Title\s+Type`, output)
+	assert.Regexp(t, `job-title\s+Job title\s+select`, output)
+	assert.Regexp(t, `age\s+Age\s+range`, output)
+	assert.NotContains(t, output, "Rank")
+	assert.NotContains(t, output, "MatchedOn")
 	assert.Contains(t, output, "Showing 2 records of 2")
 }
 
@@ -380,19 +412,19 @@ func TestSearchFiltersCSVWithFields(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	c.EXPECT().
-		SearchFilters("developers", "", filters.DefaultSearchLimit, client.DefaultRecordOffset).
+		SearchFilters("developers", "", client.FilterSearchPageSize, client.DefaultRecordOffset).
 		Return(searchResponse(), nil)
 
 	var b bytes.Buffer
 	w := bufio.NewWriter(&b)
 
 	cmd := filters.NewSearchCommand(c, w)
-	cmd.SetArgs([]string{"developers", "--csv", "--fields", "Rank,FilterID,Title"})
+	cmd.SetArgs([]string{"developers", "--csv", "--fields", "FilterID,Title"})
 	err := cmd.Execute()
 	w.Flush()
 
 	require.NoError(t, err)
-	assert.Equal(t, "Rank,FilterID,Title\n1,job-title,Job title\n2,age,Age\n", b.String())
+	assert.Equal(t, "FilterID,Title\njob-title,Job title\nage,Age\n", b.String())
 }
 
 func TestSearchFiltersHeaderUsesFirstPageTotal(t *testing.T) {
@@ -403,23 +435,23 @@ func TestSearchFiltersHeaderUsesFirstPageTotal(t *testing.T) {
 	// The header must be written from the first page, before later pages
 	// arrive, and reflect how many will be shown out of the total.
 	gomock.InOrder(
-		c.EXPECT().SearchFilters("dev", "", 100, 0).Return(pageOf(0, 100, 1000), nil),
-		c.EXPECT().SearchFilters("dev", "", 20, 100).Return(pageOf(100, 20, 1000), nil),
+		c.EXPECT().SearchFilters("dev", "", 200, 0).Return(pageOf(0, 200, 1000), nil),
+		c.EXPECT().SearchFilters("dev", "", 20, 200).Return(pageOf(200, 20, 1000), nil),
 	)
 
 	var b bytes.Buffer
 	w := bufio.NewWriter(&b)
 
-	cmd := filters.NewSearchCommand(c, w)
-	cmd.SetArgs([]string{"dev", "--limit", "120"})
+	cmd := filters.NewSearchCommand(c, atTerminal(t, w))
+	cmd.SetArgs([]string{"dev", "--limit", "220"})
 	err := cmd.Execute()
 	w.Flush()
 
 	require.NoError(t, err)
 	output := stripansi.Strip(b.String())
 	assert.True(t, strings.HasPrefix(output, "Filters matching \"dev\"\n1000 matching filters. Use --limit or --all to see more\n\n1. Filter 0\n"))
-	assert.Contains(t, output, "120. Filter 119\n")
-	assert.True(t, strings.HasSuffix(output, "\nShowing 120 records of 1000\n"))
+	assert.Contains(t, output, "220. Filter 219\n")
+	assert.True(t, strings.HasSuffix(output, "\nShowing 220 records of 1000\n"))
 }
 
 func TestSearchFiltersFooterCountsWhatWasRendered(t *testing.T) {
@@ -428,19 +460,22 @@ func TestSearchFiltersFooterCountsWhatWasRendered(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	// The API claims 50 matches but hands back only 7 and then a short page.
-	c.EXPECT().SearchFilters("dev", "", 25, 0).Return(pageOf(0, 7, 50), nil)
+	c.EXPECT().SearchFilters("dev", "", client.FilterSearchPageSize, 0).Return(pageOf(0, 7, 50), nil)
 
 	var b bytes.Buffer
 	w := bufio.NewWriter(&b)
 
-	cmd := filters.NewSearchCommand(c, w)
+	cmd := filters.NewSearchCommand(c, atTerminal(t, w))
 	cmd.SetArgs([]string{"dev"})
 	err := cmd.Execute()
 	w.Flush()
 
 	require.NoError(t, err)
 	output := stripansi.Strip(b.String())
-	assert.Contains(t, output, "50 matching filters. Use --limit or --all to see more\n")
+	// 50 matches sit inside the default limit of 200, so nothing was cut off
+	// and the header must not offer --limit or --all.
+	assert.Contains(t, output, "50 matching filters\n")
+	assert.NotContains(t, output, "to see more")
 	assert.True(t, strings.HasSuffix(output, "\nShowing 7 records of 50\n"))
 }
 
@@ -450,8 +485,7 @@ func TestSearchFiltersLimitZeroFetchesAll(t *testing.T) {
 	c := mock_client.NewMockAPI(ctrl)
 
 	gomock.InOrder(
-		c.EXPECT().SearchFilters("dev", "", 100, 0).Return(pageOf(0, 100, 130), nil),
-		c.EXPECT().SearchFilters("dev", "", 100, 100).Return(pageOf(100, 30, 130), nil),
+		c.EXPECT().SearchFilters("dev", "", 200, 0).Return(pageOf(0, 130, 130), nil),
 	)
 
 	var b bytes.Buffer
@@ -464,7 +498,159 @@ func TestSearchFiltersLimitZeroFetchesAll(t *testing.T) {
 
 	require.NoError(t, err)
 
-	var decoded []model.FilterSearchResult
-	require.NoError(t, json.Unmarshal(b.Bytes(), &decoded))
+	decoded := decodeSearchEnvelope(t, b.Bytes())
 	assert.Len(t, decoded, 130)
+}
+
+// --offset skips results the caller has already seen, and paging continues
+// from there rather than restarting at the top of the result set.
+func TestSearchFiltersOffsetSkipsEarlierMatches(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	c.EXPECT().SearchFilters("dev", "", 120, 50).Return(pageOf(50, 120, 300), nil)
+
+	var b bytes.Buffer
+	w := bufio.NewWriter(&b)
+
+	cmd := filters.NewSearchCommand(c, atTerminal(t, w))
+	cmd.SetArgs([]string{"dev", "--offset", "50", "--limit", "120"})
+	err := cmd.Execute()
+	require.NoError(t, w.Flush())
+
+	require.NoError(t, err)
+	output := stripansi.Strip(b.String())
+
+	// Ranks are reported against the whole result set, not this slice of it.
+	assert.Contains(t, output, "51. Filter 50\n")
+	assert.Contains(t, output, "170. Filter 169\n")
+	assert.NotContains(t, output, "1. Filter 0\n")
+}
+
+func TestSearchFiltersOffsetReachesTheAPI(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	c.EXPECT().SearchFilters("dev", "", client.FilterSearchPageSize, 50).Return(pageOf(50, 2, 300), nil)
+
+	var b bytes.Buffer
+	w := bufio.NewWriter(&b)
+
+	cmd := filters.NewSearchCommand(c, w)
+	cmd.SetArgs([]string{"dev", "-o", "50", "--csv", "-f", "FilterID"})
+	err := cmd.Execute()
+	require.NoError(t, w.Flush())
+
+	require.NoError(t, err)
+	assert.Equal(t, "FilterID\nfilter-50\nfilter-51\n", b.String())
+}
+
+// Piped into another program with no format flag, results have to arrive as a
+// table rather than as the reading view meant for a terminal.
+func TestSearchFiltersRendersATableWhenNotATerminal(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	c.EXPECT().
+		SearchFilters("developers", "", client.FilterSearchPageSize, client.DefaultRecordOffset).
+		Return(searchResponse(), nil)
+
+	var b bytes.Buffer
+	w := bufio.NewWriter(&b)
+
+	cmd := filters.NewSearchCommand(c, w)
+	cmd.SetArgs([]string{"developers"})
+	err := cmd.Execute()
+	require.NoError(t, w.Flush())
+
+	require.NoError(t, err)
+	output := b.String()
+	assert.Regexp(t, `FilterID\s+Title\s+Type`, output)
+	assert.Regexp(t, `job-title\s+Job title`, output)
+	assert.NotContains(t, output, "Rank")
+	assert.NotContains(t, output, "Filters matching")
+}
+
+// A filter whose choices the preview cannot cover has to name the command
+// that lists the rest, or the choice IDs behind it are unreachable.
+func TestSearchFiltersNamesTheChoicesCommand(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	c.EXPECT().
+		SearchFilters("software developers", "", client.FilterSearchPageSize, client.DefaultRecordOffset).
+		Return(searchResponse(), nil)
+
+	var b bytes.Buffer
+	w := bufio.NewWriter(&b)
+
+	cmd := filters.NewSearchCommand(c, atTerminal(t, w))
+	cmd.SetArgs([]string{"software", "developers"})
+	err := cmd.Execute()
+	require.NoError(t, w.Flush())
+
+	require.NoError(t, err)
+	assert.Contains(t, stripansi.Strip(b.String()), `See them all: prolific filters choices search job-title 'software developers'`)
+}
+
+// The envelope's window is the one thing no other test pins: --all is the
+// only path where limit must be 0, and an offset search must report where
+// its window started.
+func TestSearchFiltersEnvelopeReportsTheRequestedWindow(t *testing.T) {
+	decode := func(t *testing.T, raw []byte) (count, limit, offset int) {
+		t.Helper()
+		var envelope struct {
+			Count  int `json:"count"`
+			Limit  int `json:"limit"`
+			Offset int `json:"offset"`
+		}
+		require.NoError(t, json.Unmarshal(raw, &envelope))
+		return envelope.Count, envelope.Limit, envelope.Offset
+	}
+
+	t.Run("--all is an unbounded window", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		c := mock_client.NewMockAPI(ctrl)
+
+		gomock.InOrder(
+			c.EXPECT().SearchFilters("dev", "", client.FilterSearchPageSize, 0).Return(pageOf(0, 130, 130), nil),
+		)
+
+		var b bytes.Buffer
+		w := bufio.NewWriter(&b)
+		cmd := filters.NewSearchCommand(c, w)
+		cmd.SetArgs([]string{"dev", "--all", "--json"})
+		require.NoError(t, cmd.Execute())
+		require.NoError(t, w.Flush())
+
+		count, limit, offset := decode(t, b.Bytes())
+		assert.Equal(t, 130, count)
+		assert.Equal(t, 0, limit, "--all asks for no limit, so the envelope must not claim one")
+		assert.Equal(t, 0, offset)
+	})
+
+	t.Run("a limited, offset window is reported as asked for", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		c := mock_client.NewMockAPI(ctrl)
+
+		c.EXPECT().SearchFilters("dev", "", 10, 50).Return(pageOf(50, 10, 300), nil)
+
+		var b bytes.Buffer
+		w := bufio.NewWriter(&b)
+		cmd := filters.NewSearchCommand(c, w)
+		cmd.SetArgs([]string{"dev", "--limit", "10", "--offset", "50", "--json"})
+		require.NoError(t, cmd.Execute())
+		require.NoError(t, w.Flush())
+
+		count, limit, offset := decode(t, b.Bytes())
+		assert.Equal(t, 300, count)
+		assert.Equal(t, 10, limit)
+		assert.Equal(t, 50, offset)
+	})
 }
