@@ -403,6 +403,7 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 | `messages_GetConversations` | GET | `/api/v1/conversations/` | ➖ Not exposed in the CLI |
 | `messages_CreateConversation` | POST | `/api/v1/conversations/` | ➖ Not exposed in the CLI |
 | `messages_GetConversationMessages` | GET | `/api/v1/conversations/{conversation_id}/messages/` | ➖ Not exposed in the CLI |
+| `messages_CreateBroadcast` | POST | `/api/v1/broadcasts/` | ➖ Not exposed in the CLI |
 
 </details>
 

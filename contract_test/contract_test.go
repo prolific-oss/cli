@@ -313,6 +313,7 @@ var operations = []operation{
 	{operationID: "messages_GetConversations", skip: "OUTOFSCOPE: no CLI command for listing conversations"},
 	{operationID: "messages_CreateConversation", skip: "OUTOFSCOPE: no CLI command for starting a conversation"},
 	{operationID: "messages_GetConversationMessages", skip: "OUTOFSCOPE: no CLI command for retrieving conversation messages"},
+	{operationID: "messages_CreateBroadcast", skip: "OUTOFSCOPE: no CLI command for sending broadcasts"},
 
 	// Studies
 	{operationID: "studies_GetStudies", call: func(c *client.Client) { c.GetStudies("", "") }}, // SearchStudies parameters: client/search_test.go.
