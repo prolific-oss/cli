@@ -92,6 +92,7 @@ type API interface {
 	SearchParticipantGroups(query, workspaceID string, limit, offset int) (*ListParticipantGroupsResponse, error)
 	GetParticipantGroup(groupID string) (*ViewParticipantGroupResponse, error)
 	CreateParticipantGroup(group model.CreateParticipantGroup) (*CreateParticipantGroupResponse, error)
+	AddParticipantGroupMembers(groupID string, participantIDs []string) (*ViewParticipantGroupResponse, error)
 	RemoveParticipantGroupMembers(groupID string, participantIDs []string) (*ViewParticipantGroupResponse, error)
 
 	CreateTestParticipant(email string) (*CreateTestParticipantResponse, error)
@@ -1011,6 +1012,7 @@ func (c *Client) CreateParticipantGroup(group model.CreateParticipantGroup) (*Cr
 	return &response, nil
 }
 
+// RemoveParticipantGroupMembers removes the given participants from a participant group.
 func (c *Client) RemoveParticipantGroupMembers(groupID string, participantIDs []string) (*ViewParticipantGroupResponse, error) {
 	payload := RemoveParticipantGroupMembersPayload{
 		ParticipantIDs: participantIDs,
@@ -1031,6 +1033,7 @@ func (c *Client) RemoveParticipantGroupMembers(groupID string, participantIDs []
 	return &response, nil
 }
 
+// AddParticipantGroupMembers adds the given participants to a participant group.
 func (c *Client) AddParticipantGroupMembers(groupID string, participantIDs []string) (*ViewParticipantGroupResponse, error) {
 	payload := AddParticipantGroupMembersPayload{
 		ParticipantIDs: participantIDs,

@@ -33,6 +33,7 @@ Participant groups allow you do the following:
 		NewViewCommand("view", client, w),
 		NewCreateCommand("create", client, w),
 		NewRemoveCommand("remove", client, w),
+		NewAddCommand("add", client, w),
 	)
 	return cmd
 }
