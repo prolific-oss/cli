@@ -314,6 +314,8 @@ var operations = []operation{
 	{operationID: "messages_CreateConversation", skip: "OUTOFSCOPE: no CLI command for starting a conversation"},
 	{operationID: "messages_GetConversationMessages", skip: "OUTOFSCOPE: no CLI command for retrieving conversation messages"},
 	{operationID: "messages_CreateBroadcast", skip: "OUTOFSCOPE: no CLI command for sending broadcasts"},
+	{operationID: "messages_GetBroadcasts", skip: "OUTOFSCOPE: no CLI command for listing broadcasts"},
+	{operationID: "messages_GetBroadcast", skip: "OUTOFSCOPE: no CLI command for retrieving a broadcast"},
 
 	// Studies
 	{operationID: "studies_GetStudies", call: func(c *client.Client) { c.GetStudies("", "") }}, // SearchStudies parameters: client/search_test.go.
@@ -349,6 +351,7 @@ var operations = []operation{
 	{operationID: "studies_GetDemographicExportHistory", skip: "OUTOFSCOPE: no CLI command for demographic export history"},
 	{operationID: "studies_DuplicateStudy", call: func(c *client.Client) { c.DuplicateStudy("study-id") }},
 	{operationID: "studies_CalculateStudyCost", skip: "OUTOFSCOPE: no CLI command for calculating study cost"},
+	{operationID: "studies_ListStudyFeedbackResponses", call: func(c *client.Client) { c.GetStudyFeedback("study-id", false, 0, 0) }},
 
 	// Credentials
 	{operationID: "credentials_ListCredentialPools", call: func(c *client.Client) { c.ListCredentialPools("ws-id") }},
