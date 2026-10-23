@@ -351,7 +351,7 @@ var operations = []operation{
 	{operationID: "studies_GetDemographicExportHistory", skip: "OUTOFSCOPE: no CLI command for demographic export history"},
 	{operationID: "studies_DuplicateStudy", call: func(c *client.Client) { c.DuplicateStudy("study-id") }},
 	{operationID: "studies_CalculateStudyCost", skip: "OUTOFSCOPE: no CLI command for calculating study cost"},
-	{operationID: "studies_ListStudyFeedbackResponses", skip: "OUTOFSCOPE: no CLI command for listing study feedback"},
+	{operationID: "studies_ListStudyFeedbackResponses", call: func(c *client.Client) { c.GetStudyFeedback("study-id", false, 0, 0) }},
 
 	// Credentials
 	{operationID: "credentials_ListCredentialPools", call: func(c *client.Client) { c.ListCredentialPools("ws-id") }},

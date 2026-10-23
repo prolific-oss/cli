@@ -433,7 +433,7 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 | `studies_GetDemographicExportHistory` | GET | `/api/v1/studies/{id}/demographic-export-history/` | ➖ Not exposed in the CLI |
 | `studies_DuplicateStudy` | POST | `/api/v1/studies/{id}/clone/` | ✅ `DuplicateStudy` |
 | `studies_CalculateStudyCost` | POST | `/api/v1/study-cost-calculator/` | ➖ Not exposed in the CLI |
-| `studies_ListStudyFeedbackResponses` | GET | `/api/v1/studies/{id}/feedback/responses/` | ➖ Not exposed in the CLI |
+| `studies_ListStudyFeedbackResponses` | GET | `/api/v1/studies/{id}/feedback/responses/` | ✅ `GetStudyFeedback` |
 
 </details>
 
