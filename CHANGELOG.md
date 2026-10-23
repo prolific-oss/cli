@@ -4,6 +4,13 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+## 1.3.1
+
+- Dependency updates
+- Add a pull request template
+
+## 1.3.0
+
 ### Participant groups and studies
 
 - Rename `participant` to `participant-group`, retaining `participant` as a compatibility alias.

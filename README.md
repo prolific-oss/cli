@@ -404,6 +404,8 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 | `messages_CreateConversation` | POST | `/api/v1/conversations/` | ➖ Not exposed in the CLI |
 | `messages_GetConversationMessages` | GET | `/api/v1/conversations/{conversation_id}/messages/` | ➖ Not exposed in the CLI |
 | `messages_CreateBroadcast` | POST | `/api/v1/broadcasts/` | ➖ Not exposed in the CLI |
+| `messages_GetBroadcasts` | GET | `/api/v1/broadcasts/` | ➖ Not exposed in the CLI |
+| `messages_GetBroadcast` | GET | `/api/v1/broadcasts/{broadcast_id}/` | ➖ Not exposed in the CLI |
 
 </details>
 
@@ -432,6 +434,7 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 | `studies_GetDemographicExportHistory` | GET | `/api/v1/studies/{id}/demographic-export-history/` | ➖ Not exposed in the CLI |
 | `studies_DuplicateStudy` | POST | `/api/v1/studies/{id}/clone/` | ✅ `DuplicateStudy` |
 | `studies_CalculateStudyCost` | POST | `/api/v1/study-cost-calculator/` | ➖ Not exposed in the CLI |
+| `studies_ListStudyFeedbackResponses` | GET | `/api/v1/studies/{id}/feedback/responses/` | ✅ `GetStudyFeedback` |
 
 </details>
 
