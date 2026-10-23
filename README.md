@@ -426,6 +426,7 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 | `studies_GetStudyAccessDetailsProgress` | GET | `/api/v1/studies/{id}/access-details-progress/` | ➖ Not exposed in the CLI |
 | `studies_GetStudyCost` | GET | `/api/v1/studies/{id}/cost/` | ➖ Not exposed in the CLI |
 | `studies_GetStudySubmissions` | GET | `/api/v1/studies/{id}/submissions/` | ✅ `GetSubmissions` |
+| `studies_ListStudyFeedbackResponses` | GET | `/api/v1/studies/{id}/feedback/responses/` | ✅ `GetStudyFeedback` |
 | `studies_CountStudySubmissionsByStatus` | GET | `/api/v1/studies/{id}/submissions/counts/` | ✅ `GetStudySubmissionCounts` |
 | `studies_DownloadStudyCredentialReport` | GET | `/api/v1/studies/{id}/credentials/report/` | ✅ `GetStudyCredentialsUsageReportCSV` |
 | `studies_ExportStudy` | GET | `/api/v1/studies/{id}/export/` | ➖ Not exposed in the CLI |

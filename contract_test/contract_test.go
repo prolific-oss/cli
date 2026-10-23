@@ -43,8 +43,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const specURL = "https://docs.prolific.com/openapi.yaml"
-const specFile = "openapi.yaml"
+const (
+	specURL  = "https://docs.prolific.com/openapi.yaml"
+	specFile = "openapi.yaml"
+)
 
 func TestMain(m *testing.M) {
 	if err := downloadSpec(); err != nil {
@@ -342,6 +344,7 @@ var operations = []operation{
 	{operationID: "studies_GetStudyAccessDetailsProgress", skip: "OUTOFSCOPE: no CLI command for access details progress"},
 	{operationID: "studies_GetStudyCost", skip: "OUTOFSCOPE: no CLI command for getting study cost"},
 	{operationID: "studies_GetStudySubmissions", call: func(c *client.Client) { c.GetSubmissions("study-id", 10, 0) }},
+	{operationID: "studies_ListStudyFeedbackResponses", call: func(c *client.Client) { c.GetStudyFeedback("study-id", true, 10, 0) }},
 	{operationID: "studies_CountStudySubmissionsByStatus", call: func(c *client.Client) { c.GetStudySubmissionCounts("study-id") }},
 	{operationID: "studies_DownloadStudyCredentialReport", call: func(c *client.Client) {
 		c.GetStudyCredentialsUsageReportCSV("study-id")

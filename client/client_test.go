@@ -967,3 +967,81 @@ func TestSearchFilterChoicesDecodesHighlights(t *testing.T) {
 		t.Errorf("meta.count = %d, want 128", response.Meta.Count)
 	}
 }
+
+// TestParticipantGroupMembersRequestShape guards the verb, path and body of the
+// add/remove membership calls, which are otherwise only mocked in the command tests.
+func TestParticipantGroupMembersRequestShape(t *testing.T) {
+	tests := map[string]struct {
+		method string
+		call   func(c *Client) (*ViewParticipantGroupResponse, error)
+	}{
+		"add": {
+			method: http.MethodPost,
+			call: func(c *Client) (*ViewParticipantGroupResponse, error) {
+				return c.AddParticipantGroupMembers("group-1", []string{"p1", "p2"})
+			},
+		},
+		"remove": {
+			method: http.MethodDelete,
+			call: func(c *Client) (*ViewParticipantGroupResponse, error) {
+				return c.RemoveParticipantGroupMembers("group-1", []string{"p1", "p2"})
+			},
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			var gotMethod, gotPath string
+			var gotBody map[string][]string
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				gotMethod = r.Method
+				gotPath = r.URL.Path
+				if err := json.NewDecoder(r.Body).Decode(&gotBody); err != nil {
+					t.Errorf("failed to decode request body: %v", err)
+				}
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusOK)
+				_, _ = w.Write([]byte(`{"results":[{"participant_id":"p3"}]}`))
+			}))
+			defer server.Close()
+
+			c := Client{Client: server.Client(), BaseURL: server.URL, Token: "test-token"}
+
+			response, err := tc.call(&c)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if gotMethod != tc.method {
+				t.Errorf("method = %q, want %q", gotMethod, tc.method)
+			}
+			if want := "/api/v1/participant-groups/group-1/participants/"; gotPath != want {
+				t.Errorf("path = %q, want %q", gotPath, want)
+			}
+			if ids := gotBody["participant_ids"]; len(ids) != 2 || ids[0] != "p1" || ids[1] != "p2" {
+				t.Errorf("participant_ids = %v, want [p1 p2]", ids)
+			}
+			if len(response.Results) != 1 || response.Results[0].ParticipantID != "p3" {
+				t.Errorf("unexpected response: %+v", response)
+			}
+		})
+	}
+}
+
+func TestParticipantGroupMembersReturnsErrorOnNon200(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(`{"error":{"detail":"bad request"}}`))
+	}))
+	defer server.Close()
+
+	c := Client{Client: server.Client(), BaseURL: server.URL, Token: "test-token"}
+
+	if _, err := c.AddParticipantGroupMembers("group-1", []string{"p1"}); err == nil {
+		t.Error("AddParticipantGroupMembers: expected error, got nil")
+	}
+	if _, err := c.RemoveParticipantGroupMembers("group-1", []string{"p1"}); err == nil {
+		t.Error("RemoveParticipantGroupMembers: expected error, got nil")
+	}
+}

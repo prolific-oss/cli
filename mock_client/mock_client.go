@@ -35,6 +35,21 @@ func (m *MockAPI) EXPECT() *MockAPIMockRecorder {
 	return m.recorder
 }
 
+// AddParticipantGroupMembers mocks base method.
+func (m *MockAPI) AddParticipantGroupMembers(groupID string, participantIDs []string) (*client.ViewParticipantGroupResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddParticipantGroupMembers", groupID, participantIDs)
+	ret0, _ := ret[0].(*client.ViewParticipantGroupResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddParticipantGroupMembers indicates an expected call of AddParticipantGroupMembers.
+func (mr *MockAPIMockRecorder) AddParticipantGroupMembers(groupID, participantIDs interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddParticipantGroupMembers", reflect.TypeOf((*MockAPI)(nil).AddParticipantGroupMembers), groupID, participantIDs)
+}
+
 // BulkApproveSubmissions mocks base method.
 func (m *MockAPI) BulkApproveSubmissions(payload client.BulkApproveSubmissionsPayload) error {
 	m.ctrl.T.Helper()
