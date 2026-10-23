@@ -105,11 +105,11 @@ test-cov: test ## Run the unit tests with coverage
 test-gen-mock: ## Generate the mocks
 	@mockgen -source client/client.go > mock_client/mock_client.go
 
-.PHONY: all ## Run everything
-all: clean install build test
+.PHONY: all
+all: clean install build test ## Run everything
 
-.PHONY: static-all ## Run everything
-static-all: clean install static test
+.PHONY: static-all
+static-all: clean install static test ## Run everything (in static mode)
 
 .PHONY: changelog
 changelog: ## Generate grouped changelog for a release (Usage: make changelog VERSION=0.0.61 — numeric only; tag/release will be v0.0.61)
