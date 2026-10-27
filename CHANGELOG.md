@@ -4,6 +4,12 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+## 1.3.2
+
+### Participant Groups
+
+- Provide ability to add participants to a participant group (#549)
+
 ## 1.3.1
 
 - Dependency updates
