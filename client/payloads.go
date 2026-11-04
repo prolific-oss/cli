@@ -124,7 +124,7 @@ type CreateAITaskBuilderDatasetPayload struct {
 	Schema      *DatasetSchema `json:"schema,omitempty"`
 }
 
-// CreateBatchParams represents the parameters for creating an AI Task Builder batch.
+// CreateBatchParams represents the parameters for creating a Task Builder batch.
 type CreateBatchParams struct {
 	Name             string          `json:"name"`
 	WorkspaceID      string          `json:"workspace_id"`
@@ -136,7 +136,7 @@ type CreateBatchParams struct {
 	AutoSync         bool            `json:"auto_sync_enabled"`
 }
 
-// UpdateBatchParams represents the parameters for updating an AI Task Builder batch.
+// UpdateBatchParams represents the parameters for updating a Task Builder batch.
 type UpdateBatchParams struct {
 	BatchID     string
 	Name        string
@@ -146,7 +146,7 @@ type UpdateBatchParams struct {
 	AutoSync    *bool           // nil means auto_sync_enabled will not be updated
 }
 
-// UpdateAITaskBuilderBatchPayload represents the JSON payload for updating an AI Task Builder batch.
+// UpdateAITaskBuilderBatchPayload represents the JSON payload for updating a Task Builder batch.
 type UpdateAITaskBuilderBatchPayload struct {
 	Name        string          `json:"name,omitempty"`
 	DatasetID   string          `json:"dataset_id,omitempty"`
@@ -162,7 +162,7 @@ type TaskDetails struct {
 	TaskSteps        string `json:"task_steps"`
 }
 
-// CreateAITaskBuilderBatchPayload represents the JSON payload for creating an AI Task Builder batch
+// CreateAITaskBuilderBatchPayload represents the JSON payload for creating a Task Builder batch
 type CreateAITaskBuilderBatchPayload struct {
 	Name        string          `json:"name"`
 	WorkspaceID string          `json:"workspace_id"`
@@ -229,12 +229,12 @@ type Instruction struct {
 	MaxFileCount         *int                `json:"max_file_count,omitempty"`
 }
 
-// CreateAITaskBuilderInstructionsPayload represents the JSON payload for creating AI Task Builder instructions
+// CreateAITaskBuilderInstructionsPayload represents the JSON payload for creating Task Builder instructions
 type CreateAITaskBuilderInstructionsPayload struct {
 	Instructions []Instruction `json:"instructions"`
 }
 
-// SetupAITaskBuilderBatchPayload represents the JSON payload for setting up an AI Task Builder batch
+// SetupAITaskBuilderBatchPayload represents the JSON payload for setting up a Task Builder batch
 type SetupAITaskBuilderBatchPayload struct {
 	DatasetID     string `json:"dataset_id"`
 	TasksPerGroup int    `json:"tasks_per_group"`

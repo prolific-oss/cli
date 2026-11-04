@@ -1,0 +1,246 @@
+package taskbuilder
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"io"
+	"net/http"
+	"net/url"
+	"os"
+	"path/filepath"
+	"time"
+
+	"github.com/prolific-oss/cli/client"
+	"github.com/spf13/cobra"
+)
+
+const (
+	batchExportPollInterval = 3 * time.Second
+	batchExportTimeout      = 10 * time.Minute
+
+	batchExportStatusGenerating = "generating"
+	batchExportStatusComplete   = "complete"
+	batchExportStatusFailed     = "failed"
+)
+
+// batchExportPollSleep is the sleep function used between export status polls.
+// Replaced in tests via SetBatchExportPollSleepForTesting to avoid real delays.
+var batchExportPollSleep func(time.Duration) = time.Sleep
+
+// batchExportDownloadClient is the HTTP client used to fetch the export ZIP.
+// Replaced in tests via SetBatchExportDownloadClientForTesting to supply a TLS-aware client.
+var batchExportDownloadClient = http.DefaultClient
+
+// BatchExportOptions holds the options for the batch export command.
+type BatchExportOptions struct {
+	Args    []string
+	Output  string
+	StudyID string
+	From    string
+	To      string
+}
+
+// NewBatchExportCommand creates a new `taskbuilder batch export` command to
+// export a batch's responses as a ZIP archive.
+func NewBatchExportCommand(c client.API, w io.Writer) *cobra.Command {
+	var opts BatchExportOptions
+
+	cmd := &cobra.Command{
+		Use:   "export <batch-id>",
+		Args:  cobra.MinimumNArgs(1),
+		Short: "Export a batch's responses as a ZIP archive",
+		Long: `Export a batch's responses as a ZIP archive
+
+This command requests an export of a Task Builder Batch and downloads
+the resulting ZIP file. The archive contains:
+
+  - responses-by-submission.jsonl  — one JSON record per participant submission
+  - responses-by-task.jsonl        — one JSON record per task (for inter-rater comparison)
+  - batch.json                     — batch metadata and instruction definitions
+  - README.md                      — usage guide with example code
+  - files/                         — participant-uploaded files (if any)
+
+The export is generated asynchronously. This command will poll until the
+archive is ready and then download it automatically.
+
+Use --study-id, --from, and/or --to to narrow the export to a subset of
+responses. Combining them applies all filters together (AND): --study-id
+restricts the export to a specific Study, while --from/--to restrict it to
+responses whose created_at falls within an ISO 8601 datetime range (--from
+is inclusive, --to is exclusive). Omit all three for a full, unfiltered
+export.`,
+		Example: `
+Export a batch to the default filename (<batch-id>-export-<timestamp>.zip):
+
+$ prolific taskbuilder batch export 5f8e3c2a-1d4b-4e6f-9a7c-2b0d8f3e1c5a
+
+Export to a custom output path:
+
+$ prolific taskbuilder batch export 5f8e3c2a-1d4b-4e6f-9a7c-2b0d8f3e1c5a --output /tmp/my-export.zip
+
+Export only responses for a specific study:
+
+$ prolific taskbuilder batch export 5f8e3c2a-1d4b-4e6f-9a7c-2b0d8f3e1c5a --study-id 60d3b2f1a2b3c4d5e6f7a8b9
+
+Export only responses created in a date range:
+
+$ prolific taskbuilder batch export 5f8e3c2a-1d4b-4e6f-9a7c-2b0d8f3e1c5a --from 2024-01-01T00:00:00Z --to 2024-02-01T00:00:00Z
+`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			opts.Args = args
+
+			if len(opts.Args) < 1 || opts.Args[0] == "" {
+				return errors.New("please provide a batch ID")
+			}
+
+			if opts.Output == "" {
+				opts.Output = fmt.Sprintf("%s-export-%s.zip", opts.Args[0], time.Now().Format("20060102-150405"))
+			}
+
+			return exportBatch(c, opts, w)
+		},
+	}
+
+	cmd.Flags().StringVarP(&opts.Output, "output", "o", "", "Output file path (default: <batch-id>-export-<timestamp>.zip)")
+	cmd.Flags().StringVar(&opts.StudyID, "study-id", "", "Restrict the export to responses submitted under this Study ID")
+	cmd.Flags().StringVar(&opts.From, "from", "", "Restrict the export to responses created on or after this ISO 8601 datetime (inclusive)")
+	cmd.Flags().StringVar(&opts.To, "to", "", "Restrict the export to responses created before this ISO 8601 datetime (exclusive)")
+
+	cmd.AddCommand(
+		NewBatchExportListCommand(c, w),
+		NewBatchExportDeleteCommand(c, w),
+		NewBatchExportDownloadCommand(c, w),
+	)
+
+	return cmd
+}
+
+func exportBatch(c client.API, opts BatchExportOptions, w io.Writer) error {
+	batchID := opts.Args[0]
+
+	fmt.Fprintf(w, "Requesting export for batch %s...\n", batchID)
+
+	// Step 1: POST to initiate the export job.
+	filter := client.ExportFilter{StudyID: opts.StudyID, From: opts.From, To: opts.To}
+	initResult, err := c.InitiateBatchExport(batchID, filter)
+	if err != nil {
+		return fmt.Errorf("error requesting export: %s", err.Error())
+	}
+
+	// If already complete (cached result), download immediately.
+	if initResult.Status == batchExportStatusComplete {
+		return batchDownloadExport(initResult.URL, opts.Output, w)
+	}
+
+	if initResult.Status != batchExportStatusGenerating {
+		return fmt.Errorf("unexpected export status %q for batch %s", initResult.Status, batchID)
+	}
+
+	// Step 2: Poll GET until complete or failed.
+	url, err := pollBatchExportUntilDone(c, batchID, initResult.ExportID, w)
+	if err != nil {
+		return err
+	}
+
+	return batchDownloadExport(url, opts.Output, w)
+}
+
+// pollBatchExportUntilDone polls GetBatchExportStatus for batchID/exportID
+// until the job reaches "complete" or "failed" (or the poll deadline is
+// exceeded), printing a "." to w for each poll. It returns the presigned
+// download URL on success. Shared by exportBatch (which polls a job it just
+// requested) and downloadBatchExport (which polls a pre-existing job that
+// was still generating).
+func pollBatchExportUntilDone(c client.API, batchID, exportID string, w io.Writer) (string, error) {
+	deadline := time.Now().Add(batchExportTimeout)
+
+	for {
+		if time.Now().After(deadline) {
+			return "", fmt.Errorf("export timed out after 10 minutes for batch %s", batchID)
+		}
+
+		fmt.Fprint(w, ".")
+		batchExportPollSleep(batchExportPollInterval)
+
+		pollResult, err := c.GetBatchExportStatus(batchID, exportID)
+		if err != nil {
+			return "", fmt.Errorf("error polling export status: %s", err.Error())
+		}
+
+		switch pollResult.Status {
+		case batchExportStatusComplete:
+			return pollResult.URL, nil
+		case batchExportStatusFailed:
+			return "", fmt.Errorf("export generation failed for batch %s", batchID)
+		case batchExportStatusGenerating:
+			// continue polling
+		default:
+			return "", fmt.Errorf("unexpected export status %q for batch %s", pollResult.Status, batchID)
+		}
+	}
+}
+
+func batchDownloadExport(rawURL, outputPath string, w io.Writer) error {
+	fmt.Fprintf(w, "\nExport ready. Downloading to %s...\n", outputPath)
+	if err := batchDownloadFile(rawURL, outputPath); err != nil {
+		return fmt.Errorf("error downloading export: %s", err.Error())
+	}
+	fmt.Fprintf(w, "Export saved to %s\n", outputPath)
+	return nil
+}
+
+func batchDownloadFile(rawURL, outputPath string) error {
+	parsed, err := url.Parse(rawURL)
+	if err != nil {
+		return fmt.Errorf("invalid download URL: %w", err)
+	}
+	if parsed.Scheme != "https" {
+		return fmt.Errorf("download URL must use HTTPS, got %q", parsed.Scheme)
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), batchExportTimeout)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create download request: %w", err)
+	}
+
+	resp, err := batchExportDownloadClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("download request failed with status %d", resp.StatusCode)
+	}
+
+	// Write to a temp file in the same directory so the final rename is
+	// guaranteed to be on the same filesystem (cross-device renames fail).
+	// The temp file is removed on any error to avoid leaving partial ZIPs.
+	tmp, err := os.CreateTemp(filepath.Dir(outputPath), ".export-download-*")
+	if err != nil {
+		return fmt.Errorf("failed to create temp file: %w", err)
+	}
+	tmpPath := tmp.Name()
+
+	_, copyErr := io.Copy(tmp, resp.Body)
+	closeErr := tmp.Close()
+
+	if copyErr != nil || closeErr != nil {
+		_ = os.Remove(tmpPath)
+		if copyErr != nil {
+			return fmt.Errorf("failed to write download: %w", copyErr)
+		}
+		return fmt.Errorf("failed to close temp file: %w", closeErr)
+	}
+
+	if err := os.Rename(tmpPath, outputPath); err != nil {
+		_ = os.Remove(tmpPath)
+		return fmt.Errorf("failed to move download into place: %w", err)
+	}
+
+	return nil
+}

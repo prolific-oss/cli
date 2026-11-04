@@ -291,41 +291,41 @@ type ListUnreadMessagesResponse struct {
 	*JSONAPIMeta
 }
 
-// GetAITaskBuilderBatchResponse is the response for the get AI Task Builder get batch endpoint.
+// GetAITaskBuilderBatchResponse is the response for the get Task Builder get batch endpoint.
 type GetAITaskBuilderBatchResponse struct {
 	model.AITaskBuilderBatch
 }
 
-// UpdateAITaskBuilderBatchResponse is the response for the update AI Task Builder batch endpoint.
+// UpdateAITaskBuilderBatchResponse is the response for the update Task Builder batch endpoint.
 type UpdateAITaskBuilderBatchResponse struct {
 	model.AITaskBuilderBatch
 }
 
-// GetAITaskBuilderBatchStatusResponse is the response for the get AI Task Builder get batch status endpoint.
+// GetAITaskBuilderBatchStatusResponse is the response for the get Task Builder get batch status endpoint.
 type GetAITaskBuilderBatchStatusResponse struct {
 	model.AITaskBuilderBatchStatus
 }
 
-// GetAITaskBuilderBatchesResponse is the response for the get AI Task Builder get batches by workspace endpoint.
+// GetAITaskBuilderBatchesResponse is the response for the get Task Builder get batches by workspace endpoint.
 type GetAITaskBuilderBatchesResponse struct {
 	Results []model.AITaskBuilderBatch `json:"results"`
 }
 
-// GetAITaskBuilderResponsesResponse is the response for the get AI Task Builder responses endpoint.
+// GetAITaskBuilderResponsesResponse is the response for the get Task Builder responses endpoint.
 type GetAITaskBuilderResponsesResponse struct {
 	Results []model.AITaskBuilderResponse `json:"results"`
 	Meta    ResponseMeta                  `json:"meta"`
 }
 
-// GetAITaskBuilderTasksResponse is the response for the get AI Task Builder tasks endpoint.
+// GetAITaskBuilderTasksResponse is the response for the get Task Builder tasks endpoint.
 // The API returns a simple array of task ID strings.
 type GetAITaskBuilderTasksResponse []string
 
-// GetAITaskBuilderTaskGroupsResponse is the response for the get AI Task Builder task groups endpoint.
+// GetAITaskBuilderTaskGroupsResponse is the response for the get Task Builder task groups endpoint.
 // The API returns a simple array of task group ID strings.
 type GetAITaskBuilderTaskGroupsResponse []string
 
-// GetAITaskBuilderDatasetResponse is the response for the get AI Task Builder dataset endpoint.
+// GetAITaskBuilderDatasetResponse is the response for the get Task Builder dataset endpoint.
 type GetAITaskBuilderDatasetResponse struct {
 	ID                         string                   `json:"id"`
 	Name                       string                   `json:"name"`
@@ -341,12 +341,12 @@ type GetAITaskBuilderDatasetResponse struct {
 	Imports                    []model.DatasetImportJob `json:"imports"`
 }
 
-// GetAITaskBuilderDatasetStatusResponse is the response for the get AI Task Builder dataset status endpoint.
+// GetAITaskBuilderDatasetStatusResponse is the response for the get Task Builder dataset status endpoint.
 type GetAITaskBuilderDatasetStatusResponse struct {
 	Status model.DatasetStatus `json:"status"`
 }
 
-// GetAITaskBuilderDatasetUploadURLResponse is the response for getting an upload URL for an AI Task Builder dataset.
+// GetAITaskBuilderDatasetUploadURLResponse is the response for getting an upload URL for a Task Builder dataset.
 type GetAITaskBuilderDatasetUploadURLResponse struct {
 	DatasetID   string `json:"dataset_id"`
 	ImportID    string `json:"import_id"`
@@ -373,7 +373,7 @@ type CreateAITaskBuilderDatasetResponse struct {
 	WorkspaceID         string              `json:"workspace_id"`
 }
 
-// CreateAITaskBuilderBatchResponse is the response for creating an AI Task Builder batch.
+// CreateAITaskBuilderBatchResponse is the response for creating a Task Builder batch.
 type CreateAITaskBuilderBatchResponse struct {
 	ID                    string            `json:"id"`
 	CreatedAt             string            `json:"created_at"`
@@ -396,10 +396,10 @@ type TaskDetailsResponse struct {
 	TaskSteps        string `json:"task_steps"`
 }
 
-// CreateAITaskBuilderInstructionsResponse is the response for creating AI Task Builder instructions.
+// CreateAITaskBuilderInstructionsResponse is the response for creating Task Builder instructions.
 type CreateAITaskBuilderInstructionsResponse []model.Instruction
 
-// CreateAITaskBuilderCollectionResponse is the response for creating an AI Task Builder collection.
+// CreateAITaskBuilderCollectionResponse is the response for creating a Task Builder collection.
 type CreateAITaskBuilderCollectionResponse struct {
 	ID              string                 `json:"id"`
 	Name            string                 `json:"name"`
@@ -410,7 +410,7 @@ type CreateAITaskBuilderCollectionResponse struct {
 	CollectionItems []model.CollectionPage `json:"collection_items"`
 }
 
-// SetupAITaskBuilderBatchResponse is the response for setting up an AI Task Builder batch.
+// SetupAITaskBuilderBatchResponse is the response for setting up a Task Builder batch.
 // The API returns 202 Accepted with an empty response body.
 type SetupAITaskBuilderBatchResponse struct {
 	// Empty response body

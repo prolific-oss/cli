@@ -54,7 +54,7 @@ func NewExportCommand(c client.API, w io.Writer) *cobra.Command {
 		Short: "Export a collection's responses as a ZIP archive",
 		Long: `Export a collection's responses as a ZIP archive
 
-This command requests an export of an AI Task Builder Collection and downloads
+This command requests an export of a Task Builder Collection and downloads
 the resulting ZIP file. The archive contains:
 
   - responses.jsonl  — one JSON record per submission

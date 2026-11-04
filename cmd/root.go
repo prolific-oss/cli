@@ -12,7 +12,6 @@ import (
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/prolific-oss/cli/client"
-	"github.com/prolific-oss/cli/cmd/aitaskbuilder"
 	"github.com/prolific-oss/cli/cmd/audience"
 	"github.com/prolific-oss/cli/cmd/bonus"
 	"github.com/prolific-oss/cli/cmd/campaign"
@@ -32,6 +31,7 @@ import (
 	"github.com/prolific-oss/cli/cmd/study"
 	"github.com/prolific-oss/cli/cmd/submission"
 	"github.com/prolific-oss/cli/cmd/survey"
+	"github.com/prolific-oss/cli/cmd/taskbuilder"
 	"github.com/prolific-oss/cli/cmd/template"
 	"github.com/prolific-oss/cli/cmd/user"
 	"github.com/prolific-oss/cli/cmd/workspace"
@@ -86,7 +86,8 @@ func NewRootCommand() *cobra.Command {
 	w := os.Stdout
 
 	cmd.AddCommand(
-		aitaskbuilder.NewAITaskBuilderCommand(&client, w),
+		taskbuilder.NewTaskBuilderCommand(&client, w),
+		taskbuilder.NewDeprecatedAITaskBuilderCommand(&client, w),
 		audience.NewAudienceCommand(&client, w),
 		bonus.NewBonusCommand(&client, w),
 		campaign.NewListCommand("campaign", &client, w),

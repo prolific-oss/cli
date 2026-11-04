@@ -17,6 +17,10 @@
 
 ## 1.3.0
 
+### Task Builder
+
+- Rename `aitaskbuilder` to `taskbuilder` and drop "AI" from the Task Builder help text and output. `prolific aitaskbuilder` keeps working as a hidden alias and prints a notice on stderr pointing to `prolific taskbuilder`. Example files under `docs/examples/` are renamed to match.
+
 ### Participant groups and studies
 
 - Rename `participant` to `participant-group`, retaining `participant` as a compatibility alias.

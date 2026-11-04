@@ -36,7 +36,7 @@ func main() {
 
 	// Create a V4 dataset whose schema includes a video_url field.
 	output, err := run(repoRoot, cliBinary,
-		"aitaskbuilder", "dataset", "create",
+		"taskbuilder", "dataset", "create",
 		"-n", "Video URL Test Dataset",
 		"-w", workspaceID,
 		"--strict",
@@ -74,26 +74,26 @@ func main() {
 	}
 
 	// Attempt an invalid upload first to confirm video_url extension validation rejects non-video URLs.
-	if _, err := runAllowFailure(repoRoot, cliBinary, "aitaskbuilder", "dataset", "upload", "-d", datasetID, "-f", invalidCSVPath); err == nil {
+	if _, err := runAllowFailure(repoRoot, cliBinary, "taskbuilder", "dataset", "upload", "-d", datasetID, "-f", invalidCSVPath); err == nil {
 		fatal(fmt.Errorf("expected invalid video URL upload to fail"))
 	} else {
 		fmt.Println("Confirmed invalid video URL upload was rejected.")
 	}
 
 	// Upload valid sample data containing supported video URL extensions.
-	if _, err := run(repoRoot, cliBinary, "aitaskbuilder", "dataset", "upload", "-d", datasetID, "-f", csvPath); err != nil {
+	if _, err := run(repoRoot, cliBinary, "taskbuilder", "dataset", "upload", "-d", datasetID, "-f", csvPath); err != nil {
 		fatal(err)
 	}
 
 	// Check dataset status for extra visibility while running the manual flow.
-	_, _ = runAllowFailure(repoRoot, cliBinary, "aitaskbuilder", "dataset", "check", "-d", datasetID)
+	_, _ = runAllowFailure(repoRoot, cliBinary, "taskbuilder", "dataset", "check", "-d", datasetID)
 
 	// Create a batch linked to the dataset and define the participant layout via batch_items.
 	// batch_items replaces the deprecated standalone instructions endpoint, and this
 	// manual flow intentionally references the video_url dataset field even though
 	// the checked-in OpenAPI file has not caught up with the backend yet.
 	output, err = run(repoRoot, cliBinary,
-		"aitaskbuilder", "batch", "create",
+		"taskbuilder", "batch", "create",
 		"-n", "Video URL Test Batch",
 		"-w", workspaceID,
 		"-d", datasetID,
@@ -114,7 +114,7 @@ func main() {
 
 	// Set up the batch so the persisted preview route has a task group to open.
 	if _, err := run(repoRoot, cliBinary,
-		"aitaskbuilder", "batch", "setup",
+		"taskbuilder", "batch", "setup",
 		"-b", batchID,
 		"-d", datasetID,
 		"--tasks-per-group", "1",
@@ -123,7 +123,7 @@ func main() {
 	}
 
 	// Preview the batch through the researcher preview URL flow.
-	if _, err := run(repoRoot, cliBinary, "aitaskbuilder", "batch", "preview", batchID); err != nil {
+	if _, err := run(repoRoot, cliBinary, "taskbuilder", "batch", "preview", batchID); err != nil {
 		fatal(err)
 	}
 

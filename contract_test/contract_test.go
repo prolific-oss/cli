@@ -202,7 +202,7 @@ var operations = []operation{
 	{operationID: "surveys_GetResponse", call: func(c *client.Client) { c.GetSurveyResponse("survey-id", "response-id") }},
 	{operationID: "surveys_DeleteResponse", call: func(c *client.Client) { c.DeleteSurveyResponse("survey-id", "response-id") }},
 
-	// AI Task Builder — Batches
+	// Task Builder — Batches
 	{operationID: "aiTaskBuilder_GetTaskBuilderBatches", call: func(c *client.Client) { c.GetAITaskBuilderBatches("ws-id") }},
 	{operationID: "aiTaskBuilder_CreateTaskBuilderBatch", call: func(c *client.Client) {
 		c.CreateAITaskBuilderBatch(client.CreateBatchParams{
@@ -235,7 +235,7 @@ var operations = []operation{
 	{operationID: "aiTaskBuilder_ListBatchExportJobs", call: func(c *client.Client) { c.ListBatchExportJobs("batch-id") }},
 	{operationID: "aiTaskBuilder_DeleteBatchExport", call: func(c *client.Client) { c.DeleteBatchExport("batch-id", "export-id") }},
 
-	// AI Task Builder — Datasets
+	// Task Builder — Datasets
 	{operationID: "aiTaskBuilder_CreateTaskBuilderDataset", call: func(c *client.Client) {
 		c.CreateAITaskBuilderDataset("ws-id", client.CreateAITaskBuilderDatasetPayload{Name: "t"})
 	}},
@@ -249,7 +249,7 @@ var operations = []operation{
 	}},
 	{operationID: "aiTaskBuilder_GetSchemaMigrationStatus", skip: "OUTOFSCOPE: no CLI command for dataset schema migration status"},
 
-	// AI Task Builder — Instructions
+	// Task Builder — Instructions
 	{operationID: "aiTaskBuilder_GetTaskBuilderInstructions", skip: "OUTOFSCOPE: no CLI command for getting task builder instructions"},
 	{operationID: "aiTaskBuilder_CreateTaskBuilderInstructions", call: func(c *client.Client) {
 		c.CreateAITaskBuilderInstructions("batch-id", client.CreateAITaskBuilderInstructionsPayload{
@@ -258,7 +258,7 @@ var operations = []operation{
 	}},
 	{operationID: "aiTaskBuilder_UpdateTaskBuilderInstructions", skip: "OUTOFSCOPE: no CLI command for updating task builder instructions"},
 
-	// AI Task Builder — Collections
+	// Task Builder — Collections
 	{operationID: "aiTaskBuilder_ListCollections", call: func(c *client.Client) { c.GetCollections("ws-id", 10, 0) }},
 	{operationID: "aiTaskBuilder_CreateCollection", call: func(c *client.Client) {
 		c.CreateAITaskBuilderCollection(model.CreateAITaskBuilderCollection{

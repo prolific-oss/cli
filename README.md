@@ -22,7 +22,6 @@ Usage:
   prolific [command]
 
 Available Commands:
-  aitaskbuilder     AI Task Builder tools and utilities
   bonus             Create and pay bonuses for study participants
   campaign          Provide details about your campaigns
   collection        Manage and view your collections
@@ -41,6 +40,7 @@ Available Commands:
   studies           List all of your studies
   study             Manage and view your studies
   submission        Manage and view your study submissions
+  taskbuilder       Task Builder tools and utilities
   template          Browse and retrieve study and collection templates
   whoami            View details about your account
   workspace         Manage and view your workspaces
@@ -315,7 +315,7 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 </details>
 
 <details>
-<summary><strong>AI Task Builder — Batches</strong></summary>
+<summary><strong>Task Builder — Batches</strong></summary>
 
 | Operation | Method | Path | Coverage |
 |---|---|---|---|
@@ -338,7 +338,7 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 </details>
 
 <details>
-<summary><strong>AI Task Builder — Datasets</strong></summary>
+<summary><strong>Task Builder — Datasets</strong></summary>
 
 | Operation | Method | Path | Coverage |
 |---|---|---|---|
@@ -354,7 +354,7 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 </details>
 
 <details>
-<summary><strong>AI Task Builder — Instructions</strong></summary>
+<summary><strong>Task Builder — Instructions</strong></summary>
 
 | Operation | Method | Path | Coverage |
 |---|---|---|---|
@@ -365,7 +365,7 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 </details>
 
 <details>
-<summary><strong>AI Task Builder — Collections</strong></summary>
+<summary><strong>Task Builder — Collections</strong></summary>
 
 | Operation | Method | Path | Coverage |
 |---|---|---|---|

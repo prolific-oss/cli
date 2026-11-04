@@ -27,7 +27,7 @@ func NewCreateCollectionCommand(c client.API, w io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create",
 		Short: "Create a new collection",
-		Long:  `Create a new AI Task Builder collection from a JSON or YAML file`,
+		Long:  `Create a new Task Builder collection from a JSON or YAML file`,
 		Example: `
 To create a collection via the CLI, define your collection as a JSON/YAML file
 $ prolific collection create -t docs/examples/collection.json

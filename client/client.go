@@ -1,7 +1,7 @@
 // Package client provides an HTTP client for interacting with the Prolific API.
 // It handles authentication, request execution, and response parsing for all
 // supported Prolific resources including studies, workspaces, projects, hooks,
-// messages, and AI Task Builder operations.
+// messages, and Task Builder operations.
 package client
 
 import (
@@ -1577,7 +1577,7 @@ func (c *Client) PayBonusPayments(id string) error {
 	return nil
 }
 
-// UpdateAITaskBuilderBatch will update an AI Task Builder batch.
+// UpdateAITaskBuilderBatch will update a Task Builder batch.
 func (c *Client) UpdateAITaskBuilderBatch(params UpdateBatchParams) (*UpdateAITaskBuilderBatchResponse, error) {
 	var response UpdateAITaskBuilderBatchResponse
 
@@ -1642,7 +1642,7 @@ func formatBatchErrorBody(body []byte) string {
 	return msg
 }
 
-// GetAITaskBuilderBatch will return details of an AI Task Builder batch.
+// GetAITaskBuilderBatch will return details of a Task Builder batch.
 func (c *Client) GetAITaskBuilderBatch(batchID string) (*GetAITaskBuilderBatchResponse, error) {
 	var response GetAITaskBuilderBatchResponse
 
@@ -1655,7 +1655,7 @@ func (c *Client) GetAITaskBuilderBatch(batchID string) (*GetAITaskBuilderBatchRe
 	return &response, nil
 }
 
-// GetAITaskBuilderBatchStatus will return the status of an AI Task Builder batch.
+// GetAITaskBuilderBatchStatus will return the status of a Task Builder batch.
 func (c *Client) GetAITaskBuilderBatchStatus(batchID string) (*GetAITaskBuilderBatchStatusResponse, error) {
 	var response GetAITaskBuilderBatchStatusResponse
 
@@ -1679,7 +1679,7 @@ func (c *Client) GetAITaskBuilderBatches(workspaceID string) (*GetAITaskBuilderB
 	return &response, nil
 }
 
-// GetAITaskBuilderResponses will return the responses for an AI Task Builder batch.
+// GetAITaskBuilderResponses will return the responses for a Task Builder batch.
 func (c *Client) GetAITaskBuilderResponses(batchID string) (*GetAITaskBuilderResponsesResponse, error) {
 	var response GetAITaskBuilderResponsesResponse
 
@@ -1691,7 +1691,7 @@ func (c *Client) GetAITaskBuilderResponses(batchID string) (*GetAITaskBuilderRes
 	return &response, nil
 }
 
-// GetAITaskBuilderTasks will return the tasks for an AI Task Builder batch.
+// GetAITaskBuilderTasks will return the tasks for a Task Builder batch.
 func (c *Client) GetAITaskBuilderTasks(batchID string) (*GetAITaskBuilderTasksResponse, error) {
 	var response GetAITaskBuilderTasksResponse
 
@@ -1703,7 +1703,7 @@ func (c *Client) GetAITaskBuilderTasks(batchID string) (*GetAITaskBuilderTasksRe
 	return &response, nil
 }
 
-// GetAITaskBuilderTaskGroups will return the task group IDs for an AI Task Builder batch.
+// GetAITaskBuilderTaskGroups will return the task group IDs for a Task Builder batch.
 func (c *Client) GetAITaskBuilderTaskGroups(batchID string) (*GetAITaskBuilderTaskGroupsResponse, error) {
 	var response GetAITaskBuilderTaskGroupsResponse
 
@@ -1822,7 +1822,7 @@ func (c *Client) GetAITaskBuilderBatchSyncStatus(batchID, syncID string) (*AITas
 	return &response, nil
 }
 
-// GetAITaskBuilderDataset will return an AI Task Builder dataset by ID.
+// GetAITaskBuilderDataset will return a Task Builder dataset by ID.
 func (c *Client) GetAITaskBuilderDataset(datasetID string) (*GetAITaskBuilderDatasetResponse, error) {
 	var response GetAITaskBuilderDatasetResponse
 
@@ -1834,7 +1834,7 @@ func (c *Client) GetAITaskBuilderDataset(datasetID string) (*GetAITaskBuilderDat
 	return &response, nil
 }
 
-// GetAITaskBuilderDatasetStatus will return the status of an AI Task Builder dataset.
+// GetAITaskBuilderDatasetStatus will return the status of a Task Builder dataset.
 func (c *Client) GetAITaskBuilderDatasetStatus(datasetID string) (*GetAITaskBuilderDatasetStatusResponse, error) {
 	var response GetAITaskBuilderDatasetStatusResponse
 
@@ -1846,7 +1846,7 @@ func (c *Client) GetAITaskBuilderDatasetStatus(datasetID string) (*GetAITaskBuil
 	return &response, nil
 }
 
-// GetAITaskBuilderDatasetUploadURL will get an upload URL for an AI Task Builder dataset.
+// GetAITaskBuilderDatasetUploadURL will get an upload URL for a Task Builder dataset.
 func (c *Client) GetAITaskBuilderDatasetUploadURL(datasetID, fileName string) (*GetAITaskBuilderDatasetUploadURLResponse, error) {
 	var response GetAITaskBuilderDatasetUploadURLResponse
 
@@ -1876,7 +1876,7 @@ func (c *Client) GetAITaskBuilderDatasetImportStatus(datasetID, importID string)
 	return &response, nil
 }
 
-// CreateAITaskBuilderBatch will create an AI Task Builder batch.
+// CreateAITaskBuilderBatch will create a Task Builder batch.
 func (c *Client) CreateAITaskBuilderBatch(params CreateBatchParams) (*CreateAITaskBuilderBatchResponse, error) {
 	var response CreateAITaskBuilderBatchResponse
 
@@ -1915,7 +1915,7 @@ func (c *Client) CreateAITaskBuilderBatch(params CreateBatchParams) (*CreateAITa
 	return &response, nil
 }
 
-// CreateAITaskBuilderInstructions will create instructions for an AI Task Builder batch.
+// CreateAITaskBuilderInstructions will create instructions for a Task Builder batch.
 func (c *Client) CreateAITaskBuilderInstructions(batchID string, instructions CreateAITaskBuilderInstructionsPayload) (*CreateAITaskBuilderInstructionsResponse, error) {
 	var response CreateAITaskBuilderInstructionsResponse
 
@@ -1942,7 +1942,7 @@ func (c *Client) CreateAITaskBuilderInstructions(batchID string, instructions Cr
 	return &response, nil
 }
 
-// SetupAITaskBuilderBatch will setup an AI Task Builder batch.
+// SetupAITaskBuilderBatch will setup a Task Builder batch.
 func (c *Client) SetupAITaskBuilderBatch(batchID, datasetID string, tasksPerGroup int) (*SetupAITaskBuilderBatchResponse, error) {
 	var response SetupAITaskBuilderBatchResponse
 
@@ -1964,7 +1964,7 @@ func (c *Client) SetupAITaskBuilderBatch(batchID, datasetID string, tasksPerGrou
 	return &response, nil
 }
 
-// CreateAITaskBuilderDataset will create a new AI Task Builder dataset.
+// CreateAITaskBuilderDataset will create a new Task Builder dataset.
 // The workspaceID parameter specifies which workspace the dataset belongs to.
 func (c *Client) CreateAITaskBuilderDataset(workspaceID string, payload CreateAITaskBuilderDatasetPayload) (*CreateAITaskBuilderDatasetResponse, error) {
 	var response CreateAITaskBuilderDatasetResponse
@@ -1986,7 +1986,7 @@ func (c *Client) CreateAITaskBuilderDataset(workspaceID string, payload CreateAI
 	return &response, nil
 }
 
-// CreateAITaskBuilderCollection creates a new AI Task Builder collection.
+// CreateAITaskBuilderCollection creates a new Task Builder collection.
 func (c *Client) CreateAITaskBuilderCollection(payload model.CreateAITaskBuilderCollection) (*CreateAITaskBuilderCollectionResponse, error) {
 	var response CreateAITaskBuilderCollectionResponse
 
