@@ -4,6 +4,8 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+- Collection create and collection update accept `custom_html` through `html_file` or `html_content`.
+
 ## 1.3.2
 
 ### Participant Groups

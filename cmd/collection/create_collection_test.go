@@ -3,6 +3,7 @@ package collection_test
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -1084,4 +1085,141 @@ func TestNewCreateCollectionCommandWithExclusiveOptionMultiSelect(t *testing.T) 
 	if !strings.Contains(b.String(), "Collection created successfully!") {
 		t.Fatalf("expected success message; got %s", b.String())
 	}
+}
+
+func TestNewCreateCollectionCommandLoadsCustomHTMLFile(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	tmpDir := t.TempDir()
+	html := "<h1>Course</h1>"
+	if err := os.WriteFile(filepath.Join(tmpDir, "course.html"), []byte(html), 0600); err != nil {
+		t.Fatalf("failed to write html file: %s", err)
+	}
+
+	templateFile := filepath.Join(tmpDir, "collection.yaml")
+	templateContent := `workspace_id: ` + testWorkspaceID + `
+name: html-collection
+task_details:
+  task_name: Course task
+  task_introduction: Read the course
+  task_steps: Continue
+collection_items:
+  - order: 0
+    page_items:
+      - order: 2
+        type: custom_html
+        html_file: course.html
+`
+	if err := os.WriteFile(templateFile, []byte(templateContent), 0600); err != nil {
+		t.Fatalf("failed to write template: %s", err)
+	}
+
+	response := client.CreateAITaskBuilderCollectionResponse{
+		ID:            "collection-html",
+		Name:          "html-collection",
+		WorkspaceID:   testWorkspaceID,
+		SchemaVersion: 1,
+		CreatedBy:     "user-1",
+	}
+
+	var capturedPayload model.CreateAITaskBuilderCollection
+	c.EXPECT().
+		CreateAITaskBuilderCollection(gomock.Any()).
+		DoAndReturn(func(payload model.CreateAITaskBuilderCollection) (*client.CreateAITaskBuilderCollectionResponse, error) {
+			capturedPayload = payload
+			return &response, nil
+		})
+
+	var b bytes.Buffer
+	cmd := collection.NewCreateCollectionCommand(c, bufio.NewWriter(&b))
+	cmd.SetArgs([]string{"-t", templateFile})
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("expected no error; got %s", err)
+	}
+
+	if len(capturedPayload.CollectionItems) != 1 || len(capturedPayload.CollectionItems[0].PageItems) != 1 {
+		t.Fatalf("expected one custom_html item, got %#v", capturedPayload.CollectionItems)
+	}
+	item := capturedPayload.CollectionItems[0].PageItems[0]
+	if item.HTMLContent != html {
+		t.Fatalf("expected HTMLContent %q, got %q", html, item.HTMLContent)
+	}
+	if item.HTMLFile != "" {
+		t.Fatalf("expected HTMLFile to be empty, got %q", item.HTMLFile)
+	}
+
+	body := encodeUnescapedJSON(t, capturedPayload)
+	if !strings.Contains(body, "html_content") {
+		t.Fatalf("expected body to contain html_content, got %s", body)
+	}
+	if strings.Contains(body, "html_file") {
+		t.Fatalf("expected body to omit html_file, got %s", body)
+	}
+	if !strings.Contains(body, "<h1>Course</h1>") {
+		t.Fatalf("expected body to contain the raw HTML, got %s", body)
+	}
+}
+
+func TestCollectionPageItemOmitsHTMLFile(t *testing.T) {
+	item := model.CollectionPageItem{
+		Type:        string(model.ContentBlockTypeCustomHTML),
+		HTMLContent: "<h1>Course</h1>",
+		HTMLFile:    "course.html",
+	}
+
+	body := encodeUnescapedJSON(t, item)
+	if strings.Contains(body, "html_file") {
+		t.Fatalf("expected json:\"-\" to omit html_file, got %s", body)
+	}
+}
+
+func TestNewCreateCollectionCommandReportsNameBeforeMissingHTMLFile(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	tmpDir := t.TempDir()
+	templateFile := filepath.Join(tmpDir, "collection.yaml")
+	templateContent := `workspace_id: ` + testWorkspaceID + `
+task_details:
+  task_name: Course task
+  task_introduction: Read the course
+  task_steps: Continue
+collection_items:
+  - order: 0
+    page_items:
+      - order: 0
+        type: custom_html
+        html_file: missing.html
+`
+	if err := os.WriteFile(templateFile, []byte(templateContent), 0600); err != nil {
+		t.Fatalf("failed to write template: %s", err)
+	}
+
+	cmd := collection.NewCreateCollectionCommand(c, os.Stdout)
+	cmd.SetArgs([]string{"-t", templateFile})
+	err := cmd.Execute()
+	if err == nil {
+		t.Fatal("expected an error")
+	}
+	if !strings.Contains(err.Error(), collection.ErrNameRequired) {
+		t.Fatalf("expected name error, got %s", err)
+	}
+	if strings.Contains(err.Error(), "failed to read html_file") {
+		t.Fatalf("expected the name error before the file error, got %s", err)
+	}
+}
+
+func encodeUnescapedJSON(t *testing.T, value any) string {
+	t.Helper()
+
+	var buf bytes.Buffer
+	encoder := json.NewEncoder(&buf)
+	encoder.SetEscapeHTML(false)
+	if err := encoder.Encode(value); err != nil {
+		t.Fatalf("failed to encode json: %s", err)
+	}
+	return buf.String()
 }
