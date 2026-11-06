@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"path/filepath"
 
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/shared"
@@ -97,7 +98,15 @@ collection_items:
           - label: Response 2
             value: response2
         answer_limit: -1
----`,
+---
+
+A snippet for one custom_html item. This is not a complete file.
+The path is relative to the template file.
+You can set html_content instead of html_file. Do not set both.
+
+- order: 0
+  type: custom_html
+  html_file: course.html`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
 
@@ -177,6 +186,10 @@ func createCollection(c client.API, opts CreateCollectionOptions, w io.Writer) e
 		return err
 	}
 
+	if err := loadCustomHTML(&payload, opts.TemplatePath); err != nil {
+		return err
+	}
+
 	collection, err := c.CreateAITaskBuilderCollection(payload)
 	if err != nil {
 		return err
@@ -196,6 +209,37 @@ func createCollection(c client.API, opts CreateCollectionOptions, w io.Writer) e
 		fmt.Fprintf(w, "  Task Name:         %s\n", collection.TaskDetails.TaskName)
 		fmt.Fprintf(w, "  Task Introduction: %s\n", collection.TaskDetails.TaskIntroduction)
 		fmt.Fprintf(w, "  Task Steps:        %s\n", collection.TaskDetails.TaskSteps)
+	}
+
+	return nil
+}
+
+// loadCustomHTML reads html_file for each custom_html item and checks the size limits.
+// The page index is used because a range variable is a copy.
+func loadCustomHTML(payload *model.CreateAITaskBuilderCollection, templatePath string) error {
+	baseDir := filepath.Dir(templatePath)
+	var check shared.CustomHTMLSizeCheck
+
+	for pageIndex := range payload.CollectionItems {
+		page := &payload.CollectionItems[pageIndex]
+		for itemIndex := range page.PageItems {
+			item := &page.PageItems[itemIndex]
+			if item.Type != string(model.ContentBlockTypeCustomHTML) {
+				continue
+			}
+
+			location := fmt.Sprintf("page %d, item %d", page.Order, item.Order)
+			html, err := shared.ResolveCustomHTML(baseDir, item.HTMLFile, item.HTMLContent)
+			if err != nil {
+				return fmt.Errorf("%s: %w", location, err)
+			}
+
+			item.HTMLContent = html
+			item.HTMLFile = ""
+			if err := check.Add(location, item.HTMLContent); err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil

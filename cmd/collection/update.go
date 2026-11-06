@@ -4,8 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"path/filepath"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/model"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -60,7 +62,15 @@ Example JSON config file:
       "order": 0
     }]
   }]
-}`,
+}
+
+A snippet for one custom_html item. This is not a complete file.
+The path is relative to the template file.
+You can set html_content instead of html_file. Do not set both.
+
+- order: 0
+  type: custom_html
+  html_file: course.html`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			collectionID := args[0]
@@ -121,5 +131,40 @@ func validateTemplate(opts UpdateOptions) (model.UpdateCollection, error) {
 		}
 	}
 
+	if err := loadUpdateCustomHTML(&updatePayload, opts.TemplatePath); err != nil {
+		return updatePayload, err
+	}
+
 	return updatePayload, nil
+}
+
+// loadUpdateCustomHTML reads html_file for each custom_html item and checks the size limits.
+// PageInstruction.Type is an InstructionType, so it is compared without a string conversion.
+func loadUpdateCustomHTML(payload *model.UpdateCollection, templatePath string) error {
+	baseDir := filepath.Dir(templatePath)
+	var check shared.CustomHTMLSizeCheck
+
+	for pageIndex := range payload.CollectionItems {
+		page := &payload.CollectionItems[pageIndex]
+		for itemIndex := range page.PageItems {
+			item := &page.PageItems[itemIndex]
+			if item.Type != model.ContentBlockTypeCustomHTML {
+				continue
+			}
+
+			location := fmt.Sprintf("page %d, item %d", page.Order, item.Order)
+			html, err := shared.ResolveCustomHTML(baseDir, item.HTMLFile, item.HTMLContent)
+			if err != nil {
+				return fmt.Errorf("%s: %w", location, err)
+			}
+
+			item.HTMLContent = html
+			item.HTMLFile = ""
+			if err := check.Add(location, item.HTMLContent); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }

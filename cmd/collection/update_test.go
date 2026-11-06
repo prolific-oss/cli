@@ -3,13 +3,17 @@ package collection_test
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"errors"
 	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/prolific-oss/cli/cmd/collection"
+	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/mock_client"
 	"github.com/prolific-oss/cli/model"
 )
@@ -814,5 +818,112 @@ func TestUpdateCollectionWithExclusiveOptionMultiSelect(t *testing.T) {
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestUpdateCollectionLoadsCustomHTMLFile(t *testing.T) {
+	collectionID := testUpdateCollectionID
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	tmpDir := t.TempDir()
+	html := "<h1>Course</h1>"
+	if err := os.WriteFile(filepath.Join(tmpDir, "course.html"), []byte(html), 0600); err != nil {
+		t.Fatalf("failed to write html file: %s", err)
+	}
+
+	configFile := filepath.Join(tmpDir, "collection.yaml")
+	configContent := `name: Custom HTML Collection
+collection_items:
+  - order: 0
+    page_items:
+      - type: custom_html
+        order: 0
+        html_file: course.html
+`
+	if err := os.WriteFile(configFile, []byte(configContent), 0600); err != nil {
+		t.Fatalf("failed to write template: %s", err)
+	}
+
+	var capturedPayload model.UpdateCollection
+	c.EXPECT().
+		UpdateCollection(collectionID, gomock.Any()).
+		DoAndReturn(func(_ string, payload model.UpdateCollection) (*model.Collection, error) {
+			capturedPayload = payload
+			return &model.Collection{
+				ID:        collectionID,
+				Name:      payload.Name,
+				CreatedAt: time.Now(),
+				CreatedBy: "user123",
+				ItemCount: 1,
+			}, nil
+		})
+
+	var b bytes.Buffer
+	cmd := collection.NewUpdateCommand(c, bufio.NewWriter(&b))
+	cmd.SetArgs([]string{collectionID, "-t", configFile})
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("expected no error; got %s", err)
+	}
+
+	if len(capturedPayload.CollectionItems) != 1 || len(capturedPayload.CollectionItems[0].PageItems) != 1 {
+		t.Fatalf("expected one custom_html item, got %#v", capturedPayload.CollectionItems)
+	}
+	item := capturedPayload.CollectionItems[0].PageItems[0]
+	if item.HTMLContent != html {
+		t.Fatalf("expected HTMLContent %q, got %q", html, item.HTMLContent)
+	}
+	if item.HTMLFile != "" {
+		t.Fatalf("expected HTMLFile to be empty, got %q", item.HTMLFile)
+	}
+}
+
+func TestUpdateCollectionRejectsBothCustomHTMLSources(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	tmpDir := t.TempDir()
+	configFile := filepath.Join(tmpDir, "collection.yaml")
+	configContent := `name: Custom HTML Collection
+collection_items:
+  - order: 0
+    page_items:
+      - type: custom_html
+        order: 0
+        html_file: course.html
+        html_content: "<h1>Inline</h1>"
+`
+	if err := os.WriteFile(configFile, []byte(configContent), 0600); err != nil {
+		t.Fatalf("failed to write template: %s", err)
+	}
+
+	cmd := collection.NewUpdateCommand(c, os.Stdout)
+	cmd.SetArgs([]string{testUpdateCollectionID, "-t", configFile})
+	err := cmd.Execute()
+	if err == nil {
+		t.Fatal("expected an error")
+	}
+	if !strings.Contains(err.Error(), shared.ErrCustomHTMLBothSources) {
+		t.Fatalf("expected both-sources error, got %s", err)
+	}
+}
+
+func TestPageInstructionOmitsHTMLFile(t *testing.T) {
+	item := model.PageInstruction{
+		Type:        model.ContentBlockTypeCustomHTML,
+		HTMLContent: "<h1>Course</h1>",
+		HTMLFile:    "course.html",
+	}
+
+	var buf bytes.Buffer
+	encoder := json.NewEncoder(&buf)
+	encoder.SetEscapeHTML(false)
+	if err := encoder.Encode(item); err != nil {
+		t.Fatalf("failed to encode json: %s", err)
+	}
+	if strings.Contains(buf.String(), "html_file") {
+		t.Fatalf("expected json:\"-\" to omit html_file, got %s", buf.String())
 	}
 }

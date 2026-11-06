@@ -239,6 +239,7 @@ type CollectionPage struct {
 
 // CollectionPageItem represents an item within a collection page.
 // This can be either an instruction (interactive) or a content block (non-interactive).
+// Content block types are rich_text, image, and custom_html.
 // The Type field determines which other fields are relevant.
 // Use InstructionType constants from collection.go for the Type field.
 type CollectionPageItem struct {
@@ -273,6 +274,10 @@ type CollectionPageItem struct {
 	URL     string `json:"url,omitempty" mapstructure:"url"`
 	AltText string `json:"alt_text,omitempty" mapstructure:"alt_text"`
 	Caption string `json:"caption,omitempty" mapstructure:"caption"`
+
+	// Content block fields (for custom_html)
+	HTMLContent string `json:"html_content,omitempty" mapstructure:"html_content"`
+	HTMLFile    string `json:"-" mapstructure:"html_file"`
 }
 
 // CollectionInstruction is an alias for CollectionPageItem for backward compatibility.
