@@ -4,7 +4,7 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
-## 1.4.0
+## 1.3.3
 
 ### Task Builder
 
