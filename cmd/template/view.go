@@ -8,6 +8,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// legacyTemplateIDs maps template IDs that were renamed with the Task Builder
+// rename to their current IDs, so `prolific template view <old-id>` keeps
+// working.
+var legacyTemplateIDs = map[string]string{
+	"standard-sample-aitaskbuilder":         "standard-sample-taskbuilder",
+	"study-with-ai-task-builder-collection": "study-with-task-builder-collection",
+}
+
 // NewViewCommand creates the `template <id>` subcommand.
 func NewViewCommand(w io.Writer) *cobra.Command {
 	var format string
@@ -29,6 +37,9 @@ $ prolific study create -t my-study.json`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			id := args[0]
+			if current, ok := legacyTemplateIDs[id]; ok {
+				id = current
+			}
 
 			templates := listTemplates()
 
