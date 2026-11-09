@@ -157,7 +157,7 @@ workspace: xxxxxxxxxx # Default workspace ID for commands
 .
 ├── cmd/                      # Cobra command implementations
 │   ├── root.go              # Root command and app initialization
-│   ├── aitaskbuilder/       # AI task builder commands
+│   ├── taskbuilder/         # Task Builder commands
 │   ├── campaign/            # Campaign management
 │   ├── filters/             # Filter management
 │   ├── filtersets/          # Filter set management

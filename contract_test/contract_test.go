@@ -202,65 +202,65 @@ var operations = []operation{
 	{operationID: "surveys_GetResponse", call: func(c *client.Client) { c.GetSurveyResponse("survey-id", "response-id") }},
 	{operationID: "surveys_DeleteResponse", call: func(c *client.Client) { c.DeleteSurveyResponse("survey-id", "response-id") }},
 
-	// AI Task Builder — Batches
-	{operationID: "aiTaskBuilder_GetTaskBuilderBatches", call: func(c *client.Client) { c.GetAITaskBuilderBatches("ws-id") }},
-	{operationID: "aiTaskBuilder_CreateTaskBuilderBatch", call: func(c *client.Client) {
+	// Task Builder — Batches
+	{operationID: "taskBuilder_GetTaskBuilderBatches", call: func(c *client.Client) { c.GetAITaskBuilderBatches("ws-id") }},
+	{operationID: "taskBuilder_CreateTaskBuilderBatch", call: func(c *client.Client) {
 		c.CreateAITaskBuilderBatch(client.CreateBatchParams{
 			Name:        "t",
 			WorkspaceID: "ws-id",
 			DatasetID:   "ds-id",
 		})
 	}},
-	{operationID: "aiTaskBuilder_GetTaskBuilderBatch", call: func(c *client.Client) { c.GetAITaskBuilderBatch("batch-id") }},
-	{operationID: "aiTaskBuilder_UpdateTaskBuilderBatch", call: func(c *client.Client) {
+	{operationID: "taskBuilder_GetTaskBuilderBatch", call: func(c *client.Client) { c.GetAITaskBuilderBatch("batch-id") }},
+	{operationID: "taskBuilder_UpdateTaskBuilderBatch", call: func(c *client.Client) {
 		c.UpdateAITaskBuilderBatch(client.UpdateBatchParams{BatchID: "batch-id", Name: "t"})
 	}},
-	{operationID: "aiTaskBuilder_GetTaskBuilderBatchStatus", call: func(c *client.Client) { c.GetAITaskBuilderBatchStatus("batch-id") }},
-	{operationID: "aiTaskBuilder_SetupTaskBuilderBatch", call: func(c *client.Client) {
+	{operationID: "taskBuilder_GetTaskBuilderBatchStatus", call: func(c *client.Client) { c.GetAITaskBuilderBatchStatus("batch-id") }},
+	{operationID: "taskBuilder_SetupTaskBuilderBatch", call: func(c *client.Client) {
 		c.SetupAITaskBuilderBatch("batch-id", "ds-id", 5)
 	}},
-	{operationID: "aiTaskBuilder_GetTaskBuilderBatchTaskResponses", call: func(c *client.Client) { c.GetAITaskBuilderResponses("batch-id") }},
-	{operationID: "aiTaskBuilder_GetTaskBuilderBatchReport", skip: "OUTOFSCOPE: no CLI command for batch report; GetAITaskBuilderTasks calls /tasks which is not in the spec"},
-	{operationID: "aiTaskBuilder_DuplicateTaskBuilderBatch", skip: "OUTOFSCOPE: no CLI command for duplicating a batch"},
-	{operationID: "aiTaskBuilder_SyncTaskBuilderBatch", call: func(c *client.Client) { c.SyncAITaskBuilderBatch("batch-id") }},
-	{operationID: "aiTaskBuilder_GetBatchSyncStatus", call: func(c *client.Client) { c.GetAITaskBuilderBatchSyncStatus("batch-id", "sync-id") }},
-	{operationID: "aiTaskBuilder_RequestBatchExport", call: func(c *client.Client) {
+	{operationID: "taskBuilder_GetTaskBuilderBatchTaskResponses", call: func(c *client.Client) { c.GetAITaskBuilderResponses("batch-id") }},
+	{operationID: "taskBuilder_GetTaskBuilderBatchReport", skip: "OUTOFSCOPE: no CLI command for batch report; GetAITaskBuilderTasks calls /tasks which is not in the spec"},
+	{operationID: "taskBuilder_DuplicateTaskBuilderBatch", skip: "OUTOFSCOPE: no CLI command for duplicating a batch"},
+	{operationID: "taskBuilder_SyncTaskBuilderBatch", call: func(c *client.Client) { c.SyncAITaskBuilderBatch("batch-id") }},
+	{operationID: "taskBuilder_GetBatchSyncStatus", call: func(c *client.Client) { c.GetAITaskBuilderBatchSyncStatus("batch-id", "sync-id") }},
+	{operationID: "taskBuilder_RequestBatchExport", call: func(c *client.Client) {
 		c.InitiateBatchExport("batch-id", client.ExportFilter{
 			StudyID: "study-id",
 			From:    "2024-01-01T00:00:00Z",
 			To:      "2024-02-01T00:00:00Z",
 		})
 	}},
-	{operationID: "aiTaskBuilder_GetBatchExportStatus", call: func(c *client.Client) { c.GetBatchExportStatus("batch-id", "export-id") }},
-	{operationID: "aiTaskBuilder_ListBatchExportJobs", call: func(c *client.Client) { c.ListBatchExportJobs("batch-id") }},
-	{operationID: "aiTaskBuilder_DeleteBatchExport", call: func(c *client.Client) { c.DeleteBatchExport("batch-id", "export-id") }},
+	{operationID: "taskBuilder_GetBatchExportStatus", call: func(c *client.Client) { c.GetBatchExportStatus("batch-id", "export-id") }},
+	{operationID: "taskBuilder_ListBatchExportJobs", call: func(c *client.Client) { c.ListBatchExportJobs("batch-id") }},
+	{operationID: "taskBuilder_DeleteBatchExport", call: func(c *client.Client) { c.DeleteBatchExport("batch-id", "export-id") }},
 
-	// AI Task Builder — Datasets
-	{operationID: "aiTaskBuilder_CreateTaskBuilderDataset", call: func(c *client.Client) {
+	// Task Builder — Datasets
+	{operationID: "taskBuilder_CreateTaskBuilderDataset", call: func(c *client.Client) {
 		c.CreateAITaskBuilderDataset("ws-id", client.CreateAITaskBuilderDatasetPayload{Name: "t"})
 	}},
-	{operationID: "aiTaskBuilder_UpdateTaskBuilderDataset", skip: "OUTOFSCOPE: no CLI command for updating a dataset"},
-	{operationID: "aiTaskBuilder_AppendDatasetDatapoints", skip: "OUTOFSCOPE: no CLI command for appending datapoints to a dataset"},
-	{operationID: "aiTaskBuilder_getDatasetUploadUrl", call: func(c *client.Client) { c.GetAITaskBuilderDatasetUploadURL("ds-id", "data.jsonl") }},
-	{operationID: "aiTaskBuilder_GetTaskBuilderDataset", call: func(c *client.Client) { c.GetAITaskBuilderDataset("ds-id") }},
-	{operationID: "aiTaskBuilder_GetTaskBuilderDatasetStatus", call: func(c *client.Client) { c.GetAITaskBuilderDatasetStatus("ds-id") }},
-	{operationID: "aiTaskBuilder_GetDatasetImportStatus", call: func(c *client.Client) {
+	{operationID: "taskBuilder_UpdateTaskBuilderDataset", skip: "OUTOFSCOPE: no CLI command for updating a dataset"},
+	{operationID: "taskBuilder_AppendDatasetDatapoints", skip: "OUTOFSCOPE: no CLI command for appending datapoints to a dataset"},
+	{operationID: "taskBuilder_getDatasetUploadUrl", call: func(c *client.Client) { c.GetAITaskBuilderDatasetUploadURL("ds-id", "data.jsonl") }},
+	{operationID: "taskBuilder_GetTaskBuilderDataset", call: func(c *client.Client) { c.GetAITaskBuilderDataset("ds-id") }},
+	{operationID: "taskBuilder_GetTaskBuilderDatasetStatus", call: func(c *client.Client) { c.GetAITaskBuilderDatasetStatus("ds-id") }},
+	{operationID: "taskBuilder_GetDatasetImportStatus", call: func(c *client.Client) {
 		c.GetAITaskBuilderDatasetImportStatus("ds-id", "import-id")
 	}},
-	{operationID: "aiTaskBuilder_GetSchemaMigrationStatus", skip: "OUTOFSCOPE: no CLI command for dataset schema migration status"},
+	{operationID: "taskBuilder_GetSchemaMigrationStatus", skip: "OUTOFSCOPE: no CLI command for dataset schema migration status"},
 
-	// AI Task Builder — Instructions
-	{operationID: "aiTaskBuilder_GetTaskBuilderInstructions", skip: "OUTOFSCOPE: no CLI command for getting task builder instructions"},
-	{operationID: "aiTaskBuilder_CreateTaskBuilderInstructions", call: func(c *client.Client) {
+	// Task Builder — Instructions
+	{operationID: "taskBuilder_GetTaskBuilderInstructions", skip: "OUTOFSCOPE: no CLI command for getting task builder instructions"},
+	{operationID: "taskBuilder_CreateTaskBuilderInstructions", call: func(c *client.Client) {
 		c.CreateAITaskBuilderInstructions("batch-id", client.CreateAITaskBuilderInstructionsPayload{
 			Instructions: []client.Instruction{},
 		})
 	}},
-	{operationID: "aiTaskBuilder_UpdateTaskBuilderInstructions", skip: "OUTOFSCOPE: no CLI command for updating task builder instructions"},
+	{operationID: "taskBuilder_UpdateTaskBuilderInstructions", skip: "OUTOFSCOPE: no CLI command for updating task builder instructions"},
 
-	// AI Task Builder — Collections
-	{operationID: "aiTaskBuilder_ListCollections", call: func(c *client.Client) { c.GetCollections("ws-id", 10, 0) }},
-	{operationID: "aiTaskBuilder_CreateCollection", call: func(c *client.Client) {
+	// Task Builder — Collections
+	{operationID: "taskBuilder_ListCollections", call: func(c *client.Client) { c.GetCollections("ws-id", 10, 0) }},
+	{operationID: "taskBuilder_CreateCollection", call: func(c *client.Client) {
 		c.CreateAITaskBuilderCollection(model.CreateAITaskBuilderCollection{
 			WorkspaceID:     "ws-id",
 			Name:            "t",
@@ -268,27 +268,27 @@ var operations = []operation{
 			TaskDetails:     &model.TaskDetails{TaskName: "t", TaskIntroduction: "t", TaskSteps: "t"},
 		})
 	}},
-	{operationID: "aiTaskBuilder_GetCollection", call: func(c *client.Client) { c.GetCollection("coll-id") }},
-	{operationID: "aiTaskBuilder_UpdateCollection", call: func(c *client.Client) {
+	{operationID: "taskBuilder_GetCollection", call: func(c *client.Client) { c.GetCollection("coll-id") }},
+	{operationID: "taskBuilder_UpdateCollection", call: func(c *client.Client) {
 		c.UpdateCollection("coll-id", model.UpdateCollection{
 			Name:            "t",
 			CollectionItems: []model.Page{},
 			TaskDetails:     &model.TaskDetails{TaskName: "t", TaskIntroduction: "t", TaskSteps: "t"},
 		})
 	}},
-	{operationID: "aiTaskBuilder_GetCollectionResponses", skip: "OUTOFSCOPE: no CLI command for getting collection responses"},
-	{operationID: "aiTaskBuilder_RequestCollectionExport", call: func(c *client.Client) {
+	{operationID: "taskBuilder_GetCollectionResponses", skip: "OUTOFSCOPE: no CLI command for getting collection responses"},
+	{operationID: "taskBuilder_RequestCollectionExport", call: func(c *client.Client) {
 		c.InitiateCollectionExport("coll-id", client.ExportFilter{
 			StudyID: "study-id",
 			From:    "2024-01-01T00:00:00Z",
 			To:      "2024-02-01T00:00:00Z",
 		})
 	}},
-	{operationID: "aiTaskBuilder_GetCollectionExportStatus", call: func(c *client.Client) {
+	{operationID: "taskBuilder_GetCollectionExportStatus", call: func(c *client.Client) {
 		c.GetCollectionExportStatus("coll-id", "export-id")
 	}},
-	{operationID: "aiTaskBuilder_ListCollectionExportJobs", call: func(c *client.Client) { c.ListCollectionExportJobs("coll-id") }},
-	{operationID: "aiTaskBuilder_DeleteCollectionExport", call: func(c *client.Client) { c.DeleteCollectionExport("coll-id", "export-id") }},
+	{operationID: "taskBuilder_ListCollectionExportJobs", call: func(c *client.Client) { c.ListCollectionExportJobs("coll-id") }},
+	{operationID: "taskBuilder_DeleteCollectionExport", call: func(c *client.Client) { c.DeleteCollectionExport("coll-id", "export-id") }},
 
 	// Invitations
 	{operationID: "invitations_CreateInvitation", call: func(c *client.Client) {
@@ -421,6 +421,16 @@ var operations = []operation{
 	}},
 }
 
+// canonicalOperationID maps the legacy aiTaskBuilder_ operationId prefix to taskBuilder_. The published spec
+// switched prefix when AI Task Builder was renamed to Task Builder, and this lets the coverage table match the spec
+// either side of that publish. Remove it once the published spec only uses taskBuilder_.
+func canonicalOperationID(id string) string {
+	if rest, ok := strings.CutPrefix(id, "aiTaskBuilder_"); ok {
+		return "taskBuilder_" + rest
+	}
+	return id
+}
+
 // TestAPICoverage verifies that every operationId in openapi.yaml is accounted for
 // in the operations table — either as a concrete client call or with an explicit
 // skip reason. Fails when a new endpoint is added to the spec without updating this table.
@@ -443,7 +453,7 @@ func TestAPICoverage(t *testing.T) {
 	for _, methods := range spec.Paths {
 		for _, op := range methods {
 			if op.OperationID != "" {
-				specOps[op.OperationID] = true
+				specOps[canonicalOperationID(op.OperationID)] = true
 			}
 		}
 	}

@@ -49,7 +49,7 @@ const (
 )
 
 const (
-	// DataCollectionMethodAITBCollection is the data collection method for AI Task Builder Collections
+	// DataCollectionMethodAITBCollection is the data collection method for Task Builder Collections
 	DataCollectionMethodAITBCollection = "AI_TASK_BUILDER_COLLECTION"
 )
 

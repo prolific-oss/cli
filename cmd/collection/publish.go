@@ -35,7 +35,7 @@ func NewPublishCommand(c client.API, w io.Writer) *cobra.Command {
 		Short: "Publish a collection as a study",
 		Long: `Publish a collection as a study
 
-This command creates and publishes a study from an AI Task Builder Collection.
+This command creates and publishes a study from a Task Builder Collection.
 The study will be created with the collection's content and made available
 to participants.
 

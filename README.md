@@ -22,7 +22,6 @@ Usage:
   prolific [command]
 
 Available Commands:
-  aitaskbuilder     AI Task Builder tools and utilities
   bonus             Create and pay bonuses for study participants
   campaign          Provide details about your campaigns
   collection        Manage and view your collections
@@ -41,6 +40,7 @@ Available Commands:
   studies           List all of your studies
   study             Manage and view your studies
   submission        Manage and view your study submissions
+  taskbuilder       Task Builder tools and utilities
   template          Browse and retrieve study and collection templates
   whoami            View details about your account
   workspace         Manage and view your workspaces
@@ -315,69 +315,69 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 </details>
 
 <details>
-<summary><strong>AI Task Builder — Batches</strong></summary>
+<summary><strong>Task Builder — Batches</strong></summary>
 
 | Operation | Method | Path | Coverage |
 |---|---|---|---|
-| `aiTaskBuilder_GetTaskBuilderBatches` | GET | `/api/v1/data-collection/batches` | ✅ `GetAITaskBuilderBatches` |
-| `aiTaskBuilder_CreateTaskBuilderBatch` | POST | `/api/v1/data-collection/batches` | ✅ `CreateAITaskBuilderBatch` |
-| `aiTaskBuilder_GetTaskBuilderBatch` | GET | `/api/v1/data-collection/batches/{batch_id}` | ✅ `GetAITaskBuilderBatch` |
-| `aiTaskBuilder_UpdateTaskBuilderBatch` | PATCH | `/api/v1/data-collection/batches/{batch_id}` | ✅ `UpdateAITaskBuilderBatch` |
-| `aiTaskBuilder_GetTaskBuilderBatchStatus` | GET | `/api/v1/data-collection/batches/{batch_id}/status` | ✅ `GetAITaskBuilderBatchStatus` |
-| `aiTaskBuilder_SetupTaskBuilderBatch` | POST | `/api/v1/data-collection/batches/{batch_id}/setup` | ✅ `SetupAITaskBuilderBatch` |
-| `aiTaskBuilder_GetTaskBuilderBatchTaskResponses` | GET | `/api/v1/data-collection/batches/{batch_id}/responses` | ✅ `GetAITaskBuilderResponses` |
-| `aiTaskBuilder_GetTaskBuilderBatchReport` | GET | `/api/v1/data-collection/batches/{batch_id}/report/` | ➖ Not exposed in the CLI |
-| `aiTaskBuilder_DuplicateTaskBuilderBatch` | POST | `/api/v1/data-collection/batches/{batch_id}/duplicate` | ➖ Not exposed in the CLI |
-| `aiTaskBuilder_SyncTaskBuilderBatch` | POST | `/api/v1/data-collection/batches/{batch_id}/sync` | ✅ `SyncAITaskBuilderBatch` |
-| `aiTaskBuilder_GetBatchSyncStatus` | GET | `/api/v1/data-collection/batches/{batch_id}/syncs/{sync_id}` | ✅ `GetAITaskBuilderBatchSyncStatus` |
-| `aiTaskBuilder_RequestBatchExport` | POST | `/api/v1/data-collection/batches/{batch_id}/export` | ✅ `InitiateBatchExport` |
-| `aiTaskBuilder_GetBatchExportStatus` | GET | `/api/v1/data-collection/batches/{batch_id}/export/{export_id}` | ✅ `GetBatchExportStatus` |
-| `aiTaskBuilder_ListBatchExportJobs` | GET | `/api/v1/data-collection/batches/{batch_id}/export` | ✅ `ListBatchExportJobs` |
-| `aiTaskBuilder_DeleteBatchExport` | DELETE | `/api/v1/data-collection/batches/{batch_id}/export/{export_id}` | ✅ `DeleteBatchExport` |
+| `taskBuilder_GetTaskBuilderBatches` | GET | `/api/v1/data-collection/batches` | ✅ `GetAITaskBuilderBatches` |
+| `taskBuilder_CreateTaskBuilderBatch` | POST | `/api/v1/data-collection/batches` | ✅ `CreateAITaskBuilderBatch` |
+| `taskBuilder_GetTaskBuilderBatch` | GET | `/api/v1/data-collection/batches/{batch_id}` | ✅ `GetAITaskBuilderBatch` |
+| `taskBuilder_UpdateTaskBuilderBatch` | PATCH | `/api/v1/data-collection/batches/{batch_id}` | ✅ `UpdateAITaskBuilderBatch` |
+| `taskBuilder_GetTaskBuilderBatchStatus` | GET | `/api/v1/data-collection/batches/{batch_id}/status` | ✅ `GetAITaskBuilderBatchStatus` |
+| `taskBuilder_SetupTaskBuilderBatch` | POST | `/api/v1/data-collection/batches/{batch_id}/setup` | ✅ `SetupAITaskBuilderBatch` |
+| `taskBuilder_GetTaskBuilderBatchTaskResponses` | GET | `/api/v1/data-collection/batches/{batch_id}/responses` | ✅ `GetAITaskBuilderResponses` |
+| `taskBuilder_GetTaskBuilderBatchReport` | GET | `/api/v1/data-collection/batches/{batch_id}/report/` | ➖ Not exposed in the CLI |
+| `taskBuilder_DuplicateTaskBuilderBatch` | POST | `/api/v1/data-collection/batches/{batch_id}/duplicate` | ➖ Not exposed in the CLI |
+| `taskBuilder_SyncTaskBuilderBatch` | POST | `/api/v1/data-collection/batches/{batch_id}/sync` | ✅ `SyncAITaskBuilderBatch` |
+| `taskBuilder_GetBatchSyncStatus` | GET | `/api/v1/data-collection/batches/{batch_id}/syncs/{sync_id}` | ✅ `GetAITaskBuilderBatchSyncStatus` |
+| `taskBuilder_RequestBatchExport` | POST | `/api/v1/data-collection/batches/{batch_id}/export` | ✅ `InitiateBatchExport` |
+| `taskBuilder_GetBatchExportStatus` | GET | `/api/v1/data-collection/batches/{batch_id}/export/{export_id}` | ✅ `GetBatchExportStatus` |
+| `taskBuilder_ListBatchExportJobs` | GET | `/api/v1/data-collection/batches/{batch_id}/export` | ✅ `ListBatchExportJobs` |
+| `taskBuilder_DeleteBatchExport` | DELETE | `/api/v1/data-collection/batches/{batch_id}/export/{export_id}` | ✅ `DeleteBatchExport` |
 
 </details>
 
 <details>
-<summary><strong>AI Task Builder — Datasets</strong></summary>
+<summary><strong>Task Builder — Datasets</strong></summary>
 
 | Operation | Method | Path | Coverage |
 |---|---|---|---|
-| `aiTaskBuilder_CreateTaskBuilderDataset` | POST | `/api/v1/data-collection/datasets` | ✅ `CreateAITaskBuilderDataset` |
-| `aiTaskBuilder_UpdateTaskBuilderDataset` | PATCH | `/api/v1/data-collection/datasets/{dataset_id}` | ➖ Not exposed in the CLI |
-| `aiTaskBuilder_AppendDatasetDatapoints` | POST | `/api/v1/data-collection/datasets/{dataset_id}/datapoints` | ➖ Not exposed in the CLI |
-| `aiTaskBuilder_getDatasetUploadUrl` | GET | `/api/v1/data-collection/datasets/{dataset_id}/upload-url/{filename}` | ✅ `GetAITaskBuilderDatasetUploadURL` |
-| `aiTaskBuilder_GetTaskBuilderDataset` | GET | `/api/v1/data-collection/datasets/{dataset_id}` | ✅ `GetAITaskBuilderDataset` |
-| `aiTaskBuilder_GetTaskBuilderDatasetStatus` | GET | `/api/v1/data-collection/datasets/{dataset_id}/status` | ✅ `GetAITaskBuilderDatasetStatus` |
-| `aiTaskBuilder_GetDatasetImportStatus` | GET | `/api/v1/data-collection/datasets/{dataset_id}/imports/{import_id}` | ✅ `GetAITaskBuilderDatasetImportStatus` |
-| `aiTaskBuilder_GetSchemaMigrationStatus` | GET | `/api/v1/data-collection/datasets/{dataset_id}/schema-migrations/{job_id}` | ➖ Not exposed in the CLI |
+| `taskBuilder_CreateTaskBuilderDataset` | POST | `/api/v1/data-collection/datasets` | ✅ `CreateAITaskBuilderDataset` |
+| `taskBuilder_UpdateTaskBuilderDataset` | PATCH | `/api/v1/data-collection/datasets/{dataset_id}` | ➖ Not exposed in the CLI |
+| `taskBuilder_AppendDatasetDatapoints` | POST | `/api/v1/data-collection/datasets/{dataset_id}/datapoints` | ➖ Not exposed in the CLI |
+| `taskBuilder_getDatasetUploadUrl` | GET | `/api/v1/data-collection/datasets/{dataset_id}/upload-url/{filename}` | ✅ `GetAITaskBuilderDatasetUploadURL` |
+| `taskBuilder_GetTaskBuilderDataset` | GET | `/api/v1/data-collection/datasets/{dataset_id}` | ✅ `GetAITaskBuilderDataset` |
+| `taskBuilder_GetTaskBuilderDatasetStatus` | GET | `/api/v1/data-collection/datasets/{dataset_id}/status` | ✅ `GetAITaskBuilderDatasetStatus` |
+| `taskBuilder_GetDatasetImportStatus` | GET | `/api/v1/data-collection/datasets/{dataset_id}/imports/{import_id}` | ✅ `GetAITaskBuilderDatasetImportStatus` |
+| `taskBuilder_GetSchemaMigrationStatus` | GET | `/api/v1/data-collection/datasets/{dataset_id}/schema-migrations/{job_id}` | ➖ Not exposed in the CLI |
 
 </details>
 
 <details>
-<summary><strong>AI Task Builder — Instructions</strong></summary>
+<summary><strong>Task Builder — Instructions</strong></summary>
 
 | Operation | Method | Path | Coverage |
 |---|---|---|---|
-| `aiTaskBuilder_GetTaskBuilderInstructions` | GET | `/api/v1/data-collection/batches/{batch_id}/instructions` | ➖ Not exposed in the CLI |
-| `aiTaskBuilder_CreateTaskBuilderInstructions` | POST | `/api/v1/data-collection/batches/{batch_id}/instructions` | ✅ `CreateAITaskBuilderInstructions` |
-| `aiTaskBuilder_UpdateTaskBuilderInstructions` | PUT | `/api/v1/data-collection/batches/{batch_id}/instructions` | ➖ Not exposed in the CLI |
+| `taskBuilder_GetTaskBuilderInstructions` | GET | `/api/v1/data-collection/batches/{batch_id}/instructions` | ➖ Not exposed in the CLI |
+| `taskBuilder_CreateTaskBuilderInstructions` | POST | `/api/v1/data-collection/batches/{batch_id}/instructions` | ✅ `CreateAITaskBuilderInstructions` |
+| `taskBuilder_UpdateTaskBuilderInstructions` | PUT | `/api/v1/data-collection/batches/{batch_id}/instructions` | ➖ Not exposed in the CLI |
 
 </details>
 
 <details>
-<summary><strong>AI Task Builder — Collections</strong></summary>
+<summary><strong>Task Builder — Collections</strong></summary>
 
 | Operation | Method | Path | Coverage |
 |---|---|---|---|
-| `aiTaskBuilder_ListCollections` | GET | `/api/v1/data-collection/collections` | ✅ `GetCollections` |
-| `aiTaskBuilder_CreateCollection` | POST | `/api/v1/data-collection/collections` | ✅ `CreateAITaskBuilderCollection` |
-| `aiTaskBuilder_GetCollection` | GET | `/api/v1/data-collection/collections/{collection_id}` | ✅ `GetCollection` |
-| `aiTaskBuilder_UpdateCollection` | PUT | `/api/v1/data-collection/collections/{collection_id}` | ✅ `UpdateCollection` |
-| `aiTaskBuilder_GetCollectionResponses` | GET | `/api/v1/data-collection/collections/{collection_id}/responses` | ➖ Not exposed in the CLI |
-| `aiTaskBuilder_RequestCollectionExport` | POST | `/api/v1/data-collection/collections/{collection_id}/export` | ✅ `InitiateCollectionExport` |
-| `aiTaskBuilder_GetCollectionExportStatus` | GET | `/api/v1/data-collection/collections/{collection_id}/export/{export_id}` | ✅ `GetCollectionExportStatus` |
-| `aiTaskBuilder_ListCollectionExportJobs` | GET | `/api/v1/data-collection/collections/{collection_id}/export` | ✅ `ListCollectionExportJobs` |
-| `aiTaskBuilder_DeleteCollectionExport` | DELETE | `/api/v1/data-collection/collections/{collection_id}/export/{export_id}` | ✅ `DeleteCollectionExport` |
+| `taskBuilder_ListCollections` | GET | `/api/v1/data-collection/collections` | ✅ `GetCollections` |
+| `taskBuilder_CreateCollection` | POST | `/api/v1/data-collection/collections` | ✅ `CreateAITaskBuilderCollection` |
+| `taskBuilder_GetCollection` | GET | `/api/v1/data-collection/collections/{collection_id}` | ✅ `GetCollection` |
+| `taskBuilder_UpdateCollection` | PUT | `/api/v1/data-collection/collections/{collection_id}` | ✅ `UpdateCollection` |
+| `taskBuilder_GetCollectionResponses` | GET | `/api/v1/data-collection/collections/{collection_id}/responses` | ➖ Not exposed in the CLI |
+| `taskBuilder_RequestCollectionExport` | POST | `/api/v1/data-collection/collections/{collection_id}/export` | ✅ `InitiateCollectionExport` |
+| `taskBuilder_GetCollectionExportStatus` | GET | `/api/v1/data-collection/collections/{collection_id}/export/{export_id}` | ✅ `GetCollectionExportStatus` |
+| `taskBuilder_ListCollectionExportJobs` | GET | `/api/v1/data-collection/collections/{collection_id}/export` | ✅ `ListCollectionExportJobs` |
+| `taskBuilder_DeleteCollectionExport` | DELETE | `/api/v1/data-collection/collections/{collection_id}/export/{export_id}` | ✅ `DeleteCollectionExport` |
 
 </details>
 

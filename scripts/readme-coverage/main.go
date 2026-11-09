@@ -172,6 +172,15 @@ func parseOperations(path string) ([]entry, error) {
 	return entries, nil
 }
 
+// canonicalOperationID maps the legacy aiTaskBuilder_ operationId prefix to taskBuilder_, matching
+// contract_test.go, so the table renders against the spec either side of the rename being published.
+func canonicalOperationID(id string) string {
+	if rest, ok := strings.CutPrefix(id, "aiTaskBuilder_"); ok {
+		return "taskBuilder_" + rest
+	}
+	return id
+}
+
 // loadSpecOperations always downloads the live spec fresh — matching
 // contract_test.go's own TestMain, which never trusts a cached copy — and
 // maps each operationId to its HTTP method and path.
@@ -194,7 +203,7 @@ func loadSpecOperations() (map[string]specOp, error) {
 	for path, methods := range spec.Paths {
 		for method, op := range methods {
 			if op.OperationID != "" {
-				ops[op.OperationID] = specOp{method: strings.ToUpper(method), path: path}
+				ops[canonicalOperationID(op.OperationID)] = specOp{method: strings.ToUpper(method), path: path}
 			}
 		}
 	}

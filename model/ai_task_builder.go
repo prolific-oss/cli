@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-// AITaskBuilderBatch represents an AI Task Builder batch.
+// AITaskBuilderBatch represents a Task Builder batch.
 type AITaskBuilderBatch struct {
 	ID                    string                       `json:"id"`
 	CreatedAt             time.Time                    `json:"created_at"`
@@ -21,7 +21,7 @@ type AITaskBuilderBatch struct {
 	AutoSyncEnabled       bool                         `json:"auto_sync_enabled"`
 }
 
-// AITaskBuilderBatchStatus represents the status of an AI Task Builder batch.
+// AITaskBuilderBatchStatus represents the status of a Task Builder batch.
 type AITaskBuilderBatchStatus struct {
 	Status AITaskBuilderBatchStatusEnum `json:"status"`
 }
@@ -155,7 +155,7 @@ type Instruction struct {
 	MaxFileCount         *int                `json:"max_file_count,omitempty"`
 }
 
-// AITaskBuilderResponse represents a response from an AI Task Builder batch task.
+// AITaskBuilderResponse represents a response from a Task Builder batch task.
 type AITaskBuilderResponse struct {
 	ID            string                    `json:"id"`
 	BatchID       string                    `json:"batch_id"`

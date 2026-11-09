@@ -58,7 +58,7 @@ func TestCategorise(t *testing.T) {
 		expected string
 	}{
 		{"standard-sample", "study"},
-		{"standard-sample-aitaskbuilder", "study"},
+		{"standard-sample-taskbuilder", "study"},
 		{"minimal-study", "study"},
 		{"multi-submission-study", "study"},
 		{"multiple-participant-groups-either-or", "study"},
@@ -67,7 +67,7 @@ func TestCategorise(t *testing.T) {
 		{"star-wars", "study"},
 		{"collection", "collection"},
 		{"batch-instructions", ""},
-		{"aitb-model-evaluation", ""},
+		{"taskbuilder-model-evaluation", ""},
 		{"credentials", ""},
 	}
 
