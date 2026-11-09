@@ -8,7 +8,7 @@
 
 ### Task Builder
 
-- Rename `aitaskbuilder` to `taskbuilder` and drop "AI" from the Task Builder help text and output. `prolific aitaskbuilder` keeps working as a hidden alias and prints a notice on stderr pointing to `prolific taskbuilder`. Example files under `docs/examples/` are renamed to match, and the old template IDs still work in `prolific template view` (#554).
+- Rename `aitaskbuilder` to `taskbuilder` and drop "AI" from the Task Builder help text and output. `prolific aitaskbuilder` keeps working as a hidden alias and prints a notice on stderr pointing to `prolific taskbuilder`. Example files under `docs/examples/` are renamed to match.
 
 ## 1.3.2
 
