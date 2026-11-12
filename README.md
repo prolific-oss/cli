@@ -78,6 +78,23 @@ Main features include:
 
 Checkout the [wiki](https://github.com/prolific-oss/cli/wiki) for more tips and tricks.
 
+### Raw study JSON
+
+`prolific study list --json` outputs the study fields supported by the CLI. To
+include every field returned by the API, use `--raw`:
+
+```shell
+prolific study list --raw
+prolific study list --raw --status active --project <project-id>
+```
+
+Raw output contains the full API response, including `results`, pagination
+metadata, and fields unknown to the CLI. It returns a single response, without
+fetching additional pages, and its shape can change with the API. `--json --raw`
+is also supported, as is the `prolific studies --raw` alias. `--raw` cannot be
+combined with `--underpaying`, `--fields`, `--csv`, `--table`, or `--non-interactive`.
+The existing `--json` output is unchanged.
+
 ## Requirements
 
 If you are wanting to build and develop this, you will need the following items installed. If, however, you just want to run the application I recommend using a binary (See below).

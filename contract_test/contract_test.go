@@ -320,7 +320,7 @@ var operations = []operation{
 	{operationID: "messages_GetBroadcast", skip: "OUTOFSCOPE: no CLI command for retrieving a broadcast"},
 
 	// Studies
-	{operationID: "studies_GetStudies", call: func(c *client.Client) { c.GetStudies("", "") }}, // SearchStudies parameters: client/search_test.go.
+	{operationID: "studies_GetStudies", call: func(c *client.Client) { c.GetStudies("", "") }}, // SearchStudies: client/search_test.go. GetStudiesRaw shares this request: client/study_test.go.
 	{operationID: "studies_CreateStudy", call: func(c *client.Client) {
 		c.CreateStudy(model.CreateStudy{
 			Name:                    "t",
@@ -332,7 +332,7 @@ var operations = []operation{
 			DeviceCompatibility:     []string{"desktop"},
 		})
 	}},
-	{operationID: "studies_GetProjectStudies", call: func(c *client.Client) { c.GetStudies("", "proj-id") }},
+	{operationID: "studies_GetProjectStudies", call: func(c *client.Client) { c.GetStudies("", "proj-id") }}, // GetStudiesRaw shares this request: client/study_test.go.
 	{operationID: "studies_DeleteProjectStudy", skip: "OUTOFSCOPE: no CLI command for deleting a study"},
 	{operationID: "studies_GetStudy", call: func(c *client.Client) { c.GetStudy("study-id") }},
 	{operationID: "studies_DeleteStudy", skip: "OUTOFSCOPE: no CLI command for deleting a study"},
