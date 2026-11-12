@@ -217,6 +217,17 @@ func TestListRawRejectsConflictingFlagsBeforeRequest(t *testing.T) {
 		{name: "table", args: []string{"--table"}, wantErr: "--table"},
 		{name: "non-interactive", args: []string{"--non-interactive"}, wantErr: "--non-interactive"},
 		{name: "non-interactive shorthand", args: []string{"-n"}, wantErr: "--non-interactive"},
+		{name: "disabled table before alias", args: []string{"--table=false", "--non-interactive"}, wantErr: "--non-interactive"},
+		{name: "disabled table after alias", args: []string{"--non-interactive", "--table=false"}, wantErr: "--non-interactive"},
+		{name: "disabled alias before table", args: []string{"--non-interactive=false", "--table"}, wantErr: "--table"},
+		{name: "disabled alias after table", args: []string{"--table", "--non-interactive=false"}, wantErr: "--table"},
+		{name: "disabled short table before alias", args: []string{"-t=false", "-n"}, wantErr: "--non-interactive"},
+		{name: "disabled short table after alias", args: []string{"-n", "-t=false"}, wantErr: "--non-interactive"},
+		{name: "disabled short alias before table", args: []string{"-n=false", "-t"}, wantErr: "--table"},
+		{name: "disabled short alias after table", args: []string{"-t", "-n=false"}, wantErr: "--table"},
+		{name: "repeated table", args: []string{"--table", "-n", "--table=false"}, wantErr: "--non-interactive"},
+		{name: "repeated alias", args: []string{"--non-interactive", "-t", "--non-interactive=false"}, wantErr: "--table"},
+		{name: "both aliases enabled", args: []string{"-nt"}, wantErr: "--table, --non-interactive"},
 		{name: "fields", args: []string{"--fields", "ID"}, wantErr: "--fields"},
 		{name: "empty fields", args: []string{"--fields="}, wantErr: "--fields"},
 		{name: "underpaying", args: []string{"--underpaying"}, wantErr: "--underpaying"},
@@ -240,14 +251,57 @@ func TestListRawRejectsConflictingFlagsBeforeRequest(t *testing.T) {
 }
 
 func TestListRawAllowsDisabledBoolFlags(t *testing.T) {
-	c := mock_client.NewMockAPI(gomock.NewController(t))
-	c.EXPECT().GetStudiesRaw(model.StatusAll, "").Return(json.RawMessage(`{"results":[]}`), nil)
-	var output bytes.Buffer
-	cmd := study.NewListCommand("list", c, &output)
-	cmd.SetArgs([]string{"--raw", "--csv=false", "--underpaying=false"})
+	tests := []struct {
+		name string
+		args []string
+	}{
+		{name: "other flags", args: []string{"--csv=false", "--underpaying=false"}},
+		{name: "both aliases", args: []string{"--table=false", "--non-interactive=false"}},
+		{name: "short aliases", args: []string{"-n=false", "-t=false"}},
+		{name: "repeated aliases", args: []string{"-nt", "--table=false", "--non-interactive=false"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := mock_client.NewMockAPI(gomock.NewController(t))
+			c.EXPECT().GetStudiesRaw(model.StatusAll, "").Return(json.RawMessage(`{"results":[]}`), nil)
+			var output bytes.Buffer
+			cmd := study.NewListCommand("list", c, &output)
+			cmd.SetArgs(append([]string{"--raw"}, tt.args...))
 
-	require.NoError(t, cmd.Execute())
-	assert.JSONEq(t, `{"results":[]}`, output.String())
+			require.NoError(t, cmd.Execute())
+			assert.JSONEq(t, `{"results":[]}`, output.String())
+		})
+	}
+}
+
+func TestListTableAliasesKeepLastValue(t *testing.T) {
+	tests := []struct {
+		name string
+		args []string
+		want bool
+	}{
+		{name: "table then disabled alias", args: []string{"--table", "--non-interactive=false"}, want: false},
+		{name: "alias then disabled table", args: []string{"--non-interactive", "--table=false"}, want: false},
+		{name: "disabled table then alias", args: []string{"--table=false", "--non-interactive"}, want: true},
+		{name: "disabled alias then table", args: []string{"--non-interactive=false", "--table"}, want: true},
+		{name: "short table then disabled alias", args: []string{"-t", "-n=false"}, want: false},
+		{name: "short alias then disabled table", args: []string{"-n", "-t=false"}, want: false},
+		{name: "repeated table enables output", args: []string{"-t", "-n=false", "-t"}, want: true},
+		{name: "repeated alias disables output", args: []string{"-n", "-t", "-n=false"}, want: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := mock_client.NewMockAPI(gomock.NewController(t))
+			cmd := study.NewListCommand("list", c, io.Discard)
+			// Inspect the parsed output setting without starting the interactive UI.
+			require.NoError(t, cmd.ParseFlags(tt.args))
+			for _, name := range []string{"table", "non-interactive"} {
+				enabled, err := cmd.Flags().GetBool(name)
+				require.NoError(t, err)
+				assert.Equal(t, tt.want, enabled, name)
+			}
+		})
+	}
 }
 
 func TestListRawReturnsAPIErrors(t *testing.T) {

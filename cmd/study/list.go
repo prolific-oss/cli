@@ -14,6 +14,7 @@ import (
 	"github.com/prolific-oss/cli/model"
 	"github.com/prolific-oss/cli/ui"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 // defaultListFields is the default fields shown when the user has not specified --fields.
@@ -177,18 +178,42 @@ The fields you can use are
 	flags.StringVarP(&opts.ProjectID, "project", "p", "", "Get studies for a given project ID.")
 	flags.BoolVar(&opts.Raw, "raw", false, "Output the full API response as JSON, including fields unknown to the CLI")
 	shared.AddOutputFlags(cmd, &opts.Output)
+	for _, name := range []string{"table", "non-interactive"} {
+		flag := flags.Lookup(name)
+		flag.Value = &explicitBoolValue{Value: flag.Value}
+	}
 
 	return cmd
 }
 
+// explicitBoolValue records this flag's last explicit value while preserving
+// the shared value used by the table aliases to choose the output format.
+type explicitBoolValue struct {
+	pflag.Value
+	enabled bool
+}
+
+func (v *explicitBoolValue) Set(value string) error {
+	if err := v.Value.Set(value); err != nil {
+		return err
+	}
+	v.enabled = v.String() == "true"
+	return nil
+}
+
+func (v *explicitBoolValue) IsBoolFlag() bool { return true }
+
 // rawConflictingFlags returns the flags the user passed that --raw cannot honour,
-// named as typed. --table and --non-interactive share one value, so Changed
-// tells them apart.
+// using each table alias's explicit value rather than their shared output value.
 func rawConflictingFlags(cmd *cobra.Command) []string {
 	flags := cmd.Flags()
 	var conflicts []string
 	for _, name := range []string{"csv", "table", "non-interactive", "underpaying"} {
-		if enabled, _ := flags.GetBool(name); enabled && flags.Changed(name) {
+		enabled, _ := flags.GetBool(name)
+		if value, ok := flags.Lookup(name).Value.(*explicitBoolValue); ok {
+			enabled = value.enabled
+		}
+		if enabled && flags.Changed(name) {
 			conflicts = append(conflicts, "--"+name)
 		}
 	}
