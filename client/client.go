@@ -40,6 +40,7 @@ type API interface {
 	CreateStudy(model.CreateStudy) (*model.Study, error)
 	DuplicateStudy(ID string) (*model.Study, error)
 	GetStudies(status, projectID string) (*ListStudiesResponse, error)
+	GetStudiesRaw(status, projectID string) (json.RawMessage, error)
 	SearchStudies(query, workspaceID string, page int) (*ListStudiesResponse, error)
 	GetStudy(ID string) (*model.Study, error)
 	GetSubmissions(ID string, limit, offset int) (*ListSubmissionsResponse, error)
@@ -389,12 +390,20 @@ func (c *Client) DuplicateStudy(ID string) (*model.Study, error) {
 // GetStudies will return you a list of Study objects.
 func (c *Client) GetStudies(status, projectID string) (*ListStudiesResponse, error) {
 	var response ListStudiesResponse
+	if err := c.getStudies(status, projectID, &response); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+// getStudies keeps request routing and validation identical for typed and raw responses.
+func (c *Client) getStudies(status, projectID string, response any) error {
 	var url string
 
 	// Validate status if it's not "all" or empty
 	if status != "" && status != model.StatusAll {
 		if !slices.Contains(model.StudyListStatus, status) {
-			return nil, fmt.Errorf("%s is not a valid status: %s", status, strings.Join(model.StudyListStatus, ", "))
+			return fmt.Errorf("%s is not a valid status: %s", status, strings.Join(model.StudyListStatus, ", "))
 		}
 	}
 
@@ -423,12 +432,8 @@ func (c *Client) GetStudies(status, projectID string) (*ListStudiesResponse, err
 		}
 	}
 
-	_, err := c.ExecuteBuilder().GetInto(url, &response)
-	if err != nil {
-		return nil, err
-	}
-
-	return &response, nil
+	_, err := c.ExecuteBuilder().GetInto(url, response)
+	return err
 }
 
 // GetStudy will return a single study

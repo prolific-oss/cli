@@ -1,6 +1,7 @@
 package study
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"strings"
@@ -13,6 +14,7 @@ import (
 	"github.com/prolific-oss/cli/model"
 	"github.com/prolific-oss/cli/ui"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 // defaultListFields is the default fields shown when the user has not specified --fields.
@@ -22,6 +24,7 @@ type ListOptions struct {
 	Args        []string
 	Fields      string
 	Output      shared.OutputOptions
+	Raw         bool
 	ProjectID   string
 	Status      string
 	Underpaying bool
@@ -38,7 +41,13 @@ func NewListCommand(commandName string, client client.API, w io.Writer) *cobra.C
 		Long: `List your studies
 
 This command allows you to understand what is happening with your studies on the
-Prolific Platform.`,
+Prolific Platform.
+
+Use --raw to output the full API response as JSON, including fields unknown to
+the CLI and the API's pagination metadata. This returns the same single response
+as a normal listing; it does not fetch additional pages. --status and --project
+still apply. --raw cannot be combined with --underpaying, --fields, or table/CSV
+output.`,
 		Example: `
 You can list all your studies in an interactive manner. This is a searchable
 interface. When you have found the study you want to look into in more detail,
@@ -56,6 +65,10 @@ $ prolific study list -c
 You can output as JSON
 $ prolific study list --json
 $ prolific study list -j
+
+You can output the full API response, preserving all fields returned by the API
+$ prolific study list --raw
+$ prolific study list --json --raw -p 6261321e223a605c7a4f7561
 
 You can specify the fields you want to render in table or CSV output
 $ prolific study list -f ID,InternalName,TotalCost -t
@@ -99,6 +112,23 @@ The fields you can use are
 - CredentialPoolID`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
+
+			if opts.Raw {
+				if conflicts := rawConflictingFlags(cmd); len(conflicts) > 0 {
+					return fmt.Errorf("error: --raw cannot be combined with %s", strings.Join(conflicts, ", "))
+				}
+				response, err := client.GetStudiesRaw(opts.Status, opts.ProjectID)
+				if err != nil {
+					return fmt.Errorf("error: %s", err)
+				}
+				encoder := json.NewEncoder(w)
+				encoder.SetIndent("", "  ")
+				encoder.SetEscapeHTML(false)
+				if err := encoder.Encode(response); err != nil {
+					return fmt.Errorf("error: %s", err)
+				}
+				return nil
+			}
 
 			studies, err := client.GetStudies(opts.Status, opts.ProjectID)
 			if err != nil {
@@ -146,9 +176,51 @@ The fields you can use are
 	flags.BoolVarP(&opts.Underpaying, "underpaying", "u", false, "Filter by underpaying studies.")
 	flags.StringVarP(&opts.Fields, "fields", "f", "", "Comma separated list of fields you want to display in table or csv mode.")
 	flags.StringVarP(&opts.ProjectID, "project", "p", "", "Get studies for a given project ID.")
+	flags.BoolVar(&opts.Raw, "raw", false, "Output the full API response as JSON, including fields unknown to the CLI")
 	shared.AddOutputFlags(cmd, &opts.Output)
+	for _, name := range []string{"table", "non-interactive"} {
+		flag := flags.Lookup(name)
+		flag.Value = &explicitBoolValue{Value: flag.Value}
+	}
 
 	return cmd
+}
+
+// explicitBoolValue records this flag's last explicit value while preserving
+// the shared value used by the table aliases to choose the output format.
+type explicitBoolValue struct {
+	pflag.Value
+	enabled bool
+}
+
+func (v *explicitBoolValue) Set(value string) error {
+	if err := v.Value.Set(value); err != nil {
+		return err
+	}
+	v.enabled = v.String() == "true"
+	return nil
+}
+
+func (v *explicitBoolValue) IsBoolFlag() bool { return true }
+
+// rawConflictingFlags returns the flags the user passed that --raw cannot honour,
+// using each table alias's explicit value rather than their shared output value.
+func rawConflictingFlags(cmd *cobra.Command) []string {
+	flags := cmd.Flags()
+	var conflicts []string
+	for _, name := range []string{"csv", "table", "non-interactive", "underpaying"} {
+		enabled, _ := flags.GetBool(name)
+		if value, ok := flags.Lookup(name).Value.(*explicitBoolValue); ok {
+			enabled = value.enabled
+		}
+		if enabled && flags.Changed(name) {
+			conflicts = append(conflicts, "--"+name)
+		}
+	}
+	if flags.Changed("fields") {
+		conflicts = append(conflicts, "--fields")
+	}
+	return conflicts
 }
 
 func filterByUnderpaying(studies client.ListStudiesResponse) *client.ListStudiesResponse {

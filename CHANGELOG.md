@@ -4,6 +4,10 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+### Studies
+
+- Add `study list --raw` (also `studies --raw`) to output the full API JSON response, preserving fields unknown to the CLI and pagination metadata. Existing `--json` output is unchanged. (#534)
+
 ## 1.3.3
 
 ### Task Builder
