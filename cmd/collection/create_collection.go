@@ -218,7 +218,6 @@ func createCollection(c client.API, opts CreateCollectionOptions, w io.Writer) e
 // The page index is used because a range variable is a copy.
 func loadCustomHTML(payload *model.CreateAITaskBuilderCollection, templatePath string) error {
 	baseDir := filepath.Dir(templatePath)
-	var check shared.CustomHTMLSizeCheck
 
 	for pageIndex := range payload.CollectionItems {
 		page := &payload.CollectionItems[pageIndex]
@@ -236,7 +235,7 @@ func loadCustomHTML(payload *model.CreateAITaskBuilderCollection, templatePath s
 
 			item.HTMLContent = html
 			item.HTMLFile = ""
-			if err := check.Add(location, item.HTMLContent); err != nil {
+			if err := shared.CheckCustomHTMLSize(location, item.HTMLContent); err != nil {
 				return err
 			}
 		}

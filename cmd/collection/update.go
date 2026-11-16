@@ -142,7 +142,6 @@ func validateTemplate(opts UpdateOptions) (model.UpdateCollection, error) {
 // PageInstruction.Type is an InstructionType, so it is compared without a string conversion.
 func loadUpdateCustomHTML(payload *model.UpdateCollection, templatePath string) error {
 	baseDir := filepath.Dir(templatePath)
-	var check shared.CustomHTMLSizeCheck
 
 	for pageIndex := range payload.CollectionItems {
 		page := &payload.CollectionItems[pageIndex]
@@ -160,7 +159,7 @@ func loadUpdateCustomHTML(payload *model.UpdateCollection, templatePath string) 
 
 			item.HTMLContent = html
 			item.HTMLFile = ""
-			if err := check.Add(location, item.HTMLContent); err != nil {
+			if err := shared.CheckCustomHTMLSize(location, item.HTMLContent); err != nil {
 				return err
 			}
 		}

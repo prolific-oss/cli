@@ -114,9 +114,8 @@ func TestResolveCustomHTML(t *testing.T) {
 	}
 }
 
-func TestCustomHTMLSizeCheckBlockLimit(t *testing.T) {
-	var check CustomHTMLSizeCheck
-	err := check.Add("page 0, item 2", strings.Repeat("a", CustomHTMLBlockMaxChars+1))
+func TestCheckCustomHTMLSizeBlockLimit(t *testing.T) {
+	err := CheckCustomHTMLSize("page 0, item 2", strings.Repeat("a", CustomHTMLBlockMaxBytes+1))
 	if err == nil {
 		t.Fatal("expected an error")
 	}
@@ -128,23 +127,8 @@ func TestCustomHTMLSizeCheckBlockLimit(t *testing.T) {
 	}
 }
 
-func TestCustomHTMLSizeCheckTotalLimit(t *testing.T) {
-	var check CustomHTMLSizeCheck
-	block := strings.Repeat("a", 250_001)
-	for i := 0; i < 3; i++ {
-		if err := check.Add("page 0, item 0", block); err != nil {
-			t.Fatalf("block %d: unexpected error: %s", i, err)
-		}
-	}
-
-	err := check.Add("page 3, item 0", block)
-	if err == nil {
-		t.Fatal("expected the fourth block to fail")
-	}
-	if !strings.Contains(err.Error(), "page 3, item 0") {
-		t.Fatalf("expected error to name the fourth block, got %q", err.Error())
-	}
-	if !strings.Contains(err.Error(), "1000004") {
-		t.Fatalf("expected error to contain the total, got %q", err.Error())
+func TestCheckCustomHTMLSizeAcceptsAtLimit(t *testing.T) {
+	if err := CheckCustomHTMLSize("page 0, item 0", strings.Repeat("a", CustomHTMLBlockMaxBytes)); err != nil {
+		t.Fatalf("unexpected error: %s", err)
 	}
 }
