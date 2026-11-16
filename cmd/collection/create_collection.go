@@ -18,6 +18,7 @@ import (
 type CreateCollectionOptions struct {
 	Args         []string
 	TemplatePath string
+	HTMLDir      string
 }
 
 // NewCreateCollectionCommand creates a new `collection create` command to allow you to create
@@ -33,6 +34,10 @@ func NewCreateCollectionCommand(c client.API, w io.Writer) *cobra.Command {
 To create a collection via the CLI, define your collection as a JSON/YAML file
 $ prolific collection create -t docs/examples/collection.json
 $ prolific collection create -t docs/examples/collection.yaml
+$ prolific collection create -t docs/examples/collection-custom-html.yaml
+
+Read html_file paths from another folder:
+$ prolific collection create -t collection.yaml --html-dir ./course-pages
 
 An example of a JSON collection file:
 
@@ -101,7 +106,8 @@ collection_items:
 ---
 
 A snippet for one custom_html item. This is not a complete file.
-The path is relative to the template file.
+The path is relative to the template file, or to --html-dir when that flag is set.
+It must stay inside that folder.
 You can set html_content instead of html_file. Do not set both.
 
 - order: 0
@@ -129,6 +135,7 @@ You can set html_content instead of html_file. Do not set both.
 
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.TemplatePath, "template-path", "t", "", "Path to a YAML or JSON file containing the collection you want to create")
+	flags.StringVar(&opts.HTMLDir, "html-dir", "", "Folder that html_file paths are relative to. A relative value is read from the current folder. Defaults to the template folder.")
 	_ = cmd.MarkFlagRequired("template-path")
 
 	return cmd
@@ -186,7 +193,7 @@ func createCollection(c client.API, opts CreateCollectionOptions, w io.Writer) e
 		return err
 	}
 
-	if err := loadCustomHTML(&payload, opts.TemplatePath); err != nil {
+	if err := loadCustomHTML(&payload, opts.TemplatePath, opts.HTMLDir); err != nil {
 		return err
 	}
 
@@ -214,10 +221,13 @@ func createCollection(c client.API, opts CreateCollectionOptions, w io.Writer) e
 	return nil
 }
 
-// loadCustomHTML reads html_file for each custom_html item and checks the size limits.
-// The page index is used because a range variable is a copy.
-func loadCustomHTML(payload *model.CreateAITaskBuilderCollection, templatePath string) error {
-	baseDir := filepath.Dir(templatePath)
+// loadCustomHTML reads each html_file and checks the block size.
+func loadCustomHTML(payload *model.CreateAITaskBuilderCollection, templatePath, htmlDir string) error {
+	folder, err := shared.OpenHTMLFolder(filepath.Dir(templatePath), htmlDir)
+	if err != nil {
+		return err
+	}
+	defer folder.Close()
 
 	for pageIndex := range payload.CollectionItems {
 		page := &payload.CollectionItems[pageIndex]
@@ -227,8 +237,8 @@ func loadCustomHTML(payload *model.CreateAITaskBuilderCollection, templatePath s
 				continue
 			}
 
-			location := fmt.Sprintf("page %d, item %d", page.Order, item.Order)
-			html, err := shared.ResolveCustomHTML(baseDir, item.HTMLFile, item.HTMLContent)
+			location := fmt.Sprintf("page at index %d, item at index %d", pageIndex, itemIndex)
+			html, err := shared.ResolveCustomHTML(folder, item.HTMLFile, item.HTMLContent)
 			if err != nil {
 				return fmt.Errorf("%s: %w", location, err)
 			}

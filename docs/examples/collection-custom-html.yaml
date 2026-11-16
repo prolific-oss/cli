@@ -1,6 +1,5 @@
 # This example uses html_content so the file works alone.
-# To load a file, use html_file and keep the HTML file in the same folder.
-# See course.html.
+# For a file, set html_file in this folder, or set --html-dir. See course.html.
 workspace_id: 67890abcdef12345678901234
 name: example-collection
 task_details:
