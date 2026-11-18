@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"path/filepath"
 
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/shared"
@@ -17,6 +18,7 @@ import (
 type CreateCollectionOptions struct {
 	Args         []string
 	TemplatePath string
+	HTMLDir      string
 }
 
 // NewCreateCollectionCommand creates a new `collection create` command to allow you to create
@@ -32,6 +34,10 @@ func NewCreateCollectionCommand(c client.API, w io.Writer) *cobra.Command {
 To create a collection via the CLI, define your collection as a JSON/YAML file
 $ prolific collection create -t docs/examples/collection.json
 $ prolific collection create -t docs/examples/collection.yaml
+$ prolific collection create -t docs/examples/collection-custom-html.yaml
+
+Read html_file paths from another folder:
+$ prolific collection create -t collection.yaml --html-dir ./course-pages
 
 An example of a JSON collection file:
 
@@ -97,7 +103,16 @@ collection_items:
           - label: Response 2
             value: response2
         answer_limit: -1
----`,
+---
+
+A snippet for one custom_html item. This is not a complete file.
+The path is relative to the template file, or to --html-dir when that flag is set.
+It must stay inside that folder.
+You can set html_content instead of html_file. Do not set both.
+
+- order: 0
+  type: custom_html
+  html_file: course.html`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
 
@@ -120,6 +135,7 @@ collection_items:
 
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.TemplatePath, "template-path", "t", "", "Path to a YAML or JSON file containing the collection you want to create")
+	flags.StringVar(&opts.HTMLDir, "html-dir", "", "Folder that html_file paths are relative to. A relative value is read from the current folder. Defaults to the template folder.")
 	_ = cmd.MarkFlagRequired("template-path")
 
 	return cmd
@@ -177,6 +193,10 @@ func createCollection(c client.API, opts CreateCollectionOptions, w io.Writer) e
 		return err
 	}
 
+	if err := loadCustomHTML(&payload, opts.TemplatePath, opts.HTMLDir); err != nil {
+		return err
+	}
+
 	collection, err := c.CreateAITaskBuilderCollection(payload)
 	if err != nil {
 		return err
@@ -196,6 +216,34 @@ func createCollection(c client.API, opts CreateCollectionOptions, w io.Writer) e
 		fmt.Fprintf(w, "  Task Name:         %s\n", collection.TaskDetails.TaskName)
 		fmt.Fprintf(w, "  Task Introduction: %s\n", collection.TaskDetails.TaskIntroduction)
 		fmt.Fprintf(w, "  Task Steps:        %s\n", collection.TaskDetails.TaskSteps)
+	}
+
+	return nil
+}
+
+func loadCustomHTML(payload *model.CreateAITaskBuilderCollection, templatePath, htmlDir string) error {
+	folder, err := shared.OpenHTMLFolder(filepath.Dir(templatePath), htmlDir)
+	if err != nil {
+		return err
+	}
+	defer folder.Close()
+
+	for pageIndex := range payload.CollectionItems {
+		page := &payload.CollectionItems[pageIndex]
+		for itemIndex := range page.PageItems {
+			item := &page.PageItems[itemIndex]
+			if item.Type != string(model.ContentBlockTypeCustomHTML) {
+				continue
+			}
+
+			html, err := readCustomHTML(folder, pageIndex, itemIndex, item.HTMLFile, item.HTMLContent)
+			if err != nil {
+				return err
+			}
+
+			item.HTMLContent = html
+			item.HTMLFile = ""
+		}
 	}
 
 	return nil

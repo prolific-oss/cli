@@ -4,8 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"path/filepath"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/model"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -13,9 +15,10 @@ import (
 
 type UpdateOptions struct {
 	TemplatePath string
+	HTMLDir      string
 }
 
-// NewUpdateCommand creates a new `collection update` command to update a collection
+// NewUpdateCommand returns the `collection update` command.
 func NewUpdateCommand(client client.API, w io.Writer) *cobra.Command {
 	var opts UpdateOptions
 
@@ -29,6 +32,9 @@ $ prolific collection update collec12345 -t collection.yaml
 
 Update a collection using a JSON config file:
 $ prolific collection update collec12345 -t collection.json
+
+Read html_file paths from another folder:
+$ prolific collection update collec12345 -t collection.yaml --html-dir ./course-pages
 
 Example YAML config file:
 ---
@@ -60,7 +66,20 @@ Example JSON config file:
       "order": 0
     }]
   }]
-}`,
+}
+
+A snippet for one custom_html item. This is not a complete file.
+The path is relative to the template file, or to --html-dir when that flag is set.
+It must stay inside that folder.
+You can set html_content instead of html_file. Do not set both.
+Set id to the stored block id. The id is a UUID.
+The API then updates that block.
+Without id, the API creates a new block and deletes the stored block.
+
+- id: 11111111-1111-4111-8111-111111111111
+  order: 0
+  type: custom_html
+  html_file: course.html`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			collectionID := args[0]
@@ -84,6 +103,7 @@ Example JSON config file:
 	}
 
 	cmd.Flags().StringVarP(&opts.TemplatePath, "template-path", "t", "", "Path to a YAML or JSON file containing your collection updates")
+	cmd.Flags().StringVar(&opts.HTMLDir, "html-dir", "", "Folder that html_file paths are relative to. A relative value is read from the current folder. Defaults to the template folder.")
 	_ = cmd.MarkFlagRequired("template-path")
 
 	return cmd
@@ -121,5 +141,37 @@ func validateTemplate(opts UpdateOptions) (model.UpdateCollection, error) {
 		}
 	}
 
+	if err := loadUpdateCustomHTML(&updatePayload, opts.TemplatePath, opts.HTMLDir); err != nil {
+		return updatePayload, err
+	}
+
 	return updatePayload, nil
+}
+
+func loadUpdateCustomHTML(payload *model.UpdateCollection, templatePath, htmlDir string) error {
+	folder, err := shared.OpenHTMLFolder(filepath.Dir(templatePath), htmlDir)
+	if err != nil {
+		return err
+	}
+	defer folder.Close()
+
+	for pageIndex := range payload.CollectionItems {
+		page := &payload.CollectionItems[pageIndex]
+		for itemIndex := range page.PageItems {
+			item := &page.PageItems[itemIndex]
+			if item.Type != model.ContentBlockTypeCustomHTML {
+				continue
+			}
+
+			html, err := readCustomHTML(folder, pageIndex, itemIndex, item.HTMLFile, item.HTMLContent)
+			if err != nil {
+				return err
+			}
+
+			item.HTMLContent = html
+			item.HTMLFile = ""
+		}
+	}
+
+	return nil
 }

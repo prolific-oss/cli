@@ -5,11 +5,14 @@ import (
 	"bytes"
 	"errors"
 	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/prolific-oss/cli/cmd/collection"
+	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/mock_client"
 	"github.com/prolific-oss/cli/model"
 )
@@ -814,5 +817,142 @@ func TestUpdateCollectionWithExclusiveOptionMultiSelect(t *testing.T) {
 
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestUpdateCollectionLoadsCustomHTMLFile(t *testing.T) {
+	collectionID := testUpdateCollectionID
+	tests := []struct {
+		name    string
+		htmlDir bool
+		blockID string
+		html    string
+	}{
+		{
+			name:    "file next to the template",
+			blockID: "11111111-1111-4111-8111-111111111111",
+			html:    "<h1>Course</h1>",
+		},
+		{
+			name:    "file in html-dir",
+			htmlDir: true,
+			html:    "<h1>Updated from the html-dir</h1>",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			c := mock_client.NewMockAPI(ctrl)
+
+			root := t.TempDir()
+			templateDir := filepath.Join(root, "templates")
+			htmlDir := filepath.Join(root, "course-pages")
+			if err := os.Mkdir(templateDir, 0700); err != nil {
+				t.Fatalf("failed to make directory: %s", err)
+			}
+			fileDir := templateDir
+			if tt.htmlDir {
+				if err := os.Mkdir(htmlDir, 0700); err != nil {
+					t.Fatalf("failed to make directory: %s", err)
+				}
+				fileDir = htmlDir
+			}
+			if err := os.WriteFile(filepath.Join(fileDir, "course.html"), []byte(tt.html), 0600); err != nil {
+				t.Fatalf("failed to write html file: %s", err)
+			}
+
+			idLine := ""
+			if tt.blockID != "" {
+				idLine = "        id: " + tt.blockID + "\n"
+			}
+			configFile := filepath.Join(templateDir, "collection.yaml")
+			configContent := `name: Custom HTML Collection
+collection_items:
+  - order: 0
+    page_items:
+      - type: custom_html
+        order: 0
+` + idLine + `        html_file: course.html
+`
+			if err := os.WriteFile(configFile, []byte(configContent), 0600); err != nil {
+				t.Fatalf("failed to write template: %s", err)
+			}
+
+			var capturedPayload model.UpdateCollection
+			c.EXPECT().
+				UpdateCollection(collectionID, gomock.Any()).
+				DoAndReturn(func(_ string, payload model.UpdateCollection) (*model.Collection, error) {
+					capturedPayload = payload
+					return &model.Collection{
+						ID:        collectionID,
+						Name:      payload.Name,
+						CreatedAt: time.Now(),
+						CreatedBy: "user123",
+						ItemCount: 1,
+					}, nil
+				})
+
+			args := []string{collectionID, "-t", configFile}
+			if tt.htmlDir {
+				args = append(args, "--html-dir", htmlDir)
+			}
+
+			var b bytes.Buffer
+			cmd := collection.NewUpdateCommand(c, bufio.NewWriter(&b))
+			cmd.SetArgs(args)
+			if err := cmd.Execute(); err != nil {
+				t.Fatalf("expected no error; got %s", err)
+			}
+
+			if len(capturedPayload.CollectionItems) != 1 || len(capturedPayload.CollectionItems[0].PageItems) != 1 {
+				t.Fatalf("expected one custom_html item, got %#v", capturedPayload.CollectionItems)
+			}
+			item := capturedPayload.CollectionItems[0].PageItems[0]
+			if item.ID != tt.blockID {
+				t.Fatalf("expected block id %q, got %q", tt.blockID, item.ID)
+			}
+			if item.HTMLContent != tt.html {
+				t.Fatalf("expected HTMLContent %q, got %q", tt.html, item.HTMLContent)
+			}
+			if item.HTMLFile != "" {
+				t.Fatalf("expected HTMLFile to be empty, got %q", item.HTMLFile)
+			}
+		})
+	}
+}
+
+func TestUpdateCollectionRejectsBothCustomHTMLSources(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	tmpDir := t.TempDir()
+	configFile := filepath.Join(tmpDir, "collection.yaml")
+	configContent := `name: Custom HTML Collection
+collection_items:
+  - order: 3
+    page_items:
+      - type: custom_html
+        order: 5
+        html_file: course.html
+        html_content: "<h1>Inline</h1>"
+`
+	if err := os.WriteFile(configFile, []byte(configContent), 0600); err != nil {
+		t.Fatalf("failed to write template: %s", err)
+	}
+
+	cmd := collection.NewUpdateCommand(c, os.Stdout)
+	cmd.SetArgs([]string{testUpdateCollectionID, "-t", configFile})
+	err := cmd.Execute()
+	if err == nil {
+		t.Fatal("expected an error")
+	}
+	if !strings.Contains(err.Error(), shared.ErrCustomHTMLBothSources) {
+		t.Fatalf("expected both-sources error, got %s", err)
+	}
+	if !strings.Contains(err.Error(), "page at index 0, item at index 0") {
+		t.Fatalf("expected error to name the page and item index, got %s", err)
 	}
 }
