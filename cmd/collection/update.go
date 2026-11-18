@@ -148,7 +148,6 @@ func validateTemplate(opts UpdateOptions) (model.UpdateCollection, error) {
 	return updatePayload, nil
 }
 
-// loadUpdateCustomHTML reads each html_file and checks the block size.
 func loadUpdateCustomHTML(payload *model.UpdateCollection, templatePath, htmlDir string) error {
 	folder, err := shared.OpenHTMLFolder(filepath.Dir(templatePath), htmlDir)
 	if err != nil {
@@ -164,17 +163,13 @@ func loadUpdateCustomHTML(payload *model.UpdateCollection, templatePath, htmlDir
 				continue
 			}
 
-			location := fmt.Sprintf("page at index %d, item at index %d", pageIndex, itemIndex)
-			html, err := shared.ResolveCustomHTML(folder, item.HTMLFile, item.HTMLContent)
+			html, err := readCustomHTML(folder, pageIndex, itemIndex, item.HTMLFile, item.HTMLContent)
 			if err != nil {
-				return fmt.Errorf("%s: %w", location, err)
+				return err
 			}
 
 			item.HTMLContent = html
 			item.HTMLFile = ""
-			if err := shared.CheckCustomHTMLSize(location, item.HTMLContent); err != nil {
-				return err
-			}
 		}
 	}
 
