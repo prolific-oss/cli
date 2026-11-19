@@ -71,6 +71,13 @@
           "max_file_size_mb": 5.0,
           "min_file_count": 1,
           "max_file_count": 3
+        },
+        {
+          "order": 5,
+          "type": "audio_recording",
+          "description": "In your own words, describe what you bought and why.",
+          "helper_text": "Find a quiet place and speak clearly.",
+          "max_file_size_mb": 50
         }
       ]
     }
