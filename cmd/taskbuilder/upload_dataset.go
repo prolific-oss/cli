@@ -75,10 +75,10 @@ job until it completes, partially completes, fails, requires a schema, or
 times out.`,
 		Example: `
 Upload a CSV file with format auto-detected from the extension:
-$ prolific taskbuilder dataset upload -d <dataset_id> -f docs/examples/taskbuilder-model-evaluation.csv
+$ prolific taskbuilder dataset upload -d <dataset-id> -f docs/examples/taskbuilder-model-evaluation.csv
 
 Upload a JSONL file with an explicit format override:
-$ prolific taskbuilder dataset upload -d <dataset_id> -f /tmp/records --format jsonl
+$ prolific taskbuilder dataset upload -d <dataset-id> -f /tmp/records --format jsonl
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cmd.SilenceUsage = true

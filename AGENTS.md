@@ -120,6 +120,10 @@ type {Action}Options struct {
 - `cmd/{resource}/{action}.go` — command implementation
 - `cmd/{resource}/{action}_test.go` — tests
 
+### Argument Placeholders
+
+Placeholders in `Use`, `Example` and `Long` text are kebab-case, matching command names and flags, e.g. `update <study-id>` and `balance [workspace-id]`. Don't use snake_case (`<study_id>`) in these strings. The one exception is `message list --created_after`, which is an existing flag that can't be renamed without breaking scripts.
+
 ### Error Formatting in RunE
 
 Prefix errors consistently in `RunE` using `fmt.Errorf` with `%s` and `err` directly (not `err.Error()`, which is redundant). Note this does not wrap the error for `errors.Is`/`errors.As` — that is the established pattern in this codebase:

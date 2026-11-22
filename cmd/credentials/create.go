@@ -32,11 +32,11 @@ Required:
 - Credentials: Either as an argument or via the -f flag`,
 		Example: `
 Create a credential pool from a string:
-$ prolific credentials create -w <workspace_id> "user1,pass1\nuser2,pass2\nuser3,pass3"
+$ prolific credentials create -w <workspace-id> "user1,pass1\nuser2,pass2\nuser3,pass3"
 
 Create a credential pool from a file:
-$ prolific credentials create -w <workspace_id> -f credentials.csv
-$ prolific credentials create -w <workspace_id> -f docs/examples/credentials.csv
+$ prolific credentials create -w <workspace-id> -f credentials.csv
+$ prolific credentials create -w <workspace-id> -f docs/examples/credentials.csv
 
 File format example (credentials.csv):
 user1@example.com,p4ssw0rd1

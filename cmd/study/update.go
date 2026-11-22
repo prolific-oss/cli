@@ -25,7 +25,7 @@ func NewUpdateCommand(client client.API, w io.Writer) *cobra.Command {
 	var opts UpdateOptions
 
 	cmd := &cobra.Command{
-		Use:   "update <study_id>",
+		Use:   "update <study-id>",
 		Short: "Update a study using a JSON template",
 		Long: `Update study attributes using a JSON template file.
 

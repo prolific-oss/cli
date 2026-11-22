@@ -21,10 +21,10 @@ You can specify participants in two ways:
 The two methods are mutually exclusive.`,
 		example: `
   # Add participants by ID
-  prolific participant-group add <group_id> -p <participant_id> -p <participant_id>
+  prolific participant-group add <group-id> -p <participant-id> -p <participant-id>
 
   # Add participants from a file (one ID per line)
-  prolific participant-group add <group_id> -f participants.csv`,
+  prolific participant-group add <group-id> -f participants.csv`,
 		flagUsage: "The ID of a participant to add. Can be specified multiple times.",
 		apply: func(c client.API, groupID string, ids []string) (*client.ViewParticipantGroupResponse, error) {
 			return c.AddParticipantGroupMembers(groupID, ids)

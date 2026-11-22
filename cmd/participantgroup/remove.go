@@ -21,10 +21,10 @@ You can specify participants in two ways:
 The two methods are mutually exclusive.`,
 		example: `
   # Remove participants by ID
-  prolific participant-group remove <group_id> -p <participant_id> -p <participant_id>
+  prolific participant-group remove <group-id> -p <participant-id> -p <participant-id>
 
   # Remove participants from a file (one ID per line)
-  prolific participant-group remove <group_id> -f participants.csv`,
+  prolific participant-group remove <group-id> -f participants.csv`,
 		flagUsage: "The ID of a participant to remove. Can be specified multiple times.",
 		apply: func(c client.API, groupID string, ids []string) (*client.ViewParticipantGroupResponse, error) {
 			return c.RemoveParticipantGroupMembers(groupID, ids)

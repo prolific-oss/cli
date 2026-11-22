@@ -35,17 +35,17 @@ and total cost.
 
 Bonus records must be paid separately using the 'bonus pay' command.`,
 		Example: `  # Create with inline flags
-  prolific bonus create <study_id> --bonus "pid1,4.25" --bonus "pid2,3.50"
-  prolific bonus create <study_id> --bonus "subid1,4.25" --bonus "subid2,3.50"
+  prolific bonus create <study-id> --bonus "pid1,4.25" --bonus "pid2,3.50"
+  prolific bonus create <study-id> --bonus "subid1,4.25" --bonus "subid2,3.50"
 
   # Create from CSV file
-  prolific bonus create <study_id> --file bonuses.csv
+  prolific bonus create <study-id> --file bonuses.csv
 
   # Non-interactive output (for scripting)
-  prolific bonus create <study_id> --file bonuses.csv -n
+  prolific bonus create <study-id> --file bonuses.csv -n
 
   # CSV output format
-  prolific bonus create <study_id> --file bonuses.csv -c`,
+  prolific bonus create <study-id> --file bonuses.csv -c`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			studyID := args[0]

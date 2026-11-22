@@ -47,7 +47,7 @@ Opens the batch's first task group in your default web browser so you can
 preview it before launch.`,
 		Example: `
 Preview a Task Builder batch in the browser:
-$ prolific taskbuilder batch preview <batch_id>
+$ prolific taskbuilder batch preview <batch-id>
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args

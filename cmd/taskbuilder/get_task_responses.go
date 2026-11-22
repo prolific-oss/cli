@@ -28,7 +28,7 @@ This command allows you to retrieve all responses for a specific Task Builder ba
 the batch ID.`,
 		Example: `
 Get Task Builder batch responses:
-$ prolific taskbuilder batch responses -b <batch_id>
+$ prolific taskbuilder batch responses -b <batch-id>
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args

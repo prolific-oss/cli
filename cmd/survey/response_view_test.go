@@ -21,8 +21,8 @@ func TestNewResponseViewCommand(t *testing.T) {
 
 	cmd := survey.NewResponseViewCommand("view", c, os.Stdout)
 
-	if cmd.Use != "view <survey_id> <response_id>" {
-		t.Fatalf("expected use: view <survey_id> <response_id>; got %s", cmd.Use)
+	if cmd.Use != "view <survey-id> <response-id>" {
+		t.Fatalf("expected use: view <survey-id> <response-id>; got %s", cmd.Use)
 	}
 
 	if cmd.Short != "View a survey response" {

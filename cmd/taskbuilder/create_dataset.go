@@ -62,13 +62,13 @@ enabled; supplying --schema for a workspace without it will be rejected by the
 API. Omit --schema to leave the schema unset.`,
 		Example: `
 Create a dataset:
-$ prolific taskbuilder dataset create -n "test" -w <workspace_id>
+$ prolific taskbuilder dataset create -n "test" -w <workspace-id>
 
 Create a dataset with a schema from a file:
-$ prolific taskbuilder dataset create -n "test" -w <workspace_id> --schema docs/examples/dataset-schema.json
+$ prolific taskbuilder dataset create -n "test" -w <workspace-id> --schema docs/examples/dataset-schema.json
 
 Create a dataset with an inline schema in strict mode:
-$ prolific taskbuilder dataset create -n "test" -w <workspace_id> --strict --schema '{"fields":{"q":{"type":"text"}}}'
+$ prolific taskbuilder dataset create -n "test" -w <workspace-id> --strict --schema '{"fields":{"q":{"type":"text"}}}'
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
