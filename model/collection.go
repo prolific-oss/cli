@@ -46,10 +46,12 @@ const (
 	InstructionTypeMultipleChoiceWithFreeText InstructionType = "multiple_choice_with_free_text"
 	InstructionTypeFreeTextWithUnit           InstructionType = "free_text_with_unit"
 	InstructionTypeFileUpload                 InstructionType = "file_upload"
+	InstructionTypeAudioRecording             InstructionType = "audio_recording"
 
 	// Content block types (non-interactive - for context or guidance)
-	ContentBlockTypeRichText InstructionType = "rich_text"
-	ContentBlockTypeImage    InstructionType = "image"
+	ContentBlockTypeRichText   InstructionType = "rich_text"
+	ContentBlockTypeImage      InstructionType = "image"
+	ContentBlockTypeCustomHTML InstructionType = "custom_html"
 )
 
 // ContentFormat represents the format of rich text content
@@ -93,7 +95,7 @@ type PageInstruction struct {
 	Type  InstructionType `json:"type" yaml:"type" mapstructure:"type"`
 	Order int             `json:"order" yaml:"order" mapstructure:"order"`
 
-	// Required for instruction types (free_text, multiple_choice, multiple_choice_with_free_text, free_text_with_unit, file_upload)
+	// Required for instruction types (free_text, multiple_choice, multiple_choice_with_free_text, free_text_with_unit, file_upload, audio_recording)
 	Description string `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description"`
 
 	// Optional - for free_text and free_text_with_unit types
@@ -111,7 +113,7 @@ type PageInstruction struct {
 	DefaultUnit  string       `json:"default_unit,omitempty" yaml:"default_unit,omitempty" mapstructure:"default_unit"`
 	UnitPosition UnitPosition `json:"unit_position,omitempty" yaml:"unit_position,omitempty" mapstructure:"unit_position"`
 
-	// Optional - for file_upload type
+	// Optional - for file_upload type (max_file_size_mb also applies to audio_recording)
 	AcceptedFileTypes []string `json:"accepted_file_types,omitempty" yaml:"accepted_file_types,omitempty" mapstructure:"accepted_file_types"`
 	MaxFileSizeMB     *float64 `json:"max_file_size_mb,omitempty" yaml:"max_file_size_mb,omitempty" mapstructure:"max_file_size_mb"`
 	MinFileCount      *int     `json:"min_file_count,omitempty" yaml:"min_file_count,omitempty" mapstructure:"min_file_count"`
@@ -125,6 +127,10 @@ type PageInstruction struct {
 	URL     string `json:"url,omitempty" yaml:"url,omitempty" mapstructure:"url"`
 	AltText string `json:"alt_text,omitempty" yaml:"alt_text,omitempty" mapstructure:"alt_text"`
 	Caption string `json:"caption,omitempty" yaml:"caption,omitempty" mapstructure:"caption"`
+
+	// Content block fields - for custom_html type
+	HTMLContent string `json:"html_content,omitempty" yaml:"html_content,omitempty" mapstructure:"html_content"`
+	HTMLFile    string `json:"-" yaml:"html_file,omitempty" mapstructure:"html_file"`
 }
 
 // Page represents a single page within a collection.

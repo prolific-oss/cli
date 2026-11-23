@@ -187,6 +187,7 @@ const (
 	AITaskBuilderResponseTypeMultipleChoiceWithFreeText AITaskBuilderResponseType = "multiple_choice_with_free_text"
 	AITaskBuilderResponseTypeFreeTextWithUnit           AITaskBuilderResponseType = "free_text_with_unit"
 	AITaskBuilderResponseTypeFileUpload                 AITaskBuilderResponseType = "file_upload"
+	AITaskBuilderResponseTypeAudioRecording             AITaskBuilderResponseType = "audio_recording"
 )
 
 // AITaskBuilderAnswerOption represents an answer option in a response.
@@ -196,6 +197,7 @@ const (
 // - multiple_choice: value
 // - multiple_choice_with_free_text: value, explanation
 // - file_upload: file_key, file_name, file_size_mb, content_type
+// - audio_recording: recording_id, duration_seconds, file_key, file_name, file_size_mb, content_type
 type AITaskBuilderAnswerOption struct {
 	// For free_text, free_text_with_unit, multiple_choice, multiple_choice_with_free_text
 	Value string `json:"value,omitempty"`
@@ -203,11 +205,14 @@ type AITaskBuilderAnswerOption struct {
 	Unit string `json:"unit,omitempty"`
 	// For multiple_choice_with_free_text
 	Explanation string `json:"explanation,omitempty"`
-	// For file_upload
+	// For file_upload and audio_recording
 	FileKey     string  `json:"file_key,omitempty"`
 	FileName    string  `json:"file_name,omitempty"`
 	FileSizeMB  float64 `json:"file_size_mb,omitempty"`
 	ContentType string  `json:"content_type,omitempty"`
+	// For audio_recording
+	RecordingID     string  `json:"recording_id,omitempty"`
+	DurationSeconds float64 `json:"duration_seconds,omitempty"`
 }
 
 type AITaskBuilderBatchStatusEnum string
@@ -239,13 +244,14 @@ type CollectionPage struct {
 
 // CollectionPageItem represents an item within a collection page.
 // This can be either an instruction (interactive) or a content block (non-interactive).
+// Content block types are rich_text, image, and custom_html.
 // The Type field determines which other fields are relevant.
 // Use InstructionType constants from collection.go for the Type field.
 type CollectionPageItem struct {
 	Order int    `json:"order" mapstructure:"order"`
 	Type  string `json:"type" mapstructure:"type"`
 
-	// Instruction fields (for free_text, multiple_choice, multiple_choice_with_free_text, free_text_with_unit, file_upload)
+	// Instruction fields (for free_text, multiple_choice, multiple_choice_with_free_text, free_text_with_unit, file_upload, audio_recording)
 	Description          string              `json:"description,omitempty" mapstructure:"description"`
 	Options              []InstructionOption `json:"options,omitempty" mapstructure:"options"`
 	AnswerLimit          *int                `json:"answer_limit,omitempty" mapstructure:"answer_limit"`
@@ -259,7 +265,7 @@ type CollectionPageItem struct {
 	DefaultUnit  string       `json:"default_unit,omitempty" mapstructure:"default_unit"`
 	UnitPosition UnitPosition `json:"unit_position,omitempty" mapstructure:"unit_position"`
 
-	// File upload fields (for file_upload)
+	// File upload fields (for file_upload; max_file_size_mb also applies to audio_recording)
 	AcceptedFileTypes []string `json:"accepted_file_types,omitempty" mapstructure:"accepted_file_types"`
 	MaxFileSizeMB     *float64 `json:"max_file_size_mb,omitempty" mapstructure:"max_file_size_mb"`
 	MinFileCount      *int     `json:"min_file_count,omitempty" mapstructure:"min_file_count"`
@@ -273,6 +279,10 @@ type CollectionPageItem struct {
 	URL     string `json:"url,omitempty" mapstructure:"url"`
 	AltText string `json:"alt_text,omitempty" mapstructure:"alt_text"`
 	Caption string `json:"caption,omitempty" mapstructure:"caption"`
+
+	// Content block fields (for custom_html)
+	HTMLContent string `json:"html_content,omitempty" mapstructure:"html_content"`
+	HTMLFile    string `json:"-" mapstructure:"html_file"`
 }
 
 // CollectionInstruction is an alias for CollectionPageItem for backward compatibility.

@@ -155,6 +155,19 @@ func renderAITaskBuilderResponses(c client.API, opts BatchGetResponsesOptions, w
 			} else {
 				fmt.Fprintf(w, "    Uploaded Files: \n")
 			}
+		case model.AITaskBuilderResponseTypeAudioRecording:
+			if len(resp.Response.Answer) > 0 {
+				recording := resp.Response.Answer[0]
+				fmt.Fprintf(w, "    Recording:\n")
+				fmt.Fprintf(w, "      Recording ID: %s\n", recording.RecordingID)
+				fmt.Fprintf(w, "      Duration: %.1f s\n", recording.DurationSeconds)
+				fmt.Fprintf(w, "      File Name: %s\n", recording.FileName)
+				fmt.Fprintf(w, "      File Size: %.2f MB\n", recording.FileSizeMB)
+				fmt.Fprintf(w, "      Content Type: %s\n", recording.ContentType)
+				fmt.Fprintf(w, "      File Key: %s\n", recording.FileKey)
+			} else {
+				fmt.Fprintf(w, "    Recording: \n")
+			}
 		}
 
 		if i < len(response.Results)-1 {

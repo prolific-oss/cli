@@ -2,7 +2,10 @@ package shared
 
 import (
 	"fmt"
+	"net/http"
 	"testing"
+
+	"github.com/prolific-oss/cli/client"
 )
 
 func TestIsFeatureNotEnabledError(t *testing.T) {
@@ -68,6 +71,41 @@ func TestIsFeatureNotEnabledError(t *testing.T) {
 			result := IsFeatureNotEnabledError(tt.err)
 			if result != tt.expected {
 				t.Errorf("IsFeatureNotEnabledError(%v) = %v, expected %v", tt.err, result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestIsCustomHTMLNotEnabledError(t *testing.T) {
+	gateBody := []byte(`{"message":"Custom HTML content blocks are not enabled for this workspace."}`)
+	tests := []struct {
+		name     string
+		err      error
+		expected bool
+	}{
+		{name: "nil", err: nil},
+		{
+			name:     "403 with the gate message",
+			err:      &client.UnrecognizedAPIError{StatusCode: http.StatusForbidden, Body: gateBody},
+			expected: true,
+		},
+		{
+			name: "403 with other text",
+			err: &client.UnrecognizedAPIError{
+				StatusCode: http.StatusForbidden,
+				Body:       []byte(`{"message":"Cannot create a collection in the provided workspace."}`),
+			},
+		},
+		{
+			name: "non-403 with the gate message",
+			err:  &client.UnrecognizedAPIError{StatusCode: http.StatusBadRequest, Body: gateBody},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsCustomHTMLNotEnabledError(tt.err); got != tt.expected {
+				t.Fatalf("IsCustomHTMLNotEnabledError() = %v, expected %v", got, tt.expected)
 			}
 		})
 	}

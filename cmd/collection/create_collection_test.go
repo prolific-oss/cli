@@ -3,8 +3,10 @@ package collection_test
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,6 +15,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/collection"
+	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/mock_client"
 	"github.com/prolific-oss/cli/model"
 )
@@ -367,6 +370,74 @@ func TestNewCreateCollectionCommandHandlesAPIError(t *testing.T) {
 
 	if !strings.Contains(err.Error(), collection.ErrWorkspaceNotFound) {
 		t.Fatalf("expected error to contain '%s'; got '%s'", collection.ErrWorkspaceNotFound, err.Error())
+	}
+}
+
+func TestNewCreateCollectionCommandReportsCustomHTMLGate(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	tmpDir := t.TempDir()
+	templateFile := filepath.Join(tmpDir, "collection.json")
+	templateContent := fmt.Sprintf(`{
+  "workspace_id": "%s",
+  "name": "test-collection",
+  "task_details": %s,
+  "collection_items": %s
+}`, testWorkspaceID, taskDetails, collectionItems)
+	if err := os.WriteFile(templateFile, []byte(templateContent), 0600); err != nil {
+		t.Fatalf("failed to create temporary file: %s", err)
+	}
+
+	c.EXPECT().
+		CreateAITaskBuilderCollection(gomock.Any()).
+		Return(nil, &client.UnrecognizedAPIError{
+			StatusCode: http.StatusForbidden,
+			Body:       []byte(`{"message":"Custom HTML content blocks are not enabled for this workspace."}`),
+		})
+
+	cmd := collection.NewCreateCollectionCommand(c, os.Stdout)
+	cmd.SetArgs([]string{"-t", templateFile})
+	err := cmd.Execute()
+	if err == nil || !strings.Contains(err.Error(), shared.ErrCustomHTMLNotEnabled) {
+		t.Fatalf("expected the gate message, got %v", err)
+	}
+	if strings.Contains(err.Error(), "request failed") {
+		t.Fatalf("expected the gate message instead of the raw API error, got %s", err)
+	}
+}
+
+func TestNewCreateCollectionCommandRejectsHTMLFileOnOtherType(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	tmpDir := t.TempDir()
+	templateFile := filepath.Join(tmpDir, "collection.yaml")
+	templateContent := `workspace_id: ` + testWorkspaceID + `
+name: html-collection
+task_details:
+  task_name: Course task
+  task_introduction: Read the course
+  task_steps: Continue
+collection_items:
+  - order: 0
+    page_items:
+      - order: 0
+        type: rich_text
+        content: "<p>Hello</p>"
+        html_file: page.html
+`
+	if err := os.WriteFile(templateFile, []byte(templateContent), 0600); err != nil {
+		t.Fatalf("failed to write template: %s", err)
+	}
+
+	cmd := collection.NewCreateCollectionCommand(c, os.Stdout)
+	cmd.SetArgs([]string{"-t", templateFile})
+	err := cmd.Execute()
+	if err == nil || !strings.Contains(err.Error(), "page at index 0, item at index 0: html_file is only valid on custom_html items") {
+		t.Fatalf("expected html_file error, got %v", err)
 	}
 }
 
@@ -1083,5 +1154,130 @@ func TestNewCreateCollectionCommandWithExclusiveOptionMultiSelect(t *testing.T) 
 	writer.Flush()
 	if !strings.Contains(b.String(), "Collection created successfully!") {
 		t.Fatalf("expected success message; got %s", b.String())
+	}
+}
+
+func TestNewCreateCollectionCommandLoadsCustomHTMLFile(t *testing.T) {
+	tests := []struct {
+		name    string
+		htmlDir bool
+		html    string
+	}{
+		{name: "file next to the template", html: "<h1>Course</h1>"},
+		{name: "file in html-dir", htmlDir: true, html: "<h1>From the html-dir</h1>"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			c := mock_client.NewMockAPI(ctrl)
+
+			root := t.TempDir()
+			templateDir := filepath.Join(root, "templates")
+			htmlDir := filepath.Join(root, "course-pages")
+			if err := os.Mkdir(templateDir, 0700); err != nil {
+				t.Fatalf("failed to make directory: %s", err)
+			}
+			fileDir := templateDir
+			if tt.htmlDir {
+				if err := os.Mkdir(htmlDir, 0700); err != nil {
+					t.Fatalf("failed to make directory: %s", err)
+				}
+				fileDir = htmlDir
+			}
+			if err := os.WriteFile(filepath.Join(fileDir, "course.html"), []byte(tt.html), 0600); err != nil {
+				t.Fatalf("failed to write html file: %s", err)
+			}
+
+			templateFile := filepath.Join(templateDir, "collection.yaml")
+			templateContent := `workspace_id: ` + testWorkspaceID + `
+name: html-collection
+task_details:
+  task_name: Course task
+  task_introduction: Read the course
+  task_steps: Continue
+collection_items:
+  - order: 0
+    page_items:
+      - order: 2
+        type: custom_html
+        html_file: course.html
+`
+			if err := os.WriteFile(templateFile, []byte(templateContent), 0600); err != nil {
+				t.Fatalf("failed to write template: %s", err)
+			}
+
+			var capturedPayload model.CreateAITaskBuilderCollection
+			c.EXPECT().
+				CreateAITaskBuilderCollection(gomock.Any()).
+				DoAndReturn(func(payload model.CreateAITaskBuilderCollection) (*client.CreateAITaskBuilderCollectionResponse, error) {
+					capturedPayload = payload
+					return &client.CreateAITaskBuilderCollectionResponse{
+						ID:          "collection-html",
+						Name:        "html-collection",
+						WorkspaceID: testWorkspaceID,
+					}, nil
+				})
+
+			args := []string{"-t", templateFile}
+			if tt.htmlDir {
+				args = append(args, "--html-dir", htmlDir)
+			}
+
+			var b bytes.Buffer
+			cmd := collection.NewCreateCollectionCommand(c, bufio.NewWriter(&b))
+			cmd.SetArgs(args)
+			if err := cmd.Execute(); err != nil {
+				t.Fatalf("expected no error; got %s", err)
+			}
+
+			if len(capturedPayload.CollectionItems) != 1 || len(capturedPayload.CollectionItems[0].PageItems) != 1 {
+				t.Fatalf("expected one custom_html item, got %#v", capturedPayload.CollectionItems)
+			}
+			item := capturedPayload.CollectionItems[0].PageItems[0]
+			if item.HTMLContent != tt.html {
+				t.Fatalf("expected HTMLContent %q, got %q", tt.html, item.HTMLContent)
+			}
+			if item.HTMLFile != "" {
+				t.Fatalf("expected HTMLFile to be empty, got %q", item.HTMLFile)
+			}
+		})
+	}
+}
+
+func TestCustomHTMLOmitsHTMLFile(t *testing.T) {
+	tests := []struct {
+		name  string
+		value any
+	}{
+		{
+			name: "create item",
+			value: model.CollectionPageItem{
+				Type:        string(model.ContentBlockTypeCustomHTML),
+				HTMLContent: "<h1>Course</h1>",
+				HTMLFile:    "course.html",
+			},
+		},
+		{
+			name: "update item",
+			value: model.PageInstruction{
+				Type:        model.ContentBlockTypeCustomHTML,
+				HTMLContent: "<h1>Course</h1>",
+				HTMLFile:    "course.html",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			body, err := json.Marshal(tt.value)
+			if err != nil {
+				t.Fatalf("failed to encode json: %s", err)
+			}
+			if strings.Contains(string(body), "html_file") {
+				t.Fatalf("expected json:\"-\" to omit html_file, got %s", body)
+			}
+		})
 	}
 }
