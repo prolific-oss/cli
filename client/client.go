@@ -154,6 +154,8 @@ type API interface {
 	GetAITaskBuilderDatasetStatus(datasetID string) (*GetAITaskBuilderDatasetStatusResponse, error)
 	GetAITaskBuilderDatasetUploadURL(datasetID, fileName string) (*GetAITaskBuilderDatasetUploadURLResponse, error)
 	GetAITaskBuilderDatasetImportStatus(datasetID, importID string) (*GetAITaskBuilderDatasetImportStatusResponse, error)
+	GetFileUploadURL(workspaceID, fileName string) (*GetFileUploadURLResponse, error)
+	DeleteFile(workspaceID, fileID, fileName string) error
 }
 
 // UnrecognizedAPIError is returned by Execute when the response body does not match any known
@@ -1861,6 +1863,39 @@ func (c *Client) GetAITaskBuilderDatasetUploadURL(datasetID, fileName string) (*
 	}
 
 	return &response, nil
+}
+
+// GetFileUploadURL returns a presigned upload URL and the public URL for a file in a workspace.
+func (c *Client) GetFileUploadURL(workspaceID, fileName string) (*GetFileUploadURLResponse, error) {
+	var response GetFileUploadURLResponse
+
+	path := fmt.Sprintf("/api/v1/data-collection/files/upload-url/%s?workspace_id=%s", url.PathEscape(fileName), url.QueryEscape(workspaceID))
+	_, err := c.ExecuteBuilder().
+		GetRequest(path).
+		Status(http.StatusCreated).
+		Decode(&response).
+		Execute()
+	if err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// DeleteFile deletes an uploaded file. Deleting a file that does not exist succeeds.
+func (c *Client) DeleteFile(workspaceID, fileID, fileName string) error {
+	path := fmt.Sprintf("/api/v1/data-collection/files/%s/%s/%s", url.PathEscape(workspaceID), url.PathEscape(fileID), url.PathEscape(fileName))
+	httpResponse, err := c.Execute(http.MethodDelete, path, nil, nil)
+	if err != nil {
+		return fmt.Errorf("unable to fulfil request %s: %s", path, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusNoContent {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+	}
+
+	return nil
 }
 
 // GetAITaskBuilderDatasetImportStatus returns the status of a dataset import job.

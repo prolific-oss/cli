@@ -357,6 +357,13 @@ type GetAITaskBuilderDatasetUploadURLResponse struct {
 	FileKey     string `json:"file_key"`
 }
 
+// GetFileUploadURLResponse is the response for getting a presigned upload URL for a hosted file.
+type GetFileUploadURLResponse struct {
+	UploadURL   string `json:"upload_url"`
+	PublicURL   string `json:"public_url"`
+	ContentType string `json:"content_type"`
+}
+
 // GetAITaskBuilderDatasetImportStatusResponse is the response for retrieving dataset import status.
 type GetAITaskBuilderDatasetImportStatusResponse struct {
 	model.DatasetImportJob

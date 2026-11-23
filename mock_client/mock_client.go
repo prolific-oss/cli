@@ -391,6 +391,20 @@ func (mr *MockAPIMockRecorder) DeleteCollectionExport(collectionID, exportID int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCollectionExport", reflect.TypeOf((*MockAPI)(nil).DeleteCollectionExport), collectionID, exportID)
 }
 
+// DeleteFile mocks base method.
+func (m *MockAPI) DeleteFile(workspaceID, fileID, fileName string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteFile", workspaceID, fileID, fileName)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteFile indicates an expected call of DeleteFile.
+func (mr *MockAPIMockRecorder) DeleteFile(workspaceID, fileID, fileName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteFile", reflect.TypeOf((*MockAPI)(nil).DeleteFile), workspaceID, fileID, fileName)
+}
+
 // DeleteHookSubscription mocks base method.
 func (m *MockAPI) DeleteHookSubscription(subscriptionID string) error {
 	m.ctrl.T.Helper()
@@ -731,6 +745,21 @@ func (m *MockAPI) GetEvents(subscriptionID string, limit, offset int) (*client.L
 func (mr *MockAPIMockRecorder) GetEvents(subscriptionID, limit, offset interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEvents", reflect.TypeOf((*MockAPI)(nil).GetEvents), subscriptionID, limit, offset)
+}
+
+// GetFileUploadURL mocks base method.
+func (m *MockAPI) GetFileUploadURL(workspaceID, fileName string) (*client.GetFileUploadURLResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFileUploadURL", workspaceID, fileName)
+	ret0, _ := ret[0].(*client.GetFileUploadURLResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFileUploadURL indicates an expected call of GetFileUploadURL.
+func (mr *MockAPIMockRecorder) GetFileUploadURL(workspaceID, fileName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFileUploadURL", reflect.TypeOf((*MockAPI)(nil).GetFileUploadURL), workspaceID, fileName)
 }
 
 // GetFilterBreakdown mocks base method.
