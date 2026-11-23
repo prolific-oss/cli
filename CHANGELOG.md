@@ -8,6 +8,9 @@
 - `html_file` must be a relative path that stays inside the template folder, or inside the `--html-dir` folder when that flag is set. Absolute paths, `..` paths, symbolic links that lead out of the folder, and symbolic links with an absolute target are refused. Use `--html-dir` on collection create and update to read HTML from another folder.
 - Each `custom_html` block is limited to 300,000 bytes of UTF-8.
 - On collection update, set `id` on a `custom_html` item to update the stored block. Without `id`, the API creates a new block and deletes the stored block.
+### Task Builder
+
+- Support the `audio_recording` instruction type. `prolific taskbuilder batch responses` now shows the recording ID, duration, file name, size, content type and file key for recorded answers, and an empty `Recording:` line when an optional recording was skipped. `docs/examples/collection.json` and `collection.yaml` include an `audio_recording` item.
 
 ## 1.3.3
 
