@@ -384,3 +384,111 @@ Response 1:
 		t.Fatalf("expected\n'%s'\ngot\n'%s'\n", expected, actual)
 	}
 }
+
+func TestNewGetResponsesCommandHandlesAudioRecordingResponse(t *testing.T) {
+	batchID := "f1e498d3-09cc-4f11-b3ed-99b6753b0a3d"
+	createdAt := time.Date(2024, 1, 1, 12, 0, 0, 0, time.UTC)
+
+	header := `Task Builder Batch Responses:
+Batch ID: f1e498d3-09cc-4f11-b3ed-99b6753b0a3d
+Total Responses: 1
+
+Response 1:
+  ID: response-321
+  Batch ID: f1e498d3-09cc-4f11-b3ed-99b6753b0a3d
+  Participant ID: participant-321
+  Task ID: task-321
+  Correlation ID: correlation-004
+  Submission ID: submission-004
+  Schema Version: 2
+  Created At: 2024-01-01 12:00:00
+  Response:
+    Instruction ID: instruction-004
+    Type: audio_recording
+`
+
+	tests := []struct {
+		name     string
+		answer   []model.AITaskBuilderAnswerOption
+		expected string
+	}{
+		{
+			name: "renders the recording",
+			answer: []model.AITaskBuilderAnswerOption{
+				{
+					RecordingID:     "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+					DurationSeconds: 42.5,
+					FileKey:         "batch/abc/recording.wav",
+					FileName:        "recording.wav",
+					FileSizeMB:      4.07,
+					ContentType:     "audio/wav",
+				},
+			},
+			expected: header + `    Recording:
+      Recording ID: a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d
+      Duration: 42.5 s
+      File Name: recording.wav
+      File Size: 4.07 MB
+      Content Type: audio/wav
+      File Key: batch/abc/recording.wav
+`,
+		},
+		{
+			name:     "renders a skipped optional recording",
+			answer:   []model.AITaskBuilderAnswerOption{},
+			expected: header + "    Recording: \n",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			c := mock_client.NewMockAPI(ctrl)
+
+			response := client.GetAITaskBuilderResponsesResponse{
+				Results: []model.AITaskBuilderResponse{
+					{
+						ID:            "response-321",
+						BatchID:       batchID,
+						ParticipantID: "participant-321",
+						TaskID:        "task-321",
+						CorrelationID: "correlation-004",
+						SubmissionID:  "submission-004",
+						Metadata:      map[string]string{},
+						Response: model.AITaskBuilderResponseData{
+							InstructionID: "instruction-004",
+							Type:          model.AITaskBuilderResponseTypeAudioRecording,
+							Answer:        tt.answer,
+						},
+						CreatedAt:     createdAt,
+						SchemaVersion: 2,
+					},
+				},
+				Meta: client.ResponseMeta{
+					Count: 1,
+				},
+			}
+
+			c.
+				EXPECT().
+				GetAITaskBuilderResponses(gomock.Eq(batchID)).
+				Return(&response, nil).
+				AnyTimes()
+
+			var b bytes.Buffer
+			writer := bufio.NewWriter(&b)
+
+			cmd := taskbuilder.NewGetResponsesCommand(c, writer)
+			_ = cmd.Flags().Set("batch-id", batchID)
+			_ = cmd.RunE(cmd, nil)
+
+			writer.Flush()
+
+			actual := b.String()
+			if actual != tt.expected {
+				t.Fatalf("expected\n'%s'\ngot\n'%s'\n", tt.expected, actual)
+			}
+		})
+	}
+}
