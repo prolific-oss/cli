@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -14,6 +15,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/collection"
+	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/mock_client"
 	"github.com/prolific-oss/cli/model"
 )
@@ -368,6 +370,74 @@ func TestNewCreateCollectionCommandHandlesAPIError(t *testing.T) {
 
 	if !strings.Contains(err.Error(), collection.ErrWorkspaceNotFound) {
 		t.Fatalf("expected error to contain '%s'; got '%s'", collection.ErrWorkspaceNotFound, err.Error())
+	}
+}
+
+func TestNewCreateCollectionCommandReportsCustomHTMLGate(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	tmpDir := t.TempDir()
+	templateFile := filepath.Join(tmpDir, "collection.json")
+	templateContent := fmt.Sprintf(`{
+  "workspace_id": "%s",
+  "name": "test-collection",
+  "task_details": %s,
+  "collection_items": %s
+}`, testWorkspaceID, taskDetails, collectionItems)
+	if err := os.WriteFile(templateFile, []byte(templateContent), 0600); err != nil {
+		t.Fatalf("failed to create temporary file: %s", err)
+	}
+
+	c.EXPECT().
+		CreateAITaskBuilderCollection(gomock.Any()).
+		Return(nil, &client.UnrecognizedAPIError{
+			StatusCode: http.StatusForbidden,
+			Body:       []byte(`{"message":"Custom HTML content blocks are not enabled for this workspace."}`),
+		})
+
+	cmd := collection.NewCreateCollectionCommand(c, os.Stdout)
+	cmd.SetArgs([]string{"-t", templateFile})
+	err := cmd.Execute()
+	if err == nil || !strings.Contains(err.Error(), shared.ErrCustomHTMLNotEnabled) {
+		t.Fatalf("expected the gate message, got %v", err)
+	}
+	if strings.Contains(err.Error(), "request failed") {
+		t.Fatalf("expected the gate message instead of the raw API error, got %s", err)
+	}
+}
+
+func TestNewCreateCollectionCommandRejectsHTMLFileOnOtherType(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	tmpDir := t.TempDir()
+	templateFile := filepath.Join(tmpDir, "collection.yaml")
+	templateContent := `workspace_id: ` + testWorkspaceID + `
+name: html-collection
+task_details:
+  task_name: Course task
+  task_introduction: Read the course
+  task_steps: Continue
+collection_items:
+  - order: 0
+    page_items:
+      - order: 0
+        type: rich_text
+        content: "<p>Hello</p>"
+        html_file: page.html
+`
+	if err := os.WriteFile(templateFile, []byte(templateContent), 0600); err != nil {
+		t.Fatalf("failed to write template: %s", err)
+	}
+
+	cmd := collection.NewCreateCollectionCommand(c, os.Stdout)
+	cmd.SetArgs([]string{"-t", templateFile})
+	err := cmd.Execute()
+	if err == nil || !strings.Contains(err.Error(), "page at index 0, item at index 0: html_file is only valid on custom_html items") {
+		t.Fatalf("expected html_file error, got %v", err)
 	}
 }
 

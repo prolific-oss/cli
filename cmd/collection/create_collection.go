@@ -126,6 +126,9 @@ You can set html_content instead of html_file. Do not set both.
 					ui.RenderFeatureAccessMessage(FeatureNameAITBCollection, FeatureContactURLAITBCollection)
 					return nil
 				}
+				if shared.IsCustomHTMLNotEnabledError(err) {
+					return fmt.Errorf("error: %s", shared.ErrCustomHTMLNotEnabled)
+				}
 				return fmt.Errorf("error: %s", err.Error())
 			}
 
@@ -233,6 +236,9 @@ func loadCustomHTML(payload *model.CreateAITaskBuilderCollection, templatePath, 
 		for itemIndex := range page.PageItems {
 			item := &page.PageItems[itemIndex]
 			if item.Type != string(model.ContentBlockTypeCustomHTML) {
+				if err := rejectHTMLFileOnOtherType(pageIndex, itemIndex, item.HTMLFile); err != nil {
+					return err
+				}
 				continue
 			}
 

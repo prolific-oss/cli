@@ -10,10 +10,11 @@ import (
 	"unicode/utf8"
 )
 
-// Supports L&D content in AITB.
+// Supports L&D content in TaskBuilder.
 
-// One DynamoDB item holds at most 400 KB. 300,000 bytes leaves room for the
-// other fields. DCT enforces the same limit as CUSTOM_HTML_BLOCK_MAX_BYTES.
+// Copy of CUSTOM_HTML_BLOCK_MAX_BYTES in the data-collection tool.
+// That constant is the source of truth. The CLI copies it so an oversized
+// file fails before the request is sent.
 const CustomHTMLBlockMaxBytes = 300_000
 
 var errCustomHTMLFileTooLarge = fmt.Errorf("the file is more than %d bytes, the limit per block", CustomHTMLBlockMaxBytes)
@@ -179,6 +180,7 @@ func readInsideRoot(root *os.Root, name string) ([]byte, error) {
 }
 
 // absoluteSymlink reports an absolute link target in htmlFile.
+// os.Root refuses an absolute target even when it points inside the folder, so this check copies that rule to keep the error clear.
 // It checks each path part without following the link, so the target itself is tested.
 func absoluteSymlink(baseDir, htmlFile string) error {
 	current := baseDir

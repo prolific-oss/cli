@@ -90,6 +90,9 @@ Without id, the API creates a new block and deletes the stored block.
 			}
 
 			collection, err := client.UpdateCollection(collectionID, updatePayload)
+			if shared.IsCustomHTMLNotEnabledError(err) {
+				return errors.New(shared.ErrCustomHTMLNotEnabled)
+			}
 			if err != nil {
 				return err
 			}
@@ -160,6 +163,9 @@ func loadUpdateCustomHTML(payload *model.UpdateCollection, templatePath, htmlDir
 		for itemIndex := range page.PageItems {
 			item := &page.PageItems[itemIndex]
 			if item.Type != model.ContentBlockTypeCustomHTML {
+				if err := rejectHTMLFileOnOtherType(pageIndex, itemIndex, item.HTMLFile); err != nil {
+					return err
+				}
 				continue
 			}
 

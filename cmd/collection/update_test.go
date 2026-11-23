@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,6 +12,7 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
+	"github.com/prolific-oss/cli/client"
 	"github.com/prolific-oss/cli/cmd/collection"
 	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/prolific-oss/cli/mock_client"
@@ -511,6 +513,60 @@ collection_items:
 				t.Fatalf("expected output:\n'%s'\n\ngot:\n'%s'", tt.expectedOutput, actual)
 			}
 		})
+	}
+}
+
+func TestUpdateCollectionReportsCustomHTMLGate(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	configFile := createTempConfigFile(t, `name: Test Collection
+collection_items:
+  - order: 0
+    page_items:
+      - type: free_text
+        description: "Valid page"
+        order: 0
+`, ".yaml")
+
+	c.EXPECT().
+		UpdateCollection(testUpdateCollectionID, gomock.Any()).
+		Return(nil, &client.UnrecognizedAPIError{
+			StatusCode: http.StatusForbidden,
+			Body:       []byte(`{"message":"Custom HTML content blocks are not enabled for this workspace."}`),
+		})
+
+	var b bytes.Buffer
+	cmd := collection.NewUpdateCommand(c, bufio.NewWriter(&b))
+	cmd.SetArgs([]string{testUpdateCollectionID, "-t", configFile})
+	err := cmd.Execute()
+	if err == nil || err.Error() != shared.ErrCustomHTMLNotEnabled {
+		t.Fatalf("expected the gate message, got %v", err)
+	}
+}
+
+func TestUpdateCollectionRejectsHTMLFileOnOtherType(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	configFile := createTempConfigFile(t, `name: Test Collection
+collection_items:
+  - order: 0
+    page_items:
+      - type: rich_text
+        order: 0
+        content: "<p>Hello</p>"
+        html_file: page.html
+`, ".yaml")
+
+	var b bytes.Buffer
+	cmd := collection.NewUpdateCommand(c, bufio.NewWriter(&b))
+	cmd.SetArgs([]string{testUpdateCollectionID, "-t", configFile})
+	err := cmd.Execute()
+	if err == nil || err.Error() != "page at index 0, item at index 0: html_file is only valid on custom_html items" {
+		t.Fatalf("expected html_file error, got %v", err)
 	}
 }
 
