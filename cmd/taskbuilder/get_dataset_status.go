@@ -34,7 +34,7 @@ The status of a dataset can be one of the following:
 • ERROR - This means that something has gone wrong during processing and the data may not be usable.`,
 		Example: `
 Get a Task Builder dataset status:
-$ prolific taskbuilder dataset check -d <dataset_id>
+$ prolific taskbuilder dataset check -d <dataset-id>
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args

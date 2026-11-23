@@ -51,16 +51,16 @@ Create a batch:
 $ prolific taskbuilder batch create -n "My Data Collection Batch" -w 6278acb09062db3b35bcbeb0 -d 1234acb09999db4b99bcded1 --task-name "Sample Task" --task-introduction "This is a sample task for testing" --task-steps "1. Review the data\n2. Provide your response"
 
 Create a batch with batch_items from a file:
-$ prolific taskbuilder batch create -n "My Batch" -w <workspace_id> -d <dataset_id> --task-name "Task" --task-introduction "Intro" --task-steps "Steps" -f batch-items.json
+$ prolific taskbuilder batch create -n "My Batch" -w <workspace-id> -d <dataset-id> --task-name "Task" --task-introduction "Intro" --task-steps "Steps" -f batch-items.json
 
 Create a batch with inline batch_items JSON:
-$ prolific taskbuilder batch create -n "My Batch" -w <workspace_id> -d <dataset_id> --task-name "Task" --task-introduction "Intro" --task-steps "Steps" -j '[{"rows":[{"columns":[{"items":[{"type":"free_text","description":"Describe your observations."}]}]}]}]'
+$ prolific taskbuilder batch create -n "My Batch" -w <workspace-id> -d <dataset-id> --task-name "Task" --task-introduction "Intro" --task-steps "Steps" -j '[{"rows":[{"columns":[{"items":[{"type":"free_text","description":"Describe your observations."}]}]}]}]'
 
 Create a batch with intro/outro pages that render once instead of once per datapoint:
-$ prolific taskbuilder batch create -n "My Batch" -w <workspace_id> -d <dataset_id> --task-name "Task" --task-introduction "Intro" --task-steps "Steps" -j '[{"display_position":"intro","rows":[{"columns":[{"items":[{"type":"rich_text","content":"<p>Welcome!</p>"}]}]}]},{"rows":[{"columns":[{"items":[{"type":"free_text","description":"Describe your observations."}]}]}]},{"display_position":"outro","rows":[{"columns":[{"items":[{"type":"rich_text","content":"<p>Thank you!</p>"}]}]}]}]'
+$ prolific taskbuilder batch create -n "My Batch" -w <workspace-id> -d <dataset-id> --task-name "Task" --task-introduction "Intro" --task-steps "Steps" -j '[{"display_position":"intro","rows":[{"columns":[{"items":[{"type":"rich_text","content":"<p>Welcome!</p>"}]}]}]},{"rows":[{"columns":[{"items":[{"type":"free_text","description":"Describe your observations."}]}]}]},{"display_position":"outro","rows":[{"columns":[{"items":[{"type":"rich_text","content":"<p>Thank you!</p>"}]}]}]}]'
 
 Create a batch with auto-sync enabled:
-$ prolific taskbuilder batch create -n "My Batch" -w <workspace_id> -d <dataset_id> --task-name "Task" --task-introduction "Intro" --task-steps "Steps" --auto-sync
+$ prolific taskbuilder batch create -n "My Batch" -w <workspace-id> -d <dataset-id> --task-name "Task" --task-introduction "Intro" --task-steps "Steps" --auto-sync
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args

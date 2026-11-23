@@ -23,7 +23,7 @@ func NewResponseSummaryCommand(commandName string, client client.API, w io.Write
 	var opts ResponseSummaryOptions
 
 	cmd := &cobra.Command{
-		Use:   commandName + " <survey_id>",
+		Use:   commandName + " <survey-id>",
 		Args:  cobra.MinimumNArgs(1),
 		Short: "View a summary of survey responses",
 		Long: `View a summary of survey responses

@@ -23,8 +23,8 @@ func TestNewResponseCreateCommand(t *testing.T) {
 
 	cmd := survey.NewResponseCreateCommand("create", c, os.Stdout)
 
-	if cmd.Use != "create <survey_id>" {
-		t.Fatalf("expected use: create <survey_id>; got %s", cmd.Use)
+	if cmd.Use != "create <survey-id>" {
+		t.Fatalf("expected use: create <survey-id>; got %s", cmd.Use)
 	}
 
 	if cmd.Short != "Create a survey response" {

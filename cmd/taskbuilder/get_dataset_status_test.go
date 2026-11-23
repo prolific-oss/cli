@@ -167,7 +167,7 @@ func TestNewGetDatasetStatusCommandHelpText(t *testing.T) {
 	}
 
 	// Check example contains correct flag
-	if !strings.Contains(cmd.Example, "-d <dataset_id>") {
-		t.Fatal("expected example to contain '-d <dataset_id>' flag usage")
+	if !strings.Contains(cmd.Example, "-d <dataset-id>") {
+		t.Fatal("expected example to contain '-d <dataset-id>' flag usage")
 	}
 }

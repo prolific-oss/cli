@@ -51,7 +51,7 @@ $ prolific study set-credential-pool 64395e9c2332b8a59a65d51e --credential-pool-
 	}
 
 	flags := cmd.Flags()
-	flags.StringVarP(&opts.CredentialPoolID, "credential-pool-id", "c", "", "The credential pool ID to attach to the study (format: <workspace_id>_<credential_pool_id>)")
+	flags.StringVarP(&opts.CredentialPoolID, "credential-pool-id", "c", "", "The credential pool ID to attach to the study (format: <workspace-id>_<credential-pool-id>)")
 	_ = cmd.MarkFlagRequired("credential-pool-id")
 
 	return cmd

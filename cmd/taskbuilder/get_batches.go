@@ -50,7 +50,7 @@ func NewGetBatchesListCommand(client client.API, w io.Writer) *cobra.Command {
 This command lists all batches in a workspace by providing the workspace ID.`,
 		Example: `
 Get Task Builder batches:
-$ prolific taskbuilder batch list -w <workspace_id>
+$ prolific taskbuilder batch list -w <workspace-id>
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args

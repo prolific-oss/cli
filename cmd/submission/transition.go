@@ -64,10 +64,10 @@ and a rejection category.
 
 When completing a submission, you must provide a completion code. If the completion
 code has a DYNAMIC_PAYMENT action, you must also provide the percentage of reward.`,
-		Example: `  prolific submission transition <submission_id> -a APPROVE
-  prolific submission transition <submission_id> -a REJECT -m "Your response did not follow the instructions provided in the study description" -R FAILED_INSTRUCTIONS
-  prolific submission transition <submission_id> -a COMPLETE --completion-code MY_CODE
-  prolific submission transition <submission_id> -a COMPLETE --completion-code MY_CODE --percentage-of-reward 50`,
+		Example: `  prolific submission transition <submission-id> -a APPROVE
+  prolific submission transition <submission-id> -a REJECT -m "Your response did not follow the instructions provided in the study description" -R FAILED_INSTRUCTIONS
+  prolific submission transition <submission-id> -a COMPLETE --completion-code MY_CODE
+  prolific submission transition <submission-id> -a COMPLETE --completion-code MY_CODE --percentage-of-reward 50`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.SubmissionID = args[0]
