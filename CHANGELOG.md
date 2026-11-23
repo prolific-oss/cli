@@ -4,6 +4,10 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+### Task Builder
+
+- Support the `audio_recording` instruction type. `prolific taskbuilder batch responses` now shows the recording ID, duration, file name, size, content type and file key for recorded answers, and an empty `Recording:` line when an optional recording was skipped. `docs/examples/collection.json` and `collection.yaml` include an `audio_recording` item.
+
 ## 1.3.3
 
 ### Task Builder
