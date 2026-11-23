@@ -9,11 +9,19 @@ import (
 	"strings"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/spf13/cobra"
 )
 
 const supportedHostedFileExtensions = ".mp4, .webm"
 
+// hostedFileMaxBytes is the largest object S3 accepts in a single PUT (5 GiB).
+const hostedFileMaxBytes int64 = 5 << 30
+
+const hostedFileScanNotice = "Note: the URL returns 403 until the file has been virus scanned, which can take a minute or two.\n"
+
+// validHostedFileExtensions is deliberately narrower than validVideoURLFileExtensions: the file
+// endpoint does not accept .mov.
 var validHostedFileExtensions = map[string]bool{
 	".mp4":  true,
 	".webm": true,
@@ -38,6 +46,8 @@ func NewFileUploadCommand(client client.API, w io.Writer) *cobra.Command {
 Supported file types: %s.
 
 The URL can be used in custom HTML, for example as the source of a video element.
+The file is virus scanned after upload, so the URL returns 403 for a minute or two before it
+serves the video. The limit is 5 GiB per file.
 Use "prolific taskbuilder file delete" to remove the file again.`, supportedHostedFileExtensions),
 		Example: `
 Upload a video to a workspace:
@@ -49,6 +59,9 @@ $ prolific taskbuilder file upload -w <workspace_id> -f ./intro.mp4
 			if err := uploadHostedFile(client, opts, w); err != nil {
 				return fmt.Errorf("error: %s", err)
 			}
+
+			// stderr, so that stdout stays the bare URL for scripts.
+			fmt.Fprint(cmd.ErrOrStderr(), hostedFileScanNotice)
 
 			return nil
 		},
@@ -95,8 +108,16 @@ func uploadHostedFile(client client.API, opts FileUploadOptions, w io.Writer) er
 		return fmt.Errorf("file is empty: %s", opts.FilePath)
 	}
 
+	if info.Size() > hostedFileMaxBytes {
+		return fmt.Errorf("file is %d bytes, the limit is %d bytes (5 GiB)", info.Size(), hostedFileMaxBytes)
+	}
+
 	response, err := client.GetFileUploadURL(opts.WorkspaceID, fileName)
 	if err != nil {
+		if shared.IsFileHostingNotEnabledError(err) {
+			return errors.New(shared.ErrFileHostingNotEnabled)
+		}
+
 		return fmt.Errorf("failed to get upload URL: %w", err)
 	}
 

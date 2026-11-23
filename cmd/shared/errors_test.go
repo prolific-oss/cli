@@ -110,3 +110,38 @@ func TestIsCustomHTMLNotEnabledError(t *testing.T) {
 		})
 	}
 }
+
+func TestIsFileHostingNotEnabledError(t *testing.T) {
+	gateBody := []byte(`{"message":"File uploads and deletes are not enabled for this workspace."}`)
+	tests := []struct {
+		name     string
+		err      error
+		expected bool
+	}{
+		{name: "nil", err: nil},
+		{
+			name:     "403 with the gate message",
+			err:      &client.UnrecognizedAPIError{StatusCode: http.StatusForbidden, Body: gateBody},
+			expected: true,
+		},
+		{
+			name: "403 for a workspace the caller does not belong to",
+			err: &client.UnrecognizedAPIError{
+				StatusCode: http.StatusForbidden,
+				Body:       []byte(`{"message":"You do not have permission to access this resource."}`),
+			},
+		},
+		{
+			name: "non-403 with the gate message",
+			err:  &client.UnrecognizedAPIError{StatusCode: http.StatusBadRequest, Body: gateBody},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsFileHostingNotEnabledError(tt.err); got != tt.expected {
+				t.Fatalf("IsFileHostingNotEnabledError() = %v, expected %v", got, tt.expected)
+			}
+		})
+	}
+}

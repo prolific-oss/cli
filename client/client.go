@@ -1887,7 +1887,7 @@ func (c *Client) DeleteFile(workspaceID, fileID, fileName string) error {
 	path := fmt.Sprintf("/api/v1/data-collection/files/%s/%s/%s", url.PathEscape(workspaceID), url.PathEscape(fileID), url.PathEscape(fileName))
 	httpResponse, err := c.Execute(http.MethodDelete, path, nil, nil)
 	if err != nil {
-		return fmt.Errorf("unable to fulfil request %s: %s", path, err)
+		return fmt.Errorf("unable to fulfil request %s: %w", path, err)
 	}
 
 	if httpResponse.StatusCode != http.StatusNoContent {

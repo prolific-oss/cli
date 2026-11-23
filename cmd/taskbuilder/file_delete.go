@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/prolific-oss/cli/client"
+	"github.com/prolific-oss/cli/cmd/shared"
 	"github.com/spf13/cobra"
 )
 
@@ -58,7 +59,11 @@ func deleteHostedFile(c client.API, rawURL string, w io.Writer) error {
 	}
 
 	if err := c.DeleteFile(workspaceID, fileID, fileName); err != nil {
-		return fmt.Errorf("error deleting file: %s", err.Error())
+		if shared.IsFileHostingNotEnabledError(err) {
+			return errors.New(shared.ErrFileHostingNotEnabled)
+		}
+
+		return fmt.Errorf("error deleting file: %s", err)
 	}
 
 	// The API returns 204 whether or not the file existed, so do not claim it was removed by this call.

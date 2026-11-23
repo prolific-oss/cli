@@ -6,6 +6,8 @@ import (
 	"testing"
 )
 
+const fileTestToken = "test-token"
+
 func TestGetFileUploadURL(t *testing.T) {
 	var gotPath, gotWorkspace string
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -17,7 +19,7 @@ func TestGetFileUploadURL(t *testing.T) {
 	}))
 	defer server.Close()
 
-	c := Client{Client: server.Client(), BaseURL: server.URL, Token: "test-token"}
+	c := Client{Client: server.Client(), BaseURL: server.URL, Token: fileTestToken}
 
 	resp, err := c.GetFileUploadURL("ws-1", "my video.mp4")
 	if err != nil {
@@ -41,7 +43,7 @@ func TestDeleteFile(t *testing.T) {
 	}))
 	defer server.Close()
 
-	c := Client{Client: server.Client(), BaseURL: server.URL, Token: "test-token"}
+	c := Client{Client: server.Client(), BaseURL: server.URL, Token: fileTestToken}
 
 	if err := c.DeleteFile("ws-1", "abc123", "intro.mp4"); err != nil {
 		t.Fatalf("unexpected error: %v", err)
