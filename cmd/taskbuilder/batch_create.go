@@ -33,7 +33,8 @@ func NewBatchCreateCommand(client client.API, w io.Writer) *cobra.Command {
 
 This command creates a batch in a workspace and links it to a dataset. The dataset must
 be in READY status before you can create a batch with it. You must provide the batch name,
-workspace ID, dataset ID, and task details (name, introduction, and steps).
+workspace ID, dataset ID (unless you are creating a review batch, below), and task details
+(name, introduction, and steps).
 
 Optionally, supply batch_items to define the participant task layout as a structured
 JSON schema (pages → rows → columns → items). Provide batch_items from a file with
@@ -88,7 +89,7 @@ $ prolific taskbuilder batch create -n "My Batch" -w <workspace-id> -d <dataset-
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.Name, "name", "n", "", "Batch name (required) - The name of the batch to create.")
 	flags.StringVarP(&opts.WorkspaceID, "workspace-id", "w", "", "Workspace ID (required) - The ID of the workspace where the batch will be created.")
-	flags.StringVarP(&opts.DatasetID, "dataset-id", "d", "", "Dataset ID (required) - The ID of the dataset to use for the batch.")
+	flags.StringVarP(&opts.DatasetID, "dataset-id", "d", "", "Dataset ID (required unless creating a review batch) - The ID of the dataset to use for the batch.")
 	flags.StringVar(&opts.TaskName, "task-name", "", "Task name (required) - The name of the task.")
 	flags.StringVar(&opts.TaskIntroduction, "task-introduction", "", "Task introduction (required) - The introduction text for the task.")
 	flags.StringVar(&opts.TaskSteps, "task-steps", "", "Task steps (required) - The steps for completing the task.")

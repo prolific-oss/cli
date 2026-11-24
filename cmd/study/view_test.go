@@ -328,7 +328,8 @@ func TestViewStudyRendersWhatCollectsTheData(t *testing.T) {
 		}
 	}
 
-	plain := stripansi.Strip(study.RenderStudy(model.Study{ID: "11223344", Name: "Plain study"}))
+	// A study that collects no data any other way shows as it always did, even though the API returns its project.
+	plain := stripansi.Strip(study.RenderStudy(model.Study{ID: "11223344", Name: "Plain study", Project: "proj-1"}))
 	for _, label := range []string{"Project:", "Data collection", "Annotators per task:"} {
 		if strings.Contains(plain, label) {
 			t.Fatalf("expected a study with no data collection to show no %q; got\n%s", label, plain)

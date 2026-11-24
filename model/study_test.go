@@ -103,3 +103,18 @@ func TestStudyIsATaskBuilderBatchStudy(t *testing.T) {
 		}
 	}
 }
+
+func TestStudyIsPublished(t *testing.T) {
+	for name, tc := range map[string]struct {
+		publishedAt any
+		expected    bool
+	}{
+		"published":       {publishedAt: "2026-01-01T00:00:00.000Z", expected: true},
+		"never published": {publishedAt: nil, expected: false},
+		"empty":           {publishedAt: "", expected: false},
+	} {
+		if actual := (model.Study{PublishedAt: tc.publishedAt}).IsPublished(); actual != tc.expected {
+			t.Fatalf("%s: expected %v; got %v", name, tc.expected, actual)
+		}
+	}
+}
