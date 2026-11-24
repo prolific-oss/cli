@@ -5,9 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
 
 	"github.com/prolific-oss/cli/client"
 )
+
+// studyIDPattern is the shape the API accepts for a study ID.
+var studyIDPattern = regexp.MustCompile(`^[0-9a-f]{24}$`)
 
 const (
 	maxReviewSampleRateBps = 10000
@@ -17,6 +21,7 @@ const (
 // Error messages for creating a review batch.
 const (
 	ErrReviewSourceBatchIDRequired     = "--review-source-batch-id is required to create a review batch"
+	ErrReviewStudyIDInvalid            = "--review-study-id must be a study ID, 24 lowercase hexadecimal characters"
 	ErrReviewSampleRateInvalid         = "--review-sample-rate-bps must be a whole number from 1 to 10000 (10000 is every submission)"
 	ErrReviewRubricsRequired           = "a review batch needs rubrics: give --review-rubrics-file or --review-rubrics-json"
 	ErrBothReviewRubricsInputsProvided = "cannot specify both review-rubrics file and review-rubrics JSON"
@@ -30,6 +35,7 @@ const (
 // ReviewCreateOptions are the flags that make a batch a review of another batch.
 type ReviewCreateOptions struct {
 	SourceBatchID string
+	StudyID       string
 	SampleRateBps int
 	RubricsFile   string
 	RubricsJSON   string
@@ -38,7 +44,7 @@ type ReviewCreateOptions struct {
 
 // isSet reports whether any review flag was given, which is what makes the batch a review batch.
 func (o ReviewCreateOptions) isSet() bool {
-	return o.SourceBatchID != "" || o.SampleRateBps != 0 || o.RubricsFile != "" || o.RubricsJSON != "" || o.Notes
+	return o.SourceBatchID != "" || o.StudyID != "" || o.SampleRateBps != 0 || o.RubricsFile != "" || o.RubricsJSON != "" || o.Notes
 }
 
 // parseReviewInput builds the review request, or returns nil when no review flag was given.
@@ -49,6 +55,9 @@ func parseReviewInput(o ReviewCreateOptions) (*client.ReviewParams, error) {
 	if o.SourceBatchID == "" {
 		return nil, errors.New(ErrReviewSourceBatchIDRequired)
 	}
+	if o.StudyID != "" && !studyIDPattern.MatchString(o.StudyID) {
+		return nil, errors.New(ErrReviewStudyIDInvalid)
+	}
 	if o.SampleRateBps < 1 || o.SampleRateBps > maxReviewSampleRateBps {
 		return nil, errors.New(ErrReviewSampleRateInvalid)
 	}
@@ -58,6 +67,7 @@ func parseReviewInput(o ReviewCreateOptions) (*client.ReviewParams, error) {
 	}
 	return &client.ReviewParams{
 		SourceBatchID: o.SourceBatchID,
+		StudyID:       o.StudyID,
 		SampleRateBps: o.SampleRateBps,
 		Rubrics:       rubrics,
 		Justification: o.Notes,

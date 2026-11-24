@@ -51,7 +51,11 @@ arrive; it defaults to false.
 
 To create a review batch, which has researchers' reviewers score a sample of the work
 done on another batch, give the --review-* flags instead of --dataset-id and batch items.
-A review batch creates its own dataset and builds its form from the rubrics. Each rubric
+A review batch creates its own dataset and builds its form from the rubrics.
+
+A review covers every study that uses the source batch, unless you give --review-study-id,
+which limits it to that one study. Give it when the batch has more than one study, so the
+review is of one study's work. A batch has one review, whichever study it names. Each rubric
 is {"description": "...", "scoring_scheme": "scale_1_5" | "pass_fail_unsure"}. The sample
 rate is in basis points: 1000 reviews one submission in ten, 10000 reviews every one.
 Add --review-notes to give reviewers an optional notes box.`,
@@ -70,6 +74,9 @@ $ prolific taskbuilder batch create -n "My Batch" -w <workspace-id> -d <dataset-
 
 Create a review batch that samples one submission in ten of another batch:
 $ prolific taskbuilder batch create -n "My Review" -w <workspace-id> --task-name "Review" --task-introduction "Intro" --task-steps "Steps" --review-source-batch-id <source-batch-id> --review-sample-rate-bps 1000 --review-notes --review-rubrics-json '[{"description":"Is the narration accurate?","scoring_scheme":"pass_fail_unsure"}]'
+
+Create a review batch limited to one study on the source batch:
+$ prolific taskbuilder batch create -n "My Review" -w <workspace-id> --task-name "Review" --task-introduction "Intro" --task-steps "Steps" --review-source-batch-id <source-batch-id> --review-study-id <study-id> --review-sample-rate-bps 10000 --review-rubrics-file docs/examples/review-rubrics.json
 
 Create a batch with auto-sync enabled:
 $ prolific taskbuilder batch create -n "My Batch" -w <workspace-id> -d <dataset-id> --task-name "Task" --task-introduction "Intro" --task-steps "Steps" --auto-sync
@@ -98,6 +105,7 @@ $ prolific taskbuilder batch create -n "My Batch" -w <workspace-id> -d <dataset-
 	flags.BoolVar(&opts.AutoSync, "auto-sync", false, "Automatically synchronize new dataset datapoints into the batch as they are added.")
 
 	flags.StringVar(&opts.Review.SourceBatchID, "review-source-batch-id", "", "Review: the ID of the batch whose work is reviewed. Makes this a review batch.")
+	flags.StringVar(&opts.Review.StudyID, "review-study-id", "", "Review: limit the review to this study on the source batch. Without it every study on the batch is reviewed.")
 	flags.IntVar(&opts.Review.SampleRateBps, "review-sample-rate-bps", 0, "Review: how much of the work to review in basis points, from 1 to 10000 (1000 is one in ten).")
 	flags.StringVar(&opts.Review.RubricsFile, "review-rubrics-file", "", "Review: path to a JSON file of rubrics, [{\"description\", \"scoring_scheme\"}].")
 	flags.StringVar(&opts.Review.RubricsJSON, "review-rubrics-json", "", "Review: inline JSON of rubrics, [{\"description\", \"scoring_scheme\"}].")
@@ -190,9 +198,18 @@ func createAITaskBuilderBatch(c client.API, opts BatchCreateOptions, w io.Writer
 	if response.Review != nil {
 		fmt.Fprintf(w, "\nReview:\n")
 		fmt.Fprintf(w, "  Round: %d\n", response.Review.Round)
+		if response.Review.StudyID != "" {
+			fmt.Fprintf(w, "  Study ID: %s\n", response.Review.StudyID)
+		}
 		fmt.Fprintf(w, "  Sample Rate: %d bps\n", response.Review.SampleRateBps)
 		fmt.Fprintf(w, "  Review Dataset ID: %s\n", response.Review.ReviewDatasetID)
 		fmt.Fprintf(w, "  Backfill Requested: %t\n", response.Review.BackfillRequested)
+	}
+
+	// An API that does not know study_id ignores it, and the review then covers every study on the batch. It echoes the study
+	// back when it took it, so a study that was asked for and not echoed is worth saying.
+	if review != nil && review.StudyID != "" && (response.Review == nil || response.Review.StudyID != review.StudyID) {
+		fmt.Fprintf(w, "\nWarning: the API did not confirm study %s, so the review may cover every study on the source batch.\n", review.StudyID)
 	}
 
 	fmt.Fprintf(w, "\nTask Details:\n")

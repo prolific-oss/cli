@@ -145,7 +145,9 @@ type ReviewRubric struct {
 
 // ReviewParams makes a batch a review of another batch's work.
 type ReviewParams struct {
-	SourceBatchID string         `json:"source_batch_id"`
+	SourceBatchID string `json:"source_batch_id"`
+	// StudyID limits the review to one study on the source batch. Left out, it covers every study on it.
+	StudyID       string         `json:"study_id,omitempty"`
 	SampleRateBps int            `json:"sample_rate_bps"`
 	Rubrics       []ReviewRubric `json:"rubrics"`
 	Justification bool           `json:"justification,omitempty"`

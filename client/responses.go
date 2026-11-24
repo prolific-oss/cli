@@ -393,6 +393,7 @@ type CreateAITaskBuilderBatchResponse struct {
 // ReviewResult is what creating a review batch set up, and is only returned for one.
 type ReviewResult struct {
 	Round             int    `json:"round"`
+	StudyID           string `json:"study_id,omitempty"`
 	SampleRateBps     int    `json:"sample_rate_bps"`
 	ReviewDatasetID   string `json:"review_dataset_id"`
 	BackfillRequested bool   `json:"backfill_requested"`

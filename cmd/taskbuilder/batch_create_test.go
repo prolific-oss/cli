@@ -446,6 +446,91 @@ func TestNewBatchCreateCommandReview(t *testing.T) {
 	}
 }
 
+func TestNewBatchCreateCommandReviewLimitedToOneStudy(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	const studyID = "6ac6ce260218ce7b7b0e05d3"
+	c.EXPECT().CreateAITaskBuilderBatch(gomock.Any()).DoAndReturn(func(p client.CreateBatchParams) (*client.CreateAITaskBuilderBatchResponse, error) {
+		if p.Review == nil || p.Review.StudyID != studyID {
+			t.Fatalf("expected the review to be limited to study %s; got %+v", studyID, p.Review)
+		}
+		return &client.CreateAITaskBuilderBatchResponse{
+			Review: &client.ReviewResult{Round: 1, StudyID: studyID, SampleRateBps: 1000, ReviewDatasetID: "rd-1"},
+		}, nil
+	})
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+	cmd := taskbuilder.NewBatchCreateCommand(c, writer)
+	cmd.SetArgs(reviewCreateArgs("--review-study-id", studyID, "--review-rubrics-json", reviewRubricsJSON))
+
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("expected error to be nil; got %v", err)
+	}
+	writer.Flush()
+
+	if !strings.Contains(b.String(), "  Round: 1\n  Study ID: "+studyID+"\n") {
+		t.Fatalf("expected the study to be shown in the review block; got\n%s", b.String())
+	}
+	if strings.Contains(b.String(), "Warning") {
+		t.Fatalf("expected no warning when the API confirmed the study; got\n%s", b.String())
+	}
+}
+
+func TestNewBatchCreateCommandWarnsWhenTheStudyWasNotConfirmed(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	// An API that predates study_id ignores it and does not echo it back.
+	c.EXPECT().CreateAITaskBuilderBatch(gomock.Any()).Return(&client.CreateAITaskBuilderBatchResponse{
+		Review: &client.ReviewResult{Round: 1},
+	}, nil)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+	cmd := taskbuilder.NewBatchCreateCommand(c, writer)
+	cmd.SetArgs(reviewCreateArgs("--review-study-id", "6ac6ce260218ce7b7b0e05d3", "--review-rubrics-json", reviewRubricsJSON))
+
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("expected error to be nil; got %v", err)
+	}
+	writer.Flush()
+
+	if !strings.Contains(b.String(), "Warning: the API did not confirm study 6ac6ce260218ce7b7b0e05d3") {
+		t.Fatalf("expected a warning; got\n%s", b.String())
+	}
+}
+
+func TestNewBatchCreateCommandReviewWithoutAStudyCoversTheBatch(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	c.EXPECT().CreateAITaskBuilderBatch(gomock.Any()).DoAndReturn(func(p client.CreateBatchParams) (*client.CreateAITaskBuilderBatchResponse, error) {
+		if p.Review == nil || p.Review.StudyID != "" {
+			t.Fatalf("expected no study; got %+v", p.Review)
+		}
+		return &client.CreateAITaskBuilderBatchResponse{Review: &client.ReviewResult{Round: 1}}, nil
+	})
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+	cmd := taskbuilder.NewBatchCreateCommand(c, writer)
+	cmd.SetArgs(reviewCreateArgs("--review-rubrics-json", reviewRubricsJSON))
+
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("expected error to be nil; got %v", err)
+	}
+	writer.Flush()
+
+	if strings.Contains(b.String(), "Study ID") {
+		t.Fatalf("expected no study line when the review covers the whole batch; got\n%s", b.String())
+	}
+}
+
 func TestNewBatchCreateCommandReviewRubricsFile(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -544,6 +629,21 @@ func TestNewBatchCreateCommandReviewValidationErrors(t *testing.T) {
 			name:        "batch items given with a review",
 			args:        reviewCreateArgs(append([]string{"--batch-items-json", batchItemsJSON}, withRubrics...)...),
 			expectedErr: "error: " + taskbuilder.ErrReviewBatchItemsNotAllowed,
+		},
+		{
+			name:        "a study id that is not a study id",
+			args:        reviewCreateArgs(append([]string{"--review-study-id", "not-an-id"}, withRubrics...)...),
+			expectedErr: "error: " + taskbuilder.ErrReviewStudyIDInvalid,
+		},
+		{
+			name:        "a study id in capitals, which the API refuses",
+			args:        reviewCreateArgs(append([]string{"--review-study-id", "6AC6CE260218CE7B7B0E05D3"}, withRubrics...)...),
+			expectedErr: "error: " + taskbuilder.ErrReviewStudyIDInvalid,
+		},
+		{
+			name:        "a study id alone is still a review, and needs its source",
+			args:        append(baseCreateArgs(), "--review-study-id", "6ac6ce260218ce7b7b0e05d3"),
+			expectedErr: "error: " + taskbuilder.ErrReviewSourceBatchIDRequired,
 		},
 		{
 			name:        "a review flag alone is still a review",

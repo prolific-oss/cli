@@ -525,9 +525,28 @@ func TestCreateAITaskBuilderBatchSendsTheReviewRequest(t *testing.T) {
 		if review["source_batch_id"] != "source-1" || review["sample_rate_bps"] != float64(1000) || review["justification"] != true {
 			t.Fatalf("unexpected review body: %v", review)
 		}
+		// No study given, so the review covers every study on the batch and none is sent.
+		if _, ok := review["study_id"]; ok {
+			t.Fatalf("expected no study_id; got %v", review["study_id"])
+		}
 		rubrics, _ := review["rubrics"].([]any)
 		if len(rubrics) != 1 {
 			t.Fatalf("expected one rubric; got %v", review["rubrics"])
+		}
+	})
+
+	t.Run("a review limited to a study sends its id", func(t *testing.T) {
+		params := base
+		params.Review = &ReviewParams{
+			SourceBatchID: "source-1",
+			StudyID:       "6ac6ce260218ce7b7b0e05d3",
+			SampleRateBps: 1000,
+			Rubrics:       []ReviewRubric{{Description: "Accurate?", ScoringScheme: "pass_fail_unsure"}},
+		}
+		review, _ := send(t, params)["review"].(map[string]any)
+
+		if review["study_id"] != "6ac6ce260218ce7b7b0e05d3" {
+			t.Fatalf("expected the study id to be sent; got %v", review["study_id"])
 		}
 	})
 
