@@ -4,6 +4,7 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+- `taskbuilder batch create` can create a review batch with the `--review-*` flags: `--review-source-batch-id`, `--review-sample-rate-bps` (1 to 10000, where 1000 is one submission in ten), `--review-rubrics-file` or `--review-rubrics-json`, and `--review-notes`. A review batch creates its own dataset and builds its form from the rubrics, so `--dataset-id` and the batch-items flags cannot be used with them. `--dataset-id` is still required for any other batch, but a missing one now gets the CLI's own message.
 - Collection create and collection update accept `custom_html` through `html_file` or `html_content`.
 - `html_file` must be a relative path that stays inside the template folder, or inside the `--html-dir` folder when that flag is set. Absolute paths, `..` paths, symbolic links that lead out of the folder, and symbolic links with an absolute target are refused. Use `--html-dir` on collection create and update to read HTML from another folder.
 - Each `custom_html` block is limited to 300,000 bytes of UTF-8.

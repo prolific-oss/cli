@@ -387,6 +387,15 @@ type CreateAITaskBuilderBatchResponse struct {
 	AutoSyncEnabled       bool              `json:"auto_sync_enabled"`
 	Datasets              []model.Dataset   `json:"datasets"`
 	TaskDetails           model.TaskDetails `json:"task_details"`
+	Review                *ReviewResult     `json:"review,omitempty"`
+}
+
+// ReviewResult is what creating a review batch set up, and is only returned for one.
+type ReviewResult struct {
+	Round             int    `json:"round"`
+	SampleRateBps     int    `json:"sample_rate_bps"`
+	ReviewDatasetID   string `json:"review_dataset_id"`
+	BackfillRequested bool   `json:"backfill_requested"`
 }
 
 // TaskDetailsResponse represents the task details in the batch response

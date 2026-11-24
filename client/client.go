@@ -1891,6 +1891,7 @@ func (c *Client) CreateAITaskBuilderBatch(params CreateBatchParams) (*CreateAITa
 		},
 		BatchItems: params.BatchItems,
 		AutoSync:   params.AutoSync,
+		Review:     params.Review,
 	}
 
 	url := "/api/v1/data-collection/batches"

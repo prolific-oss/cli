@@ -134,6 +134,21 @@ type CreateBatchParams struct {
 	TaskSteps        string          `json:"task_steps"`
 	BatchItems       json.RawMessage // nil means omit from payload
 	AutoSync         bool            `json:"auto_sync_enabled"`
+	Review           *ReviewParams   // nil means this is not a review batch
+}
+
+// ReviewRubric is one question a reviewer answers about each piece of work they review.
+type ReviewRubric struct {
+	Description   string `json:"description"`
+	ScoringScheme string `json:"scoring_scheme"`
+}
+
+// ReviewParams makes a batch a review of another batch's work.
+type ReviewParams struct {
+	SourceBatchID string         `json:"source_batch_id"`
+	SampleRateBps int            `json:"sample_rate_bps"`
+	Rubrics       []ReviewRubric `json:"rubrics"`
+	Justification bool           `json:"justification,omitempty"`
 }
 
 // UpdateBatchParams represents the parameters for updating a Task Builder batch.
@@ -166,10 +181,11 @@ type TaskDetails struct {
 type CreateAITaskBuilderBatchPayload struct {
 	Name        string          `json:"name"`
 	WorkspaceID string          `json:"workspace_id"`
-	DatasetID   string          `json:"dataset_id"`
+	DatasetID   string          `json:"dataset_id,omitempty"`
 	TaskDetails TaskDetails     `json:"task_details"`
 	BatchItems  json.RawMessage `json:"batch_items,omitempty"`
 	AutoSync    bool            `json:"auto_sync_enabled"`
+	Review      *ReviewParams   `json:"review,omitempty"`
 }
 
 // InstructionType represents the type of instruction.

@@ -20,6 +20,7 @@ type BatchCreateOptions struct {
 	BatchItemsFile   string
 	BatchItemsJSON   string
 	AutoSync         bool
+	Review           ReviewCreateOptions
 }
 
 func NewBatchCreateCommand(client client.API, w io.Writer) *cobra.Command {
@@ -45,7 +46,14 @@ contain rich_text/image content blocks, not instructions or dataset_field refs. 
 docs/examples/batch-items-with-intro-outro.json for an example.
 
 Set --auto-sync to automatically add new dataset datapoints to the batch as they
-arrive; it defaults to false.`,
+arrive; it defaults to false.
+
+To create a review batch, which has researchers' reviewers score a sample of the work
+done on another batch, give the --review-* flags instead of --dataset-id and batch items.
+A review batch creates its own dataset and builds its form from the rubrics. Each rubric
+is {"description": "...", "scoring_scheme": "scale_1_5" | "pass_fail_unsure"}. The sample
+rate is in basis points: 1000 reviews one submission in ten, 10000 reviews every one.
+Add --review-notes to give reviewers an optional notes box.`,
 		Example: `
 Create a batch:
 $ prolific taskbuilder batch create -n "My Data Collection Batch" -w 6278acb09062db3b35bcbeb0 -d 1234acb09999db4b99bcded1 --task-name "Sample Task" --task-introduction "This is a sample task for testing" --task-steps "1. Review the data\n2. Provide your response"
@@ -58,6 +66,9 @@ $ prolific taskbuilder batch create -n "My Batch" -w <workspace-id> -d <dataset-
 
 Create a batch with intro/outro pages that render once instead of once per datapoint:
 $ prolific taskbuilder batch create -n "My Batch" -w <workspace-id> -d <dataset-id> --task-name "Task" --task-introduction "Intro" --task-steps "Steps" -j '[{"display_position":"intro","rows":[{"columns":[{"items":[{"type":"rich_text","content":"<p>Welcome!</p>"}]}]}]},{"rows":[{"columns":[{"items":[{"type":"free_text","description":"Describe your observations."}]}]}]},{"display_position":"outro","rows":[{"columns":[{"items":[{"type":"rich_text","content":"<p>Thank you!</p>"}]}]}]}]'
+
+Create a review batch that samples one submission in ten of another batch:
+$ prolific taskbuilder batch create -n "My Review" -w <workspace-id> --task-name "Review" --task-introduction "Intro" --task-steps "Steps" --review-source-batch-id <source-batch-id> --review-sample-rate-bps 1000 --review-notes --review-rubrics-json '[{"description":"Is the narration accurate?","scoring_scheme":"pass_fail_unsure"}]'
 
 Create a batch with auto-sync enabled:
 $ prolific taskbuilder batch create -n "My Batch" -w <workspace-id> -d <dataset-id> --task-name "Task" --task-introduction "Intro" --task-steps "Steps" --auto-sync
@@ -85,9 +96,14 @@ $ prolific taskbuilder batch create -n "My Batch" -w <workspace-id> -d <dataset-
 	flags.StringVarP(&opts.BatchItemsJSON, "batch-items-json", "j", "", "Inline JSON string containing batch_items layout.")
 	flags.BoolVar(&opts.AutoSync, "auto-sync", false, "Automatically synchronize new dataset datapoints into the batch as they are added.")
 
+	flags.StringVar(&opts.Review.SourceBatchID, "review-source-batch-id", "", "Review: the ID of the batch whose work is reviewed. Makes this a review batch.")
+	flags.IntVar(&opts.Review.SampleRateBps, "review-sample-rate-bps", 0, "Review: how much of the work to review in basis points, from 1 to 10000 (1000 is one in ten).")
+	flags.StringVar(&opts.Review.RubricsFile, "review-rubrics-file", "", "Review: path to a JSON file of rubrics, [{\"description\", \"scoring_scheme\"}].")
+	flags.StringVar(&opts.Review.RubricsJSON, "review-rubrics-json", "", "Review: inline JSON of rubrics, [{\"description\", \"scoring_scheme\"}].")
+	flags.BoolVar(&opts.Review.Notes, "review-notes", false, "Review: give reviewers an optional notes box.")
+
 	_ = cmd.MarkFlagRequired("name")
 	_ = cmd.MarkFlagRequired("workspace-id")
-	_ = cmd.MarkFlagRequired("dataset-id")
 	_ = cmd.MarkFlagRequired("task-name")
 	_ = cmd.MarkFlagRequired("task-introduction")
 	_ = cmd.MarkFlagRequired("task-steps")
@@ -103,9 +119,6 @@ func createAITaskBuilderBatch(c client.API, opts BatchCreateOptions, w io.Writer
 	if opts.WorkspaceID == "" {
 		return errors.New(ErrWorkspaceIDRequired)
 	}
-	if opts.DatasetID == "" {
-		return errors.New(ErrDatasetIDRequired)
-	}
 	if opts.TaskName == "" {
 		return errors.New(ErrTaskNameRequired)
 	}
@@ -116,9 +129,23 @@ func createAITaskBuilderBatch(c client.API, opts BatchCreateOptions, w io.Writer
 		return errors.New(ErrTaskStepsRequired)
 	}
 
+	review, err := parseReviewInput(opts.Review)
+	if err != nil {
+		return err
+	}
+	if review == nil && opts.DatasetID == "" {
+		return errors.New(ErrDatasetIDRequired)
+	}
+	if review != nil && opts.DatasetID != "" {
+		return errors.New(ErrReviewDatasetNotAllowed)
+	}
+
 	batchItems, err := parseBatchItemsInput(opts.BatchItemsFile, opts.BatchItemsJSON)
 	if err != nil {
 		return err
+	}
+	if review != nil && batchItems != nil {
+		return errors.New(ErrReviewBatchItemsNotAllowed)
 	}
 
 	params := client.CreateBatchParams{
@@ -130,6 +157,7 @@ func createAITaskBuilderBatch(c client.API, opts BatchCreateOptions, w io.Writer
 		TaskSteps:        opts.TaskSteps,
 		BatchItems:       batchItems,
 		AutoSync:         opts.AutoSync,
+		Review:           review,
 	}
 
 	response, err := c.CreateAITaskBuilderBatch(params)
@@ -156,6 +184,14 @@ func createAITaskBuilderBatch(c client.API, opts BatchCreateOptions, w io.Writer
 		for i, dataset := range response.Datasets {
 			fmt.Fprintf(w, "  Dataset %d: %s (%d datapoints)\n", i+1, dataset.ID, dataset.TotalDatapointCount)
 		}
+	}
+
+	if response.Review != nil {
+		fmt.Fprintf(w, "\nReview:\n")
+		fmt.Fprintf(w, "  Round: %d\n", response.Review.Round)
+		fmt.Fprintf(w, "  Sample Rate: %d bps\n", response.Review.SampleRateBps)
+		fmt.Fprintf(w, "  Review Dataset ID: %s\n", response.Review.ReviewDatasetID)
+		fmt.Fprintf(w, "  Backfill Requested: %t\n", response.Review.BackfillRequested)
 	}
 
 	fmt.Fprintf(w, "\nTask Details:\n")
