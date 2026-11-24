@@ -112,6 +112,9 @@ func TestStudyIsPublished(t *testing.T) {
 		"published":       {publishedAt: "2026-01-01T00:00:00.000Z", expected: true},
 		"never published": {publishedAt: nil, expected: false},
 		"empty":           {publishedAt: "", expected: false},
+		// published_at is a date or null, so anything else is not a published date.
+		"not a date": {publishedAt: map[string]any{}, expected: false},
+		"a number":   {publishedAt: 1.0, expected: false},
 	} {
 		if actual := (model.Study{PublishedAt: tc.publishedAt}).IsPublished(); actual != tc.expected {
 			t.Fatalf("%s: expected %v; got %v", name, tc.expected, actual)

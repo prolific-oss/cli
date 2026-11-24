@@ -220,16 +220,11 @@ func (s Study) IsTaskBuilderBatch() bool {
 	return false
 }
 
-// IsPublished reports whether the study has been published. A scheduled study has not: its published_at is empty until
-// it goes out.
+// IsPublished reports whether the study has been published. The API gives published_at as a date, or null until the
+// study goes out, so a scheduled study has not been published.
 func (s Study) IsPublished() bool {
-	switch published := s.PublishedAt.(type) {
-	case nil:
-		return false
-	case string:
-		return published != ""
-	}
-	return true
+	published, ok := s.PublishedAt.(string)
+	return ok && published != ""
 }
 
 // AnnotatorsPerTask is how many participants do each task of a Task Builder study, or 0 when it is not set.

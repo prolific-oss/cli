@@ -328,6 +328,12 @@ func TestViewStudyRendersWhatCollectsTheData(t *testing.T) {
 		}
 	}
 
+	// A method with no ID behind it has no ID to show.
+	noID := stripansi.Strip(study.RenderStudy(model.Study{ID: "11223344", Name: "No ID", DataCollectionMethod: "AI_TASK_BUILDER_BATCH"}))
+	if strings.Contains(noID, "Data collection ID:") {
+		t.Fatalf("expected no blank data collection ID line; got\n%s", noID)
+	}
+
 	// A study that collects no data any other way shows as it always did, even though the API returns its project.
 	plain := stripansi.Strip(study.RenderStudy(model.Study{ID: "11223344", Name: "Plain study", Project: "proj-1"}))
 	for _, label := range []string{"Project:", "Data collection", "Annotators per task:"} {

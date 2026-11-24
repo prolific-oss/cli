@@ -284,3 +284,51 @@ func TestAITaskBuilderBatchReviewReadsOnlyTheNotesBoxTheAPIWrites(t *testing.T) 
 		t.Fatal("expected no review for a batch with no source batch")
 	}
 }
+
+// batch_items is only read for a review batch. A batch of any other shape must still load and show as it always did, so
+// the form is not decoded until a review batch asks for it.
+func TestAITaskBuilderBatchLoadsWhateverItsBatchItemsAre(t *testing.T) {
+	var batch model.AITaskBuilderBatch
+	err := json.Unmarshal([]byte(`{
+		"id": "batch-1",
+		"batch_items": [{"rows": [{"columns": [{"items": [{"type": "free_text", "description": {"not": "a string"}}]}]}]}]
+	}`), &batch)
+	if err != nil {
+		t.Fatalf("expected a batch with an unusual form to load; got %v", err)
+	}
+
+	if batch.Review() != nil {
+		t.Fatal("expected no review for a batch with no source batch")
+	}
+}
+
+func TestNewGetBatchCommandSaysWhenAReviewFormCannotBeRead(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	var batch model.AITaskBuilderBatch
+	err := json.Unmarshal([]byte(`{"id": "review-batch-1", "review_source_batch_id": "source-batch-1", "batch_items": "not a form"}`), &batch)
+	if err != nil {
+		t.Fatalf("expected the batch to load; got %v", err)
+	}
+	c.EXPECT().GetAITaskBuilderBatch("review-batch-1").Return(&client.GetAITaskBuilderBatchResponse{AITaskBuilderBatch: batch}, nil)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := taskbuilder.NewGetBatchCommand(c, writer)
+	_ = cmd.Flags().Set("batch-id", "review-batch-1")
+	if err := cmd.RunE(cmd, nil); err != nil {
+		t.Fatalf("expected error to be nil; got %v", err)
+	}
+	writer.Flush()
+
+	expected := "Review:\n  Source Batch ID: source-batch-1\n  Rubrics: could not be read from the batch's form\n"
+	if !strings.Contains(b.String(), expected) {
+		t.Fatalf("expected output to contain:\n%s\ngot output:\n%s", expected, b.String())
+	}
+	if strings.Contains(b.String(), "Notes Box") {
+		t.Fatalf("expected no notes box line when the form could not be read; got\n%s", b.String())
+	}
+}
