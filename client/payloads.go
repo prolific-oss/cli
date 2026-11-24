@@ -156,18 +156,27 @@ type UpdateBatchParams struct {
 	BatchID     string
 	Name        string
 	DatasetID   string
-	TaskDetails *TaskDetails    // nil means task details will not be updated
-	BatchItems  json.RawMessage // nil = omit, json.RawMessage("null") = clear, JSON array = set
-	AutoSync    *bool           // nil means auto_sync_enabled will not be updated
+	TaskDetails *TaskDetails        // nil means task details will not be updated
+	BatchItems  json.RawMessage     // nil = omit, json.RawMessage("null") = clear, JSON array = set
+	AutoSync    *bool               // nil means auto_sync_enabled will not be updated
+	Review      *ReviewUpdateParams // nil means the rubrics are not updated
+}
+
+// ReviewUpdateParams replaces a review batch's rubrics and notes setting together, as the API does: a notes setting
+// that is left out turns the notes box off, so Justification is always sent.
+type ReviewUpdateParams struct {
+	Rubrics       []ReviewRubric `json:"rubrics"`
+	Justification bool           `json:"justification"`
 }
 
 // UpdateAITaskBuilderBatchPayload represents the JSON payload for updating a Task Builder batch.
 type UpdateAITaskBuilderBatchPayload struct {
-	Name        string          `json:"name,omitempty"`
-	DatasetID   string          `json:"dataset_id,omitempty"`
-	TaskDetails *TaskDetails    `json:"task_details,omitempty"`
-	BatchItems  json.RawMessage `json:"batch_items,omitempty"`
-	AutoSync    *bool           `json:"auto_sync_enabled,omitempty"`
+	Name        string              `json:"name,omitempty"`
+	DatasetID   string              `json:"dataset_id,omitempty"`
+	TaskDetails *TaskDetails        `json:"task_details,omitempty"`
+	BatchItems  json.RawMessage     `json:"batch_items,omitempty"`
+	AutoSync    *bool               `json:"auto_sync_enabled,omitempty"`
+	Review      *ReviewUpdateParams `json:"review,omitempty"`
 }
 
 // TaskDetails represents the task configuration details for batch creation

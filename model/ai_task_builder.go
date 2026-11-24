@@ -19,6 +19,69 @@ type AITaskBuilderBatch struct {
 	SchemaVersion         int                          `json:"schema_version"`
 	TaskDetails           TaskDetails                  `json:"task_details"`
 	AutoSyncEnabled       bool                         `json:"auto_sync_enabled"`
+	// ReviewSourceBatchID is set on a review batch: the batch whose work it reviews.
+	ReviewSourceBatchID string `json:"review_source_batch_id,omitempty"`
+	// BatchItems is only read, to show a review batch's rubrics back.
+	BatchItems []BatchPageSummary `json:"batch_items,omitempty"`
+}
+
+// reviewNotesDescription is the text the API gives the optional notes box of a review batch. It is how a notes box is
+// told apart from any other free text item.
+const reviewNotesDescription = "<p>Add notes (optional)</p>"
+
+// BatchPageSummary is the part of a batch page the CLI reads: its items.
+type BatchPageSummary struct {
+	Rows []struct {
+		Columns []struct {
+			Items []BatchItemSummary `json:"items"`
+		} `json:"columns"`
+	} `json:"rows"`
+}
+
+// BatchItemSummary is the part of a batch item the CLI reads.
+type BatchItemSummary struct {
+	Type          string `json:"type"`
+	Description   string `json:"description,omitempty"`
+	ScoringScheme string `json:"scoring_scheme,omitempty"`
+}
+
+// ReviewRubric is one question a reviewer answers.
+type ReviewRubric struct {
+	Description   string
+	ScoringScheme string
+}
+
+// ReviewSummary is what a review batch's form stands for.
+type ReviewSummary struct {
+	SourceBatchID string
+	Rubrics       []ReviewRubric
+	// Notes is whether reviewers get an optional notes box.
+	Notes bool
+}
+
+// Review reads a review batch's rubrics back from its stored form, the way the API does: the stored items are the only
+// copy. It returns nil for a batch that is not a review batch.
+func (b AITaskBuilderBatch) Review() *ReviewSummary {
+	if b.ReviewSourceBatchID == "" {
+		return nil
+	}
+
+	review := &ReviewSummary{SourceBatchID: b.ReviewSourceBatchID}
+	for _, page := range b.BatchItems {
+		for _, row := range page.Rows {
+			for _, column := range row.Columns {
+				for _, item := range column.Items {
+					switch {
+					case item.Type == "rubric_score":
+						review.Rubrics = append(review.Rubrics, ReviewRubric{Description: item.Description, ScoringScheme: item.ScoringScheme})
+					case item.Type == "free_text" && item.Description == reviewNotesDescription:
+						review.Notes = true
+					}
+				}
+			}
+		}
+	}
+	return review
 }
 
 // AITaskBuilderBatchStatus represents the status of a Task Builder batch.

@@ -29,6 +29,6 @@ const (
 	ErrTaskStepsRequired              = "task steps is required"
 	ErrTasksPerGroupMinimum           = "tasks per group must be at least 1"
 	ErrWorkspaceIDRequired            = "workspace ID is required"
-	ErrAtLeastOneUpdateFieldRequired  = "at least one of --name, --dataset-id, task detail flags, batch-items flags, --auto-sync, or --no-auto-sync must be provided"
+	ErrAtLeastOneUpdateFieldRequired  = "at least one of --name, --dataset-id, task detail flags, batch-items flags, review flags, --auto-sync, or --no-auto-sync must be provided"
 	ErrAutoSyncFlagsMutuallyExclusive = "cannot use --auto-sync and --no-auto-sync together"
 )

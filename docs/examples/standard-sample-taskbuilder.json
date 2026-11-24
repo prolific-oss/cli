@@ -13,7 +13,7 @@
   "study_labels": [
     "ai_annotation"
   ],
-  "data_collection_method": "DC_TOOL",
+  "data_collection_method": "AI_TASK_BUILDER_BATCH",
   "data_collection_id": "${BATCH_ID}",
   "submissions_config": {
     "max_submissions_per_participant": -1

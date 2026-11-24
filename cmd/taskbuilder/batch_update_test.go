@@ -589,3 +589,117 @@ func TestNewBatchUpdateCommandBatchItemsValidationErrors(t *testing.T) {
 		})
 	}
 }
+
+func TestNewBatchUpdateCommandReplacesReviewRubrics(t *testing.T) {
+	rubrics := []client.ReviewRubric{
+		{Description: "Is the narration accurate?", ScoringScheme: "pass_fail_unsure"},
+		{Description: "How clear is it?", ScoringScheme: "scale_1_5"},
+	}
+
+	testCases := []struct {
+		name          string
+		args          []string
+		justification bool
+	}{
+		{name: "with the notes box", args: []string{"--review-notes"}, justification: true},
+		{name: "without it, which turns the box off", args: nil, justification: false},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			c := mock_client.NewMockAPI(ctrl)
+
+			c.EXPECT().UpdateAITaskBuilderBatch(client.UpdateBatchParams{
+				BatchID: updateBatchID,
+				Review:  &client.ReviewUpdateParams{Rubrics: rubrics, Justification: tc.justification},
+			}).Return(&client.UpdateAITaskBuilderBatchResponse{AITaskBuilderBatch: model.AITaskBuilderBatch{ID: updateBatchID}}, nil)
+
+			var b bytes.Buffer
+			cmd := taskbuilder.NewBatchUpdateCommand(c, bufio.NewWriter(&b))
+			cmd.SetArgs(append([]string{"--batch-id", updateBatchID, "--review-rubrics-json", reviewRubricsJSON}, tc.args...))
+
+			if err := cmd.Execute(); err != nil {
+				t.Fatalf("expected error to be nil; got %v", err)
+			}
+		})
+	}
+}
+
+func TestNewBatchUpdateCommandReviewRubricsFile(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	path := filepath.Join(t.TempDir(), "rubrics.json")
+	if err := os.WriteFile(path, []byte(reviewRubricsJSON), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	c.EXPECT().UpdateAITaskBuilderBatch(gomock.Any()).DoAndReturn(func(p client.UpdateBatchParams) (*client.UpdateAITaskBuilderBatchResponse, error) {
+		if p.Review == nil || len(p.Review.Rubrics) != 2 {
+			t.Fatalf("expected two rubrics; got %+v", p.Review)
+		}
+		return &client.UpdateAITaskBuilderBatchResponse{}, nil
+	})
+
+	var b bytes.Buffer
+	cmd := taskbuilder.NewBatchUpdateCommand(c, bufio.NewWriter(&b))
+	cmd.SetArgs([]string{"--batch-id", updateBatchID, "--review-rubrics-file", path})
+
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("expected error to be nil; got %v", err)
+	}
+}
+
+func TestNewBatchUpdateCommandReviewValidationErrors(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl) // no call is expected: each of these stops before the API
+
+	testCases := []struct {
+		name        string
+		args        []string
+		expectedErr string
+	}{
+		{
+			name:        "the notes box alone",
+			args:        []string{"--review-notes"},
+			expectedErr: "error: " + taskbuilder.ErrReviewNotesNeedRubrics,
+		},
+		{
+			name:        "rubrics with batch items",
+			args:        []string{"--review-rubrics-json", reviewRubricsJSON, "--batch-items-json", batchItemsJSON},
+			expectedErr: "error: " + taskbuilder.ErrReviewBatchItemsNotAllowed,
+		},
+		{
+			name:        "rubrics with clearing batch items",
+			args:        []string{"--review-rubrics-json", reviewRubricsJSON, "--clear-batch-items"},
+			expectedErr: "error: " + taskbuilder.ErrReviewBatchItemsNotAllowed,
+		},
+		{
+			name:        "both rubrics inputs",
+			args:        []string{"--review-rubrics-json", reviewRubricsJSON, "--review-rubrics-file", "r.json"},
+			expectedErr: "error: " + taskbuilder.ErrBothReviewRubricsInputsProvided,
+		},
+		{
+			name:        "empty rubrics",
+			args:        []string{"--review-rubrics-json", `[]`},
+			expectedErr: "error: " + taskbuilder.ErrReviewRubricsCount,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var b bytes.Buffer
+			cmd := taskbuilder.NewBatchUpdateCommand(c, bufio.NewWriter(&b))
+			cmd.SetArgs(append([]string{"--batch-id", updateBatchID}, tc.args...))
+
+			err := cmd.Execute()
+			if err == nil || err.Error() != tc.expectedErr {
+				t.Fatalf("expected error: %s; got %v", tc.expectedErr, err)
+			}
+		})
+	}
+}

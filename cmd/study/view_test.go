@@ -3,6 +3,7 @@ package study_test
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -297,5 +298,40 @@ View study in the application: %s/researcher/studies/11223344
 
 	if actual != expected {
 		t.Fatalf("expected \n'%s'\ngot\n'%s'", expected, actual)
+	}
+}
+
+func TestViewStudyRendersWhatCollectsTheData(t *testing.T) {
+	var taskBuilderStudy model.Study
+	err := json.Unmarshal([]byte(`{
+		"id": "11223344",
+		"name": "Review study",
+		"project": "proj-1",
+		"data_collection_method": "AI_TASK_BUILDER_BATCH",
+		"data_collection_id": "batch-1",
+		"data_collection_metadata": {"annotators_per_task": 2}
+	}`), &taskBuilderStudy)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	actual := stripansi.Strip(study.RenderStudy(taskBuilderStudy))
+
+	for _, line := range []string{
+		"Project:                   proj-1\n",
+		"Data collection method:    AI_TASK_BUILDER_BATCH\n",
+		"Data collection ID:        batch-1\n",
+		"Annotators per task:       2\n",
+	} {
+		if !strings.Contains(actual, line) {
+			t.Fatalf("expected output to contain %q; got\n%s", line, actual)
+		}
+	}
+
+	plain := stripansi.Strip(study.RenderStudy(model.Study{ID: "11223344", Name: "Plain study"}))
+	for _, label := range []string{"Project:", "Data collection", "Annotators per task:"} {
+		if strings.Contains(plain, label) {
+			t.Fatalf("expected a study with no data collection to show no %q; got\n%s", label, plain)
+		}
 	}
 }

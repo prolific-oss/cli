@@ -412,6 +412,74 @@ func TestCreateAITaskBuilderBatch(t *testing.T) {
 	}
 }
 
+// TestUpdateAITaskBuilderBatchSendsTheReviewRequest guards the request body: the rubrics and the notes setting are
+// replaced together, so `justification` is sent even when it is false (an omitted one turns the notes box off), and an
+// update that does not touch the rubrics sends no `review`.
+func TestUpdateAITaskBuilderBatchSendsTheReviewRequest(t *testing.T) {
+	send := func(t *testing.T, params UpdateBatchParams) map[string]any {
+		t.Helper()
+		var got map[string]any
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if err := json.NewDecoder(r.Body).Decode(&got); err != nil {
+				t.Fatalf("expected a JSON body: %v", err)
+			}
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"id":"batch-1"}`))
+		}))
+		defer server.Close()
+
+		c := Client{Client: server.Client(), BaseURL: server.URL, Token: "test-token"}
+		if _, err := c.UpdateAITaskBuilderBatch(params); err != nil {
+			t.Fatalf("expected no error, got: %v", err)
+		}
+		return got
+	}
+
+	t.Run("sends the rubrics and a notes setting of false", func(t *testing.T) {
+		body := send(t, UpdateBatchParams{BatchID: "batch-1", Review: &ReviewUpdateParams{
+			Rubrics: []ReviewRubric{{Description: "Accurate?", ScoringScheme: "pass_fail_unsure"}},
+		}})
+
+		review, _ := body["review"].(map[string]any)
+		if justification, ok := review["justification"]; !ok || justification != false {
+			t.Fatalf("expected justification false to be sent; got %v", review)
+		}
+		if rubrics, _ := review["rubrics"].([]any); len(rubrics) != 1 {
+			t.Fatalf("expected one rubric; got %v", review["rubrics"])
+		}
+	})
+
+	t.Run("an update that leaves the rubrics alone sends no review", func(t *testing.T) {
+		body := send(t, UpdateBatchParams{BatchID: "batch-1", Name: "New name"})
+
+		if _, ok := body["review"]; ok {
+			t.Fatalf("expected no review; got %v", body["review"])
+		}
+	})
+}
+
+// TestUpdateAITaskBuilderBatchShowsTheLockedRubricsMessage checks that a user who tries to change the rubrics after
+// reviewers have responded is told why, in the API's own words.
+func TestUpdateAITaskBuilderBatchShowsTheLockedRubricsMessage(t *testing.T) {
+	const message = "The rubrics of a review batch cannot be changed once reviewers have responded."
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusConflict)
+		_, _ = w.Write([]byte(`{"message":"` + message + `"}`))
+	}))
+	defer server.Close()
+
+	c := Client{Client: server.Client(), BaseURL: server.URL, Token: "test-token"}
+	_, err := c.UpdateAITaskBuilderBatch(UpdateBatchParams{BatchID: "batch-1", Review: &ReviewUpdateParams{
+		Rubrics: []ReviewRubric{{Description: "Accurate?", ScoringScheme: "pass_fail_unsure"}},
+	}})
+
+	if err == nil || !strings.Contains(err.Error(), message) {
+		t.Fatalf("expected the error to contain %q; got %v", message, err)
+	}
+}
+
 // TestCreateAITaskBuilderBatchSendsTheReviewRequest guards the request body: a review batch sends `review` and no
 // `dataset_id` (the API refuses one with the other), and a batch that is not a review sends no `review`.
 func TestCreateAITaskBuilderBatchSendsTheReviewRequest(t *testing.T) {

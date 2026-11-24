@@ -23,6 +23,7 @@ const (
 	ErrReviewRubricsMustBeArray        = `review rubrics must be a JSON array of {"description", "scoring_scheme"}`
 	ErrReviewRubricsCount              = "a review batch takes from 1 to 20 rubrics"
 	ErrReviewDatasetNotAllowed         = "a review batch creates its own dataset, so --dataset-id cannot be used with the review flags"
+	ErrReviewNotesNeedRubrics          = "--review-notes sets the notes box together with the rubrics: also give --review-rubrics-file or --review-rubrics-json"
 	ErrReviewBatchItemsNotAllowed      = "a review batch's form is built from its rubrics, so batch-items flags cannot be used with the review flags"
 )
 
@@ -95,4 +96,29 @@ func parseReviewRubrics(filePath, jsonStr string) ([]client.ReviewRubric, error)
 		}
 	}
 	return rubrics, nil
+}
+
+// isSet reports whether any review flag was given on an update.
+func (o ReviewUpdateOptions) isSet() bool {
+	return o.RubricsFile != "" || o.RubricsJSON != "" || o.Notes
+}
+
+// parseReviewUpdateInput builds the request that replaces a review batch's rubrics and notes setting, or returns nil
+// when no review flag was given. The API replaces the two together, so the notes setting cannot be given without
+// rubrics, and a review batch's form is built from its rubrics, so batch items cannot be changed with them.
+func parseReviewUpdateInput(o ReviewUpdateOptions, batchItemsChanged bool) (*client.ReviewUpdateParams, error) {
+	if !o.isSet() {
+		return nil, nil
+	}
+	if batchItemsChanged {
+		return nil, errors.New(ErrReviewBatchItemsNotAllowed)
+	}
+	if o.RubricsFile == "" && o.RubricsJSON == "" {
+		return nil, errors.New(ErrReviewNotesNeedRubrics)
+	}
+	rubrics, err := parseReviewRubrics(o.RubricsFile, o.RubricsJSON)
+	if err != nil {
+		return nil, err
+	}
+	return &client.ReviewUpdateParams{Rubrics: rubrics, Justification: o.Notes}, nil
 }
