@@ -119,7 +119,7 @@ func isUnadvertised(op operation) bool {
 var operations = []operation{
 	// Workspaces
 	{operationID: "workspaces_GetWorkspaces", call: func(c *client.Client) { c.GetWorkspaces(10, 0) }},
-	{operationID: "workspaces_CreateWorkspace", call: func(c *client.Client) { c.CreateWorkspace(model.Workspace{Title: "t"}) }},
+	{operationID: "workspaces_CreateWorkspace", call: func(c *client.Client) { c.CreateWorkspace(model.Workspace{Title: "t", Description: "d"}) }},
 	{operationID: "workspaces_GetWorkspace", skip: "OUTOFSCOPE: no CLI command for retrieving a single workspace by ID"},
 	{operationID: "workspaces_UpdateWorkspace", skip: "OUTOFSCOPE: no CLI command for updating a workspace"},
 	{operationID: "workspaces_GetWorkspaceBalance", call: func(c *client.Client) { c.GetWorkspaceBalance("ws-id") }},

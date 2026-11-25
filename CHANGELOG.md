@@ -13,6 +13,7 @@
 - Collection create and collection update accept `custom_html` through `html_file` or `html_content`.
 - `html_file` must be a relative path that stays inside the template folder, or inside the `--html-dir` folder when that flag is set. Absolute paths, `..` paths, symbolic links that lead out of the folder, and symbolic links with an absolute target are refused. Use `--html-dir` on collection create and update to read HTML from another folder.
 - Each `custom_html` block is limited to 300,000 bytes of UTF-8.
+- `workspace create` takes a required `-d/--description` flag. The API rejects a workspace without a description, so the command failed before.
 - On collection update, set `id` on a `custom_html` item to update the stored block. Without `id`, the API creates a new block and deletes the stored block.
 ### Task Builder
 
