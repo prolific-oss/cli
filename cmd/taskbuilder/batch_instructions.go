@@ -41,10 +41,10 @@ The instructions should be an array of instruction objects with the following ty
 - file_upload: Instructions for uploading files (e.g., images, documents)`,
 		Example: `
 Add instructions from a file:
-$ prolific taskbuilder batch instructions -b <batch_id> -f instructions.json
+$ prolific taskbuilder batch instructions -b <batch-id> -f instructions.json
 
 Add instructions with JSON string:
-$ prolific taskbuilder batch instructions -b <batch_id> -j '[{"type":"free_text","created_by":"Sean","description":"Please explain your choice."}]'
+$ prolific taskbuilder batch instructions -b <batch-id> -j '[{"type":"free_text","created_by":"Sean","description":"Please explain your choice."}]'
 
 For a comprehensive example file with all instruction types, see:
 https://github.com/prolific-oss/cli/blob/main/docs/examples/batch-instructions.json

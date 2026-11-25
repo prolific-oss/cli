@@ -4,9 +4,16 @@
 
 <!-- Add manual release notes here. They will be merged into the generated changelog at release time. -->
 
+- `taskbuilder batch create` can create a review batch with the `--review-*` flags: `--review-source-batch-id`, `--review-study-id`, `--review-sample-rate-bps` (1 to 10000, where 1000 is one submission in ten), `--review-rubrics-file` or `--review-rubrics-json`, and `--review-notes`. A review covers every study on the source batch unless `--review-study-id` limits it to one, which is worth doing when the batch has several. A review batch creates its own dataset and builds its form from the rubrics, so `--dataset-id` and the batch-items flags cannot be used with them. `--dataset-id` is still required for any other batch, but a missing one now gets the CLI's own message.
+- `taskbuilder batch view` shows a review batch's source batch, its rubrics and whether it has a notes box. The review link's round and status are not shown, because the API does not return them.
+- `taskbuilder batch update` replaces a review batch's rubrics with `--review-rubrics-file` or `--review-rubrics-json`, and sets the notes box with `--review-notes`. They are replaced together, so leaving `--review-notes` off turns the box off. The API refuses the change once reviewers have responded, and the CLI shows its message. See `docs/examples/review-rubrics.json`.
+- `study view` shows, for a study that collects data, its project, the data collection method and ID (the Task Builder batch behind it) and its annotators per task. Other studies are shown as before.
+- `study increase-places` can increase the places on a Task Builder study with `--annotators-per-task`. Their places are worked out from the batch, so `--places` on a published one now stops with a message that says so, instead of an API error. An unpublished Task Builder study is unchanged unless you give `--annotators-per-task`. The API refuses a decrease on a published study, and the CLI refuses one before sending.
+- The `standard-sample-taskbuilder` template uses `AI_TASK_BUILDER_BATCH`, the preferred value, instead of the deprecated `DC_TOOL`.
 - Collection create and collection update accept `custom_html` through `html_file` or `html_content`.
 - `html_file` must be a relative path that stays inside the template folder, or inside the `--html-dir` folder when that flag is set. Absolute paths, `..` paths, symbolic links that lead out of the folder, and symbolic links with an absolute target are refused. Use `--html-dir` on collection create and update to read HTML from another folder.
 - Each `custom_html` block is limited to 300,000 bytes of UTF-8.
+- `workspace create` takes a required `-d/--description` flag. The API rejects a workspace without a description, so the command failed before.
 - On collection update, set `id` on a `custom_html` item to update the stored block. Without `id`, the API creates a new block and deletes the stored block.
 ### Task Builder
 

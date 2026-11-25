@@ -20,10 +20,10 @@ The bonus payment ID is obtained from the output of 'bonus create'.
 Payment is processed asynchronously — your account balance will be
 updated within minutes.`,
 		Example: `  # Pay with confirmation prompt
-  prolific bonus pay <bonus_payment_id>
+  prolific bonus pay <bonus-payment-id>
 
   # Pay without confirmation (for scripting)
-  prolific bonus pay <bonus_payment_id> -n`,
+  prolific bonus pay <bonus-payment-id> -n`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			bonusID := args[0]

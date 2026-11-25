@@ -20,8 +20,8 @@ func TestNewResponseSummaryCommand(t *testing.T) {
 
 	cmd := survey.NewResponseSummaryCommand("summary", c, os.Stdout)
 
-	if cmd.Use != "summary <survey_id>" {
-		t.Fatalf("expected use: summary <survey_id>; got %s", cmd.Use)
+	if cmd.Use != "summary <survey-id>" {
+		t.Fatalf("expected use: summary <survey-id>; got %s", cmd.Use)
 	}
 
 	if cmd.Short != "View a summary of survey responses" {

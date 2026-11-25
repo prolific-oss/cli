@@ -27,7 +27,7 @@ This command allows you to retrieve the status of a specific Task Builder batch 
 the batch ID.`,
 		Example: `
 Get a Task Builder batch status:
-$ prolific taskbuilder batch check -b <batch_id>
+$ prolific taskbuilder batch check -b <batch-id>
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args

@@ -19,8 +19,8 @@ func TestNewResponseDeleteAllCommand(t *testing.T) {
 
 	cmd := survey.NewResponseDeleteAllCommand("delete-all", c, os.Stdout)
 
-	if cmd.Use != "delete-all <survey_id>" {
-		t.Fatalf("expected use: delete-all <survey_id>; got %s", cmd.Use)
+	if cmd.Use != "delete-all <survey-id>" {
+		t.Fatalf("expected use: delete-all <survey-id>; got %s", cmd.Use)
 	}
 
 	if cmd.Short != "Delete all responses for a survey" {

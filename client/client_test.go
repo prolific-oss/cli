@@ -412,6 +412,158 @@ func TestCreateAITaskBuilderBatch(t *testing.T) {
 	}
 }
 
+// TestUpdateAITaskBuilderBatchSendsTheReviewRequest guards the request body: the rubrics and the notes setting are
+// replaced together, so `justification` is sent even when it is false (an omitted one turns the notes box off), and an
+// update that does not touch the rubrics sends no `review`.
+func TestUpdateAITaskBuilderBatchSendsTheReviewRequest(t *testing.T) {
+	send := func(t *testing.T, params UpdateBatchParams) map[string]any {
+		t.Helper()
+		var got map[string]any
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if err := json.NewDecoder(r.Body).Decode(&got); err != nil {
+				t.Fatalf("expected a JSON body: %v", err)
+			}
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"id":"batch-1"}`))
+		}))
+		defer server.Close()
+
+		c := Client{Client: server.Client(), BaseURL: server.URL, Token: "test-token"}
+		if _, err := c.UpdateAITaskBuilderBatch(params); err != nil {
+			t.Fatalf("expected no error, got: %v", err)
+		}
+		return got
+	}
+
+	t.Run("sends the rubrics and a notes setting of false", func(t *testing.T) {
+		body := send(t, UpdateBatchParams{BatchID: "batch-1", Review: &ReviewUpdateParams{
+			Rubrics: []ReviewRubric{{Description: "Accurate?", ScoringScheme: "pass_fail_unsure"}},
+		}})
+
+		review, _ := body["review"].(map[string]any)
+		if justification, ok := review["justification"]; !ok || justification != false {
+			t.Fatalf("expected justification false to be sent; got %v", review)
+		}
+		if rubrics, _ := review["rubrics"].([]any); len(rubrics) != 1 {
+			t.Fatalf("expected one rubric; got %v", review["rubrics"])
+		}
+	})
+
+	t.Run("an update that leaves the rubrics alone sends no review", func(t *testing.T) {
+		body := send(t, UpdateBatchParams{BatchID: "batch-1", Name: "New name"})
+
+		if _, ok := body["review"]; ok {
+			t.Fatalf("expected no review; got %v", body["review"])
+		}
+	})
+}
+
+// TestUpdateAITaskBuilderBatchShowsTheLockedRubricsMessage checks that a user who tries to change the rubrics after
+// reviewers have responded is told why, in the API's own words.
+func TestUpdateAITaskBuilderBatchShowsTheLockedRubricsMessage(t *testing.T) {
+	const message = "The rubrics of a review batch cannot be changed once reviewers have responded."
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusConflict)
+		_, _ = w.Write([]byte(`{"message":"` + message + `"}`))
+	}))
+	defer server.Close()
+
+	c := Client{Client: server.Client(), BaseURL: server.URL, Token: "test-token"}
+	_, err := c.UpdateAITaskBuilderBatch(UpdateBatchParams{BatchID: "batch-1", Review: &ReviewUpdateParams{
+		Rubrics: []ReviewRubric{{Description: "Accurate?", ScoringScheme: "pass_fail_unsure"}},
+	}})
+
+	if err == nil || !strings.Contains(err.Error(), message) {
+		t.Fatalf("expected the error to contain %q; got %v", message, err)
+	}
+}
+
+// TestCreateAITaskBuilderBatchSendsTheReviewRequest guards the request body: a review batch sends `review` and no
+// `dataset_id` (the API refuses one with the other), and a batch that is not a review sends no `review`.
+func TestCreateAITaskBuilderBatchSendsTheReviewRequest(t *testing.T) {
+	send := func(t *testing.T, params CreateBatchParams) map[string]any {
+		t.Helper()
+		var got map[string]any
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if err := json.NewDecoder(r.Body).Decode(&got); err != nil {
+				t.Fatalf("expected a JSON body: %v", err)
+			}
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusCreated)
+			_, _ = w.Write([]byte(`{"id":"batch-1","review":{"round":1,"sample_rate_bps":1000,"review_dataset_id":"rd-1","backfill_requested":true}}`))
+		}))
+		defer server.Close()
+
+		c := Client{Client: server.Client(), BaseURL: server.URL, Token: "test-token"}
+		resp, err := c.CreateAITaskBuilderBatch(params)
+		if err != nil {
+			t.Fatalf("expected no error, got: %v", err)
+		}
+		if resp.Review == nil || resp.Review.ReviewDatasetID != "rd-1" || !resp.Review.BackfillRequested {
+			t.Fatalf("expected the review result to be read; got %+v", resp.Review)
+		}
+		return got
+	}
+	base := CreateBatchParams{Name: "batch", WorkspaceID: "ws-1", TaskName: "task", TaskIntroduction: "intro", TaskSteps: "steps"}
+
+	t.Run("a review batch sends review and no dataset_id", func(t *testing.T) {
+		params := base
+		params.Review = &ReviewParams{
+			SourceBatchID: "source-1",
+			SampleRateBps: 1000,
+			Rubrics:       []ReviewRubric{{Description: "Accurate?", ScoringScheme: "pass_fail_unsure"}},
+			Justification: true,
+		}
+		body := send(t, params)
+
+		if _, ok := body["dataset_id"]; ok {
+			t.Fatalf("expected no dataset_id; got %v", body["dataset_id"])
+		}
+		review, _ := body["review"].(map[string]any)
+		if review["source_batch_id"] != "source-1" || review["sample_rate_bps"] != float64(1000) || review["justification"] != true {
+			t.Fatalf("unexpected review body: %v", review)
+		}
+		// No study given, so the review covers every study on the batch and none is sent.
+		if _, ok := review["study_id"]; ok {
+			t.Fatalf("expected no study_id; got %v", review["study_id"])
+		}
+		rubrics, _ := review["rubrics"].([]any)
+		if len(rubrics) != 1 {
+			t.Fatalf("expected one rubric; got %v", review["rubrics"])
+		}
+	})
+
+	t.Run("a review limited to a study sends its id", func(t *testing.T) {
+		params := base
+		params.Review = &ReviewParams{
+			SourceBatchID: "source-1",
+			StudyID:       "6ac6ce260218ce7b7b0e05d3",
+			SampleRateBps: 1000,
+			Rubrics:       []ReviewRubric{{Description: "Accurate?", ScoringScheme: "pass_fail_unsure"}},
+		}
+		review, _ := send(t, params)["review"].(map[string]any)
+
+		if review["study_id"] != "6ac6ce260218ce7b7b0e05d3" {
+			t.Fatalf("expected the study id to be sent; got %v", review["study_id"])
+		}
+	})
+
+	t.Run("a batch that is not a review sends dataset_id and no review", func(t *testing.T) {
+		params := base
+		params.DatasetID = "ds-1"
+		body := send(t, params)
+
+		if body["dataset_id"] != "ds-1" {
+			t.Fatalf("expected dataset_id ds-1; got %v", body["dataset_id"])
+		}
+		if _, ok := body["review"]; ok {
+			t.Fatalf("expected no review; got %v", body["review"])
+		}
+	})
+}
+
 // TestGetParticipantGroupsSendsWorkspaceIDQueryParam guards the request shape
 // directly, since contract_test skips this operation (HARNESSGAP: kin-openapi
 // can't decode its oneOf-of-objects query param).

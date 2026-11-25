@@ -36,13 +36,13 @@ A campaign is a unique URL that can be shared with potential participants to sig
 up for a Prolific participant account.`,
 		Example: `
 List your campaigns
-$ prolific campaign list -w <workspace_id>
+$ prolific campaign list -w <workspace-id>
 
 Utilise the paging options to limit your campaigns, for example one campaign
-$ prolific campaign list -w <workspace_id> -l 1
+$ prolific campaign list -w <workspace-id> -l 1
 
 Offset records in the result set, for example by 2
-$ prolific campaign list -w <workspace_id> -l 1 -o 2
+$ prolific campaign list -w <workspace-id> -l 1 -o 2
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args

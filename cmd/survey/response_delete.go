@@ -18,7 +18,7 @@ func NewResponseDeleteCommand(commandName string, client client.API, w io.Writer
 	var opts ResponseDeleteOptions
 
 	cmd := &cobra.Command{
-		Use:   commandName + " <survey_id> <response_id>",
+		Use:   commandName + " <survey-id> <response-id>",
 		Args:  cobra.MinimumNArgs(2),
 		Short: "Delete a survey response",
 		Long: `Delete a survey response

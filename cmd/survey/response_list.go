@@ -28,7 +28,7 @@ func NewResponseListCommand(commandName string, c client.API, w io.Writer) *cobr
 	var opts ResponseListOptions
 
 	cmd := &cobra.Command{
-		Use:   commandName + " <survey_id>",
+		Use:   commandName + " <survey-id>",
 		Args:  cobra.MinimumNArgs(1),
 		Short: "List responses for a survey",
 		Long: `List responses for a survey

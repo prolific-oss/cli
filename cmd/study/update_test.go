@@ -38,7 +38,7 @@ func TestNewUpdateCommandRendersBasicUsage(t *testing.T) {
 
 	cmd := study.NewUpdateCommand(client, os.Stdout)
 
-	use := "update <study_id>"
+	use := "update <study-id>"
 	short := "Update a study using a JSON template"
 
 	if cmd.Use != use {

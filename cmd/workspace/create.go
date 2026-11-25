@@ -12,8 +12,9 @@ import (
 
 // CreateOptions are the options to be able to create a workspace.
 type CreateOptions struct {
-	Args  []string
-	Title string
+	Args        []string
+	Title       string
+	Description string
 }
 
 // NewCreateCommand creates a new command for creating workspaces.
@@ -31,7 +32,7 @@ projects to organise your studies.
 `,
 		Example: `
 To create a workspace
-$ prolific workspace create -t "Research into AI"
+$ prolific workspace create -t "Research into AI" -d "Studies for the AI research team"
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args
@@ -47,6 +48,7 @@ $ prolific workspace create -t "Research into AI"
 
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.Title, "title", "t", "", "The title of the workspace.")
+	flags.StringVarP(&opts.Description, "description", "d", "", "The description of the workspace.")
 
 	return cmd
 }
@@ -57,8 +59,13 @@ func createWorkspace(client client.API, opts CreateOptions, w io.Writer) error {
 		return errors.New("title is required")
 	}
 
+	if opts.Description == "" {
+		return errors.New("description is required")
+	}
+
 	workspace := model.Workspace{
-		Title: opts.Title,
+		Title:       opts.Title,
+		Description: opts.Description,
 	}
 
 	record, err := client.CreateWorkspace(workspace)

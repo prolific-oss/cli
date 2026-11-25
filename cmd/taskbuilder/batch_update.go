@@ -27,6 +27,14 @@ type BatchUpdateOptions struct {
 	ClearBatchItems         bool
 	EnableAutoSync          bool
 	DisableAutoSync         bool
+	Review                  ReviewUpdateOptions
+}
+
+// ReviewUpdateOptions are the flags that replace a review batch's rubrics and notes setting.
+type ReviewUpdateOptions struct {
+	RubricsFile string
+	RubricsJSON string
+	Notes       bool
 }
 
 func NewBatchUpdateCommand(client client.API, w io.Writer) *cobra.Command {
@@ -51,7 +59,14 @@ set it to "body") for the default repeating behaviour. intro/outro pages may onl
 contain rich_text/image content blocks, not instructions or dataset_field refs. See
 docs/examples/batch-items-with-intro-outro.json for an example.
 
---auto-sync enables automatic sync; --no-auto-sync disables it. They are mutually exclusive.`,
+--auto-sync enables automatic sync; --no-auto-sync disables it. They are mutually exclusive.
+
+On a review batch, --review-rubrics-file or --review-rubrics-json replaces the rubrics
+(each is {"description": "...", "scoring_scheme": "scale_1_5" | "pass_fail_unsure"}), and
+--review-notes gives reviewers an optional notes box. The rubrics and the notes setting
+are replaced together, so leave --review-notes off to turn the notes box off. They cannot
+be changed once reviewers have responded, and cannot be combined with batch-items flags.
+See docs/examples/review-rubrics.json for an example.`,
 		Example: `
 Update a batch name:
 $ prolific taskbuilder batch update -b 497f6eca-6276-4993-bfeb-53cbbbba6f08 -n "Updated Batch Name"
@@ -73,6 +88,9 @@ $ prolific taskbuilder batch update -b 497f6eca-6276-4993-bfeb-53cbbbba6f08 -j '
 
 Clear batch_items:
 $ prolific taskbuilder batch update -b 497f6eca-6276-4993-bfeb-53cbbbba6f08 --clear-batch-items
+
+Replace a review batch's rubrics, keeping the notes box:
+$ prolific taskbuilder batch update -b 497f6eca-6276-4993-bfeb-53cbbbba6f08 --review-rubrics-file docs/examples/review-rubrics.json --review-notes
 
 Enable auto-sync:
 $ prolific taskbuilder batch update -b 497f6eca-6276-4993-bfeb-53cbbbba6f08 --auto-sync
@@ -108,6 +126,10 @@ $ prolific taskbuilder batch update -b 497f6eca-6276-4993-bfeb-53cbbbba6f08 --no
 	flags.BoolVar(&opts.EnableAutoSync, "auto-sync", false, "Enable automatic synchronization of new dataset datapoints into the batch.")
 	flags.BoolVar(&opts.DisableAutoSync, "no-auto-sync", false, "Disable automatic synchronization of new dataset datapoints into the batch.")
 
+	flags.StringVar(&opts.Review.RubricsFile, "review-rubrics-file", "", "Review: path to a JSON file of rubrics, [{\"description\", \"scoring_scheme\"}]. Replaces the rubrics.")
+	flags.StringVar(&opts.Review.RubricsJSON, "review-rubrics-json", "", "Review: inline JSON of rubrics, [{\"description\", \"scoring_scheme\"}]. Replaces the rubrics.")
+	flags.BoolVar(&opts.Review.Notes, "review-notes", false, "Review: give reviewers an optional notes box. Replaced together with the rubrics, so leaving it off turns the box off.")
+
 	_ = cmd.MarkFlagRequired("batch-id")
 
 	return cmd
@@ -128,8 +150,13 @@ func updateAITaskBuilderBatch(c client.API, opts BatchUpdateOptions, w io.Writer
 		return errors.New(ErrAutoSyncFlagsMutuallyExclusive)
 	}
 
-	if opts.Name == "" && opts.DatasetID == "" && !anyTaskDetailChanged && !anyBatchItemsChanged && !anyAutoSyncChanged {
+	if opts.Name == "" && opts.DatasetID == "" && !anyTaskDetailChanged && !anyBatchItemsChanged && !anyAutoSyncChanged && !opts.Review.isSet() {
 		return errors.New(ErrAtLeastOneUpdateFieldRequired)
+	}
+
+	review, err := parseReviewUpdateInput(opts.Review, anyBatchItemsChanged)
+	if err != nil {
+		return err
 	}
 
 	var batchItems json.RawMessage
@@ -140,7 +167,6 @@ func updateAITaskBuilderBatch(c client.API, opts BatchUpdateOptions, w io.Writer
 		fmt.Fprintln(os.Stderr, "Warning: clearing batch_items will delete all associated instructions and content blocks.")
 		batchItems = json.RawMessage("null")
 	} else if anyBatchItemsChanged {
-		var err error
 		batchItems, err = parseBatchItemsInput(opts.BatchItemsFile, opts.BatchItemsJSON)
 		if err != nil {
 			return err
@@ -152,6 +178,7 @@ func updateAITaskBuilderBatch(c client.API, opts BatchUpdateOptions, w io.Writer
 		Name:       opts.Name,
 		DatasetID:  opts.DatasetID,
 		BatchItems: batchItems,
+		Review:     review,
 	}
 
 	if anyAutoSyncChanged {

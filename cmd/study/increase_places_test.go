@@ -245,3 +245,163 @@ View study in the application: %s/researcher/studies/11223344
 		t.Fatalf("expected \n'%s'\ngot\n'%s'", expected, actual)
 	}
 }
+
+// A Task Builder study's places are worked out by the API from its batch and the annotators per task. The API refuses
+// total_available_places once the study is published, so a published one goes by annotators_per_task. None of the
+// refusals below may reach the API.
+func TestNewIncreasePlacesCommandOnAPublishedTaskBuilderStudy(t *testing.T) {
+	const studyID = "11223344"
+	published := model.Study{
+		ID:                     studyID,
+		TotalAvailablePlaces:   20,
+		PublishedAt:            "2026-01-01T00:00:00.000Z",
+		DataCollectionMethod:   "AI_TASK_BUILDER_BATCH",
+		DataCollectionID:       "batch-1",
+		DataCollectionMetadata: map[string]any{"annotators_per_task": float64(2), "other": "kept by the API"},
+	}
+
+	testCases := []struct {
+		name        string
+		study       model.Study
+		flags       map[string]string
+		expectedErr string
+	}{
+		{
+			name:        "places are not set directly",
+			study:       published,
+			flags:       map[string]string{"places": "30"},
+			expectedErr: "the places of a published Task Builder study are worked out from its batch, so use --annotators-per-task to increase them, not --places",
+		},
+		{
+			name:        "nothing to change",
+			study:       published,
+			flags:       map[string]string{},
+			expectedErr: "a Task Builder study's places are set with --annotators-per-task, a number of 1 or more",
+		},
+		{
+			name:        "annotators cannot decrease",
+			study:       published,
+			flags:       map[string]string{"annotators-per-task": "1"},
+			expectedErr: "study currently has 2 annotators per task, and you cannot decrease it to 1",
+		},
+		{
+			name:        "the flag is only for a Task Builder study",
+			study:       model.Study{ID: studyID, TotalAvailablePlaces: 10},
+			flags:       map[string]string{"annotators-per-task": "3"},
+			expectedErr: "--annotators-per-task only applies to a Task Builder study; use --places for this one",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			c := mock_client.NewMockAPI(ctrl)
+			c.EXPECT().GetStudy(studyID).Return(&tc.study, nil)
+
+			var b bytes.Buffer
+			cmd := study.NewIncreasePlacesCommand(c, bufio.NewWriter(&b))
+			for name, value := range tc.flags {
+				_ = cmd.Flags().Set(name, value)
+			}
+
+			err := cmd.RunE(cmd, []string{studyID})
+			if err == nil || err.Error() != tc.expectedErr {
+				t.Fatalf("expected %q; got %v", tc.expectedErr, err)
+			}
+		})
+	}
+
+	t.Run("raises the annotators per task and sends nothing else", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		c := mock_client.NewMockAPI(ctrl)
+
+		c.EXPECT().GetStudy(studyID).Return(&published, nil)
+		c.EXPECT().
+			UpdateStudy(studyID, model.UpdateStudy{DataCollectionMetadata: map[string]any{"annotators_per_task": 3}}).
+			Return(&model.Study{ID: studyID, TotalAvailablePlaces: 30, DataCollectionMethod: "AI_TASK_BUILDER_BATCH", DataCollectionID: "batch-1", DataCollectionMetadata: map[string]any{"annotators_per_task": float64(3)}}, nil)
+
+		var b bytes.Buffer
+		writer := bufio.NewWriter(&b)
+		cmd := study.NewIncreasePlacesCommand(c, writer)
+		_ = cmd.Flags().Set("annotators-per-task", "3")
+
+		if err := cmd.RunE(cmd, []string{studyID}); err != nil {
+			t.Fatalf("expected error to be nil; got %v", err)
+		}
+		writer.Flush()
+
+		if !strings.Contains(stripansi.Strip(b.String()), "Available places:          30\n") ||
+			!strings.Contains(stripansi.Strip(b.String()), "Annotators per task:       3\n") {
+			t.Fatalf("expected the updated study to be shown; got\n%s", b.String())
+		}
+	})
+}
+
+// An unpublished Task Builder study is not covered by the API's refusal, so what worked before still does: --places goes
+// through as it always has. Only --annotators-per-task takes the new path.
+func TestNewIncreasePlacesCommandOnAnUnpublishedTaskBuilderStudy(t *testing.T) {
+	const studyID = "11223344"
+	unpublished := model.Study{
+		ID:                     studyID,
+		TotalAvailablePlaces:   20,
+		DataCollectionMethod:   "AI_TASK_BUILDER_BATCH",
+		DataCollectionID:       "batch-1",
+		DataCollectionMetadata: map[string]any{"annotators_per_task": float64(2)},
+	}
+
+	t.Run("--places is sent as before", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		c := mock_client.NewMockAPI(ctrl)
+
+		c.EXPECT().GetStudy(studyID).Return(&unpublished, nil)
+		c.EXPECT().UpdateStudy(studyID, model.UpdateStudy{TotalAvailablePlaces: 30}).Return(&model.Study{ID: studyID, TotalAvailablePlaces: 30}, nil)
+
+		var b bytes.Buffer
+		cmd := study.NewIncreasePlacesCommand(c, bufio.NewWriter(&b))
+		_ = cmd.Flags().Set("places", "30")
+
+		if err := cmd.RunE(cmd, []string{studyID}); err != nil {
+			t.Fatalf("expected error to be nil; got %v", err)
+		}
+	})
+
+	t.Run("--annotators-per-task takes the new path", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		c := mock_client.NewMockAPI(ctrl)
+
+		c.EXPECT().GetStudy(studyID).Return(&unpublished, nil)
+		c.EXPECT().
+			UpdateStudy(studyID, model.UpdateStudy{DataCollectionMetadata: map[string]any{"annotators_per_task": 3}}).
+			Return(&model.Study{ID: studyID, TotalAvailablePlaces: 30}, nil)
+
+		var b bytes.Buffer
+		cmd := study.NewIncreasePlacesCommand(c, bufio.NewWriter(&b))
+		_ = cmd.Flags().Set("annotators-per-task", "3")
+
+		if err := cmd.RunE(cmd, []string{studyID}); err != nil {
+			t.Fatalf("expected error to be nil; got %v", err)
+		}
+	})
+
+	t.Run("both flags together are refused", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		c := mock_client.NewMockAPI(ctrl)
+
+		c.EXPECT().GetStudy(studyID).Return(&unpublished, nil)
+
+		var b bytes.Buffer
+		cmd := study.NewIncreasePlacesCommand(c, bufio.NewWriter(&b))
+		_ = cmd.Flags().Set("places", "30")
+		_ = cmd.Flags().Set("annotators-per-task", "3")
+
+		err := cmd.RunE(cmd, []string{studyID})
+		if err == nil || err.Error() != "use either --places or --annotators-per-task, not both" {
+			t.Fatalf("expected the either-or error; got %v", err)
+		}
+	})
+}

@@ -29,7 +29,7 @@ each participant group should complete. The batch must already be created and ha
 instructions added before setup.`,
 		Example: `
 Setup a batch:
-$ prolific taskbuilder batch setup -b <batch_id> -d <dataset_id> --tasks-per-group 3
+$ prolific taskbuilder batch setup -b <batch-id> -d <dataset-id> --tasks-per-group 3
 		`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts.Args = args

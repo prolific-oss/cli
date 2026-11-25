@@ -22,8 +22,8 @@ func TestNewResponseListCommand(t *testing.T) {
 
 	cmd := survey.NewResponseListCommand("list", c, os.Stdout)
 
-	if cmd.Use != "list <survey_id>" {
-		t.Fatalf("expected use: list <survey_id>; got %s", cmd.Use)
+	if cmd.Use != "list <survey-id>" {
+		t.Fatalf("expected use: list <survey-id>; got %s", cmd.Use)
 	}
 
 	if cmd.Short != "List responses for a survey" {

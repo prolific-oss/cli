@@ -19,7 +19,7 @@ func NewResponseViewCommand(commandName string, client client.API, w io.Writer) 
 	var opts ResponseViewOptions
 
 	cmd := &cobra.Command{
-		Use:   commandName + " <survey_id> <response_id>",
+		Use:   commandName + " <survey-id> <response-id>",
 		Args:  cobra.MinimumNArgs(2),
 		Short: "View a survey response",
 		Long: `View a survey response
