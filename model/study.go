@@ -114,6 +114,13 @@ type Study struct {
 	IsUnderpaying          any               `json:"is_underpaying"`
 	SubmissionsConfig      SubmissionsConfig `json:"submissions_config"`
 	CredentialPoolID       string            `json:"credential_pool_id"`
+	// Project is the ID of the project the study is in. Only a single study read has it.
+	Project string `json:"project,omitempty"`
+	// DataCollectionMethod, DataCollectionID and DataCollectionMetadata say what collects the data for a study, such as
+	// a Task Builder batch and its ID. Only a single study read has them, not a list.
+	DataCollectionMethod   string         `json:"data_collection_method,omitempty"`
+	DataCollectionID       string         `json:"data_collection_id,omitempty"`
+	DataCollectionMetadata map[string]any `json:"data_collection_metadata,omitempty"`
 }
 
 // CreateStudy is responsible for capturing what fields we need to send
@@ -145,7 +152,7 @@ type CreateStudy struct {
 	StudyLabels []string `json:"study_labels,omitempty" mapstructure:"study_labels"`
 	// Access details collection ID: ID of the collection to attach to the study (for Taskflow studies)
 	AccessDetailsCollectionID string `json:"access_details_collection_id,omitempty" mapstructure:"access_details_collection_id"`
-	// Data collection method: "AI_TASK_BUILDER", "DC_TOOL", or "HUMAN_SIGNAL"
+	// Data collection method: "AI_TASK_BUILDER_BATCH" (preferred), "AI_TASK_BUILDER", "DC_TOOL", or "HUMAN_SIGNAL"
 	DataCollectionMethod string `json:"data_collection_method,omitempty" mapstructure:"data_collection_method"`
 	// Data collection ID: Project/collection/batch ID for data collection
 	DataCollectionID string `json:"data_collection_id,omitempty" mapstructure:"data_collection_id"`
@@ -192,12 +199,43 @@ type CompletionCode struct {
 type UpdateStudy struct {
 	TotalAvailablePlaces int    `json:"total_available_places,omitempty"`
 	CredentialPoolID     string `json:"credential_pool_id,omitempty"`
+	// DataCollectionMetadata is merged into the study's own by the API, so only the keys given change.
+	DataCollectionMetadata map[string]any `json:"data_collection_metadata,omitempty"`
 }
 
 // SubmissionsConfig represents configuration around submission gathering
 type SubmissionsConfig struct {
 	MaxSubmissionsPerParticipant int `json:"max_submissions_per_participant"`
 	MaxConcurrentSubmissions     int `json:"max_concurrent_submissions"`
+}
+
+// IsTaskBuilderBatch reports whether the study collects data with a Task Builder batch. The API works out these
+// studies' places itself, from the batch's task groups and the annotators per task. DC_TOOL and AI_TASK_BUILDER are
+// the older names for the same thing.
+func (s Study) IsTaskBuilderBatch() bool {
+	switch s.DataCollectionMethod {
+	case "DC_TOOL", "AI_TASK_BUILDER", "AI_TASK_BUILDER_BATCH":
+		return true
+	}
+	return false
+}
+
+// IsPublished reports whether the study has been published. The API gives published_at as a date, or null until the
+// study goes out, so a scheduled study has not been published.
+func (s Study) IsPublished() bool {
+	published, ok := s.PublishedAt.(string)
+	return ok && published != ""
+}
+
+// AnnotatorsPerTask is how many participants do each task of a Task Builder study, or 0 when it is not set.
+func (s Study) AnnotatorsPerTask() int {
+	switch n := s.DataCollectionMetadata["annotators_per_task"].(type) {
+	case float64:
+		return int(n)
+	case int:
+		return n
+	}
+	return 0
 }
 
 // FilterValue will help the bubbletea views run

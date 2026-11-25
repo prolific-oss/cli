@@ -81,6 +81,18 @@ func RenderStudy(study model.Study) string {
 	if study.CredentialPoolID != "" {
 		content += fmt.Sprintf("Credential Pool ID:        %s\n", study.CredentialPoolID)
 	}
+	if study.DataCollectionMethod != "" {
+		if study.Project != "" {
+			content += fmt.Sprintf("Project:                   %s\n", study.Project)
+		}
+		content += fmt.Sprintf("Data collection method:    %s\n", study.DataCollectionMethod)
+		if study.DataCollectionID != "" {
+			content += fmt.Sprintf("Data collection ID:        %s\n", study.DataCollectionID)
+		}
+		if annotators := study.AnnotatorsPerTask(); annotators > 0 {
+			content += fmt.Sprintf("Annotators per task:       %d\n", annotators)
+		}
+	}
 
 	content += ui.RenderSectionMarker()
 
