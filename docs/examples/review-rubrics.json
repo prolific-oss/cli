@@ -1,0 +1,10 @@
+[
+  {
+    "description": "Does the narration describe what happens in the video?",
+    "scoring_scheme": "pass_fail_unsure"
+  },
+  {
+    "description": "How clear is the narration?",
+    "scoring_scheme": "scale_1_5"
+  }
+]

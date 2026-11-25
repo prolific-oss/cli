@@ -78,6 +78,20 @@ func renderAITaskBuilderBatch(c client.API, opts BatchGetOptions, w io.Writer) e
 		}
 	}
 
+	if review := batch.Review(); review != nil {
+		fmt.Fprintf(w, "\nReview:\n")
+		fmt.Fprintf(w, "  Source Batch ID: %s\n", review.SourceBatchID)
+		if review.Unreadable {
+			fmt.Fprintf(w, "  Rubrics: could not be read from the batch's form\n")
+		} else {
+			fmt.Fprintf(w, "  Notes Box: %t\n", review.Notes)
+			fmt.Fprintf(w, "  Rubrics: %d\n", len(review.Rubrics))
+			for i, rubric := range review.Rubrics {
+				fmt.Fprintf(w, "    %d. %s (%s)\n", i+1, rubric.Description, rubric.ScoringScheme)
+			}
+		}
+	}
+
 	if batch.TaskDetails.TaskName != "" {
 		fmt.Fprintf(w, "\nTask Details:\n")
 		fmt.Fprintf(w, "  Name: %s\n", batch.TaskDetails.TaskName)

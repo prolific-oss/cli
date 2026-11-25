@@ -1,6 +1,7 @@
 package model
 
 import (
+	"encoding/json"
 	"time"
 )
 
@@ -19,6 +20,81 @@ type AITaskBuilderBatch struct {
 	SchemaVersion         int                          `json:"schema_version"`
 	TaskDetails           TaskDetails                  `json:"task_details"`
 	AutoSyncEnabled       bool                         `json:"auto_sync_enabled"`
+	// ReviewSourceBatchID is set on a review batch: the batch whose work it reviews.
+	ReviewSourceBatchID string `json:"review_source_batch_id,omitempty"`
+	// BatchItems is kept as it came and only read for a review batch, to show its rubrics back. Decoding it here would
+	// make a batch of any shape fail to load for a view that never looks at it.
+	BatchItems json.RawMessage `json:"batch_items,omitempty"`
+}
+
+// reviewNotesDescription is the text the API gives the optional notes box of a review batch. It is how a notes box is
+// told apart from any other free text item.
+const reviewNotesDescription = "<p>Add notes (optional)</p>"
+
+// batchPageSummary is the part of a batch page the CLI reads: its items.
+type batchPageSummary struct {
+	Rows []struct {
+		Columns []struct {
+			Items []batchItemSummary `json:"items"`
+		} `json:"columns"`
+	} `json:"rows"`
+}
+
+// batchItemSummary is the part of a batch item the CLI reads.
+type batchItemSummary struct {
+	Type          string `json:"type"`
+	Description   string `json:"description,omitempty"`
+	ScoringScheme string `json:"scoring_scheme,omitempty"`
+}
+
+// ReviewRubric is one question a reviewer answers.
+type ReviewRubric struct {
+	Description   string
+	ScoringScheme string
+}
+
+// ReviewSummary is what a review batch's form stands for.
+type ReviewSummary struct {
+	SourceBatchID string
+	Rubrics       []ReviewRubric
+	// Notes is whether reviewers get an optional notes box.
+	Notes bool
+	// Unreadable is set when the stored form could not be read, so the rubrics and notes box are not known.
+	Unreadable bool
+}
+
+// Review reads a review batch's rubrics back from its stored form, the way the API does: the stored items are the only
+// copy. It returns nil for a batch that is not a review batch.
+func (b AITaskBuilderBatch) Review() *ReviewSummary {
+	if b.ReviewSourceBatchID == "" {
+		return nil
+	}
+
+	review := &ReviewSummary{SourceBatchID: b.ReviewSourceBatchID}
+
+	var pages []batchPageSummary
+	if len(b.BatchItems) > 0 {
+		if err := json.Unmarshal(b.BatchItems, &pages); err != nil {
+			review.Unreadable = true
+			return review
+		}
+	}
+
+	for _, page := range pages {
+		for _, row := range page.Rows {
+			for _, column := range row.Columns {
+				for _, item := range column.Items {
+					switch {
+					case item.Type == "rubric_score":
+						review.Rubrics = append(review.Rubrics, ReviewRubric{Description: item.Description, ScoringScheme: item.ScoringScheme})
+					case item.Type == "free_text" && item.Description == reviewNotesDescription:
+						review.Notes = true
+					}
+				}
+			}
+		}
+	}
+	return review
 }
 
 // AITaskBuilderBatchStatus represents the status of a Task Builder batch.

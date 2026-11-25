@@ -69,7 +69,12 @@ responses. Combining them applies all filters together (AND): --study-id
 restricts the export to a specific Study, while --from/--to restrict it to
 responses whose created_at falls within an ISO 8601 datetime range (--from
 is inclusive, --to is exclusive). Omit all three for a full, unfiltered
-export.`,
+export.
+
+For a review batch the export holds the reviewers' verdicts. Each task names
+the work it is a verdict on in review_source, and the README in the archive
+explains how to join it to the source batch's export. --study-id is the
+Study the reviewers answered under, not the source Study.`,
 		Example: `
 Export a batch to the default filename (<batch-id>-export-<timestamp>.zip):
 
