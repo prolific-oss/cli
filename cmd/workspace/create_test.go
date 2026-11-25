@@ -59,6 +59,53 @@ func TestCreateCommandErrorsIfNoTitle(t *testing.T) {
 	}
 }
 
+func TestCreateCommandErrorsIfNoDescription(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	c.
+		EXPECT().
+		CreateWorkspace(gomock.Any()).
+		MaxTimes(0)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := workspace.NewCreateCommand("create", c, writer)
+	_ = cmd.Flags().Set("title", "Titan")
+	err := cmd.RunE(cmd, nil)
+
+	expected := "error: description is required"
+
+	if err == nil || err.Error() != expected {
+		t.Fatalf("expected\n'%s'\ngot\n'%v'\n", expected, err)
+	}
+}
+
+func TestCreateCommandSendsTitleAndDescription(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	c := mock_client.NewMockAPI(ctrl)
+
+	c.
+		EXPECT().
+		CreateWorkspace(model.Workspace{Title: "Titan", Description: "A workspace for testing"}).
+		Return(&client.CreateWorkspacesResponse{}, nil).
+		Times(1)
+
+	var b bytes.Buffer
+	writer := bufio.NewWriter(&b)
+
+	cmd := workspace.NewCreateCommand("create", c, writer)
+	_ = cmd.Flags().Set("title", "Titan")
+	_ = cmd.Flags().Set("description", "A workspace for testing")
+
+	if err := cmd.RunE(cmd, nil); err != nil {
+		t.Fatalf("was not expected error, got %v", err)
+	}
+}
+
 func TestCreateCommandCreatesWorkspace(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -83,6 +130,7 @@ func TestCreateCommandCreatesWorkspace(t *testing.T) {
 
 	cmd := workspace.NewCreateCommand("create", c, writer)
 	_ = cmd.Flags().Set("title", model.Title)
+	_ = cmd.Flags().Set("description", "A workspace for testing")
 	err := cmd.RunE(cmd, nil)
 	if err != nil {
 		t.Fatalf("was not expected error, got %v", err)
@@ -122,6 +170,7 @@ func TestCreateCommandHandlesFailureToCreateWorkspace(t *testing.T) {
 
 	cmd := workspace.NewCreateCommand("create", c, writer)
 	_ = cmd.Flags().Set("title", model.Title)
+	_ = cmd.Flags().Set("description", "A workspace for testing")
 	err := cmd.RunE(cmd, nil)
 
 	expected := "error: unable to create workspace"
