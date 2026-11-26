@@ -15,6 +15,7 @@ type OutputOptions struct {
 	Json  bool
 	Csv   bool
 	Table bool
+	Raw   bool
 }
 
 // AddOutputFlags registers --json / -j, --table / -t, --csv / -c on the given command.
@@ -28,6 +29,13 @@ func AddOutputFlags(cmd *cobra.Command, opts *OutputOptions) {
 	_ = cmd.Flags().MarkHidden("non-interactive")
 }
 
+// AddRawFlag registers --raw on a command that can print the API response
+// exactly as returned. It is separate from AddOutputFlags so the flag only
+// appears on commands that support it.
+func AddRawFlag(cmd *cobra.Command, opts *OutputOptions) {
+	cmd.Flags().BoolVar(&opts.Raw, "raw", false, "Output the full API response as JSON.")
+}
+
 // AddFieldsFlag registers --fields / -f. It carries no default: the default
 // depends on the format, so ui.FieldSet.Resolve supplies it.
 func AddFieldsFlag(cmd *cobra.Command, fields *string) {
@@ -35,9 +43,11 @@ func AddFieldsFlag(cmd *cobra.Command, fields *string) {
 }
 
 // ResolveFormat returns the resolved format based on the flags set.
-// Priority: json > csv > table. Returns "" to indicate auto (TUI if TTY, else table).
+// Priority: raw > json > csv > table. Returns "" to indicate auto (TUI if TTY, else table).
 func ResolveFormat(opts OutputOptions) string {
 	switch {
+	case opts.Raw:
+		return ui.FormatRaw
 	case opts.Json:
 		return ui.FormatJSON
 	case opts.Csv:

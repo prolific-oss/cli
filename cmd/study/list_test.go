@@ -215,19 +215,13 @@ func TestListRawRejectsConflictingFlagsBeforeRequest(t *testing.T) {
 	}{
 		{name: "csv", args: []string{"--csv"}, wantErr: "--csv"},
 		{name: "table", args: []string{"--table"}, wantErr: "--table"},
-		{name: "non-interactive", args: []string{"--non-interactive"}, wantErr: "--non-interactive"},
-		{name: "non-interactive shorthand", args: []string{"-n"}, wantErr: "--non-interactive"},
-		{name: "disabled table before alias", args: []string{"--table=false", "--non-interactive"}, wantErr: "--non-interactive"},
-		{name: "disabled table after alias", args: []string{"--non-interactive", "--table=false"}, wantErr: "--non-interactive"},
+		{name: "short table", args: []string{"-t"}, wantErr: "--table"},
 		{name: "disabled alias before table", args: []string{"--non-interactive=false", "--table"}, wantErr: "--table"},
 		{name: "disabled alias after table", args: []string{"--table", "--non-interactive=false"}, wantErr: "--table"},
-		{name: "disabled short table before alias", args: []string{"-t=false", "-n"}, wantErr: "--non-interactive"},
-		{name: "disabled short table after alias", args: []string{"-n", "-t=false"}, wantErr: "--non-interactive"},
 		{name: "disabled short alias before table", args: []string{"-n=false", "-t"}, wantErr: "--table"},
 		{name: "disabled short alias after table", args: []string{"-t", "-n=false"}, wantErr: "--table"},
-		{name: "repeated table", args: []string{"--table", "-n", "--table=false"}, wantErr: "--non-interactive"},
 		{name: "repeated alias", args: []string{"--non-interactive", "-t", "--non-interactive=false"}, wantErr: "--table"},
-		{name: "both aliases enabled", args: []string{"-nt"}, wantErr: "--table, --non-interactive"},
+		{name: "both aliases enabled", args: []string{"-nt"}, wantErr: "--table"},
 		{name: "fields", args: []string{"--fields", "ID"}, wantErr: "--fields"},
 		{name: "empty fields", args: []string{"--fields="}, wantErr: "--fields"},
 		{name: "underpaying", args: []string{"--underpaying"}, wantErr: "--underpaying"},
@@ -250,11 +244,19 @@ func TestListRawRejectsConflictingFlagsBeforeRequest(t *testing.T) {
 	}
 }
 
-func TestListRawAllowsDisabledBoolFlags(t *testing.T) {
+func TestListRawAllowsNonInteractiveAndDisabledBoolFlags(t *testing.T) {
 	tests := []struct {
 		name string
 		args []string
 	}{
+		// Raw output is already non-interactive, so -n is accepted.
+		{name: "non-interactive", args: []string{"--non-interactive"}},
+		{name: "non-interactive shorthand", args: []string{"-n"}},
+		{name: "disabled table before alias", args: []string{"--table=false", "--non-interactive"}},
+		{name: "disabled table after alias", args: []string{"--non-interactive", "--table=false"}},
+		{name: "disabled short table before alias", args: []string{"-t=false", "-n"}},
+		{name: "disabled short table after alias", args: []string{"-n", "-t=false"}},
+		{name: "repeated table", args: []string{"--table", "-n", "--table=false"}},
 		{name: "other flags", args: []string{"--csv=false", "--underpaying=false"}},
 		{name: "both aliases", args: []string{"--table=false", "--non-interactive=false"}},
 		{name: "short aliases", args: []string{"-n=false", "-t=false"}},
