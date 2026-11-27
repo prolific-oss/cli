@@ -75,6 +75,7 @@ func newCommand(use string, client client.API, w io.Writer) *cobra.Command {
 	cmd.AddCommand(
 		NewDatasetsCommand(client, w),
 		NewBatchesCommand(client, w),
+		NewFileCommand(client, w),
 	)
 
 	return cmd

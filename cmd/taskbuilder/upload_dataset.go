@@ -271,6 +271,12 @@ func uploadFileToPresignedURL(filePath, uploadURL, method, contentType string) e
 
 	response, err := http.DefaultClient.Do(request)
 	if err != nil {
+		// net/http errors quote the request URL, and a presigned URL carries its signature.
+		var urlErr *url.Error
+		if errors.As(err, &urlErr) {
+			return fmt.Errorf("%s request failed: %w", urlErr.Op, urlErr.Err)
+		}
+
 		return err
 	}
 	defer response.Body.Close()
