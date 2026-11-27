@@ -19,6 +19,9 @@ func TestResolveFormatForWriterPrefersAnExplicitFlag(t *testing.T) {
 		"json":  {opts: shared.OutputOptions{Json: true}, want: ui.FormatJSON},
 		"csv":   {opts: shared.OutputOptions{Csv: true}, want: ui.FormatCSV},
 		"table": {opts: shared.OutputOptions{Table: true}, want: ui.FormatTable},
+		"raw":   {opts: shared.OutputOptions{Raw: true}, want: ui.FormatRaw},
+		// --json --raw is allowed and raw wins.
+		"raw over json": {opts: shared.OutputOptions{Json: true, Raw: true}, want: ui.FormatRaw},
 	}
 
 	for name, tc := range cases {
@@ -30,6 +33,28 @@ func TestResolveFormatForWriterPrefersAnExplicitFlag(t *testing.T) {
 
 func TestResolveFormatForWriterFallsBackToATableWhenNotATerminal(t *testing.T) {
 	assert.Equal(t, ui.FormatTable, shared.ResolveFormatForWriter(shared.OutputOptions{}, &bytes.Buffer{}))
+}
+
+func TestAddRawFlagRegistersTheFlag(t *testing.T) {
+	var opts shared.OutputOptions
+	cmd := &cobra.Command{Use: "list"}
+
+	shared.AddRawFlag(cmd, &opts)
+
+	flag := cmd.Flags().Lookup("raw")
+	require.NotNil(t, flag)
+	assert.Empty(t, flag.Shorthand)
+	require.NoError(t, cmd.Flags().Set("raw", "true"))
+	assert.True(t, opts.Raw)
+}
+
+func TestAddOutputFlagsDoesNotRegisterRaw(t *testing.T) {
+	var opts shared.OutputOptions
+	cmd := &cobra.Command{Use: "list"}
+
+	shared.AddOutputFlags(cmd, &opts)
+
+	assert.Nil(t, cmd.Flags().Lookup("raw"))
 }
 
 func TestAddFieldsFlagRegistersTheStandardFlag(t *testing.T) {

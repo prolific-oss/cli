@@ -5,6 +5,7 @@
 package mock_client
 
 import (
+	json "encoding/json"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -986,6 +987,21 @@ func (m *MockAPI) GetStudies(status, projectID string) (*client.ListStudiesRespo
 func (mr *MockAPIMockRecorder) GetStudies(status, projectID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStudies", reflect.TypeOf((*MockAPI)(nil).GetStudies), status, projectID)
+}
+
+// GetStudiesRaw mocks base method.
+func (m *MockAPI) GetStudiesRaw(status, projectID string) (json.RawMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetStudiesRaw", status, projectID)
+	ret0, _ := ret[0].(json.RawMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetStudiesRaw indicates an expected call of GetStudiesRaw.
+func (mr *MockAPIMockRecorder) GetStudiesRaw(status, projectID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStudiesRaw", reflect.TypeOf((*MockAPI)(nil).GetStudiesRaw), status, projectID)
 }
 
 // GetStudy mocks base method.

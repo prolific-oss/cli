@@ -6,6 +6,9 @@ const (
 	FormatCSV         = "csv"
 	FormatTable       = "table"
 	FormatInteractive = "interactive"
+	// FormatRaw is the API response exactly as returned, for commands that
+	// register --raw with shared.AddRawFlag.
+	FormatRaw = "raw"
 )
 
 // FieldSet holds a command's default columns for each format. A CSV carries
