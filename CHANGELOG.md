@@ -20,6 +20,10 @@
 - Add `prolific taskbuilder file upload -w <workspace_id> -f <video>` to upload an `.mp4` or `.webm` video and print its public URL, and `prolific taskbuilder file delete <public-url>` to remove it. Deleting a file that is already gone is not an error.
 - Support the `audio_recording` instruction type. `prolific taskbuilder batch responses` now shows the recording ID, duration, file name, size, content type and file key for recorded answers, and an empty `Recording:` line when an optional recording was skipped. `docs/examples/collection.json` and `collection.yaml` include an `audio_recording` item.
 
+### Studies
+
+- Add `study list --raw` (also `studies --raw`) to output the full API JSON response, preserving fields unknown to the CLI and pagination metadata. Existing `--json` output is unchanged. (#534)
+
 ## 1.3.3
 
 ### Task Builder

@@ -1,6 +1,7 @@
 package client
 
 import (
+	"encoding/json"
 	"net/url"
 	"strconv"
 )
@@ -10,6 +11,16 @@ import (
 // window a page covers is a number the CLI chose and can report truthfully,
 // and it matches the record count every other listing returns.
 const StudyPageSize = DefaultRecordLimit
+
+// GetStudiesRaw returns the complete study-list response without decoding study
+// fields into the CLI model. Server-side status and project filters still apply.
+func (c *Client) GetStudiesRaw(status, projectID string) (json.RawMessage, error) {
+	var response json.RawMessage
+	if err := c.getStudies(status, projectID, &response); err != nil {
+		return nil, err
+	}
+	return response, nil
+}
 
 // SearchStudies searches accessible studies by name, internal name, or study ID.
 // Studies paginate by page number rather than limit/offset, so the caller asks
