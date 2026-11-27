@@ -13,6 +13,8 @@ import (
 
 	"github.com/prolific-oss/cli/model"
 	"github.com/prolific-oss/cli/version"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // testWorkspaceID is the workspace ID the request-shape tests send.
@@ -906,6 +908,27 @@ func TestGetFilterBreakdownSendsRequestAndDecodesResponse(t *testing.T) {
 		if got := response.Breakdown[key]; got != want {
 			t.Errorf("Breakdown[%q] = %d, want %d", key, got, want)
 		}
+	}
+}
+
+func TestExecuteSetsProlificClientHeader(t *testing.T) {
+	for _, method := range []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete} {
+		t.Run(method, func(t *testing.T) {
+			var headers http.Header
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				headers = r.Header.Clone()
+				w.WriteHeader(http.StatusNoContent)
+			}))
+			defer server.Close()
+			c := Client{Client: server.Client(), BaseURL: server.URL, Token: "test-token", Skill: "cli-command-create"}
+
+			_, err := c.Execute(method, "/studies/", nil, nil)
+			require.NoError(t, err)
+			assert.Equal(t, []string{"prolific-cli/" + version.Get()}, headers.Values("X-Prolific-Client"))
+			assert.Equal(t, ComposeUserAgent(c.Skill), headers.Get("User-Agent"))
+			assert.Equal(t, "Token test-token", headers.Get("Authorization"))
+			assert.Equal(t, "application/json", headers.Get("Content-Type"))
+		})
 	}
 }
 
