@@ -282,6 +282,7 @@ func (c *Client) Execute(method, url string, body any, response any) (*http.Resp
 
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("User-Agent", c.userAgent())
+	request.Header.Set("X-Prolific-Client", "cli/"+version.Get())
 	request.Header.Set("Authorization", fmt.Sprintf("Token %s", c.Token))
 
 	if c.Debug {
