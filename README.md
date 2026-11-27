@@ -82,7 +82,7 @@ Checkout the [wiki](https://github.com/prolific-oss/cli/wiki) for more tips and 
 
 If you are wanting to build and develop this, you will need the following items installed. If, however, you just want to run the application I recommend using a binary (See below).
 
-- [Go version 1.26+](https://go.dev/doc/install)
+- [Go version 1.27+](https://go.dev/doc/install)
 
 ## Configuration
 

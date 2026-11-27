@@ -1,4 +1,4 @@
-FROM golang:1.27rc2-alpine AS builder
+FROM golang:1.27-alpine AS builder
 LABEL maintainer="Ben Selby <ben.selby@prolific.com>"
 
 ENV APPNAME=prolific
@@ -8,20 +8,20 @@ ENV GOPATH=/go
 COPY . /go/src/github.com/prolific-oss/${APPNAME}
 
 RUN apk update && \
-	apk add --no-cache --virtual .build-deps \
-	ca-certificates \
-	gcc \
-	libc-dev \
-	libgcc \
-	git \
-	curl \
-	make
+  apk add --no-cache --virtual .build-deps \
+  ca-certificates \
+  gcc \
+  libc-dev \
+  libgcc \
+  git \
+  curl \
+  make
 
 RUN cd /go/src/github.com/prolific-oss/${APPNAME} && \
-	make static-all  && \
-	mv ${APPNAME} /usr/bin/${APPNAME}  && \
-	apk del .build-deps  && \
-	rm -rf /go
+  make static-all  && \
+  mv ${APPNAME} /usr/bin/${APPNAME}  && \
+  apk del .build-deps  && \
+  rm -rf /go
 
 FROM scratch
 

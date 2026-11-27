@@ -4,7 +4,7 @@
 
 **Prolific CLI** is a command-line interface for the [Prolific](https://www.prolific.com) research platform. It's written in Go using the Cobra framework for CLI commands and Bubbletea for interactive TUI components.
 
-- **Language**: Go 1.26+
+- **Language**: Go 1.27+
 - **Primary Frameworks**: Cobra (CLI), Bubbletea (TUI), Viper (config)
 - **API Client**: Custom HTTP client in `client/client.go`
 - **License**: Apache 2.0
@@ -14,8 +14,6 @@
 ## Prerequisites & Setup
 
 ### Installing Go
-
-This project requires **Go 1.26 or later**.
 
 **macOS:**
 
@@ -41,7 +39,7 @@ source ~/.zshrc  # or source ~/.bash_profile
 Verify setup:
 
 ```bash
-go version           # Should show Go 1.26+
+go version           # Should show the Go which needs to match the version at the top of the document.
 go env GOPATH        # Should show your Go workspace (typically ~/go)
 echo $PATH | grep go # Should include your GOPATH/bin
 ```
@@ -503,7 +501,7 @@ GitHub Actions workflows in `.github/workflows/`:
 
 ### `go.yml` (runs on every push)
 
-1. Setup Go 1.26.x
+1. Setup Go
 2. `make install` - Get dependencies
 3. Lint Go code with golangci-lint
 4. `make lint-dockerfile`
