@@ -4,7 +4,7 @@
 
 ## Project Overview
 
-Go CLI for the Prolific research platform — used by researchers to manage studies, participants, and data collection via the Prolific API. Module: `github.com/prolific-oss/cli`. Binary: `prolific`. Go 1.26.
+Go CLI for the Prolific research platform — used by researchers to manage studies, participants, and data collection via the Prolific API. Module: `github.com/prolific-oss/cli`. Binary: `prolific`. Go 1.27.
 
 **Stack**: Cobra (CLI framework), Bubbletea (TUI), Viper (configuration). See `DEVELOPMENT.md` for the full development guide.
 
@@ -238,8 +238,8 @@ The pre-commit hook (installed by `make install`) runs `make lint` and `make tes
 
 1. Create a package under `cmd/{resource}/`
 2. If a parent grouping command doesn't exist for the resource:
-  - Create `cmd/{resource}/{resource}.go`
-  - Implement `New{Resource}Command(client client.API, w io.Writer) *cobra.Command`
+- Create `cmd/{resource}/{resource}.go`
+- Implement `New{Resource}Command(client client.API, w io.Writer) *cobra.Command`
 3. Implement the action as `New{Action}Command(client client.API, w io.Writer) *cobra.Command` at `cmd/{resource}/{action}.go`
 4. Define an options struct with cobra flag bindings per action
 5. Write tests in `{action}_test.go` using the gomock pattern above
@@ -282,6 +282,7 @@ Trigger it manually to test: `gh workflow run schema-drift-check.yml`.
 ## Boundaries
 
 **Always do:**
+
 - Run `make test` and `make lint` after making changes
 - Run `make test-gen-mock` after modifying `client/client.go`
 - Support the `-n` (non-interactive) flag on list commands
@@ -290,6 +291,7 @@ Trigger it manually to test: `gh workflow run schema-drift-check.yml`.
 - Prefix errors in `RunE` with `fmt.Errorf("error: %s", err)`
 
 **Never do:**
+
 - Hardcode API tokens — use `PROLIFIC_TOKEN` environment variable
 - Commit `.env` files or config files containing tokens
 - Manually edit generated files in `mock_client/`
@@ -298,7 +300,7 @@ Trigger it manually to test: `gh workflow run schema-drift-check.yml`.
 ## Configuration
 
 | Variable | Required | Default |
-|---|---|---|
+| --- | --- | --- |
 | `PROLIFIC_TOKEN` | Yes (runtime only, not tests) | — |
 | `PROLIFIC_URL` | No | `https://api.prolific.com` |
 | `PROLIFIC_DEBUG` | No | — |

@@ -62,6 +62,14 @@ linters:
       # QF1012 Use fmt.Fprintf(...) clashes with go fix patterns
       - linters: [staticcheck]
         text: "QF1012"
+      # Repeated string literals are normal in table-driven tests; extracting
+      # constants hurts readability there.
+      - linters: [goconst]
+        path: '_test\.go'
+      # govet's inline analyzer (Go 1.27) reports a tooling limitation, not a
+      # code problem, for generic calls such as slices.Contains.
+      - linters: [govet]
+        text: "inline: cannot inline: type parameter inference is not yet supported"
       # contract_test/ call functions intentionally ignore return values —
       # only the outbound request shape matters, not the stub server response.
       - linters: [errcheck]

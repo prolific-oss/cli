@@ -464,6 +464,12 @@ func MergeNotes(manual, generated, fallback string) string {
 // reMarker matches the [hash:...][type:...] prefix emitted by cliff.toml.
 var reMarker = regexp.MustCompile(`^\- \[hash:([a-f0-9]+)\]\[type:([^\]]+)\] (.+)$`)
 
+const (
+	areaTaskBuilder = "Task Builder"
+	areaFilters     = "Filters"
+	areaCore        = "Core"
+)
+
 // areaMapping maps file path prefixes to user-facing area names.
 // Files not matching any prefix are ignored — commits that only touch
 // unrecognised paths are excluded from the changelog.
@@ -471,9 +477,9 @@ var areaMapping = []struct {
 	prefix string
 	area   string
 }{
-	{"cmd/taskbuilder/", "Task Builder"},
+	{"cmd/taskbuilder/", areaTaskBuilder},
 	// Commits from before the rename touched the old path.
-	{"cmd/aitaskbuilder/", "Task Builder"},
+	{"cmd/aitaskbuilder/", areaTaskBuilder},
 	{"cmd/study/", "Study"},
 	{"cmd/bonus/", "Bonus Payments"},
 	{"cmd/message/", "Messaging"},
@@ -485,13 +491,13 @@ var areaMapping = []struct {
 	{"cmd/submission/", "Submissions"},
 	{"cmd/participantgroup/", "Participant Groups"},
 	{"cmd/hook/", "Hooks"},
-	{"cmd/filters/", "Filters"},
-	{"cmd/filtersets/", "Filters"},
+	{"cmd/filters/", areaFilters},
+	{"cmd/filtersets/", areaFilters},
 	{"cmd/requirements/", "Requirements"},
 	{"cmd/rewardrecommendations/", "Reward Recommendations"},
 	{"cmd/user/", "User"},
-	{"model/", "Core"},
-	{"client/", "Core"},
+	{"model/", areaCore},
+	{"client/", areaCore},
 }
 
 // parsedEntry represents a single changelog entry parsed from cliff output.

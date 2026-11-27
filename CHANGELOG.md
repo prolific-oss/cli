@@ -15,6 +15,8 @@
 - Each `custom_html` block is limited to 300,000 bytes of UTF-8.
 - `workspace create` takes a required `-d/--description` flag. The API rejects a workspace without a description, so the command failed before.
 - On collection update, set `id` on a `custom_html` item to update the stored block. Without `id`, the API creates a new block and deletes the stored block.
+- Bump Go version to 1.27 across the project (go.mod, CI, Docker)
+
 ### Task Builder
 
 - Add `prolific taskbuilder file upload -w <workspace_id> -f <video>` to upload an `.mp4` or `.webm` video and print its public URL, and `prolific taskbuilder file delete <public-url>` to remove it. Deleting a file that is already gone is not an error.

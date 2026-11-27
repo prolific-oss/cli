@@ -27,6 +27,9 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+// paramWorkspaceID is the query parameter name for scoping requests to a workspace.
+const paramWorkspaceID = "workspace_id"
+
 // DefaultRecordOffset defines how many records we should offset to start with.
 const DefaultRecordOffset = 0
 
@@ -981,7 +984,7 @@ func (c *Client) CreateProject(workspaceID string, project model.Project) (*Crea
 func (c *Client) GetParticipantGroups(workspaceID string, limit, offset int) (*ListParticipantGroupsResponse, error) {
 	var response ListParticipantGroupsResponse
 
-	params := url.Values{"workspace_id": {workspaceID}, "limit": {strconv.Itoa(limit)}, "offset": {strconv.Itoa(offset)}}
+	params := url.Values{paramWorkspaceID: {workspaceID}, "limit": {strconv.Itoa(limit)}, "offset": {strconv.Itoa(offset)}}
 	_, err := c.ExecuteBuilder().GetInto("/api/v1/participant-groups/?"+params.Encode(), &response)
 	if err != nil {
 		return nil, err
@@ -1093,7 +1096,7 @@ func (c *Client) GetFilters(workspaceID string) (*ListFiltersResponse, error) {
 
 	requestURL := "/api/v1/filters/"
 	if workspaceID != "" {
-		params := url.Values{"workspace_id": {workspaceID}}
+		params := url.Values{paramWorkspaceID: {workspaceID}}
 		requestURL += "?" + params.Encode()
 	}
 	if _, err := c.ExecuteBuilder().Get(requestURL, &response); err != nil {
@@ -1109,7 +1112,7 @@ func (c *Client) GetFilterRuleTree(workspaceID string) (*FilterRuleTreeResponse,
 	var response FilterRuleTreeResponse
 	requestURL := "/api/v1/filters/rule-tree/"
 	if workspaceID != "" {
-		params := url.Values{"workspace_id": {workspaceID}}
+		params := url.Values{paramWorkspaceID: {workspaceID}}
 		requestURL += "?" + params.Encode()
 	}
 	if _, err := c.ExecuteBuilder().Get(requestURL, &response); err != nil {
@@ -1133,7 +1136,7 @@ func (c *Client) SearchFilters(query, workspaceID string, limit, offset int) (*S
 	params.Set("limit", strconv.Itoa(limit))
 	params.Set("offset", strconv.Itoa(offset))
 	if workspaceID != "" {
-		params.Set("workspace_id", workspaceID)
+		params.Set(paramWorkspaceID, workspaceID)
 	}
 
 	requestURL := "/api/v1/filters/search/?" + params.Encode()
@@ -1165,7 +1168,7 @@ func (c *Client) GetFilterChoices(filterID, workspaceID string, limit, offset in
 	params.Set("limit", strconv.Itoa(limit))
 	params.Set("offset", strconv.Itoa(offset))
 	if workspaceID != "" {
-		params.Set("workspace_id", workspaceID)
+		params.Set(paramWorkspaceID, workspaceID)
 	}
 
 	if _, err := c.ExecuteBuilder().Get(filterChoicesURL(filterID, "", params), &response); err != nil {
@@ -1185,7 +1188,7 @@ func (c *Client) SearchFilterChoices(filterID, query, workspaceID string, limit,
 	params.Set("limit", strconv.Itoa(limit))
 	params.Set("offset", strconv.Itoa(offset))
 	if workspaceID != "" {
-		params.Set("workspace_id", workspaceID)
+		params.Set(paramWorkspaceID, workspaceID)
 	}
 
 	if _, err := c.ExecuteBuilder().Get(filterChoicesURL(filterID, "search/", params), &response); err != nil {
@@ -1240,7 +1243,7 @@ func (c *Client) GetRewardRecommendations(workspaceID, currency string, screener
 	var response RewardRecommendationsResponse
 
 	query := url.Values{}
-	query.Set("workspace_id", workspaceID)
+	query.Set(paramWorkspaceID, workspaceID)
 	query.Set("currency", currency)
 	if len(screenerIDs) > 0 {
 		query.Set("screener_ids", strings.Join(screenerIDs, ","))
