@@ -249,6 +249,14 @@ var operations = []operation{
 	}},
 	{operationID: "taskBuilder_GetSchemaMigrationStatus", skip: "OUTOFSCOPE: no CLI command for dataset schema migration status"},
 
+	// Task Builder — Files
+	{operationID: "taskBuilder_getFileUploadUrl", skip: "NOTINSPEC: file hosting is behind a workspace gate and not published in the spec; confirm operationId on publication", call: func(c *client.Client) {
+		c.GetFileUploadURL("ws-id", "clip.mp4")
+	}},
+	{operationID: "taskBuilder_DeleteFile", skip: "NOTINSPEC: file hosting is behind a workspace gate and not published in the spec; confirm operationId on publication", call: func(c *client.Client) {
+		c.DeleteFile("ws-id", "0123456789abcdef0123456789abcdef", "clip.mp4")
+	}},
+
 	// Task Builder — Instructions
 	{operationID: "taskBuilder_GetTaskBuilderInstructions", skip: "OUTOFSCOPE: no CLI command for getting task builder instructions"},
 	{operationID: "taskBuilder_CreateTaskBuilderInstructions", call: func(c *client.Client) {

@@ -39,3 +39,17 @@ func IsCustomHTMLNotEnabledError(err error) bool {
 	}
 	return strings.Contains(strings.ToLower(err.Error()), customHTMLNotEnabledText)
 }
+
+// ErrFileHostingNotEnabled is shown when the workspace gate refuses file uploads and deletes.
+const ErrFileHostingNotEnabled = "file hosting is not enabled for your workspace yet"
+
+const fileHostingNotEnabledText = "file uploads and deletes are not enabled"
+
+// IsFileHostingNotEnabledError reports a 403 from the file hosting workspace gate.
+// The API owns the refusal text. Delete this check when that gate is removed.
+func IsFileHostingNotEnabledError(err error) bool {
+	if err == nil || !client.IsHTTPStatusError(err, http.StatusForbidden) {
+		return false
+	}
+	return strings.Contains(strings.ToLower(err.Error()), fileHostingNotEnabledText)
+}

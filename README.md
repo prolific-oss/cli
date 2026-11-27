@@ -354,6 +354,16 @@ Operations are grouped as they appear in [`contract_test/contract_test.go`](cont
 </details>
 
 <details>
+<summary><strong>Task Builder — Files</strong></summary>
+
+| Operation | Method | Path | Coverage |
+|---|---|---|---|
+| `taskBuilder_getFileUploadUrl` | — | — | 🕒 `GetFileUploadURL` — live endpoint, awaiting publication in the spec |
+| `taskBuilder_DeleteFile` | — | — | 🕒 `DeleteFile` — live endpoint, awaiting publication in the spec |
+
+</details>
+
+<details>
 <summary><strong>Task Builder — Instructions</strong></summary>
 
 | Operation | Method | Path | Coverage |
