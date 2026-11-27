@@ -7,21 +7,18 @@ require (
 	github.com/charmbracelet/bubbles v1.0.0 // MIT
 	github.com/charmbracelet/bubbletea v1.3.10 // MIT
 	github.com/charmbracelet/lipgloss v1.1.0 // MIT
-	github.com/golang/mock v1.6.0 // Apache 2.0
-	github.com/mitchellh/go-homedir v1.1.0 // MIT
-	github.com/spf13/cobra v1.10.2 // Apache 2.0
-	github.com/spf13/viper v1.21.0 // MIT
-	golang.org/x/exp v0.0.0-20250819193227-8b4c13bb791b // BSD-3-Clause
-	golang.org/x/text v0.44.0 // BSD-3-Clause
-)
-
-require (
 	github.com/getkin/kin-openapi v0.153.0
+	github.com/golang/mock v1.6.0 // Apache 2.0
 	github.com/mattn/go-isatty v0.0.24
+	github.com/mitchellh/go-homedir v1.1.0 // MIT
 	github.com/muesli/termenv v0.16.0
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
-	github.com/spf13/pflag v1.0.10
+	github.com/spf13/cobra v1.10.2 // Apache 2.0
+	github.com/spf13/pflag v1.1.0
+	github.com/spf13/viper v1.21.0 // MIT
 	github.com/stretchr/testify v1.12.1
+	golang.org/x/exp v0.0.0-20250819193227-8b4c13bb791b // BSD-3-Clause
+	golang.org/x/text v0.44.0 // BSD-3-Clause
 	gopkg.in/yaml.v3 v3.0.1
 )
 
