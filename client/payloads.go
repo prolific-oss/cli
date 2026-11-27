@@ -124,7 +124,7 @@ type CreateAITaskBuilderDatasetPayload struct {
 	Schema      *DatasetSchema `json:"schema,omitempty"`
 }
 
-// CreateBatchParams represents the parameters for creating an AI Task Builder batch.
+// CreateBatchParams represents the parameters for creating a Task Builder batch.
 type CreateBatchParams struct {
 	Name             string          `json:"name"`
 	WorkspaceID      string          `json:"workspace_id"`
@@ -134,25 +134,51 @@ type CreateBatchParams struct {
 	TaskSteps        string          `json:"task_steps"`
 	BatchItems       json.RawMessage // nil means omit from payload
 	AutoSync         bool            `json:"auto_sync_enabled"`
+	Review           *ReviewParams   // nil means this is not a review batch
 }
 
-// UpdateBatchParams represents the parameters for updating an AI Task Builder batch.
+// ReviewRubric is one question a reviewer answers about each piece of work they review.
+type ReviewRubric struct {
+	Description   string `json:"description"`
+	ScoringScheme string `json:"scoring_scheme"`
+}
+
+// ReviewParams makes a batch a review of another batch's work.
+type ReviewParams struct {
+	SourceBatchID string `json:"source_batch_id"`
+	// StudyID limits the review to one study on the source batch. Left out, it covers every study on it.
+	StudyID       string         `json:"study_id,omitempty"`
+	SampleRateBps int            `json:"sample_rate_bps"`
+	Rubrics       []ReviewRubric `json:"rubrics"`
+	Justification bool           `json:"justification,omitempty"`
+}
+
+// UpdateBatchParams represents the parameters for updating a Task Builder batch.
 type UpdateBatchParams struct {
 	BatchID     string
 	Name        string
 	DatasetID   string
-	TaskDetails *TaskDetails    // nil means task details will not be updated
-	BatchItems  json.RawMessage // nil = omit, json.RawMessage("null") = clear, JSON array = set
-	AutoSync    *bool           // nil means auto_sync_enabled will not be updated
+	TaskDetails *TaskDetails        // nil means task details will not be updated
+	BatchItems  json.RawMessage     // nil = omit, json.RawMessage("null") = clear, JSON array = set
+	AutoSync    *bool               // nil means auto_sync_enabled will not be updated
+	Review      *ReviewUpdateParams // nil means the rubrics are not updated
 }
 
-// UpdateAITaskBuilderBatchPayload represents the JSON payload for updating an AI Task Builder batch.
+// ReviewUpdateParams replaces a review batch's rubrics and notes setting together, as the API does: a notes setting
+// that is left out turns the notes box off, so Justification is always sent.
+type ReviewUpdateParams struct {
+	Rubrics       []ReviewRubric `json:"rubrics"`
+	Justification bool           `json:"justification"`
+}
+
+// UpdateAITaskBuilderBatchPayload represents the JSON payload for updating a Task Builder batch.
 type UpdateAITaskBuilderBatchPayload struct {
-	Name        string          `json:"name,omitempty"`
-	DatasetID   string          `json:"dataset_id,omitempty"`
-	TaskDetails *TaskDetails    `json:"task_details,omitempty"`
-	BatchItems  json.RawMessage `json:"batch_items,omitempty"`
-	AutoSync    *bool           `json:"auto_sync_enabled,omitempty"`
+	Name        string              `json:"name,omitempty"`
+	DatasetID   string              `json:"dataset_id,omitempty"`
+	TaskDetails *TaskDetails        `json:"task_details,omitempty"`
+	BatchItems  json.RawMessage     `json:"batch_items,omitempty"`
+	AutoSync    *bool               `json:"auto_sync_enabled,omitempty"`
+	Review      *ReviewUpdateParams `json:"review,omitempty"`
 }
 
 // TaskDetails represents the task configuration details for batch creation
@@ -162,14 +188,15 @@ type TaskDetails struct {
 	TaskSteps        string `json:"task_steps"`
 }
 
-// CreateAITaskBuilderBatchPayload represents the JSON payload for creating an AI Task Builder batch
+// CreateAITaskBuilderBatchPayload represents the JSON payload for creating a Task Builder batch
 type CreateAITaskBuilderBatchPayload struct {
 	Name        string          `json:"name"`
 	WorkspaceID string          `json:"workspace_id"`
-	DatasetID   string          `json:"dataset_id"`
+	DatasetID   string          `json:"dataset_id,omitempty"`
 	TaskDetails TaskDetails     `json:"task_details"`
 	BatchItems  json.RawMessage `json:"batch_items,omitempty"`
 	AutoSync    bool            `json:"auto_sync_enabled"`
+	Review      *ReviewParams   `json:"review,omitempty"`
 }
 
 // InstructionType represents the type of instruction.
@@ -229,12 +256,12 @@ type Instruction struct {
 	MaxFileCount         *int                `json:"max_file_count,omitempty"`
 }
 
-// CreateAITaskBuilderInstructionsPayload represents the JSON payload for creating AI Task Builder instructions
+// CreateAITaskBuilderInstructionsPayload represents the JSON payload for creating Task Builder instructions
 type CreateAITaskBuilderInstructionsPayload struct {
 	Instructions []Instruction `json:"instructions"`
 }
 
-// SetupAITaskBuilderBatchPayload represents the JSON payload for setting up an AI Task Builder batch
+// SetupAITaskBuilderBatchPayload represents the JSON payload for setting up a Task Builder batch
 type SetupAITaskBuilderBatchPayload struct {
 	DatasetID     string `json:"dataset_id"`
 	TasksPerGroup int    `json:"tasks_per_group"`

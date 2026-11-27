@@ -78,3 +78,27 @@ func TestViewCommandNoArgs(t *testing.T) {
 
 	assert.Error(t, err)
 }
+
+func TestViewCommandLegacyIDs(t *testing.T) {
+	tests := map[string]string{
+		"standard-sample-aitaskbuilder":         "standard-sample-taskbuilder",
+		"study-with-ai-task-builder-collection": "study-with-task-builder-collection",
+	}
+
+	for oldID, newID := range tests {
+		t.Run(oldID, func(t *testing.T) {
+			var oldOut, newOut bytes.Buffer
+
+			oldCmd := NewViewCommand(&oldOut)
+			oldCmd.SetArgs([]string{oldID})
+			assert.NoError(t, oldCmd.Execute())
+
+			newCmd := NewViewCommand(&newOut)
+			newCmd.SetArgs([]string{newID})
+			assert.NoError(t, newCmd.Execute())
+
+			assert.NotEmpty(t, newOut.String())
+			assert.Equal(t, newOut.String(), oldOut.String())
+		})
+	}
+}

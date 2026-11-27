@@ -71,11 +71,11 @@ New to Go or open source? These resources can help:
 
 **Quick troubleshooting:**
 
-| Problem | Solution |
-|---------|----------|
-| Lint failures | Run `make lint` locally before committing |
-| Mock errors after changing `client/client.go` | Run `make test-gen-mock` to regenerate mocks |
-| Tests fail | Run `make test` — tests use mocks, no API token needed |
+| Problem                                       | Solution                                               |
+| --------------------------------------------- | ------------------------------------------------------ |
+| Lint failures                                 | Run `make lint` locally before committing              |
+| Mock errors after changing `client/client.go` | Run `make test-gen-mock` to regenerate mocks           |
+| Tests fail                                    | Run `make test` — tests use mocks, no API token needed |
 
 For more, see [Important Gotchas](DEVELOPMENT.md#important-gotchas) in the development guide.
 
@@ -102,7 +102,7 @@ For full details on project structure, architecture, testing patterns, and more,
 2. **Make your changes** — follow existing code patterns
 3. **Run `make all`** — this runs clean, install, build, and test. Pre-commit hooks additionally run lint automatically on each commit
 4. **Commit using conventional format** — see [Commit Message Format](#commit-message-format)
-5. **Push and open a PR** — include a summary and test plan (PR template coming soon)
+5. **Push and open a PR** — include what is changing, why, conduct a self review, AI review, and include proof of test
 6. **Reference the issue** — use `Closes #NNN` in the PR description
 7. **Wait for review** — 1 approval from a Prolific maintainer is required
 8. **Merging** — only Prolific staff merge PRs

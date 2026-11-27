@@ -12,7 +12,7 @@ const (
 	ErrTaskIntroductionRequired = "task_details.task_introduction is required"
 	ErrTaskStepsRequired        = "task_details.task_steps is required"
 
-	// Feature access constants for AI Task Builder Collections (see DCP-2152)
-	FeatureNameAITBCollection       = "AI Task Builder Collections"
+	// Feature access constants for Task Builder Collections (see DCP-2152)
+	FeatureNameAITBCollection       = "Task Builder Collections"
 	FeatureContactURLAITBCollection = "https://researcher-help.prolific.com/en/"
 )

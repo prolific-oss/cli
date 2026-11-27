@@ -31,7 +31,7 @@ Required:
 - Workspace ID (-w/--workspace-id): The workspace to list credential pools for`,
 		Example: `
 List all credential pools for a workspace:
-$ prolific credentials list -w <workspace_id>
+$ prolific credentials list -w <workspace-id>
 $ prolific credentials list --workspace-id 507f1f77bcf86cd799439011`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			response, err := client.ListCredentialPools(opts.WorkspaceID)

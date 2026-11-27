@@ -21,7 +21,7 @@ func NewResponseCreateCommand(commandName string, client client.API, w io.Writer
 	var opts ResponseCreateOptions
 
 	cmd := &cobra.Command{
-		Use:   commandName + " <survey_id>",
+		Use:   commandName + " <survey-id>",
 		Args:  cobra.MinimumNArgs(1),
 		Short: "Create a survey response",
 		Long: `Create a survey response

@@ -12,14 +12,15 @@ require (
 	github.com/spf13/cobra v1.10.2 // Apache 2.0
 	github.com/spf13/viper v1.21.0 // MIT
 	golang.org/x/exp v0.0.0-20250819193227-8b4c13bb791b // BSD-3-Clause
-	golang.org/x/text v0.42.0 // BSD-3-Clause
+	golang.org/x/text v0.44.0 // BSD-3-Clause
 )
 
 require (
-	github.com/getkin/kin-openapi v0.149.0
-	github.com/mattn/go-isatty v0.0.20
+	github.com/getkin/kin-openapi v0.153.0
+	github.com/mattn/go-isatty v0.0.24
 	github.com/muesli/termenv v0.16.0
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
+	github.com/spf13/pflag v1.0.10
 	github.com/stretchr/testify v1.12.1
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -46,8 +47,6 @@ require (
 	github.com/mattn/go-runewidth v0.0.19 // indirect
 	github.com/muesli/ansi v0.0.0-20230316100256-276c6243b2f6 // indirect
 	github.com/muesli/cancelreader v0.2.2 // indirect
-	github.com/oasdiff/yaml v0.1.1 // indirect
-	github.com/oasdiff/yaml3 v0.0.14 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/sagikazarmark/locafero v0.11.0 // indirect
@@ -56,9 +55,9 @@ require (
 	github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
-	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
+	go.yaml.in/yaml/v4 v4.0.0 // indirect
 	golang.org/x/sys v0.38.0 // indirect
 )

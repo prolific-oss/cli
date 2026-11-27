@@ -526,7 +526,8 @@ func TestAreaForFiles(t *testing.T) {
 		want  string
 	}{
 		{"study files", []string{"cmd/study/list.go", "cmd/study/list_test.go"}, "Study"},
-		{"aitaskbuilder files", []string{"cmd/aitaskbuilder/create.go"}, "AI Task Builder"},
+		{"taskbuilder files", []string{"cmd/taskbuilder/create.go"}, "Task Builder"},
+		{"legacy aitaskbuilder files", []string{"cmd/aitaskbuilder/create.go"}, "Task Builder"},
 		{"majority wins", []string{"cmd/study/list.go", "cmd/study/get.go", "cmd/workspace/list.go"}, "Study"},
 		{"model and client map to Core", []string{"model/study.go", "client/client.go"}, "Core"},
 		{"filters and filtersets both map to Filters", []string{"cmd/filters/list.go", "cmd/filtersets/list.go"}, "Filters"},
@@ -574,7 +575,7 @@ func TestTransformChangelog(t *testing.T) {
 		got := TransformChangelog(input, func(h string) ([]string, error) { return filesByHash[h], nil })
 
 		// Area headings present, markers stripped.
-		for _, heading := range []string{"### AI Task Builder", "### Study", "### Workspaces"} {
+		for _, heading := range []string{"### Task Builder", "### Study", "### Workspaces"} {
 			if !strings.Contains(got, heading) {
 				t.Errorf("missing heading %q", heading)
 			}
@@ -586,9 +587,9 @@ func TestTransformChangelog(t *testing.T) {
 			t.Error("unrecognised-only commit should be excluded")
 		}
 
-		// AI Task Builder before Study (per areaOrder).
-		if strings.Index(got, "### AI Task Builder") > strings.Index(got, "### Study") {
-			t.Error("expected AI Task Builder before Study")
+		// Task Builder before Study (per areaOrder).
+		if strings.Index(got, "### Task Builder") > strings.Index(got, "### Study") {
+			t.Error("expected Task Builder before Study")
 		}
 
 		// Features before fixes within Study.

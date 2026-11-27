@@ -97,7 +97,7 @@ func TestCountCommandRendersCountFromTemplate(t *testing.T) {
 		t.Fatalf("expected payload %s, got %s", expectedPayload, sentPayload)
 	}
 
-	expected := "Eligible participants: 1234\n"
+	expected := "Count \n1234  \n"
 	if b.String() != expected {
 		t.Fatalf("expected %q, got %q", expected, b.String())
 	}
@@ -132,7 +132,7 @@ func TestCountCommandRendersCountFromFlags(t *testing.T) {
 
 	writer.Flush()
 
-	expected := "Eligible participants: 1234\n"
+	expected := "Count \n1234  \n"
 	if b.String() != expected {
 		t.Fatalf("expected %q, got %q", expected, b.String())
 	}
@@ -244,7 +244,7 @@ func TestCountCommandSendsEmptyFiltersNotNil(t *testing.T) {
 func TestCountCommandValidatesInput(t *testing.T) {
 	tests := []struct {
 		name          string
-		templateJSON  string // empty means -t/--template-path is left unset
+		templateJSON  string // empty means -p/--template-path is left unset
 		filtersJSON   string
 		workspaceID   string
 		expectedError string
@@ -252,24 +252,24 @@ func TestCountCommandValidatesInput(t *testing.T) {
 		{
 			name:          "no template or filters",
 			workspaceID:   "ws-id",
-			expectedError: "error: provide filters via -t/--template-path or --filters",
+			expectedError: "error: provide filters via -p/--template-path or --filters",
 		},
 		{
 			name:          "both template and filters",
 			templateJSON:  `{"filters": []}`,
 			filtersJSON:   `[]`,
 			workspaceID:   "ws-id",
-			expectedError: "error: use either -t/--template-path or --filters, not both",
+			expectedError: "error: use either -p/--template-path or --filters, not both",
 		},
 		{
 			name:          "missing workspace with template",
 			templateJSON:  `{"filters": []}`,
-			expectedError: "error: workspace ID is required",
+			expectedError: "error: please provide a workspace ID",
 		},
 		{
 			name:          "missing workspace with filters",
 			filtersJSON:   `[]`,
-			expectedError: "error: workspace ID is required",
+			expectedError: "error: please provide a workspace ID",
 		},
 	}
 
@@ -355,40 +355,27 @@ func TestCountCommandHandlesAPIError(t *testing.T) {
 	}
 }
 
-func TestRenderCount(t *testing.T) {
+func TestRenderCountJSON(t *testing.T) {
 	tests := []struct {
 		name     string
 		count    int
-		asJSON   bool
 		expected string
 	}{
 		{
 			name:     "exact count",
 			count:    1234,
-			expected: "Eligible participants: 1234",
+			expected: `{"count":1234}`,
 		},
 		{
 			name:     "zero count",
 			count:    0,
-			expected: "Eligible participants: 0",
-		},
-		{
-			name:     "json exact count",
-			count:    1234,
-			asJSON:   true,
-			expected: `{"count":1234}`,
-		},
-		{
-			name:     "json zero count",
-			count:    0,
-			asJSON:   true,
 			expected: `{"count":0}`,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			actual, err := audience.RenderCount(tt.count, tt.asJSON)
+			actual, err := audience.RenderCountJSON(tt.count)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err)
 			}

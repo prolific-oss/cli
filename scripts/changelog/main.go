@@ -471,7 +471,9 @@ var areaMapping = []struct {
 	prefix string
 	area   string
 }{
-	{"cmd/aitaskbuilder/", "AI Task Builder"},
+	{"cmd/taskbuilder/", "Task Builder"},
+	// Commits from before the rename touched the old path.
+	{"cmd/aitaskbuilder/", "Task Builder"},
 	{"cmd/study/", "Study"},
 	{"cmd/bonus/", "Bonus Payments"},
 	{"cmd/message/", "Messaging"},
@@ -564,7 +566,7 @@ func gitDiffTree(hash string) ([]string, error) {
 // areaOrder defines the display order of areas in the transformed output.
 // Areas not in this list appear alphabetically after these.
 var areaOrder = []string{
-	"AI Task Builder",
+	"Task Builder",
 	"Study",
 	"Bonus Payments",
 	"Messaging",

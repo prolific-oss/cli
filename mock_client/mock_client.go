@@ -5,6 +5,7 @@
 package mock_client
 
 import (
+	json "encoding/json"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -33,6 +34,21 @@ func NewMockAPI(ctrl *gomock.Controller) *MockAPI {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockAPI) EXPECT() *MockAPIMockRecorder {
 	return m.recorder
+}
+
+// AddParticipantGroupMembers mocks base method.
+func (m *MockAPI) AddParticipantGroupMembers(groupID string, participantIDs []string) (*client.ViewParticipantGroupResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddParticipantGroupMembers", groupID, participantIDs)
+	ret0, _ := ret[0].(*client.ViewParticipantGroupResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddParticipantGroupMembers indicates an expected call of AddParticipantGroupMembers.
+func (mr *MockAPIMockRecorder) AddParticipantGroupMembers(groupID, participantIDs interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddParticipantGroupMembers", reflect.TypeOf((*MockAPI)(nil).AddParticipantGroupMembers), groupID, participantIDs)
 }
 
 // BulkApproveSubmissions mocks base method.
@@ -374,6 +390,20 @@ func (m *MockAPI) DeleteCollectionExport(collectionID, exportID string) error {
 func (mr *MockAPIMockRecorder) DeleteCollectionExport(collectionID, exportID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCollectionExport", reflect.TypeOf((*MockAPI)(nil).DeleteCollectionExport), collectionID, exportID)
+}
+
+// DeleteFile mocks base method.
+func (m *MockAPI) DeleteFile(workspaceID, fileID, fileName string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteFile", workspaceID, fileID, fileName)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteFile indicates an expected call of DeleteFile.
+func (mr *MockAPIMockRecorder) DeleteFile(workspaceID, fileID, fileName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteFile", reflect.TypeOf((*MockAPI)(nil).DeleteFile), workspaceID, fileID, fileName)
 }
 
 // DeleteHookSubscription mocks base method.
@@ -718,6 +748,21 @@ func (mr *MockAPIMockRecorder) GetEvents(subscriptionID, limit, offset interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEvents", reflect.TypeOf((*MockAPI)(nil).GetEvents), subscriptionID, limit, offset)
 }
 
+// GetFileUploadURL mocks base method.
+func (m *MockAPI) GetFileUploadURL(workspaceID, fileName string) (*client.GetFileUploadURLResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFileUploadURL", workspaceID, fileName)
+	ret0, _ := ret[0].(*client.GetFileUploadURLResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFileUploadURL indicates an expected call of GetFileUploadURL.
+func (mr *MockAPIMockRecorder) GetFileUploadURL(workspaceID, fileName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFileUploadURL", reflect.TypeOf((*MockAPI)(nil).GetFileUploadURL), workspaceID, fileName)
+}
+
 // GetFilterBreakdown mocks base method.
 func (m *MockAPI) GetFilterBreakdown(payload client.FilterBreakdownPayload) (*client.FilterBreakdownResponse, error) {
 	m.ctrl.T.Helper()
@@ -731,6 +776,36 @@ func (m *MockAPI) GetFilterBreakdown(payload client.FilterBreakdownPayload) (*cl
 func (mr *MockAPIMockRecorder) GetFilterBreakdown(payload interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFilterBreakdown", reflect.TypeOf((*MockAPI)(nil).GetFilterBreakdown), payload)
+}
+
+// GetFilterChoices mocks base method.
+func (m *MockAPI) GetFilterChoices(filterID, workspaceID string, limit, offset int) (*client.ListFilterChoicesResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFilterChoices", filterID, workspaceID, limit, offset)
+	ret0, _ := ret[0].(*client.ListFilterChoicesResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFilterChoices indicates an expected call of GetFilterChoices.
+func (mr *MockAPIMockRecorder) GetFilterChoices(filterID, workspaceID, limit, offset interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFilterChoices", reflect.TypeOf((*MockAPI)(nil).GetFilterChoices), filterID, workspaceID, limit, offset)
+}
+
+// GetFilterRuleTree mocks base method.
+func (m *MockAPI) GetFilterRuleTree(workspaceID string) (*client.FilterRuleTreeResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFilterRuleTree", workspaceID)
+	ret0, _ := ret[0].(*client.FilterRuleTreeResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFilterRuleTree indicates an expected call of GetFilterRuleTree.
+func (mr *MockAPIMockRecorder) GetFilterRuleTree(workspaceID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFilterRuleTree", reflect.TypeOf((*MockAPI)(nil).GetFilterRuleTree), workspaceID)
 }
 
 // GetFilterSet mocks base method.
@@ -764,18 +839,18 @@ func (mr *MockAPIMockRecorder) GetFilterSets(workspaceID, limit, offset interfac
 }
 
 // GetFilters mocks base method.
-func (m *MockAPI) GetFilters() (*client.ListFiltersResponse, error) {
+func (m *MockAPI) GetFilters(workspaceID string) (*client.ListFiltersResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetFilters")
+	ret := m.ctrl.Call(m, "GetFilters", workspaceID)
 	ret0, _ := ret[0].(*client.ListFiltersResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetFilters indicates an expected call of GetFilters.
-func (mr *MockAPIMockRecorder) GetFilters() *gomock.Call {
+func (mr *MockAPIMockRecorder) GetFilters(workspaceID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFilters", reflect.TypeOf((*MockAPI)(nil).GetFilters))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFilters", reflect.TypeOf((*MockAPI)(nil).GetFilters), workspaceID)
 }
 
 // GetHookEventTypes mocks base method.
@@ -941,6 +1016,21 @@ func (m *MockAPI) GetStudies(status, projectID string) (*client.ListStudiesRespo
 func (mr *MockAPIMockRecorder) GetStudies(status, projectID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStudies", reflect.TypeOf((*MockAPI)(nil).GetStudies), status, projectID)
+}
+
+// GetStudiesRaw mocks base method.
+func (m *MockAPI) GetStudiesRaw(status, projectID string) (json.RawMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetStudiesRaw", status, projectID)
+	ret0, _ := ret[0].(json.RawMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetStudiesRaw indicates an expected call of GetStudiesRaw.
+func (mr *MockAPIMockRecorder) GetStudiesRaw(status, projectID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStudiesRaw", reflect.TypeOf((*MockAPI)(nil).GetStudiesRaw), status, projectID)
 }
 
 // GetStudy mocks base method.
@@ -1272,6 +1362,21 @@ func (mr *MockAPIMockRecorder) RequestSubmissionReturn(ID, reasons interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RequestSubmissionReturn", reflect.TypeOf((*MockAPI)(nil).RequestSubmissionReturn), ID, reasons)
 }
 
+// SearchFilterChoices mocks base method.
+func (m *MockAPI) SearchFilterChoices(filterID, query, workspaceID string, limit, offset int) (*client.SearchFilterChoicesResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchFilterChoices", filterID, query, workspaceID, limit, offset)
+	ret0, _ := ret[0].(*client.SearchFilterChoicesResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchFilterChoices indicates an expected call of SearchFilterChoices.
+func (mr *MockAPIMockRecorder) SearchFilterChoices(filterID, query, workspaceID, limit, offset interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchFilterChoices", reflect.TypeOf((*MockAPI)(nil).SearchFilterChoices), filterID, query, workspaceID, limit, offset)
+}
+
 // SearchFilters mocks base method.
 func (m *MockAPI) SearchFilters(query, workspaceID string, limit, offset int) (*client.SearchFiltersResponse, error) {
 	m.ctrl.T.Helper()
@@ -1285,6 +1390,36 @@ func (m *MockAPI) SearchFilters(query, workspaceID string, limit, offset int) (*
 func (mr *MockAPIMockRecorder) SearchFilters(query, workspaceID, limit, offset interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchFilters", reflect.TypeOf((*MockAPI)(nil).SearchFilters), query, workspaceID, limit, offset)
+}
+
+// SearchParticipantGroups mocks base method.
+func (m *MockAPI) SearchParticipantGroups(query, workspaceID string, limit, offset int) (*client.ListParticipantGroupsResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchParticipantGroups", query, workspaceID, limit, offset)
+	ret0, _ := ret[0].(*client.ListParticipantGroupsResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchParticipantGroups indicates an expected call of SearchParticipantGroups.
+func (mr *MockAPIMockRecorder) SearchParticipantGroups(query, workspaceID, limit, offset interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchParticipantGroups", reflect.TypeOf((*MockAPI)(nil).SearchParticipantGroups), query, workspaceID, limit, offset)
+}
+
+// SearchStudies mocks base method.
+func (m *MockAPI) SearchStudies(query, workspaceID string, page int) (*client.ListStudiesResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchStudies", query, workspaceID, page)
+	ret0, _ := ret[0].(*client.ListStudiesResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchStudies indicates an expected call of SearchStudies.
+func (mr *MockAPIMockRecorder) SearchStudies(query, workspaceID, page interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchStudies", reflect.TypeOf((*MockAPI)(nil).SearchStudies), query, workspaceID, page)
 }
 
 // SendGroupMessage mocks base method.

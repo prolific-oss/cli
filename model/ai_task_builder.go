@@ -1,10 +1,11 @@
 package model
 
 import (
+	"encoding/json"
 	"time"
 )
 
-// AITaskBuilderBatch represents an AI Task Builder batch.
+// AITaskBuilderBatch represents a Task Builder batch.
 type AITaskBuilderBatch struct {
 	ID                    string                       `json:"id"`
 	CreatedAt             time.Time                    `json:"created_at"`
@@ -19,9 +20,84 @@ type AITaskBuilderBatch struct {
 	SchemaVersion         int                          `json:"schema_version"`
 	TaskDetails           TaskDetails                  `json:"task_details"`
 	AutoSyncEnabled       bool                         `json:"auto_sync_enabled"`
+	// ReviewSourceBatchID is set on a review batch: the batch whose work it reviews.
+	ReviewSourceBatchID string `json:"review_source_batch_id,omitempty"`
+	// BatchItems is kept as it came and only read for a review batch, to show its rubrics back. Decoding it here would
+	// make a batch of any shape fail to load for a view that never looks at it.
+	BatchItems json.RawMessage `json:"batch_items,omitempty"`
 }
 
-// AITaskBuilderBatchStatus represents the status of an AI Task Builder batch.
+// reviewNotesDescription is the text the API gives the optional notes box of a review batch. It is how a notes box is
+// told apart from any other free text item.
+const reviewNotesDescription = "<p>Add notes (optional)</p>"
+
+// batchPageSummary is the part of a batch page the CLI reads: its items.
+type batchPageSummary struct {
+	Rows []struct {
+		Columns []struct {
+			Items []batchItemSummary `json:"items"`
+		} `json:"columns"`
+	} `json:"rows"`
+}
+
+// batchItemSummary is the part of a batch item the CLI reads.
+type batchItemSummary struct {
+	Type          string `json:"type"`
+	Description   string `json:"description,omitempty"`
+	ScoringScheme string `json:"scoring_scheme,omitempty"`
+}
+
+// ReviewRubric is one question a reviewer answers.
+type ReviewRubric struct {
+	Description   string
+	ScoringScheme string
+}
+
+// ReviewSummary is what a review batch's form stands for.
+type ReviewSummary struct {
+	SourceBatchID string
+	Rubrics       []ReviewRubric
+	// Notes is whether reviewers get an optional notes box.
+	Notes bool
+	// Unreadable is set when the stored form could not be read, so the rubrics and notes box are not known.
+	Unreadable bool
+}
+
+// Review reads a review batch's rubrics back from its stored form, the way the API does: the stored items are the only
+// copy. It returns nil for a batch that is not a review batch.
+func (b AITaskBuilderBatch) Review() *ReviewSummary {
+	if b.ReviewSourceBatchID == "" {
+		return nil
+	}
+
+	review := &ReviewSummary{SourceBatchID: b.ReviewSourceBatchID}
+
+	var pages []batchPageSummary
+	if len(b.BatchItems) > 0 {
+		if err := json.Unmarshal(b.BatchItems, &pages); err != nil {
+			review.Unreadable = true
+			return review
+		}
+	}
+
+	for _, page := range pages {
+		for _, row := range page.Rows {
+			for _, column := range row.Columns {
+				for _, item := range column.Items {
+					switch {
+					case item.Type == "rubric_score":
+						review.Rubrics = append(review.Rubrics, ReviewRubric{Description: item.Description, ScoringScheme: item.ScoringScheme})
+					case item.Type == "free_text" && item.Description == reviewNotesDescription:
+						review.Notes = true
+					}
+				}
+			}
+		}
+	}
+	return review
+}
+
+// AITaskBuilderBatchStatus represents the status of a Task Builder batch.
 type AITaskBuilderBatchStatus struct {
 	Status AITaskBuilderBatchStatusEnum `json:"status"`
 }
@@ -155,7 +231,7 @@ type Instruction struct {
 	MaxFileCount         *int                `json:"max_file_count,omitempty"`
 }
 
-// AITaskBuilderResponse represents a response from an AI Task Builder batch task.
+// AITaskBuilderResponse represents a response from a Task Builder batch task.
 type AITaskBuilderResponse struct {
 	ID            string                    `json:"id"`
 	BatchID       string                    `json:"batch_id"`
@@ -187,6 +263,7 @@ const (
 	AITaskBuilderResponseTypeMultipleChoiceWithFreeText AITaskBuilderResponseType = "multiple_choice_with_free_text"
 	AITaskBuilderResponseTypeFreeTextWithUnit           AITaskBuilderResponseType = "free_text_with_unit"
 	AITaskBuilderResponseTypeFileUpload                 AITaskBuilderResponseType = "file_upload"
+	AITaskBuilderResponseTypeAudioRecording             AITaskBuilderResponseType = "audio_recording"
 )
 
 // AITaskBuilderAnswerOption represents an answer option in a response.
@@ -196,6 +273,7 @@ const (
 // - multiple_choice: value
 // - multiple_choice_with_free_text: value, explanation
 // - file_upload: file_key, file_name, file_size_mb, content_type
+// - audio_recording: recording_id, duration_seconds, file_key, file_name, file_size_mb, content_type
 type AITaskBuilderAnswerOption struct {
 	// For free_text, free_text_with_unit, multiple_choice, multiple_choice_with_free_text
 	Value string `json:"value,omitempty"`
@@ -203,11 +281,14 @@ type AITaskBuilderAnswerOption struct {
 	Unit string `json:"unit,omitempty"`
 	// For multiple_choice_with_free_text
 	Explanation string `json:"explanation,omitempty"`
-	// For file_upload
+	// For file_upload and audio_recording
 	FileKey     string  `json:"file_key,omitempty"`
 	FileName    string  `json:"file_name,omitempty"`
 	FileSizeMB  float64 `json:"file_size_mb,omitempty"`
 	ContentType string  `json:"content_type,omitempty"`
+	// For audio_recording
+	RecordingID     string  `json:"recording_id,omitempty"`
+	DurationSeconds float64 `json:"duration_seconds,omitempty"`
 }
 
 type AITaskBuilderBatchStatusEnum string
@@ -239,13 +320,14 @@ type CollectionPage struct {
 
 // CollectionPageItem represents an item within a collection page.
 // This can be either an instruction (interactive) or a content block (non-interactive).
+// Content block types are rich_text, image, and custom_html.
 // The Type field determines which other fields are relevant.
 // Use InstructionType constants from collection.go for the Type field.
 type CollectionPageItem struct {
 	Order int    `json:"order" mapstructure:"order"`
 	Type  string `json:"type" mapstructure:"type"`
 
-	// Instruction fields (for free_text, multiple_choice, multiple_choice_with_free_text, free_text_with_unit, file_upload)
+	// Instruction fields (for free_text, multiple_choice, multiple_choice_with_free_text, free_text_with_unit, file_upload, audio_recording)
 	Description          string              `json:"description,omitempty" mapstructure:"description"`
 	Options              []InstructionOption `json:"options,omitempty" mapstructure:"options"`
 	AnswerLimit          *int                `json:"answer_limit,omitempty" mapstructure:"answer_limit"`
@@ -259,7 +341,7 @@ type CollectionPageItem struct {
 	DefaultUnit  string       `json:"default_unit,omitempty" mapstructure:"default_unit"`
 	UnitPosition UnitPosition `json:"unit_position,omitempty" mapstructure:"unit_position"`
 
-	// File upload fields (for file_upload)
+	// File upload fields (for file_upload; max_file_size_mb also applies to audio_recording)
 	AcceptedFileTypes []string `json:"accepted_file_types,omitempty" mapstructure:"accepted_file_types"`
 	MaxFileSizeMB     *float64 `json:"max_file_size_mb,omitempty" mapstructure:"max_file_size_mb"`
 	MinFileCount      *int     `json:"min_file_count,omitempty" mapstructure:"min_file_count"`
@@ -273,6 +355,10 @@ type CollectionPageItem struct {
 	URL     string `json:"url,omitempty" mapstructure:"url"`
 	AltText string `json:"alt_text,omitempty" mapstructure:"alt_text"`
 	Caption string `json:"caption,omitempty" mapstructure:"caption"`
+
+	// Content block fields (for custom_html)
+	HTMLContent string `json:"html_content,omitempty" mapstructure:"html_content"`
+	HTMLFile    string `json:"-" mapstructure:"html_file"`
 }
 
 // CollectionInstruction is an alias for CollectionPageItem for backward compatibility.

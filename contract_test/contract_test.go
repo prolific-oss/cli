@@ -15,6 +15,10 @@
 //     or awaiting docs, so it is not guaranteed to work for every account.
 //     The entry keeps its call so validation starts the moment the spec publishes:
 //     TestAPICoverage fails once the operationId appears, prompting removal of the skip.
+//   - UNADVERTISED — endpoint is in the published spec, but is deliberately kept out of the
+//     README coverage table while it is rolled out gradually. Like NOTINSPEC, the entry keeps its
+//     call, and the call is validated against the spec. Remove the skip once the rollout is
+//     announced, and the endpoint is listed like any other.
 
 package contracttest
 
@@ -39,8 +43,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const specURL = "https://docs.prolific.com/openapi.yaml"
-const specFile = "openapi.yaml"
+const (
+	specURL  = "https://docs.prolific.com/openapi.yaml"
+	specFile = "openapi.yaml"
+)
 
 func TestMain(m *testing.M) {
 	if err := downloadSpec(); err != nil {
@@ -97,8 +103,14 @@ func findRoute(router routers.Router, r *http.Request) (*routers.Route, map[stri
 
 type operation struct {
 	operationID string
-	call        func(*client.Client) // nil when skipped, except NOTINSPEC entries which keep their call
+	call        func(*client.Client) // nil when skipped, except NOTINSPEC and UNADVERTISED entries which keep their call
 	skip        string               // required reason when call is nil; prefix with a tag from the package doc
+}
+
+// isUnadvertised reports whether the operation is in the spec but deliberately held back
+// from the README coverage table. Unlike other skips, its call is still validated.
+func isUnadvertised(op operation) bool {
+	return strings.HasPrefix(op.skip, "UNADVERTISED")
 }
 
 // operations maps every operationId in openapi.yaml to either a client method call
@@ -107,7 +119,7 @@ type operation struct {
 var operations = []operation{
 	// Workspaces
 	{operationID: "workspaces_GetWorkspaces", call: func(c *client.Client) { c.GetWorkspaces(10, 0) }},
-	{operationID: "workspaces_CreateWorkspace", call: func(c *client.Client) { c.CreateWorkspace(model.Workspace{Title: "t"}) }},
+	{operationID: "workspaces_CreateWorkspace", call: func(c *client.Client) { c.CreateWorkspace(model.Workspace{Title: "t", Description: "d"}) }},
 	{operationID: "workspaces_GetWorkspace", skip: "OUTOFSCOPE: no CLI command for retrieving a single workspace by ID"},
 	{operationID: "workspaces_UpdateWorkspace", skip: "OUTOFSCOPE: no CLI command for updating a workspace"},
 	{operationID: "workspaces_GetWorkspaceBalance", call: func(c *client.Client) { c.GetWorkspaceBalance("ws-id") }},
@@ -120,10 +132,18 @@ var operations = []operation{
 	{operationID: "studies_DeleteProjectStudy", skip: "OUTOFSCOPE: no CLI command for removing a study from a project"},
 
 	// Filters
-	{operationID: "filters_GetFilters", call: func(c *client.Client) { c.GetFilters() }},
-	// operationId assumed from Fern's tag_operation convention (source operationId is SearchFilters).
-	{operationID: "filters_SearchFilters", skip: "NOTINSPEC: live but unpublished, see prolific-oss/prolific#16270", call: func(c *client.Client) {
+	{operationID: "filters_GetRuleTree", skip: "NOTINSPEC: rule-tree is implemented in the backend but not published in the spec; confirm operationId on publication", call: func(c *client.Client) {
+		c.GetFilterRuleTree("ws-id")
+	}},
+	{operationID: "filters_GetFilters", call: func(c *client.Client) { c.GetFilters("ws-id") }},
+	{operationID: "filters_SearchFilters", skip: "UNADVERTISED: gradual rollout, in the spec but not advertised yet", call: func(c *client.Client) {
 		c.SearchFilters("developer", "ws-id", 25, 0)
+	}},
+	{operationID: "filters_GetFilterChoices", skip: "UNADVERTISED: gradual rollout, in the spec but not advertised yet", call: func(c *client.Client) {
+		c.GetFilterChoices("job-title", "ws-id", client.FilterChoicesPageSize, client.DefaultRecordOffset)
+	}},
+	{operationID: "filters_SearchFilterChoices", skip: "UNADVERTISED: gradual rollout, in the spec but not advertised yet", call: func(c *client.Client) {
+		c.SearchFilterChoices("job-title", "nurse", "ws-id", client.FilterChoicesPageSize, client.DefaultRecordOffset)
 	}},
 	{operationID: "filters_GetEligibleCount", call: func(c *client.Client) {
 		c.GetEligibilityCount(client.EligibilityCountPayload{Filters: []model.Filter{}, WorkspaceID: "ws-id"})
@@ -182,65 +202,73 @@ var operations = []operation{
 	{operationID: "surveys_GetResponse", call: func(c *client.Client) { c.GetSurveyResponse("survey-id", "response-id") }},
 	{operationID: "surveys_DeleteResponse", call: func(c *client.Client) { c.DeleteSurveyResponse("survey-id", "response-id") }},
 
-	// AI Task Builder — Batches
-	{operationID: "aiTaskBuilder_GetTaskBuilderBatches", call: func(c *client.Client) { c.GetAITaskBuilderBatches("ws-id") }},
-	{operationID: "aiTaskBuilder_CreateTaskBuilderBatch", call: func(c *client.Client) {
+	// Task Builder — Batches
+	{operationID: "taskBuilder_GetTaskBuilderBatches", call: func(c *client.Client) { c.GetAITaskBuilderBatches("ws-id") }},
+	{operationID: "taskBuilder_CreateTaskBuilderBatch", call: func(c *client.Client) {
 		c.CreateAITaskBuilderBatch(client.CreateBatchParams{
 			Name:        "t",
 			WorkspaceID: "ws-id",
 			DatasetID:   "ds-id",
 		})
 	}},
-	{operationID: "aiTaskBuilder_GetTaskBuilderBatch", call: func(c *client.Client) { c.GetAITaskBuilderBatch("batch-id") }},
-	{operationID: "aiTaskBuilder_UpdateTaskBuilderBatch", call: func(c *client.Client) {
+	{operationID: "taskBuilder_GetTaskBuilderBatch", call: func(c *client.Client) { c.GetAITaskBuilderBatch("batch-id") }},
+	{operationID: "taskBuilder_UpdateTaskBuilderBatch", call: func(c *client.Client) {
 		c.UpdateAITaskBuilderBatch(client.UpdateBatchParams{BatchID: "batch-id", Name: "t"})
 	}},
-	{operationID: "aiTaskBuilder_GetTaskBuilderBatchStatus", call: func(c *client.Client) { c.GetAITaskBuilderBatchStatus("batch-id") }},
-	{operationID: "aiTaskBuilder_SetupTaskBuilderBatch", call: func(c *client.Client) {
+	{operationID: "taskBuilder_GetTaskBuilderBatchStatus", call: func(c *client.Client) { c.GetAITaskBuilderBatchStatus("batch-id") }},
+	{operationID: "taskBuilder_SetupTaskBuilderBatch", call: func(c *client.Client) {
 		c.SetupAITaskBuilderBatch("batch-id", "ds-id", 5)
 	}},
-	{operationID: "aiTaskBuilder_GetTaskBuilderBatchTaskResponses", call: func(c *client.Client) { c.GetAITaskBuilderResponses("batch-id") }},
-	{operationID: "aiTaskBuilder_GetTaskBuilderBatchReport", skip: "OUTOFSCOPE: no CLI command for batch report; GetAITaskBuilderTasks calls /tasks which is not in the spec"},
-	{operationID: "aiTaskBuilder_DuplicateTaskBuilderBatch", skip: "OUTOFSCOPE: no CLI command for duplicating a batch"},
-	{operationID: "aiTaskBuilder_SyncTaskBuilderBatch", call: func(c *client.Client) { c.SyncAITaskBuilderBatch("batch-id") }},
-	{operationID: "aiTaskBuilder_GetBatchSyncStatus", call: func(c *client.Client) { c.GetAITaskBuilderBatchSyncStatus("batch-id", "sync-id") }},
-	{operationID: "aiTaskBuilder_RequestBatchExport", call: func(c *client.Client) {
+	{operationID: "taskBuilder_GetTaskBuilderBatchTaskResponses", call: func(c *client.Client) { c.GetAITaskBuilderResponses("batch-id") }},
+	{operationID: "taskBuilder_GetTaskBuilderBatchReport", skip: "OUTOFSCOPE: no CLI command for batch report; GetAITaskBuilderTasks calls /tasks which is not in the spec"},
+	{operationID: "taskBuilder_DuplicateTaskBuilderBatch", skip: "OUTOFSCOPE: no CLI command for duplicating a batch"},
+	{operationID: "taskBuilder_SyncTaskBuilderBatch", call: func(c *client.Client) { c.SyncAITaskBuilderBatch("batch-id") }},
+	{operationID: "taskBuilder_GetBatchSyncStatus", call: func(c *client.Client) { c.GetAITaskBuilderBatchSyncStatus("batch-id", "sync-id") }},
+	{operationID: "taskBuilder_RequestBatchExport", call: func(c *client.Client) {
 		c.InitiateBatchExport("batch-id", client.ExportFilter{
 			StudyID: "study-id",
 			From:    "2024-01-01T00:00:00Z",
 			To:      "2024-02-01T00:00:00Z",
 		})
 	}},
-	{operationID: "aiTaskBuilder_GetBatchExportStatus", call: func(c *client.Client) { c.GetBatchExportStatus("batch-id", "export-id") }},
-	{operationID: "aiTaskBuilder_ListBatchExportJobs", call: func(c *client.Client) { c.ListBatchExportJobs("batch-id") }},
-	{operationID: "aiTaskBuilder_DeleteBatchExport", call: func(c *client.Client) { c.DeleteBatchExport("batch-id", "export-id") }},
+	{operationID: "taskBuilder_GetBatchExportStatus", call: func(c *client.Client) { c.GetBatchExportStatus("batch-id", "export-id") }},
+	{operationID: "taskBuilder_ListBatchExportJobs", call: func(c *client.Client) { c.ListBatchExportJobs("batch-id") }},
+	{operationID: "taskBuilder_DeleteBatchExport", call: func(c *client.Client) { c.DeleteBatchExport("batch-id", "export-id") }},
 
-	// AI Task Builder — Datasets
-	{operationID: "aiTaskBuilder_CreateTaskBuilderDataset", call: func(c *client.Client) {
+	// Task Builder — Datasets
+	{operationID: "taskBuilder_CreateTaskBuilderDataset", call: func(c *client.Client) {
 		c.CreateAITaskBuilderDataset("ws-id", client.CreateAITaskBuilderDatasetPayload{Name: "t"})
 	}},
-	{operationID: "aiTaskBuilder_UpdateTaskBuilderDataset", skip: "OUTOFSCOPE: no CLI command for updating a dataset"},
-	{operationID: "aiTaskBuilder_AppendDatasetDatapoints", skip: "OUTOFSCOPE: no CLI command for appending datapoints to a dataset"},
-	{operationID: "aiTaskBuilder_getDatasetUploadUrl", call: func(c *client.Client) { c.GetAITaskBuilderDatasetUploadURL("ds-id", "data.jsonl") }},
-	{operationID: "aiTaskBuilder_GetTaskBuilderDataset", call: func(c *client.Client) { c.GetAITaskBuilderDataset("ds-id") }},
-	{operationID: "aiTaskBuilder_GetTaskBuilderDatasetStatus", call: func(c *client.Client) { c.GetAITaskBuilderDatasetStatus("ds-id") }},
-	{operationID: "aiTaskBuilder_GetDatasetImportStatus", call: func(c *client.Client) {
+	{operationID: "taskBuilder_UpdateTaskBuilderDataset", skip: "OUTOFSCOPE: no CLI command for updating a dataset"},
+	{operationID: "taskBuilder_AppendDatasetDatapoints", skip: "OUTOFSCOPE: no CLI command for appending datapoints to a dataset"},
+	{operationID: "taskBuilder_getDatasetUploadUrl", call: func(c *client.Client) { c.GetAITaskBuilderDatasetUploadURL("ds-id", "data.jsonl") }},
+	{operationID: "taskBuilder_GetTaskBuilderDataset", call: func(c *client.Client) { c.GetAITaskBuilderDataset("ds-id") }},
+	{operationID: "taskBuilder_GetTaskBuilderDatasetStatus", call: func(c *client.Client) { c.GetAITaskBuilderDatasetStatus("ds-id") }},
+	{operationID: "taskBuilder_GetDatasetImportStatus", call: func(c *client.Client) {
 		c.GetAITaskBuilderDatasetImportStatus("ds-id", "import-id")
 	}},
-	{operationID: "aiTaskBuilder_GetSchemaMigrationStatus", skip: "OUTOFSCOPE: no CLI command for dataset schema migration status"},
+	{operationID: "taskBuilder_GetSchemaMigrationStatus", skip: "OUTOFSCOPE: no CLI command for dataset schema migration status"},
 
-	// AI Task Builder — Instructions
-	{operationID: "aiTaskBuilder_GetTaskBuilderInstructions", skip: "OUTOFSCOPE: no CLI command for getting task builder instructions"},
-	{operationID: "aiTaskBuilder_CreateTaskBuilderInstructions", call: func(c *client.Client) {
+	// Task Builder — Files
+	{operationID: "taskBuilder_getFileUploadUrl", skip: "NOTINSPEC: file hosting is behind a workspace gate and not published in the spec; confirm operationId on publication", call: func(c *client.Client) {
+		c.GetFileUploadURL("ws-id", "clip.mp4")
+	}},
+	{operationID: "taskBuilder_DeleteFile", skip: "NOTINSPEC: file hosting is behind a workspace gate and not published in the spec; confirm operationId on publication", call: func(c *client.Client) {
+		c.DeleteFile("ws-id", "0123456789abcdef0123456789abcdef", "clip.mp4")
+	}},
+
+	// Task Builder — Instructions
+	{operationID: "taskBuilder_GetTaskBuilderInstructions", skip: "OUTOFSCOPE: no CLI command for getting task builder instructions"},
+	{operationID: "taskBuilder_CreateTaskBuilderInstructions", call: func(c *client.Client) {
 		c.CreateAITaskBuilderInstructions("batch-id", client.CreateAITaskBuilderInstructionsPayload{
 			Instructions: []client.Instruction{},
 		})
 	}},
-	{operationID: "aiTaskBuilder_UpdateTaskBuilderInstructions", skip: "OUTOFSCOPE: no CLI command for updating task builder instructions"},
+	{operationID: "taskBuilder_UpdateTaskBuilderInstructions", skip: "OUTOFSCOPE: no CLI command for updating task builder instructions"},
 
-	// AI Task Builder — Collections
-	{operationID: "aiTaskBuilder_ListCollections", call: func(c *client.Client) { c.GetCollections("ws-id", 10, 0) }},
-	{operationID: "aiTaskBuilder_CreateCollection", call: func(c *client.Client) {
+	// Task Builder — Collections
+	{operationID: "taskBuilder_ListCollections", call: func(c *client.Client) { c.GetCollections("ws-id", 10, 0) }},
+	{operationID: "taskBuilder_CreateCollection", call: func(c *client.Client) {
 		c.CreateAITaskBuilderCollection(model.CreateAITaskBuilderCollection{
 			WorkspaceID:     "ws-id",
 			Name:            "t",
@@ -248,27 +276,27 @@ var operations = []operation{
 			TaskDetails:     &model.TaskDetails{TaskName: "t", TaskIntroduction: "t", TaskSteps: "t"},
 		})
 	}},
-	{operationID: "aiTaskBuilder_GetCollection", call: func(c *client.Client) { c.GetCollection("coll-id") }},
-	{operationID: "aiTaskBuilder_UpdateCollection", call: func(c *client.Client) {
+	{operationID: "taskBuilder_GetCollection", call: func(c *client.Client) { c.GetCollection("coll-id") }},
+	{operationID: "taskBuilder_UpdateCollection", call: func(c *client.Client) {
 		c.UpdateCollection("coll-id", model.UpdateCollection{
 			Name:            "t",
 			CollectionItems: []model.Page{},
 			TaskDetails:     &model.TaskDetails{TaskName: "t", TaskIntroduction: "t", TaskSteps: "t"},
 		})
 	}},
-	{operationID: "aiTaskBuilder_GetCollectionResponses", skip: "OUTOFSCOPE: no CLI command for getting collection responses"},
-	{operationID: "aiTaskBuilder_RequestCollectionExport", call: func(c *client.Client) {
+	{operationID: "taskBuilder_GetCollectionResponses", skip: "OUTOFSCOPE: no CLI command for getting collection responses"},
+	{operationID: "taskBuilder_RequestCollectionExport", call: func(c *client.Client) {
 		c.InitiateCollectionExport("coll-id", client.ExportFilter{
 			StudyID: "study-id",
 			From:    "2024-01-01T00:00:00Z",
 			To:      "2024-02-01T00:00:00Z",
 		})
 	}},
-	{operationID: "aiTaskBuilder_GetCollectionExportStatus", call: func(c *client.Client) {
+	{operationID: "taskBuilder_GetCollectionExportStatus", call: func(c *client.Client) {
 		c.GetCollectionExportStatus("coll-id", "export-id")
 	}},
-	{operationID: "aiTaskBuilder_ListCollectionExportJobs", call: func(c *client.Client) { c.ListCollectionExportJobs("coll-id") }},
-	{operationID: "aiTaskBuilder_DeleteCollectionExport", call: func(c *client.Client) { c.DeleteCollectionExport("coll-id", "export-id") }},
+	{operationID: "taskBuilder_ListCollectionExportJobs", call: func(c *client.Client) { c.ListCollectionExportJobs("coll-id") }},
+	{operationID: "taskBuilder_DeleteCollectionExport", call: func(c *client.Client) { c.DeleteCollectionExport("coll-id", "export-id") }},
 
 	// Invitations
 	{operationID: "invitations_CreateInvitation", call: func(c *client.Client) {
@@ -295,9 +323,12 @@ var operations = []operation{
 	{operationID: "messages_GetConversations", skip: "OUTOFSCOPE: no CLI command for listing conversations"},
 	{operationID: "messages_CreateConversation", skip: "OUTOFSCOPE: no CLI command for starting a conversation"},
 	{operationID: "messages_GetConversationMessages", skip: "OUTOFSCOPE: no CLI command for retrieving conversation messages"},
+	{operationID: "messages_CreateBroadcast", skip: "OUTOFSCOPE: no CLI command for sending broadcasts"},
+	{operationID: "messages_GetBroadcasts", skip: "OUTOFSCOPE: no CLI command for listing broadcasts"},
+	{operationID: "messages_GetBroadcast", skip: "OUTOFSCOPE: no CLI command for retrieving a broadcast"},
 
 	// Studies
-	{operationID: "studies_GetStudies", call: func(c *client.Client) { c.GetStudies("", "") }},
+	{operationID: "studies_GetStudies", call: func(c *client.Client) { c.GetStudies("", "") }}, // SearchStudies: client/search_test.go. GetStudiesRaw shares this request: client/study_test.go.
 	{operationID: "studies_CreateStudy", call: func(c *client.Client) {
 		c.CreateStudy(model.CreateStudy{
 			Name:                    "t",
@@ -309,7 +340,7 @@ var operations = []operation{
 			DeviceCompatibility:     []string{"desktop"},
 		})
 	}},
-	{operationID: "studies_GetProjectStudies", call: func(c *client.Client) { c.GetStudies("", "proj-id") }},
+	{operationID: "studies_GetProjectStudies", call: func(c *client.Client) { c.GetStudies("", "proj-id") }}, // GetStudiesRaw shares this request: client/study_test.go.
 	{operationID: "studies_DeleteProjectStudy", skip: "OUTOFSCOPE: no CLI command for deleting a study"},
 	{operationID: "studies_GetStudy", call: func(c *client.Client) { c.GetStudy("study-id") }},
 	{operationID: "studies_DeleteStudy", skip: "OUTOFSCOPE: no CLI command for deleting a study"},
@@ -321,6 +352,7 @@ var operations = []operation{
 	{operationID: "studies_GetStudyAccessDetailsProgress", skip: "OUTOFSCOPE: no CLI command for access details progress"},
 	{operationID: "studies_GetStudyCost", skip: "OUTOFSCOPE: no CLI command for getting study cost"},
 	{operationID: "studies_GetStudySubmissions", call: func(c *client.Client) { c.GetSubmissions("study-id", 10, 0) }},
+	{operationID: "studies_ListStudyFeedbackResponses", call: func(c *client.Client) { c.GetStudyFeedback("study-id", true, 10, 0) }},
 	{operationID: "studies_CountStudySubmissionsByStatus", call: func(c *client.Client) { c.GetStudySubmissionCounts("study-id") }},
 	{operationID: "studies_DownloadStudyCredentialReport", call: func(c *client.Client) {
 		c.GetStudyCredentialsUsageReportCSV("study-id")
@@ -330,6 +362,7 @@ var operations = []operation{
 	{operationID: "studies_GetDemographicExportHistory", skip: "OUTOFSCOPE: no CLI command for demographic export history"},
 	{operationID: "studies_DuplicateStudy", call: func(c *client.Client) { c.DuplicateStudy("study-id") }},
 	{operationID: "studies_CalculateStudyCost", skip: "OUTOFSCOPE: no CLI command for calculating study cost"},
+	{operationID: "studies_ListStudyFeedbackResponses", call: func(c *client.Client) { c.GetStudyFeedback("study-id", false, 0, 0) }},
 
 	// Credentials
 	{operationID: "credentials_ListCredentialPools", call: func(c *client.Client) { c.ListCredentialPools("ws-id") }},
@@ -380,7 +413,7 @@ var operations = []operation{
 	}},
 
 	// Participant Groups
-	{operationID: "participantGroups_GetParticipantGroups", skip: "HARNESSGAP: kin-openapi v0.146.0 mis-decodes a top-level oneOf-of-objects query param under the default form/explode=true style — it always resolves to the last oneOf branch (project_id), discarding an earlier correct match (workspace_id), so oneOf validation fails regardless of how the client sends it. Client's flat workspace_id=X is correct per spec defaults and per the real API (see commit 8c7aae6 / DCP-2272)."},
+	{operationID: "participantGroups_GetParticipantGroups", skip: "HARNESSGAP: kin-openapi v0.146.0 mis-decodes a top-level oneOf-of-objects query param under the default form/explode=true style — it always resolves to the last oneOf branch (project_id), discarding an earlier correct match (workspace_id), so oneOf validation fails regardless of how the client sends it. Client's flat workspace_id=X is correct per spec defaults and per the real API (see commit 8c7aae6 / DCP-2272). SearchParticipantGroups parameters are covered in client/search_test.go."},
 	{operationID: "participantGroups_CreateParticipantGroup", call: func(c *client.Client) {
 		c.CreateParticipantGroup(model.CreateParticipantGroup{Name: "t", WorkspaceID: "ws-id"})
 	}},
@@ -394,6 +427,16 @@ var operations = []operation{
 	{operationID: "participantGroups_RemoveFromParticipantGroup", call: func(c *client.Client) {
 		c.RemoveParticipantGroupMembers("group-id", []string{"p1"})
 	}},
+}
+
+// canonicalOperationID maps the legacy aiTaskBuilder_ operationId prefix to taskBuilder_. The published spec
+// switched prefix when AI Task Builder was renamed to Task Builder, and this lets the coverage table match the spec
+// either side of that publish. Remove it once the published spec only uses taskBuilder_.
+func canonicalOperationID(id string) string {
+	if rest, ok := strings.CutPrefix(id, "aiTaskBuilder_"); ok {
+		return "taskBuilder_" + rest
+	}
+	return id
 }
 
 // TestAPICoverage verifies that every operationId in openapi.yaml is accounted for
@@ -418,7 +461,7 @@ func TestAPICoverage(t *testing.T) {
 	for _, methods := range spec.Paths {
 		for _, op := range methods {
 			if op.OperationID != "" {
-				specOps[op.OperationID] = true
+				specOps[canonicalOperationID(op.OperationID)] = true
 			}
 		}
 	}
@@ -444,6 +487,8 @@ func TestAPICoverage(t *testing.T) {
 			t.Errorf("operationId %q is now in openapi.yaml — remove its NOTINSPEC skip so the call is validated", op.operationID)
 		case notInSpec && op.call == nil:
 			t.Errorf("operationId %q is NOTINSPEC but has no call — add one so validation is ready when the spec publishes", op.operationID)
+		case isUnadvertised(op) && op.call == nil:
+			t.Errorf("operationId %q is UNADVERTISED but has no call — add one so it is still validated against the spec", op.operationID)
 		case !notInSpec && !specOps[op.operationID]:
 			t.Errorf("operationId %q is in the coverage table but not in openapi.yaml — stale entry", op.operationID)
 		}
@@ -500,7 +545,7 @@ func TestClientMatchesAPISpec(t *testing.T) {
 	}
 
 	for _, tt := range operations {
-		if tt.skip != "" {
+		if tt.skip != "" && !isUnadvertised(tt) {
 			continue
 		}
 		t.Run(tt.operationID, func(t *testing.T) {

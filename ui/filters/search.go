@@ -18,34 +18,51 @@ const fieldWidth = 13
 // indent is the indentation applied to every line of a result below its title.
 const indent = "   "
 
-// SearchListFields is the default column set for table and CSV output.
-const SearchListFields = "Rank,FilterID,Title,Type,DataType,Category,MatchedOn"
-
-// SearchListItem is a flattened search result for table and CSV output.
-type SearchListItem struct {
-	Rank      int
-	FilterID  string
-	Title     string
-	Type      string
-	DataType  string
-	Category  string
-	MatchedOn string
+// SearchListFields is the default column set for each format.
+var SearchListFields = ui.FieldSet{
+	CSV:   "FilterID,Title,Question,Category,Subcategory,Type,ChoicesTotal,ChoicesMatched,ChoicesTruncated",
+	Table: "FilterID,Title,Type",
 }
 
-// NewSearchListItems flattens search results for table and CSV output,
-// numbering them from firstRank in the order received.
-func NewSearchListItems(results []model.FilterSearchResult, firstRank int) []SearchListItem {
+// SearchListItem is a flattened search result for table and CSV output. Every
+// column is one field of the result: the category and subcategory stay apart,
+// and the choice counts come straight from the choices block, which a filter
+// without enumerable choices does not carry at all.
+type SearchListItem struct {
+	FilterID         string
+	Title            string
+	Question         string
+	Description      string
+	Category         string
+	Subcategory      string
+	Type             string
+	DataType         string
+	ChoicesTotal     int
+	ChoicesMatched   int
+	ChoicesTruncated bool
+}
+
+// NewSearchListItems flattens search results for table and CSV output, in the
+// order received.
+func NewSearchListItems(results []model.FilterSearchResult) []SearchListItem {
 	items := make([]SearchListItem, 0, len(results))
-	for i, r := range results {
-		items = append(items, SearchListItem{
-			Rank:      firstRank + i,
-			FilterID:  r.FilterID,
-			Title:     r.Title,
-			Type:      r.Type,
-			DataType:  r.DataType,
-			Category:  joinCategory(deref(r.Category), deref(r.Subcategory)),
-			MatchedOn: strings.Join(matchedFields(r), ", "),
-		})
+	for _, r := range results {
+		item := SearchListItem{
+			FilterID:    r.FilterID,
+			Title:       r.Title,
+			Question:    deref(r.Question),
+			Description: r.Description,
+			Category:    deref(r.Category),
+			Subcategory: deref(r.Subcategory),
+			Type:        r.Type,
+			DataType:    r.DataType,
+		}
+		if r.Choices != nil {
+			item.ChoicesTotal = r.Choices.Total
+			item.ChoicesMatched = r.Choices.Matched
+			item.ChoicesTruncated = r.Choices.Truncated
+		}
+		items = append(items, item)
 	}
 	return items
 }
@@ -54,7 +71,7 @@ func NewSearchListItems(results []model.FilterSearchResult, firstRank int) []Sea
 // the query and the API's match count are visible on the first screen without
 // scrolling. It is written before results stream in, so it reports only what
 // the API has said: the total, and whether the caller asked for fewer than
-// that. The exact number rendered is reported by RenderSearchFooter.
+// that. The exact number rendered is reported by RenderResultsFooter.
 func RenderSearchHeader(query string, total int, truncated bool) string {
 	var b strings.Builder
 	b.WriteString(ui.RenderHeading(fmt.Sprintf("Filters matching %q", query)))
@@ -70,9 +87,9 @@ func RenderSearchHeader(query string, total int, truncated bool) string {
 	return b.String()
 }
 
-// RenderSearchFooter renders the closing line stating how many results were
+// RenderResultsFooter renders the closing line stating how many records were
 // actually rendered out of the total.
-func RenderSearchFooter(shown, total int) string {
+func RenderResultsFooter(shown, total int) string {
 	return "\n" + ui.RenderDimmed(ui.RenderRecordCounter(shown, total)) + "\n"
 }
 
@@ -88,8 +105,9 @@ func RenderNoSearchResults(query string) string {
 
 // RenderSearchResult renders a single filter search result at the given rank,
 // highlighting the parts of the filter that matched the query and previewing
-// matching choices.
-func RenderSearchResult(rank int, r model.FilterSearchResult) string {
+// matching choices. The query is repeated back in the command suggested for
+// filters whose choices the preview does not cover.
+func RenderSearchResult(rank int, query string, r model.FilterSearchResult) string {
 	var b strings.Builder
 	h := newHighlights(r.Matches)
 
@@ -124,9 +142,7 @@ func RenderSearchResult(rank int, r model.FilterSearchResult) string {
 	}
 	if r.Choices != nil {
 		field("Choices", fmt.Sprintf("%d total, %d matching", r.Choices.Total, r.Choices.Matched))
-		if len(r.Choices.Results) > 0 {
-			b.WriteString(renderMatchedChoices(*r.Choices))
-		}
+		b.WriteString(renderMatchedChoices(r.FilterID, query, *r.Choices))
 	}
 
 	if fields := matchedFields(r); len(fields) > 0 {
@@ -169,24 +185,29 @@ func newHighlights(highlights []model.FilterSearchHighlight) ui.FieldHighlights 
 // renderMatchedChoices renders the preview of matching choices as a small
 // indented table. It sits under the metadata block, with its ID column the
 // same width as the field labels so the label column lines up with the field
-// values above it.
-func renderMatchedChoices(mc model.FilterSearchChoices) string {
+// values above it. When the preview does not cover every choice it closes
+// with the command that lists the rest, which is otherwise the end of the
+// road for a filter with thousands of choices.
+func renderMatchedChoices(filterID, query string, mc model.FilterSearchChoices) string {
+	hint := choicesCommand(filterID, query, mc)
+	if len(mc.Results) == 0 && hint == "" {
+		return ""
+	}
+
 	var b strings.Builder
 	choiceIndent := indent + strings.Repeat(" ", fieldWidth)
 
 	b.WriteString("\n")
-	b.WriteString(choiceIndent)
-	b.WriteString(ui.RenderDimmed(fmt.Sprintf("%-*s%s", fieldWidth, "Choice ID", "Label")))
-	b.WriteString("\n")
+	if len(mc.Results) > 0 {
+		b.WriteString(choiceIndent)
+		b.WriteString(ui.RenderDimmed(fmt.Sprintf("%-*s%s", fieldWidth, "Choice ID", "Label")))
+		b.WriteString("\n")
+	}
 
 	for _, choice := range mc.Results {
-		label := newHighlights(choice.Matches).Render("label", choice.Label)
 		b.WriteString(choiceIndent)
 		fmt.Fprintf(&b, "%-*s", fieldWidth, choice.ID)
-		b.WriteString(label)
-		if choice.NumDescendants > 0 {
-			b.WriteString(ui.RenderDimmed(fmt.Sprintf("  (+%d nested)", choice.NumDescendants)))
-		}
+		b.WriteString(renderChoiceLabel(choice))
 		b.WriteString("\n")
 	}
 	if mc.Truncated {
@@ -195,8 +216,55 @@ func renderMatchedChoices(mc model.FilterSearchChoices) string {
 		b.WriteString(ui.RenderDimmed(fmt.Sprintf("…and %d more matching %s", remaining, ui.Pluralise(remaining, "choice", "choices"))))
 		b.WriteString("\n")
 	}
+	if hint != "" {
+		b.WriteString(choiceIndent)
+		b.WriteString(ui.RenderDimmed(hint))
+		b.WriteString("\n")
+	}
 	b.WriteString("\n")
 	return b.String()
+}
+
+// choicesCommand names the command that lists the choices this preview does
+// not show: the matching ones when the preview was truncated, and the whole
+// set when the filter has choices beyond those previewed. It returns an empty
+// string when the preview already covers every choice.
+func choicesCommand(filterID, query string, mc model.FilterSearchChoices) string {
+	switch {
+	case mc.Matched > len(mc.Results):
+		return fmt.Sprintf("See them all: prolific filters choices search %s %s", shellQuote(filterID), shellQuote(query))
+	case mc.Total > len(mc.Results):
+		return fmt.Sprintf("See all %d choices: prolific filters choices %s", mc.Total, shellQuote(filterID))
+	default:
+		return ""
+	}
+}
+
+// shellQuote renders s as a single literal argument, so a suggested command
+// can be pasted into a shell and search for what the caller actually typed.
+// Anything outside the unreserved set is single quoted, which a shell takes
+// literally; an embedded single quote is closed, escaped and reopened.
+// strconv.Quote is not usable here: its double quotes still leave $, backticks
+// and backslashes live to the shell.
+func shellQuote(s string) string {
+	if s == "" {
+		return "''"
+	}
+	if strings.IndexFunc(s, needsQuoting) < 0 {
+		return s
+	}
+	return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'"
+}
+
+func needsQuoting(r rune) bool {
+	switch {
+	case r >= 'a' && r <= 'z', r >= 'A' && r <= 'Z', r >= '0' && r <= '9':
+		return false
+	case strings.ContainsRune("-_./:=", r):
+		return false
+	default:
+		return true
+	}
 }
 
 func renderRange(minValue, maxValue any) string {

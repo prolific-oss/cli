@@ -1,7 +1,7 @@
 // Package client provides an HTTP client for interacting with the Prolific API.
 // It handles authentication, request execution, and response parsing for all
 // supported Prolific resources including studies, workspaces, projects, hooks,
-// messages, and AI Task Builder operations.
+// messages, and Task Builder operations.
 package client
 
 import (
@@ -40,6 +40,8 @@ type API interface {
 	CreateStudy(model.CreateStudy) (*model.Study, error)
 	DuplicateStudy(ID string) (*model.Study, error)
 	GetStudies(status, projectID string) (*ListStudiesResponse, error)
+	GetStudiesRaw(status, projectID string) (json.RawMessage, error)
+	SearchStudies(query, workspaceID string, page int) (*ListStudiesResponse, error)
 	GetStudy(ID string) (*model.Study, error)
 	GetSubmissions(ID string, limit, offset int) (*ListSubmissionsResponse, error)
 	GetStudyFeedback(studyID string, hasWrittenFeedback bool, limit, offset int) (*ListStudyFeedbackResponse, error)
@@ -88,14 +90,19 @@ type API interface {
 	GetProject(ID string) (*model.Project, error)
 
 	GetParticipantGroups(workspaceID string, limit, offset int) (*ListParticipantGroupsResponse, error)
+	SearchParticipantGroups(query, workspaceID string, limit, offset int) (*ListParticipantGroupsResponse, error)
 	GetParticipantGroup(groupID string) (*ViewParticipantGroupResponse, error)
 	CreateParticipantGroup(group model.CreateParticipantGroup) (*CreateParticipantGroupResponse, error)
+	AddParticipantGroupMembers(groupID string, participantIDs []string) (*ViewParticipantGroupResponse, error)
 	RemoveParticipantGroupMembers(groupID string, participantIDs []string) (*ViewParticipantGroupResponse, error)
 
 	CreateTestParticipant(email string) (*CreateTestParticipantResponse, error)
 
-	GetFilters() (*ListFiltersResponse, error)
+	GetFilters(workspaceID string) (*ListFiltersResponse, error)
+	GetFilterRuleTree(workspaceID string) (*FilterRuleTreeResponse, error)
 	SearchFilters(query, workspaceID string, limit, offset int) (*SearchFiltersResponse, error)
+	GetFilterChoices(filterID, workspaceID string, limit, offset int) (*ListFilterChoicesResponse, error)
+	SearchFilterChoices(filterID, query, workspaceID string, limit, offset int) (*SearchFilterChoicesResponse, error)
 	GetEligibilityCount(payload EligibilityCountPayload) (*EligibilityCountResponse, error)
 	GetFilterBreakdown(payload FilterBreakdownPayload) (*FilterBreakdownResponse, error)
 
@@ -148,6 +155,8 @@ type API interface {
 	GetAITaskBuilderDatasetStatus(datasetID string) (*GetAITaskBuilderDatasetStatusResponse, error)
 	GetAITaskBuilderDatasetUploadURL(datasetID, fileName string) (*GetAITaskBuilderDatasetUploadURLResponse, error)
 	GetAITaskBuilderDatasetImportStatus(datasetID, importID string) (*GetAITaskBuilderDatasetImportStatusResponse, error)
+	GetFileUploadURL(workspaceID, fileName string) (*GetFileUploadURLResponse, error)
+	DeleteFile(workspaceID, fileID, fileName string) error
 }
 
 // UnrecognizedAPIError is returned by Execute when the response body does not match any known
@@ -282,7 +291,7 @@ func (c *Client) Execute(method, url string, body any, response any) (*http.Resp
 
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("User-Agent", c.userAgent())
-	request.Header.Set("X-Prolific-Client", "prolific-cli/"+version.Get())
+	request.Header.Set("X-Prolific-Client", "prolific-"+strings.TrimPrefix(cliVersionPrefix(), "prolific-oss/"))
 	request.Header.Set("Authorization", fmt.Sprintf("Token %s", c.Token))
 
 	if c.Debug {
@@ -384,12 +393,20 @@ func (c *Client) DuplicateStudy(ID string) (*model.Study, error) {
 // GetStudies will return you a list of Study objects.
 func (c *Client) GetStudies(status, projectID string) (*ListStudiesResponse, error) {
 	var response ListStudiesResponse
+	if err := c.getStudies(status, projectID, &response); err != nil {
+		return nil, err
+	}
+	return &response, nil
+}
+
+// getStudies keeps request routing and validation identical for typed and raw responses.
+func (c *Client) getStudies(status, projectID string, response any) error {
 	var url string
 
 	// Validate status if it's not "all" or empty
 	if status != "" && status != model.StatusAll {
 		if !slices.Contains(model.StudyListStatus, status) {
-			return nil, fmt.Errorf("%s is not a valid status: %s", status, strings.Join(model.StudyListStatus, ", "))
+			return fmt.Errorf("%s is not a valid status: %s", status, strings.Join(model.StudyListStatus, ", "))
 		}
 	}
 
@@ -418,12 +435,8 @@ func (c *Client) GetStudies(status, projectID string) (*ListStudiesResponse, err
 		}
 	}
 
-	_, err := c.ExecuteBuilder().GetInto(url, &response)
-	if err != nil {
-		return nil, err
-	}
-
-	return &response, nil
+	_, err := c.ExecuteBuilder().GetInto(url, response)
+	return err
 }
 
 // GetStudy will return a single study
@@ -968,8 +981,8 @@ func (c *Client) CreateProject(workspaceID string, project model.Project) (*Crea
 func (c *Client) GetParticipantGroups(workspaceID string, limit, offset int) (*ListParticipantGroupsResponse, error) {
 	var response ListParticipantGroupsResponse
 
-	url := fmt.Sprintf("/api/v1/participant-groups/?workspace_id=%s&limit=%v&offset=%v", workspaceID, limit, offset)
-	_, err := c.ExecuteBuilder().GetInto(url, &response)
+	params := url.Values{"workspace_id": {workspaceID}, "limit": {strconv.Itoa(limit)}, "offset": {strconv.Itoa(offset)}}
+	_, err := c.ExecuteBuilder().GetInto("/api/v1/participant-groups/?"+params.Encode(), &response)
 	if err != nil {
 		return nil, err
 	}
@@ -1007,6 +1020,7 @@ func (c *Client) CreateParticipantGroup(group model.CreateParticipantGroup) (*Cr
 	return &response, nil
 }
 
+// RemoveParticipantGroupMembers removes the given participants from a participant group.
 func (c *Client) RemoveParticipantGroupMembers(groupID string, participantIDs []string) (*ViewParticipantGroupResponse, error) {
 	payload := RemoveParticipantGroupMembersPayload{
 		ParticipantIDs: participantIDs,
@@ -1027,6 +1041,7 @@ func (c *Client) RemoveParticipantGroupMembers(groupID string, participantIDs []
 	return &response, nil
 }
 
+// AddParticipantGroupMembers adds the given participants to a participant group.
 func (c *Client) AddParticipantGroupMembers(groupID string, participantIDs []string) (*ViewParticipantGroupResponse, error) {
 	payload := AddParticipantGroupMembersPayload{
 		ParticipantIDs: participantIDs,
@@ -1069,14 +1084,40 @@ func (c *Client) CreateTestParticipant(email string) (*CreateTestParticipantResp
 	return &response, nil
 }
 
-func (c *Client) GetFilters() (*ListFiltersResponse, error) {
+// GetFilters retrieves the filter catalogue. workspaceID is optional and
+// scopes the catalogue to the filters available in that workspace, which also
+// trims the payload the API returns. The endpoint does not paginate, so the
+// whole catalogue comes back in one response.
+func (c *Client) GetFilters(workspaceID string) (*ListFiltersResponse, error) {
 	var response ListFiltersResponse
 
-	url := "/api/v1/filters/"
-	if _, err := c.ExecuteBuilder().Get(url, &response); err != nil {
+	requestURL := "/api/v1/filters/"
+	if workspaceID != "" {
+		params := url.Values{"workspace_id": {workspaceID}}
+		requestURL += "?" + params.Encode()
+	}
+	if _, err := c.ExecuteBuilder().Get(requestURL, &response); err != nil {
 		return nil, err
 	}
 
+	return &response, nil
+}
+
+// GetFilterRuleTree retrieves the server's composite filter constraints.
+// An empty workspaceID requests the default rules rather than workspace-specific rules.
+func (c *Client) GetFilterRuleTree(workspaceID string) (*FilterRuleTreeResponse, error) {
+	var response FilterRuleTreeResponse
+	requestURL := "/api/v1/filters/rule-tree/"
+	if workspaceID != "" {
+		params := url.Values{"workspace_id": {workspaceID}}
+		requestURL += "?" + params.Encode()
+	}
+	if _, err := c.ExecuteBuilder().Get(requestURL, &response); err != nil {
+		return nil, err
+	}
+	if len(response.RuleTree) == 0 {
+		return nil, fmt.Errorf("filter rule tree response is missing or empty")
+	}
 	return &response, nil
 }
 
@@ -1097,6 +1138,57 @@ func (c *Client) SearchFilters(query, workspaceID string, limit, offset int) (*S
 
 	requestURL := "/api/v1/filters/search/?" + params.Encode()
 	if _, err := c.ExecuteBuilder().Get(requestURL, &response); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// filterChoicesURL builds the path for a filter's choices endpoints. The
+// filter ID comes from the user, so it is escaped rather than interpolated.
+func filterChoicesURL(filterID, suffix string, params url.Values) string {
+	requestURL := "/api/v1/filters/" + url.PathEscape(filterID) + "/choices/" + suffix
+	if encoded := params.Encode(); encoded != "" {
+		requestURL += "?" + encoded
+	}
+	return requestURL
+}
+
+// GetFilterChoices retrieves a filter's choices, in the order the API returns
+// them. workspaceID is optional and scopes the lookup to that workspace; a
+// filter absent from the workspace's catalogue returns a 404, as does one
+// that does not exist at all.
+func (c *Client) GetFilterChoices(filterID, workspaceID string, limit, offset int) (*ListFilterChoicesResponse, error) {
+	var response ListFilterChoicesResponse
+
+	params := url.Values{}
+	params.Set("limit", strconv.Itoa(limit))
+	params.Set("offset", strconv.Itoa(offset))
+	if workspaceID != "" {
+		params.Set("workspace_id", workspaceID)
+	}
+
+	if _, err := c.ExecuteBuilder().Get(filterChoicesURL(filterID, "", params), &response); err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// SearchFilterChoices searches a filter's choices by keyword, returning them
+// in relevance order with highlight offsets.
+func (c *Client) SearchFilterChoices(filterID, query, workspaceID string, limit, offset int) (*SearchFilterChoicesResponse, error) {
+	var response SearchFilterChoicesResponse
+
+	params := url.Values{}
+	params.Set("q", query)
+	params.Set("limit", strconv.Itoa(limit))
+	params.Set("offset", strconv.Itoa(offset))
+	if workspaceID != "" {
+		params.Set("workspace_id", workspaceID)
+	}
+
+	if _, err := c.ExecuteBuilder().Get(filterChoicesURL(filterID, "search/", params), &response); err != nil {
 		return nil, err
 	}
 
@@ -1493,7 +1585,7 @@ func (c *Client) PayBonusPayments(id string) error {
 	return nil
 }
 
-// UpdateAITaskBuilderBatch will update an AI Task Builder batch.
+// UpdateAITaskBuilderBatch will update a Task Builder batch.
 func (c *Client) UpdateAITaskBuilderBatch(params UpdateBatchParams) (*UpdateAITaskBuilderBatchResponse, error) {
 	var response UpdateAITaskBuilderBatchResponse
 
@@ -1503,6 +1595,7 @@ func (c *Client) UpdateAITaskBuilderBatch(params UpdateBatchParams) (*UpdateAITa
 		TaskDetails: params.TaskDetails,
 		BatchItems:  params.BatchItems,
 		AutoSync:    params.AutoSync,
+		Review:      params.Review,
 	}
 
 	url := fmt.Sprintf("/api/v1/data-collection/batches/%s", params.BatchID)
@@ -1558,7 +1651,7 @@ func formatBatchErrorBody(body []byte) string {
 	return msg
 }
 
-// GetAITaskBuilderBatch will return details of an AI Task Builder batch.
+// GetAITaskBuilderBatch will return details of a Task Builder batch.
 func (c *Client) GetAITaskBuilderBatch(batchID string) (*GetAITaskBuilderBatchResponse, error) {
 	var response GetAITaskBuilderBatchResponse
 
@@ -1571,7 +1664,7 @@ func (c *Client) GetAITaskBuilderBatch(batchID string) (*GetAITaskBuilderBatchRe
 	return &response, nil
 }
 
-// GetAITaskBuilderBatchStatus will return the status of an AI Task Builder batch.
+// GetAITaskBuilderBatchStatus will return the status of a Task Builder batch.
 func (c *Client) GetAITaskBuilderBatchStatus(batchID string) (*GetAITaskBuilderBatchStatusResponse, error) {
 	var response GetAITaskBuilderBatchStatusResponse
 
@@ -1595,7 +1688,7 @@ func (c *Client) GetAITaskBuilderBatches(workspaceID string) (*GetAITaskBuilderB
 	return &response, nil
 }
 
-// GetAITaskBuilderResponses will return the responses for an AI Task Builder batch.
+// GetAITaskBuilderResponses will return the responses for a Task Builder batch.
 func (c *Client) GetAITaskBuilderResponses(batchID string) (*GetAITaskBuilderResponsesResponse, error) {
 	var response GetAITaskBuilderResponsesResponse
 
@@ -1607,7 +1700,7 @@ func (c *Client) GetAITaskBuilderResponses(batchID string) (*GetAITaskBuilderRes
 	return &response, nil
 }
 
-// GetAITaskBuilderTasks will return the tasks for an AI Task Builder batch.
+// GetAITaskBuilderTasks will return the tasks for a Task Builder batch.
 func (c *Client) GetAITaskBuilderTasks(batchID string) (*GetAITaskBuilderTasksResponse, error) {
 	var response GetAITaskBuilderTasksResponse
 
@@ -1619,7 +1712,7 @@ func (c *Client) GetAITaskBuilderTasks(batchID string) (*GetAITaskBuilderTasksRe
 	return &response, nil
 }
 
-// GetAITaskBuilderTaskGroups will return the task group IDs for an AI Task Builder batch.
+// GetAITaskBuilderTaskGroups will return the task group IDs for a Task Builder batch.
 func (c *Client) GetAITaskBuilderTaskGroups(batchID string) (*GetAITaskBuilderTaskGroupsResponse, error) {
 	var response GetAITaskBuilderTaskGroupsResponse
 
@@ -1738,7 +1831,7 @@ func (c *Client) GetAITaskBuilderBatchSyncStatus(batchID, syncID string) (*AITas
 	return &response, nil
 }
 
-// GetAITaskBuilderDataset will return an AI Task Builder dataset by ID.
+// GetAITaskBuilderDataset will return a Task Builder dataset by ID.
 func (c *Client) GetAITaskBuilderDataset(datasetID string) (*GetAITaskBuilderDatasetResponse, error) {
 	var response GetAITaskBuilderDatasetResponse
 
@@ -1750,7 +1843,7 @@ func (c *Client) GetAITaskBuilderDataset(datasetID string) (*GetAITaskBuilderDat
 	return &response, nil
 }
 
-// GetAITaskBuilderDatasetStatus will return the status of an AI Task Builder dataset.
+// GetAITaskBuilderDatasetStatus will return the status of a Task Builder dataset.
 func (c *Client) GetAITaskBuilderDatasetStatus(datasetID string) (*GetAITaskBuilderDatasetStatusResponse, error) {
 	var response GetAITaskBuilderDatasetStatusResponse
 
@@ -1762,7 +1855,7 @@ func (c *Client) GetAITaskBuilderDatasetStatus(datasetID string) (*GetAITaskBuil
 	return &response, nil
 }
 
-// GetAITaskBuilderDatasetUploadURL will get an upload URL for an AI Task Builder dataset.
+// GetAITaskBuilderDatasetUploadURL will get an upload URL for a Task Builder dataset.
 func (c *Client) GetAITaskBuilderDatasetUploadURL(datasetID, fileName string) (*GetAITaskBuilderDatasetUploadURLResponse, error) {
 	var response GetAITaskBuilderDatasetUploadURLResponse
 
@@ -1779,6 +1872,39 @@ func (c *Client) GetAITaskBuilderDatasetUploadURL(datasetID, fileName string) (*
 	return &response, nil
 }
 
+// GetFileUploadURL returns a presigned upload URL and the public URL for a file in a workspace.
+func (c *Client) GetFileUploadURL(workspaceID, fileName string) (*GetFileUploadURLResponse, error) {
+	var response GetFileUploadURLResponse
+
+	path := fmt.Sprintf("/api/v1/data-collection/files/upload-url/%s?workspace_id=%s", url.PathEscape(fileName), url.QueryEscape(workspaceID))
+	_, err := c.ExecuteBuilder().
+		GetRequest(path).
+		Status(http.StatusCreated).
+		Decode(&response).
+		Execute()
+	if err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+// DeleteFile deletes an uploaded file. Deleting a file that does not exist succeeds.
+func (c *Client) DeleteFile(workspaceID, fileID, fileName string) error {
+	path := fmt.Sprintf("/api/v1/data-collection/files/%s/%s/%s", url.PathEscape(workspaceID), url.PathEscape(fileID), url.PathEscape(fileName))
+	httpResponse, err := c.Execute(http.MethodDelete, path, nil, nil)
+	if err != nil {
+		return fmt.Errorf("unable to fulfil request %s: %w", path, err)
+	}
+
+	if httpResponse.StatusCode != http.StatusNoContent {
+		body, _ := io.ReadAll(httpResponse.Body)
+		return fmt.Errorf("unexpected status code %d: %s", httpResponse.StatusCode, string(body))
+	}
+
+	return nil
+}
+
 // GetAITaskBuilderDatasetImportStatus returns the status of a dataset import job.
 func (c *Client) GetAITaskBuilderDatasetImportStatus(datasetID, importID string) (*GetAITaskBuilderDatasetImportStatusResponse, error) {
 	var response GetAITaskBuilderDatasetImportStatusResponse
@@ -1792,7 +1918,7 @@ func (c *Client) GetAITaskBuilderDatasetImportStatus(datasetID, importID string)
 	return &response, nil
 }
 
-// CreateAITaskBuilderBatch will create an AI Task Builder batch.
+// CreateAITaskBuilderBatch will create a Task Builder batch.
 func (c *Client) CreateAITaskBuilderBatch(params CreateBatchParams) (*CreateAITaskBuilderBatchResponse, error) {
 	var response CreateAITaskBuilderBatchResponse
 
@@ -1807,6 +1933,7 @@ func (c *Client) CreateAITaskBuilderBatch(params CreateBatchParams) (*CreateAITa
 		},
 		BatchItems: params.BatchItems,
 		AutoSync:   params.AutoSync,
+		Review:     params.Review,
 	}
 
 	url := "/api/v1/data-collection/batches"
@@ -1831,7 +1958,7 @@ func (c *Client) CreateAITaskBuilderBatch(params CreateBatchParams) (*CreateAITa
 	return &response, nil
 }
 
-// CreateAITaskBuilderInstructions will create instructions for an AI Task Builder batch.
+// CreateAITaskBuilderInstructions will create instructions for a Task Builder batch.
 func (c *Client) CreateAITaskBuilderInstructions(batchID string, instructions CreateAITaskBuilderInstructionsPayload) (*CreateAITaskBuilderInstructionsResponse, error) {
 	var response CreateAITaskBuilderInstructionsResponse
 
@@ -1858,7 +1985,7 @@ func (c *Client) CreateAITaskBuilderInstructions(batchID string, instructions Cr
 	return &response, nil
 }
 
-// SetupAITaskBuilderBatch will setup an AI Task Builder batch.
+// SetupAITaskBuilderBatch will setup a Task Builder batch.
 func (c *Client) SetupAITaskBuilderBatch(batchID, datasetID string, tasksPerGroup int) (*SetupAITaskBuilderBatchResponse, error) {
 	var response SetupAITaskBuilderBatchResponse
 
@@ -1880,7 +2007,7 @@ func (c *Client) SetupAITaskBuilderBatch(batchID, datasetID string, tasksPerGrou
 	return &response, nil
 }
 
-// CreateAITaskBuilderDataset will create a new AI Task Builder dataset.
+// CreateAITaskBuilderDataset will create a new Task Builder dataset.
 // The workspaceID parameter specifies which workspace the dataset belongs to.
 func (c *Client) CreateAITaskBuilderDataset(workspaceID string, payload CreateAITaskBuilderDatasetPayload) (*CreateAITaskBuilderDatasetResponse, error) {
 	var response CreateAITaskBuilderDatasetResponse
@@ -1902,7 +2029,7 @@ func (c *Client) CreateAITaskBuilderDataset(workspaceID string, payload CreateAI
 	return &response, nil
 }
 
-// CreateAITaskBuilderCollection creates a new AI Task Builder collection.
+// CreateAITaskBuilderCollection creates a new Task Builder collection.
 func (c *Client) CreateAITaskBuilderCollection(payload model.CreateAITaskBuilderCollection) (*CreateAITaskBuilderCollectionResponse, error) {
 	var response CreateAITaskBuilderCollectionResponse
 

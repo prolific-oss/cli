@@ -1,0 +1,25 @@
+package taskbuilder
+
+import (
+	"io"
+
+	"github.com/prolific-oss/cli/client"
+	"github.com/spf13/cobra"
+)
+
+// NewDatasetsCommand creates a new `dataset` command
+func NewDatasetsCommand(client client.API, w io.Writer) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "dataset",
+		Short: "Manage your datasets",
+		Long:  "Create and manage Task Builder datasets in your workspace",
+	}
+
+	cmd.AddCommand(
+		NewGetDatasetStatusCommand(client, w),
+		NewCreateDatasetCommand(client, w),
+		NewDatasetUploadCommand(client, w),
+	)
+
+	return cmd
+}

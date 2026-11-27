@@ -27,7 +27,18 @@ func NewCreateCommand(client client.API, w io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create",
 		Short: "Creation of studies",
-		Long:  `Create studies on the Prolific Platform`,
+		Long: `Create studies on the Prolific Platform.
+
+The template's filters array contains filter_id objects with selected_values
+(for choice filters) or selected_range (lower/upper bounds for range filters).
+Top-level filters are combined with AND. Use filter_id "and" or "or" with
+selected_filters containing child filters to express nested groups. The CLI
+preserves these groups; the API validates allowed nesting and filter combinations
+for your workspace. Nested groups do not support weightings.
+
+See docs/examples/study-with-nested-filters.json for an OR of two age ranges.
+The same filters array format is used by audience count, audience breakdown's
+base filters, and filter-set templates.`,
 		Example: `
 To create studies via the CLI, you define your study as a JSON/YAML file
 $ prolific study create -t /path/to/study.json

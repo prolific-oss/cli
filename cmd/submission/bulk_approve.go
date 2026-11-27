@@ -37,12 +37,12 @@ participant IDs instead.
 
 The approval is processed asynchronously.`,
 		Example: `  # Approve by submission IDs
-  prolific submission bulk-approve -i <submission_id> -i <submission_id>
+  prolific submission bulk-approve -i <submission-id> -i <submission-id>
   prolific submission bulk-approve -f submissions.csv
 
   # Approve by study and participant IDs
-  prolific submission bulk-approve -s <study_id> -p <participant_id> -p <participant_id>
-  prolific submission bulk-approve -s <study_id> -f participants.csv`,
+  prolific submission bulk-approve -s <study-id> -p <participant-id> -p <participant-id>
+  prolific submission bulk-approve -s <study-id> -f participants.csv`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			err := bulkApproveSubmissions(c, opts, w)
 			if err != nil {

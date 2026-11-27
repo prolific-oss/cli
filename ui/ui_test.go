@@ -87,7 +87,7 @@ func TestRenderFeatureAccessMessage(t *testing.T) {
 	r, w, _ := os.Pipe()
 	os.Stderr = w
 
-	featureName := "AI Task Builder Collections"
+	featureName := "Task Builder Collections"
 	contactEmail := "support@prolific.com"
 
 	ui.RenderFeatureAccessMessage(featureName, contactEmail)
